@@ -25,8 +25,8 @@ def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float,
         Y values of the multi-Gaussian data with added noise.
     """
     y = np.zeros_like(x)
-    for A, mu, sigma in params:
-        y += A * np.exp(-(x - mu)**2 / (2 * sigma**2))
+    for amp, mu, sigma in params:
+        y += amp * np.exp(-(x - mu)**2 / (2 * sigma**2))
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y

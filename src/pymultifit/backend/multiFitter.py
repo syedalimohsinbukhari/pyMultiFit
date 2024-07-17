@@ -27,16 +27,56 @@ class BaseFitter:
         return self.covariance
 
     @staticmethod
-    def individual_fitter(x, *params):
+    def _fitter(x, params):
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def fit(self, p0):
+    def _n_fitter(self, x, *params):
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def get_standard_errors(self):
+    def _plot_individual_fitter(self, x, plotter):
+        raise NotImplementedError("This method should be implemented by subclasses.")
+
+    def _standard_errors(self):
         if self.covariance is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return np.sqrt(np.diag(self.covariance))
 
+    def fit(self, p0):
+        """
+        Fit the data.
+
+        Parameters
+        ----------
+        p0: List[int | float | ...]
+            A list of initial guesses for the parameters of the Gaussian model.
+        """
+        raise NotImplementedError("This method should be implemented by subclasses.")
+
+    def get_fit_values(self):
+        """
+        Get the fitted values.
+
+        Returns
+        -------
+        np.ndarray
+            An array of fitted values.
+        """
+        raise NotImplementedError("This method should be implemented by subclasses.")
+
     def get_value_error_pair(self, only_values=False, only_errors=False):
+        """
+        Get the value/error pair of the fitted values.
+
+        Parameters
+        ----------
+        only_values: bool, optional
+            Whether to only give the values of the fitted parameters. Defaults to False.
+        only_errors: bool, optional
+            Whether to only give the errors of the fitted parameters. Defaults to False.
+
+        Returns
+        -------
+        np.ndarray
+            An array consisting of only values, only errors or both.
+        """
         raise NotImplementedError("This method should be implemented by subclasses.")
