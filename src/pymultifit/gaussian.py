@@ -6,7 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
 
-from .backend.multiFitter import BaseFitter
+from src.pymultifit.backend.multiFitter import BaseFitter
 
 
 class MultiGaussian(BaseFitter):
@@ -37,7 +37,7 @@ class MultiGaussian(BaseFitter):
             amp = self.params[i * 3]
             mu = self.params[i * 3 + 1]
             sigma = self.params[i * 3 + 2]
-            plotter.plot(x, self._gaussian(x, amp, mu, sigma), linestyle=':', label=f'Gaussian {i + 1}')
+            plotter.plot(x, self.individual_fitter(x, *[amp, mu, sigma]), linestyle=':', label=f'Gaussian {i + 1}')
 
     def plot_fit(self, show_individual: bool = False, fig_size: Tuple[int, int] = (12, 6), auto_label: bool = False,
                  ax: Optional[plt.Axes] = None):

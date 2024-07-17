@@ -1,10 +1,8 @@
 """Created on Jul 18 01:11:32 2024"""
 
-import matplotlib.pyplot as plt
 import numpy as np
-
-from src.pymultifit.backend.utilities import generate_multi_gaussian_data
-from src.pymultifit.gaussian import MultiGaussian
+from pymultifit import MultiGaussian
+from pymultifit.backend import generate_multi_gaussian_data
 
 params = [(5, -1, 0.5), (4, -5.5, 10), (10, 3, 1), (4, 15, 3)]
 
@@ -22,6 +20,4 @@ mg_guess = [5, -1, 0.5,
 
 mg.fit(mg_guess)
 
-f, ax = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
-
-plotter = mg.plot_fit(True, auto_label=True, ax=ax[0])
+plotter = mg.plot_fit(True, auto_label=True)
