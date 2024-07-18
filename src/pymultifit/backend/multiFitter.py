@@ -1,8 +1,9 @@
 """Created on Jul 18 00:16:01 2024"""
 
-from typing import Optional
+from typing import Optional, Tuple
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 
 class BaseFitter:
@@ -80,3 +81,51 @@ class BaseFitter:
             An array consisting of only values, only errors or both.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
+
+    def plot_fit(self, show_individual: bool = False, fig_size: Optional[Tuple[int, int]] = (12, 6),
+                 auto_label: bool = False, ax: Optional[plt.Axes] = None) -> plt:
+        """
+        Plot the fitted Skewed Normal functions on the data.
+
+        Parameters
+        ----------
+        show_individual: bool
+            Whether to show individually fitted Skewed Normal functions.
+        fig_size: Tuple[int, int], optional
+            Figure size to draw the plot on. Defaults to (12, 6)
+        auto_label: bool, optional
+            Whether to auto decorate the plot with x/y labels, title and other plot decorators. Defaults to False.
+        ax: plt.Axes, optional
+            Axes to plot instead of the entire figure. Defaults to None.
+
+        Returns
+        -------
+        plt
+            The plotter handle for the drawn plot.
+        """
+        if self.params is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
+
+        plotter = ax if ax else plt
+        if not ax:
+            plt.figure(figsize=fig_size)
+
+        plotter.plot(self.x_values, self.y_values, label='Data')
+        plotter.plot(self.x_values, self._n_fitter(self.x_values, *self.params), label='Total Fit', linestyle='--')
+
+        if show_individual:
+            self._plot_individual_fitter(self.x_values, plotter)
+
+        if auto_label:
+            labels = {
+                'xlabel': plotter.set_xlabel if ax else plotter.xlabel,
+                'ylabel': plotter.set_ylabel if ax else plotter.ylabel,
+                'title': plotter.set_title if ax else plotter.title,
+            }
+            labels['xlabel']('X')
+            labels['ylabel']('Y')
+            labels['title'](f'{self.n_fits} {self.__class__.__name__} fit')
+            plotter.legend(loc='best')
+            plotter.tight_layout()
+
+        return plotter
