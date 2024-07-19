@@ -1,9 +1,10 @@
 """Created on Jul 18 00:16:01 2024"""
-
+import itertools
 from typing import Optional, Tuple
 
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.optimize import curve_fit
 
 
 class BaseFitter:
@@ -13,6 +14,7 @@ class BaseFitter:
         self.x_values = x_values
         self.y_values = y_values
         self.max_iterations = max_iterations
+        self.n_parameters = None
 
         self.params = None
         self.covariance = None
@@ -51,7 +53,15 @@ class BaseFitter:
         p0: List[int | float | ...]
             A list of initial guesses for the parameters of the Gaussian model.
         """
-        raise NotImplementedError("This method should be implemented by subclasses.")
+        len_guess = len(list(itertools.chain(*p0)))
+        total_pars = self.n_parameters * self.n_fits
+
+        if len_guess != total_pars:
+            raise ValueError(f"Initial guess length must be {3 * self.n_fits}.")
+        _ = curve_fit(self._n_fitter, self.x_values, self.y_values, p0=p0,
+                      maxfev=self.max_iterations)
+
+        self.params, self.covariance = _[0], _[1]
 
     def get_fit_values(self):
         """

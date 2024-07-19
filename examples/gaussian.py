@@ -21,7 +21,6 @@ mg_guess = [5, -1, 0.5,
             4, 15, 3]
 
 mg.fit(mg_guess)
-print(mg.get_value_error_pair(only_values=True))
 
 plotter = mg.plot_fit(True, auto_label=True)
 plotter.show()

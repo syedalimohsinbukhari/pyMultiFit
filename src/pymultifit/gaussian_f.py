@@ -1,9 +1,8 @@
 """Created on Jul 18 00:25:57 2024"""
 
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
-from scipy.optimize import curve_fit
 
 from .backend.multiFitter import BaseFitter
 
@@ -13,6 +12,7 @@ class Gaussian(BaseFitter):
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
         super().__init__(n_fits, x_values, y_values, max_iterations)
+        self.n_parameters = 3
 
     @staticmethod
     def _fitter(x, params):
@@ -33,13 +33,6 @@ class Gaussian(BaseFitter):
             mu = self.params[i * 3 + 1]
             sigma = self.params[i * 3 + 2]
             plotter.plot(x, self._fitter(x, [amp, mu, sigma]), linestyle=':', label=f'Gaussian {i + 1}')
-
-    def fit(self, p0: List[int or float or ...]):
-        if len(p0) != 3 * self.n_fits:
-            raise ValueError(f"Initial guess length must be {3 * self.n_fits}.")
-        _ = curve_fit(self._n_fitter, self.x_values, self.y_values, p0=p0, maxfev=self.max_iterations)
-
-        self.params, self.covariance = _[0], _[1]
 
     def get_fit_values(self) -> np.ndarray:
         if self.params is None:
