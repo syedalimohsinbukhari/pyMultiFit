@@ -16,6 +16,24 @@ class LogNormal(BaseFitter):
 
     @classmethod
     def from_exact_mean(cls, n_fits, x_values, y_values):
+        """
+        Create an instance of LogNormal with the option to fit the log-normal distribution to have exact mean values
+        provided.
+
+        Parameters
+        ----------
+        n_fits : int
+            Number of fits to perform.
+        x_values : list or array-like
+            Independent variable values for fitting.
+        y_values : list or array-like
+            Dependent variable values for fitting.
+
+        Returns
+        -------
+        LogNormal
+            An instance of LogNormal configured to fit the distribution with exact mean values.
+        """
         return cls(n_fits, x_values, y_values, True)
 
     @staticmethod

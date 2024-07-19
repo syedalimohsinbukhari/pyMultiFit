@@ -14,11 +14,7 @@ y = generate_multi_gaussian_data(x, params, noise_level=noise_level)
 
 mg = Gaussian(5, x, y)
 
-mg_guess = [5, -1, 0.5,
-            10, -18, 1,
-            4, -5.5, 10,
-            10, 3, 1,
-            4, 15, 3]
+mg_guess = [(5, -1, 0.5), (10, -18, 1), (4, -5.5, 10), (10, 3, 1), (4, 15, 3)]
 
 mg.fit(mg_guess)
 
