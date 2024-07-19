@@ -12,11 +12,11 @@ x = np.linspace(0.001, 100, 2000)
 noise_level = 0.2
 y = generate_multi_log_normal_data(x, params, noise_level=noise_level, exact_mean=True)
 
-lNorm = LogNormal.from_exact_mean(3, x, y)
+fitter = LogNormal.from_exact_mean(3, x, y)
 
-ln_guess = [(5, 1, 1), (3, 20, 0.5), (2, 50, 1)]
+guess = [(5, 1, 1), (3, 20, 0.5), (2, 50, 1)]
 
-lNorm.fit(ln_guess)
+fitter.fit(guess)
 
-plotter = lNorm.plot_fit(True, auto_label=True)
+plotter = fitter.plot_fit(True, auto_label=True)
 plotter.show()
