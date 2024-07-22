@@ -1,5 +1,6 @@
 """Created on Jul 18 00:16:01 2024"""
-import itertools
+
+from itertools import chain
 from typing import Optional, Tuple
 
 import numpy as np
@@ -8,6 +9,7 @@ from scipy.optimize import curve_fit
 
 
 class BaseFitter:
+    """The base class for multi-fitting functionality."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
         self.n_fits = n_fits
@@ -53,7 +55,7 @@ class BaseFitter:
         p0: List[int | float | ...]
             A list of initial guesses for the parameters of the Gaussian model.
         """
-        len_guess = len(list(itertools.chain(*p0)))
+        len_guess = len(list(chain(*p0)))
         total_pars = self.n_parameters * self.n_fits
 
         if len_guess != total_pars:
@@ -128,12 +130,12 @@ class BaseFitter:
 
         if auto_label:
             labels = {
-                'xlabel': plotter.set_xlabel if ax else plotter.xlabel,
-                'ylabel': plotter.set_ylabel if ax else plotter.ylabel,
+                'x_label': plotter.set_xlabel if ax else plotter.xlabel,
+                'y_label': plotter.set_ylabel if ax else plotter.ylabel,
                 'title': plotter.set_title if ax else plotter.title,
             }
-            labels['xlabel']('X')
-            labels['ylabel']('Y')
+            labels['x_label']('X')
+            labels['y_label']('Y')
             labels['title'](f'{self.n_fits} {self.__class__.__name__} fit')
             plotter.legend(loc='best')
             plotter.tight_layout()

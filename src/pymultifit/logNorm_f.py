@@ -1,13 +1,16 @@
 """Created on Jul 18 19:01:45 2024"""
 
+from typing import Optional
+
 import numpy as np
 
-from src.pymultifit.backend import BaseFitter
+from .backend import BaseFitter
 
 
 class LogNormal(BaseFitter):
+    """A class for fitting multiple Log Normal functions to the given data."""
 
-    def __init__(self, n_fits: int, x_values, y_values, exact_mean=False):
+    def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000, exact_mean=False):
         if any(x < 0 for x in x_values):
             raise ValueError("The LogNormal distribution must have x > 0.")
         super().__init__(n_fits, x_values, y_values)

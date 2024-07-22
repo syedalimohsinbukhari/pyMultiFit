@@ -2,4 +2,4 @@
 
 from .gaussian_f import Gaussian
 from .logNorm_f import LogNormal
-from .SkNorm_f import SkewedNormal
+from .skewNorm_f import SkewedNormal
