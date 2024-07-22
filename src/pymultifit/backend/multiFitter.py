@@ -74,17 +74,19 @@ class BaseFitter:
         np.ndarray
             An array of fitted values.
         """
-        raise NotImplementedError("This method should be implemented by subclasses.")
+        if self.params is None:
+            raise RuntimeError('Fit not performed yet. Call fit() first.')
+        return self._fitter(self.x_values, self.params)
 
-    def get_value_error_pair(self, only_values=False, only_errors=False):
+    def get_value_error_pair(self, mean_values=False, std_values=False) -> np.ndarray:
         """
         Get the value/error pair of the fitted values.
 
         Parameters
         ----------
-        only_values: bool, optional
+        mean_values: bool, optional
             Whether to only give the values of the fitted parameters. Defaults to False.
-        only_errors: bool, optional
+        std_values: bool, optional
             Whether to only give the errors of the fitted parameters. Defaults to False.
 
         Returns
@@ -92,7 +94,9 @@ class BaseFitter:
         np.ndarray
             An array consisting of only values, only errors or both.
         """
-        raise NotImplementedError("This method should be implemented by subclasses.")
+        pairs = np.array([np.array([i, j]) for i, j in zip(self._params(), self._standard_errors())])
+
+        return pairs[:, 0] if mean_values else pairs[:, 1] if std_values else pairs
 
     def plot_fit(self, show_individual: bool = False, fig_size: Optional[Tuple[int, int]] = (12, 6),
                  auto_label: bool = False, ax: Optional[plt.Axes] = None) -> plt:

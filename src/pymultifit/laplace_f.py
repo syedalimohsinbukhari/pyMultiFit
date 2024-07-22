@@ -33,13 +33,3 @@ class Laplace(BaseFitter):
             mu = self.params[i * self.n_parameters + 1]
             b = self.params[i * self.n_parameters + 2]
             plotter.plot(x, self._fitter(x, [amp, mu, b]), ls=':', label=f'Laplace {i + 1}')
-
-    def get_fit_values(self):
-        if self.params is None:
-            raise RuntimeError('Fit not performed yet. Call fit() first.')
-        return self._n_fitter(self.x_values, self.params)
-
-    def get_value_error_pair(self, only_values=False, only_errors=False) -> np.ndarray:
-        pairs = np.array([np.array([i, j]) for i, j in zip(self._params(), self._standard_errors())])
-
-        return pairs[:, 0] if only_values else pairs[:, 1] if only_errors else pairs

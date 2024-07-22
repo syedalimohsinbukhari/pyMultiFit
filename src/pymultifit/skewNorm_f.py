@@ -36,13 +36,3 @@ class SkewedNormal(BaseFitter):
             loc = self.params[i * 4 + 2]
             scale = self.params[i * 4 + 3]
             plotter.plot(x, self._fitter(x, [amp, shape, loc, scale]), linestyle=':', label=f'Skewed Normal {i + 1}')
-
-    def get_fit_values(self) -> np.ndarray:
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return self._n_fitter(self.x_values, *self.params)
-
-    def get_value_error_pair(self, only_values=False, only_errors=False) -> np.ndarray:
-        pairs = np.array([np.array([i, j]) for i, j in zip(self.params, np.sqrt(np.diag(self.covariance)))])
-
-        return pairs[:, 0] if only_values else pairs[:, 1] if only_errors else pairs
