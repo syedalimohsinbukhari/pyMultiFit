@@ -5,7 +5,7 @@ import numpy as np
 from src.pymultifit import Gaussian
 from src.pymultifit.backend import generate_multi_gaussian_data
 
-params = [(5, -1, 0.5), (20, -20, 2), (4, -5.5, 10), (10, 3, 1), (4, 15, 3)]
+params = [(20, -20, 2), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
 
 x = np.linspace(-35, 35, 1500)
 
@@ -14,7 +14,7 @@ y = generate_multi_gaussian_data(x, params, noise_level=noise_level)
 
 fitter = Gaussian(5, x, y)
 
-guess = [(5, -1, 0.5), (10, -18, 1), (4, -5.5, 10), (10, 3, 1), (4, 15, 3)]
+guess = [(10, -18, 1), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
 
 fitter.fit(guess)
 

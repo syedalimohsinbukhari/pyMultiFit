@@ -1,10 +1,10 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
 
 
@@ -16,7 +16,7 @@ class BaseFitter:
         self.x_values = x_values
         self.y_values = y_values
         self.max_iterations = max_iterations
-        self.n_parameters = None
+        self.n_par = None
 
         self.params = None
         self.covariance = None
@@ -31,6 +31,11 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return self.covariance
 
+    def _standard_errors(self):
+        if self.covariance is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
+        return np.sqrt(np.diag(self.covariance))
+
     @staticmethod
     def _fitter(x, params):
         raise NotImplementedError("This method should be implemented by subclasses.")
@@ -40,11 +45,6 @@ class BaseFitter:
 
     def _plot_individual_fitter(self, x, plotter):
         raise NotImplementedError("This method should be implemented by subclasses.")
-
-    def _standard_errors(self):
-        if self.covariance is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return np.sqrt(np.diag(self.covariance))
 
     def fit(self, p0):
         """
@@ -56,7 +56,7 @@ class BaseFitter:
             A list of initial guesses for the parameters of the Gaussian model.
         """
         len_guess = len(list(chain(*p0)))
-        total_pars = self.n_parameters * self.n_fits
+        total_pars = self.n_par * self.n_fits
 
         if len_guess != total_pars:
             raise ValueError(f"Initial guess length must be {3 * self.n_fits}.")
@@ -64,6 +64,10 @@ class BaseFitter:
                       maxfev=self.max_iterations)
 
         self.params, self.covariance = _[0], _[1]
+
+    def parameter_extractor(self, parameter_dictionary: Optional[Dict[str, bool]] = None):
+        """Extract the required parameters from the fitters."""
+        raise NotImplementedError("This method should be implemented by subclasses.")
 
     def get_fit_values(self):
         """
@@ -76,7 +80,7 @@ class BaseFitter:
         """
         if self.params is None:
             raise RuntimeError('Fit not performed yet. Call fit() first.')
-        return self._fitter(self.x_values, self.params)
+        return self._n_fitter(self.x_values, *self.params)
 
     def get_value_error_pair(self, mean_values=False, std_values=False) -> np.ndarray:
         """
@@ -98,8 +102,8 @@ class BaseFitter:
 
         return pairs[:, 0] if mean_values else pairs[:, 1] if std_values else pairs
 
-    def plot_fit(self, show_individual: bool = False, fig_size: Optional[Tuple[int, int]] = (12, 6),
-                 auto_label: bool = False, ax: Optional[plt.Axes] = None) -> plt:
+    def plot_fit(self, show_individual: bool = False, auto_label: bool = False,
+                 fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None) -> plt:
         """
         Plot the fitted Skewed Normal functions on the data.
 
@@ -107,10 +111,10 @@ class BaseFitter:
         ----------
         show_individual: bool
             Whether to show individually fitted Skewed Normal functions.
-        fig_size: Tuple[int, int], optional
-            Figure size to draw the plot on. Defaults to (12, 6)
         auto_label: bool, optional
             Whether to auto decorate the plot with x/y labels, title and other plot decorators. Defaults to False.
+        fig_size: Tuple[int, int], optional
+            Figure size to draw the plot on. Defaults to (12, 6)
         ax: plt.Axes, optional
             Axes to plot instead of the entire figure. Defaults to None.
 
@@ -127,7 +131,8 @@ class BaseFitter:
             plt.figure(figsize=fig_size)
 
         plotter.plot(self.x_values, self.y_values, label='Data')
-        plotter.plot(self.x_values, self._n_fitter(self.x_values, *self.params), label='Total Fit', linestyle='--')
+        plotter.plot(self.x_values, self._n_fitter(self.x_values, *self.params),
+                     label='Total Fit', linestyle='--')
 
         if show_individual:
             self._plot_individual_fitter(self.x_values, plotter)
