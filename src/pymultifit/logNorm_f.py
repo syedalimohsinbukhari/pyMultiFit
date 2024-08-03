@@ -4,21 +4,24 @@ from typing import Optional
 
 import numpy as np
 
-from .backend import BaseFitter
+from . import BaseFitter
+
+
+# import numpy as np
 
 
 class LogNormal(BaseFitter):
     """A class for fitting multiple Log Normal functions to the given data."""
 
-    def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000, exact_mean=False):
+    def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000, exact_mean: bool = False):
         if any(x < 0 for x in x_values):
             raise ValueError("The LogNormal distribution must have x > 0.")
-        super().__init__(n_fits, x_values, y_values)
-        self.n_parameters = 3
+        super().__init__(n_fits, x_values, y_values, max_iterations)
+        self.n_par = 3
         self.exact_mean = exact_mean
 
     @classmethod
-    def from_exact_mean(cls, n_fits, x_values, y_values):
+    def from_exact_mean(cls, n_fits: int, x_values, y_values):
         """
         Create an instance of LogNormal with the option to fit the log-normal distribution to have exact mean values
         provided.
@@ -48,9 +51,9 @@ class LogNormal(BaseFitter):
     def _n_fitter(self, x, *params):
         y = np.zeros_like(x)
         for i in range(self.n_fits):
-            amp = params[i * 3]
-            mu = params[i * 3 + 1]
-            sigma = params[i * 3 + 2]
+            amp = params[i * self.n_par]
+            mu = params[i * self.n_par + 1]
+            sigma = params[i * self.n_par + 2]
             if self.exact_mean:
                 mu = np.log(mu) - (sigma**2 / 2)
 
@@ -59,9 +62,9 @@ class LogNormal(BaseFitter):
 
     def _plot_individual_fitter(self, x, plotter):
         for i in range(self.n_fits):
-            amp = self.params[i * 3]
-            mu = self.params[i * 3 + 1]
-            sigma = self.params[i * 3 + 2]
+            amp = self.params[i * self.n_par]
+            mu = self.params[i * self.n_par + 1]
+            sigma = self.params[i * self.n_par + 2]
             if self.exact_mean:
                 mu = np.log(mu) - (sigma**2 / 2)
             plotter.plot(x, self._fitter(x, [amp, mu, sigma]), linestyle=':', label=f'LogNormal {i + 1}')
