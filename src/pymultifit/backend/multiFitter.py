@@ -1,7 +1,7 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -64,6 +64,10 @@ class BaseFitter:
                       maxfev=self.max_iterations)
 
         self.params, self.covariance = _[0], _[1]
+
+    def parameter_extractor(self, parameter_dictionary: Optional[Dict[str, bool]] = None):
+        """Extract the required parameters from the fitters."""
+        raise NotImplementedError("This method should be implemented by subclasses.")
 
     def get_fit_values(self):
         """
