@@ -4,10 +4,10 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from . import BaseFitter
+from ._backend import BaseFitter
 
 
-class Gaussian(BaseFitter):
+class GaussianFitter(BaseFitter):
     """A class for fitting multiple Gaussian functions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
@@ -92,7 +92,6 @@ class Gaussian(BaseFitter):
             - Sigma values if `sigma` is True, otherwise an empty list.
         """
 
-        # Initialize parameter dictionary if None
         if parameter_dictionary is None:
             parameter_dictionary = {}
 

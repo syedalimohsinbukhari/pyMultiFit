@@ -1,9 +1,8 @@
 """Created on Jul 18 14:05:42 2024"""
 
 import numpy as np
-
-from src.pymultifit import SkewedNormal
-from src.pymultifit.backend import generate_multi_skewed_normal_data
+from pymultifit import SkewedNormal
+from pymultifit.backend import generate_multi_skewed_normal_data
 
 params = [(12, 2, -7, 1), (3, -4, 2, 2), (4, 2, 7, 1.5)]
 

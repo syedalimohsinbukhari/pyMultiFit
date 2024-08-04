@@ -4,13 +4,15 @@ from typing import Optional
 
 import numpy as np
 
-from . import BaseFitter
+from ._backend import BaseFitter
 
 
-# import numpy as np
+# TODO:
+#   Implement `_get_overall_parameter_values`
+#   Implement `parameter_extractor`
 
 
-class LogNormal(BaseFitter):
+class LogNormalFitter(BaseFitter):
     """A class for fitting multiple Log Normal functions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000, exact_mean: bool = False):
@@ -37,7 +39,7 @@ class LogNormal(BaseFitter):
 
         Returns
         -------
-        LogNormal
+        LogNormalFitter
             An instance of LogNormal configured to fit the distribution with exact mean values.
         """
         return cls(n_fits, x_values, y_values, True)

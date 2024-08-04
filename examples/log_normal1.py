@@ -1,9 +1,8 @@
 """Created on Jul 19 23:15:21 2024"""
 
 import numpy as np
-
-from src.pymultifit import LogNormal
-from src.pymultifit.backend.utilities import generate_multi_log_normal_data
+from pymultifit import LogNormal
+from pymultifit.backend import generate_multi_log_normal_data
 
 params = [(5, 1, 1), (3, 2, 0.2), (2, 4, 0.2)]
 
