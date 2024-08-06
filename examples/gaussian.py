@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from src.pymultifit.fitters import GaussianFitter
-from src.pymultifit.fitters._backend import generate_multi_gaussian_data
+from pymultifit.fitters import GaussianFitter
+from pymultifit.fitters.multi_generators import generate_multi_gaussian_data
 
 params = [(20, -20, 2), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
 

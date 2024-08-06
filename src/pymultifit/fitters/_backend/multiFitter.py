@@ -132,7 +132,7 @@ class BaseFitter:
 
         plotter.plot(self.x_values, self.y_values, label='Data')
         plotter.plot(self.x_values, self._n_fitter(self.x_values, *self.params),
-                     label='Total Fit', linestyle='--')
+                     label='Total Fit', color='k')
 
         if show_individual:
             self._plot_individual_fitter(self.x_values, plotter)

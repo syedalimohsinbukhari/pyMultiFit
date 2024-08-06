@@ -81,8 +81,6 @@ def generate_multi_log_normal_data(x: np.ndarray, params: List[Tuple[float, floa
         List of tuples containing the parameters for each Gaussian (amplitude, mean, standard deviation).
     noise_level : float, optional
         Standard deviation of the Gaussian noise to be added to the data, by default 0.0.
-    exact_mean: bool, optional
-        Whether to use the exact mean provided or the log-normal mean. Defaults to False.
     normalized: bool, optional
         Whether to get a normalized version of the distribution. Defaults to False.
 

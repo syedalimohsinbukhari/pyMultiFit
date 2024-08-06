@@ -4,8 +4,10 @@ from typing import Optional
 
 import numpy as np
 
+from ._backend import BaseDistribution
 
-class LaplaceDistribution:
+
+class LaplaceDistribution(BaseDistribution):
     """Class for Laplace distribution."""
 
     def __init__(self,

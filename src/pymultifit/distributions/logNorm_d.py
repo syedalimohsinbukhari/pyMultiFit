@@ -5,8 +5,10 @@ from typing import Optional
 import numpy as np
 from scipy.special import erf
 
+from ._backend import BaseDistribution
 
-class LogNormalDistribution:
+
+class LogNormalDistribution(BaseDistribution):
     """Class for LogNormal distribution."""
 
     def __init__(self,
@@ -44,7 +46,7 @@ class LogNormalDistribution:
 def _log_normal(x: np.ndarray,
                 mu: Optional[float] = 0,
                 sigma: Optional[float] = 1,
-                un_normalized: bool = False) -> np.ndarray:
+                normalize: bool = True) -> np.ndarray:
     """
     Compute the Log-Normal distribution probability density function (PDF).
 
@@ -62,8 +64,8 @@ def _log_normal(x: np.ndarray,
     sigma : float, optional
         The standard deviation of the logarithm of the distribution (i.e., sigma of normal distribution in logspace).
         Defaults to 1.
-    un_normalized : bool, optional
-        If True, the function returns the un-normalized value of the PDF. Default is False.
+    normalize : bool, optional
+        If True, the function returns the un-normalized value of the PDF. Default is True.
 
 
     Returns
@@ -84,6 +86,6 @@ def _log_normal(x: np.ndarray,
         raise ValueError("x must be positive for the log-normal distribution.")
 
     exponent = - (np.log(x) - mu)**2 / (2 * sigma**2)
-    normalization = sigma * x * np.sqrt(2 * np.pi) if not un_normalized else 1
+    normalization = sigma * x * np.sqrt(2 * np.pi) if normalize else 1
 
     return np.exp(exponent) / normalization
