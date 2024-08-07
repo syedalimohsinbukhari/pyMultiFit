@@ -15,8 +15,8 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     python_requires=">=3.9",
-    install_requires=["setuptools==70.3.0", "numpy==1.26.4",
-                      "matplotlib==3.9.1", "scipy==1.13.1"],
+    install_requires=["setuptools", "numpy==1.26.4",
+                      "matplotlib", "scipy"],
     include_package_data=True,
     classifiers=[
         "License :: OSI Approved :: MIT License",

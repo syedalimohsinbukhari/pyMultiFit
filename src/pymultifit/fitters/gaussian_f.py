@@ -35,14 +35,6 @@ class GaussianFitter(BaseFitter):
             plotter.plot(x, self._fitter(x, [amp, mu, sigma]), linestyle=':', label=f'Gaussian {i + 1}')
 
     def _get_overall_parameter_values(self) -> Tuple[List[float], List[float]]:
-        """
-        Returns the overall parameters of the multi-fitter.
-
-        Returns
-        -------
-        Tuple[List[float], List[float]]
-            A tuple containing the amplitude and mean value of the multi-fitter.
-        """
         overall_fit = self.get_fit_values()
         _, mu, _ = self.parameter_extractor(mu=True)
 

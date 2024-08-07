@@ -5,7 +5,7 @@ from typing import List, Tuple
 import numpy as np
 from scipy.stats import skewnorm
 
-from ..distributions import GaussianDistribution as GDist, LogNormalDistribution
+from . import GaussianDistribution as GDist, LogNormalDistribution
 
 
 # TODO:

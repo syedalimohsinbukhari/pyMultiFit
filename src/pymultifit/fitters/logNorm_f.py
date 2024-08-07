@@ -1,6 +1,6 @@
 """Created on Jul 18 19:01:45 2024"""
 
-from typing import Optional
+from typing import Dict, Optional
 
 import numpy as np
 
@@ -22,27 +22,27 @@ class LogNormalFitter(BaseFitter):
         self.n_par = 3
         self.exact_mean = exact_mean
 
-    @classmethod
-    def from_exact_mean(cls, n_fits: int, x_values, y_values):
-        """
-        Create an instance of LogNormal with the option to fit the log-normal distribution to have exact mean values
-        provided.
-
-        Parameters
-        ----------
-        n_fits : int
-            Number of fits to perform.
-        x_values : list or array-like
-            Independent variable values for fitting.
-        y_values : list or array-like
-            Dependent variable values for fitting.
-
-        Returns
-        -------
-        LogNormalFitter
-            An instance of LogNormal configured to fit the distribution with exact mean values.
-        """
-        return cls(n_fits, x_values, y_values, True)
+    # @classmethod
+    # def from_exact_mean(cls, n_fits: int, x_values, y_values):
+    #     """
+    #     Create an instance of LogNormal with the option to fit the log-normal distribution to have exact mean values
+    #     provided.
+    #
+    #     Parameters
+    #     ----------
+    #     n_fits : int
+    #         Number of fits to perform.
+    #     x_values : list or array-like
+    #         Independent variable values for fitting.
+    #     y_values : list or array-like
+    #         Dependent variable values for fitting.
+    #
+    #     Returns
+    #     -------
+    #     LogNormalFitter
+    #         An instance of LogNormal configured to fit the distribution with exact mean values.
+    #     """
+    #     return cls(n_fits, x_values, y_values, True)
 
     @staticmethod
     def _fitter(x, params):
@@ -70,3 +70,44 @@ class LogNormalFitter(BaseFitter):
             if self.exact_mean:
                 mu = np.log(mu) - (sigma**2 / 2)
             plotter.plot(x, self._fitter(x, [amp, mu, sigma]), linestyle=':', label=f'LogNormal {i + 1}')
+
+    def _get_overall_parameter_values(self):
+        overall_fit = self.get_fit_values()
+        _, mu, _ = self.parameter_extractor(mu=True)
+
+        amp = []
+        for mu_values in mu:
+            closest_index = (np.abs(self.x_values - mu_values)).argmin()
+            amplitude_value = overall_fit[closest_index]
+            amp.append(amplitude_value)
+
+        return amp, mu
+
+    def parameter_extractor(self,
+                            parameter_dictionary: Optional[Dict[str, bool]] = None,
+                            amplitude: Optional[bool] = None,
+                            mu: Optional[bool] = None,
+                            sigma: Optional[bool] = None,
+                            overall_amplitude: bool = False):
+
+        if parameter_dictionary is None:
+            parameter_dictionary = {}
+
+        amplitude = amplitude if amplitude is not None else parameter_dictionary.get('amp', False)
+        mu = mu if mu is not None else parameter_dictionary.get('mu', False)
+        sigma = sigma if sigma is not None else parameter_dictionary.get('sigma', False)
+
+        if not (amplitude or mu or sigma):
+            return [], [], []
+
+        values = self.get_value_error_pair(mean_values=True)
+
+        if overall_amplitude:
+            amp_values, mu_values = self._get_overall_parameter_values()
+            sigma_values = []
+        else:
+            amp_values = [values[_ * self.n_par] for _ in range(self.n_fits)] if amplitude else []
+            mu_values = [values[_ * self.n_par + 1] for _ in range(self.n_fits)] if mu else []
+            sigma_values = [values[_ * self.n_par + 2] for _ in range(self.n_fits)] if sigma else []
+
+        return amp_values, mu_values, sigma_values
