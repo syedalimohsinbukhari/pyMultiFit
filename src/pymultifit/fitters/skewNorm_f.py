@@ -5,10 +5,15 @@ from typing import Optional
 import numpy as np
 from scipy.stats import skewnorm
 
-from . import BaseFitter
+from ._backend import BaseFitter
 
 
-class SkewedNormal(BaseFitter):
+# TODO:
+#   Implement `_get_overall_parameter_values`
+#   Implement `parameter_extractor`
+
+
+class SkewedNormalFitter(BaseFitter):
     """A class for fitting multiple Skewed Normal functions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):

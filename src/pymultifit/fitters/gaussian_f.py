@@ -4,10 +4,10 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from . import BaseFitter
+from ._backend import BaseFitter
 
 
-class Gaussian(BaseFitter):
+class GaussianFitter(BaseFitter):
     """A class for fitting multiple Gaussian functions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
@@ -35,14 +35,6 @@ class Gaussian(BaseFitter):
             plotter.plot(x, self._fitter(x, [amp, mu, sigma]), linestyle=':', label=f'Gaussian {i + 1}')
 
     def _get_overall_parameter_values(self) -> Tuple[List[float], List[float]]:
-        """
-        Returns the overall parameters of the multi-fitter.
-
-        Returns
-        -------
-        Tuple[List[float], List[float]]
-            A tuple containing the amplitude and mean value of the multi-fitter.
-        """
         overall_fit = self.get_fit_values()
         _, mu, _ = self.parameter_extractor(mu=True)
 
@@ -92,7 +84,6 @@ class Gaussian(BaseFitter):
             - Sigma values if `sigma` is True, otherwise an empty list.
         """
 
-        # Initialize parameter dictionary if None
         if parameter_dictionary is None:
             parameter_dictionary = {}
 

@@ -2,17 +2,17 @@
 
 import numpy as np
 
-from src.pymultifit import LogNormal
-from src.pymultifit.backend.utilities import generate_multi_log_normal_data
+from pymultifit.fitters import LogNormalFitter
+from pymultifit.fitters.multi_generators import generate_multi_log_normal_data
 
-params = [(5, 1, 1), (3, 2, 0.2), (2, 4, 0.2)]
+params = [(15, 1, 1), (3, 2, 0.2), (20, 4, 0.2)]
 
 x = np.linspace(0.001, 100, 2000)
 
-noise_level = 0.2
+noise_level = 0.1
 y = generate_multi_log_normal_data(x, params, noise_level=noise_level)
 
-fitter = LogNormal(3, x, y)
+fitter = LogNormalFitter(3, x, y)
 
 guess = [(5, 1, 1), (3, 2, 0.2), (2, 4, 0.2)]
 

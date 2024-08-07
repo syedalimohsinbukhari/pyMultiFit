@@ -4,10 +4,14 @@ from typing import Optional
 
 import numpy as np
 
-from . import BaseFitter
+from ._backend import BaseFitter
 
 
-class Laplace(BaseFitter):
+# TODO:
+#   Implement `_get_overall_parameter_values`
+#   Implement `parameter_extractor`
+
+class LaplaceFitter(BaseFitter):
     """A class for fitting multiple Laplace distributions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
