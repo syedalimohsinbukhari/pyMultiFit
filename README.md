@@ -26,5 +26,9 @@ Along with this, the user can also generate probability distribution data using 
 
 Using pip: `pip install pymultifit`
 
-[Distributions](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/distributions.md)
-[Fitters](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/fitters.md)
+## Modules
+
+The following modules are currently implemented in `pymultifit` library,
+
+1. [`distributions`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/distributions.md)
+2. [`fitters`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/fitters.md)
