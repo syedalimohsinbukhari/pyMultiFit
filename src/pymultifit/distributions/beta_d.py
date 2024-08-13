@@ -28,7 +28,7 @@ class BetaDistribution(BaseDistribution):
         return self._pdf(x)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return betainc(self.alpha, self.beta, x) / beta_(self.alpha, self.beta)
+        return betainc(self.alpha, self.beta, x)
 
     def stats(self) -> Dict[str, Any]:
         a, b = self.alpha, self.beta
