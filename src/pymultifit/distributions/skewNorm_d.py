@@ -35,36 +35,6 @@ class SkewedNormalDistribution(BaseDistribution):
         self.location = location
         self.scale = scale
 
-    @classmethod
-    def from_standard_notation(cls,
-                               alpha: Optional[float] = 1,
-                               epsilon: Optional[float] = 0,
-                               omega: Optional[float] = 1):
-        """
-        Create an instance of SkewedNormalDistribution using standard notation parameters.
-
-        This class method allows for creating an instance of the SkewedNormalDistribution
-        using the parameters in the standard notation where:
-        - alpha (shape parameter)
-        - epsilon (location parameter)
-        - omega (scale parameter)
-
-        Parameters
-        ----------
-        alpha : float, optional
-            The shape parameter (alpha) controlling the skewness of the distribution. Default is 1.
-        epsilon : float, optional
-            The location parameter (epsilon) of the skew-normal distribution. Default is 0.
-        omega : float, optional
-            The scale parameter (omega) of the skew-normal distribution. Default is 1.
-
-        Returns
-        -------
-        SkewedNormalDistribution
-            An instance of SkewedNormalDistribution initialized with the given parameters.
-        """
-        return cls(shape=alpha, location=epsilon, scale=omega)
-
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Compute the Skew-Normal distribution probability density function (PDF).
