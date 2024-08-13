@@ -1,4 +1,4 @@
-# pyMultiFit
+# `pyMultiFit`
 
 A python multi-fit library for fitting the data with multiple `X` fitters.
 
@@ -19,14 +19,12 @@ Current implementations include,
 - `LogNormal` fitter, and
 - `Laplace` fitter.
 
-Additionally, it provides capabilities to generated NFitter data as well through its `utilities` module.
-
-- `generate_multi_gaussian_data`
-- `generate_multi_log_normal_data`
-- `generate_multi_skewed_normal_data`
+Additionally, it provides capabilities to generated n-modal data as well through its `generators` module.
+Along with this, the user can also generate probability distribution data using `distributions` module.
 
 ## How to install
 
 Using pip: `pip install pymultifit`
 
-## Examples
+[Distributions](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/distributions.md)
+[Fitters](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/fitters.md)

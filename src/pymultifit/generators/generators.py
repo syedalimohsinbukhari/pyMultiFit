@@ -5,7 +5,7 @@ from typing import List, Tuple
 import numpy as np
 from scipy.stats import skewnorm
 
-from . import GaussianDistribution as GDist, LogNormalDistribution
+from ..distributions import GaussianDistribution as GDist, LogNormalDistribution
 
 
 # TODO:
@@ -34,8 +34,8 @@ def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float,
     """
     y = np.zeros_like(x)
     for amp, mean, std in params:
-        pdf_ = GDist(mean, std, normalized).pdf(x)
-        y += pdf_ if normalized else amp * pdf_
+        y += GDist(amp, mean, std, normalized).pdf(x)
+        # y += pdf_ if normalized else amp * pdf_
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y

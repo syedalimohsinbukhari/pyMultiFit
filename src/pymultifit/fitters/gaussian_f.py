@@ -51,7 +51,7 @@ class GaussianFitter(BaseFitter):
                             amplitude: Optional[bool] = None,
                             mu: Optional[bool] = None,
                             sigma: Optional[bool] = None,
-                            overall_amplitude: bool = False,
+                            fit_amplitude: bool = False,
                             ) -> Tuple[List[float], List[float], List[float]]:
         """
         Extracts parameter values based on provided flags.
@@ -66,7 +66,7 @@ class GaussianFitter(BaseFitter):
             Flag to extract mu values. Defaults to False if not provided.
         sigma : bool, optional
             Flag to extract sigma values. Defaults to False if not provided.
-        overall_amplitude : bool
+        fit_amplitude : bool
             Flag to extract overall amplitude values. Overwrites the default amplitude selection.
             This will not give back the amplitudes of individual fitters, but rather the amplitude of overall fitters.
             Defaults to False.
@@ -99,7 +99,7 @@ class GaussianFitter(BaseFitter):
 
         values = self.get_value_error_pair(mean_values=True)
 
-        if overall_amplitude:
+        if fit_amplitude:
             amp_values, mu_values = self._get_overall_parameter_values()
             sigma_values = []
         else:
