@@ -1,5 +1,4 @@
-"""
-baseDistribution
+"""baseDistribution
 
 This module defines a base class for statistical distributions to provide a consistent interface
 for probability density function (PDF), cumulative distribution function (CDF), and statistical properties.

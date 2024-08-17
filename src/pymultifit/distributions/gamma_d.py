@@ -1,28 +1,52 @@
 """Created on Aug 14 01:28:13 2024"""
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import numpy as np
 from scipy.special import gamma, gammainc
 
+from . import oFloat
 from ._backend import BaseDistribution
 
 
 class GammaDistribution(BaseDistribution):
+    """Class for Gamma distribution."""
 
     def __init__(self,
-                 amplitude: Optional[float] = 1.,
-                 alpha: Optional[float] = 1.,
-                 beta: Optional[float] = 1.,
-                 normalize: bool = True):
+                 alpha: oFloat = 1.,
+                 beta: oFloat = 1.):
         self.alpha = alpha
         self.beta = beta
-        self.norm = normalize
 
-        self.amplitude = 1 if normalize else amplitude
+        self.amplitude = 1
+        self.norm = True
+
+    @classmethod
+    def with_amplitude(cls, amplitude: oFloat = 1., alpha: oFloat = 1., beta: oFloat = 1.):
+        """
+        Create an instance with a specified amplitude, without normalization.
+
+        Parameters
+        ----------
+        amplitude : float, optional
+            The amplitude to apply to the PDF. Defaults to 1.
+        alpha : float, optional
+            The alpha parameter of the gamma distribution. Defaults to 1.
+        beta : float, optional
+            The beta parameter of the gamma distribution. Defaults to 1.
+
+        Returns
+        -------
+        GammaDistribution
+            An instance of GammaDistribution with the specified amplitude and parameters.
+        """
+        instance = cls(alpha=alpha, beta=beta)
+        instance.amplitude = amplitude
+        instance.norm = False
+        return instance
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return _gamma(x, self.amplitude, self.alpha, self.beta, self.norm)
+        return _gamma(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
@@ -43,9 +67,9 @@ class GammaDistribution(BaseDistribution):
 
 
 def _gamma(x: np.ndarray,
-           amplitude: Optional[float] = 1.0,
-           alpha: Optional[float] = 1.0,
-           beta: Optional[float] = 1.0,
+           amplitude: oFloat = 1.,
+           alpha: oFloat = 1.,
+           beta: oFloat = 1.,
            normalize: bool = True) -> np.ndarray:
     """
     Computes the Gamma distribution PDF for given parameters.

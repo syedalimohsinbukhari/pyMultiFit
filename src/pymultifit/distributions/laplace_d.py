@@ -1,42 +1,29 @@
 """Created on Aug 03 21:12:13 2024"""
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import numpy as np
 
+from . import oFloat
 from ._backend import BaseDistribution
 
 
 class LaplaceDistribution(BaseDistribution):
-    """Class for representing a Laplace distribution.
-
-    Parameters
-    ----------
-    amplitude : float, optional
-        The amplitude (scale) of the distribution. Defaults to 1.
-    mean : float, optional
-        The mean (location parameter) of the distribution. Defaults to 0.
-    diversity : float, optional
-        The diversity (scale parameter) of the distribution, also known as `b`. Defaults to 1.
-    normalize : bool, optional
-        Whether to normalize the distribution so that the area under the curve equals 1. Defaults to True.
-    """
+    """Class for Laplace distribution."""
 
     def __init__(self,
-                 amplitude: Optional[float] = 1,
-                 mean: Optional[float] = 0,
-                 diversity: Optional[float] = 1,
-                 normalize: bool = True):
+                 mean: oFloat = 0,
+                 diversity: oFloat = 1):
         self.mu = mean
         self.b = diversity
-        self.norm = normalize
 
-        # Set amplitude to 1 if normalized, else use the given amplitude
-        self.amplitude = 1 if normalize else amplitude
+        self.norm = True
+        self.amplitude = 1
 
     @classmethod
-    def with_amplitude(cls, amplitude=1, mean=0, diversity=1):
-        """Alternative constructor to create a LaplaceDistribution instance without normalization.
+    def with_amplitude(cls, amplitude: oFloat = 1., mean: oFloat = 0., diversity: oFloat = 1.):
+        """
+        Create an instance with a specified amplitude, without normalization.
 
         Parameters
         ----------
@@ -52,52 +39,19 @@ class LaplaceDistribution(BaseDistribution):
         LaplaceDistribution
             An instance of LaplaceDistribution with specified amplitude.
         """
-        return cls(amplitude, mean, diversity, False)
+        instance = cls(mean=mean, diversity=diversity)
+        instance.amplitude = amplitude
+        instance.norm = False
+
+        return instance
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        """Private method to compute the probability density function (PDF) of the Laplace distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Points at which to evaluate the PDF.
-
-        Returns
-        -------
-        np.ndarray
-            The PDF values at the given points.
-        """
-        return _laplace(x, self.amplitude, self.mu, self.b, self.norm)
+        return _laplace(x, amplitude=self.amplitude, mu=self.mu, b=self.b, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Compute the probability density function (PDF) of the Laplace distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Points at which to evaluate the PDF.
-
-        Returns
-        -------
-        np.ndarray
-            The PDF values at the given points.
-        """
         return self._pdf(x)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Compute the cumulative distribution function (CDF) of the Laplace distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Points at which to evaluate the CDF.
-
-        Returns
-        -------
-        np.ndarray
-            The CDF values at the given points.
-        """
-
         def _cdf1(x_):
             return 0.5 * np.exp((x_ - self.mu) / self.b)
 
@@ -108,13 +62,6 @@ class LaplaceDistribution(BaseDistribution):
         return np.piecewise(x, [x <= self.mu, x > self.mu], [_cdf1, _cdf2])
 
     def stats(self) -> Dict[str, Any]:
-        """Compute statistical properties of the Laplace distribution.
-
-        Returns
-        -------
-        Dict[str, Any]
-            A dictionary containing the mean, median, mode, and variance of the distribution.
-        """
         mean_, b_ = self.mu, self.b
 
         return {
@@ -126,9 +73,9 @@ class LaplaceDistribution(BaseDistribution):
 
 
 def _laplace(x: np.ndarray,
-             amplitude: Optional[float] = 1.,
-             mu: Optional[float] = 0.,
-             b: Optional[float] = 1.,
+             amplitude: oFloat = 1.,
+             mu: oFloat = 0.,
+             b: oFloat = 1.,
              normalize: bool = True) -> np.ndarray:
     """Compute the Laplace distribution's probability density function (PDF).
 

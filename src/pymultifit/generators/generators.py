@@ -91,7 +91,7 @@ def generate_multi_log_normal_data(x: np.ndarray, params: List[Tuple[float, floa
     """
     y = np.zeros_like(x)
     for amp, mean, std in params:
-        pdf_ = LogNormalDistribution(mean, std).pdf(x)
+        pdf_ = LogNormalDistribution(std).pdf(x)
         y += pdf_ if normalized else amp * pdf_
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)

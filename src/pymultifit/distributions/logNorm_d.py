@@ -1,46 +1,30 @@
 """Created on Aug 03 21:02:45 2024"""
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import numpy as np
 from scipy.special import erf
 
+from . import oFloat
 from ._backend import BaseDistribution
 
 
 class LogNormalDistribution(BaseDistribution):
-    """Class for representing a Log-Normal distribution.
-
-    Parameters
-    ----------
-    amplitude : float, optional
-        The amplitude (scale) of the distribution. Defaults to 1.
-    mean : float, optional
-        The mean of the logarithm of the distribution (i.e., mean of the underlying normal distribution in log-space).
-        Defaults to 0.
-    standard_deviation : float, optional
-        The standard deviation of the logarithm of the distribution (i.e., std. dev. of normal distribution in
-        log-space). Defaults to 1.
-    normalize : bool, optional
-        Whether to normalize the distribution so that the area under the curve equals 1. Defaults to True.
-    """
+    """Class for Log-Normal distribution."""
 
     def __init__(self,
-                 amplitude: Optional[float] = 1,
-                 mean: Optional[float] = 0,
-                 standard_deviation: Optional[float] = 1,
-                 normalize: bool = True):
+                 mean: oFloat = 0.,
+                 standard_deviation: oFloat = 1.):
         self.mean = mean
         self.std_ = standard_deviation
-        self.norm = normalize
 
-        # Set amplitude to 1 if normalized, else use the given amplitude
-        self.amplitude = 1 if normalize else amplitude
+        self.norm = True
+        self.amplitude = 1
 
     @classmethod
-    def with_amplitude(cls, amplitude: Optional[float] = 1, mean: Optional[float] = 0,
-                       standard_deviation: Optional[float] = 1):
-        """Alternative constructor to create a LogNormalDistribution instance without normalization.
+    def with_amplitude(cls, amplitude: oFloat = 1., mean: oFloat = 0., standard_deviation: oFloat = 1.):
+        """
+        Create an instance with a specified amplitude, without normalization.
 
         Parameters
         ----------
@@ -56,63 +40,24 @@ class LogNormalDistribution(BaseDistribution):
         LogNormalDistribution
             An instance of LogNormalDistribution with specified amplitude.
         """
-        return cls(amplitude, mean, standard_deviation, False)
+        instance = cls(mean=mean, standard_deviation=standard_deviation)
+        instance.amplitude = amplitude
+        instance.norm = 1
+
+        return instance
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        """Private method to compute the probability density function (PDF) of the Log-Normal distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Points at which to evaluate the PDF. Must be positive.
-
-        Returns
-        -------
-        np.ndarray
-            The PDF values at the given points.
-        """
-        return _log_normal(x, self.amplitude, self.mean, self.std_, self.norm)
+        return _log_normal(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Compute the probability density function (PDF) of the Log-Normal distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Points at which to evaluate the PDF. Must be positive.
-
-        Returns
-        -------
-        np.ndarray
-            The PDF values at the given points.
-        """
         return self._pdf(x)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Compute the cumulative distribution function (CDF) of the Log-Normal distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Points at which to evaluate the CDF. Must be positive.
-
-        Returns
-        -------
-        np.ndarray
-            The CDF values at the given points.
-        """
         num_ = np.log(x) - self.mean
         den_ = self.std_ * np.sqrt(2)
         return 0.5 * (1 + erf(num_ / den_))
 
     def stats(self) -> Dict[str, Any]:
-        """Compute statistical properties of the Log-Normal distribution.
-
-        Returns
-        -------
-        Dict[str, Any]
-            A dictionary containing the mean, median, mode, and variance of the distribution.
-        """
         mean_ = np.exp(self.mean + (self.std_**2 / 2))
         median_ = np.exp(self.mean)
         mode_ = np.exp(self.mean - self.std_**2)
@@ -127,9 +72,9 @@ class LogNormalDistribution(BaseDistribution):
 
 
 def _log_normal(x: np.ndarray,
-                amplitude: Optional[float] = 1,
-                mu: Optional[float] = 0,
-                sigma: Optional[float] = 1,
+                amplitude: oFloat = 1.,
+                mu: oFloat = 0.,
+                sigma: oFloat = 1.,
                 normalize: bool = True) -> np.ndarray:
     """
     Compute the Log-Normal distribution probability density function (PDF).

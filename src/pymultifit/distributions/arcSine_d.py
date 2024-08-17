@@ -1,31 +1,40 @@
 """Created on Aug 14 02:02:42 2024"""
 
-from typing import Optional
-
+from . import oFloat
 from .beta_d import BetaDistribution
 
 
 class ArcSineDistribution(BetaDistribution):
-    """
-    Represents the arcsine distribution as a special case of the Beta distribution.
+    """Class for ArcSince distribution, a special case of Beta distribution with alpha=0.5, and beta=0.5"""
 
-    The arcsine distribution is a special case of the Beta distribution with parameters
-    alpha = 0.5 and beta = 0.5.
-    """
+    def __init__(self):
+        super().__init__(alpha=0.5, beta=0.5)
 
-    def __init__(self, amplitude: Optional[float] = 1., normalize: bool = True):
+    @classmethod
+    def with_amplitude(cls, amplitude: oFloat = 1., alpha: oFloat = 0.5, beta: oFloat = 0.5):
         """
-        Initializes the arcsine distribution as a special case of the Beta distribution.
+        Create an instance of ArcSineDistribution with a specified amplitude.
 
         Parameters
         ----------
-        amplitude: float, optional
-            Scaling factor for non-normalized arcsine distribution (default is 1).
-        normalize : bool, optional
-            Determines if the distribution should be normalized (default is True).
+        amplitude : float, optional
+            The amplitude to apply to the PDF. Defaults to 1.
+        alpha: float, optional
+            The alpha parameter of the ArcSine distribution. Defaults to 0.5.
+        beta: float, optional
+            The beta parameter of the ArcSine distribution. Defaults to 0.5.
+
+        Returns
+        -------
+        ArcSineDistribution
+            An instance of ArcSineDistribution with the specified amplitude.
 
         Notes
-        ------
-            If normalize flag is set to True, it ignores the amplitude scaling.
+        -----
+        The `alpha` and `beta` parameters are only here to match the BetaDistribution class signatures.
+        These parameters are internally overridden to produce the required ArcSine distribution.
         """
-        super().__init__(amplitude, 0.5, 0.5, normalize)
+        instance = cls()
+        instance.amplitude = amplitude
+        instance.norm = False
+        return instance

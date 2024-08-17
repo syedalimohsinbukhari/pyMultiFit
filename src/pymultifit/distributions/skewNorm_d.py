@@ -1,10 +1,11 @@
 """Created on Aug 03 21:35:28 2024"""
 
-from typing import Dict, Optional
+from typing import Dict
 
 import numpy as np
 from scipy.stats import skewnorm
 
+from . import oFloat
 from ._backend import BaseDistribution
 from .gaussian_d import GaussianDistribution
 
@@ -16,82 +17,23 @@ class SkewedNormalDistribution(BaseDistribution):
     """Class for Skewed Normal distribution."""
 
     def __init__(self,
-                 shape: Optional[float] = 1,
-                 location: Optional[float] = 0,
-                 scale: Optional[float] = 1):
-        """
-        Initialize a Skewed Normal Distribution.
-
-        Parameters
-        ----------
-        shape : float
-            The shape parameter (alpha) controlling the skewness of the distribution.
-        location : float
-            The location parameter (epsilon) of the skew-normal distribution.
-        scale : float
-            The scale parameter (omega) of the skew-normal distribution.
-        """
+                 shape: oFloat = 1.,
+                 location: oFloat = 0.,
+                 scale: oFloat = 1.):
         self.shape = shape
         self.location = location
         self.scale = scale
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Compute the Skew-Normal distribution probability density function (PDF).
-
-        Parameters
-        ----------
-        x : np.ndarray
-            The input values at which to evaluate the Skew-Normal PDF.
-
-        Returns
-        -------
-        np.ndarray
-            The probability density function values for the input values.
-        """
-        return _skew_normal(x, self.shape, self.location, self.scale)
+        return _skew_normal(x, shape=self.shape, location=self.location, scale=self.scale)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Public method to compute the PDF.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            The input values at which to evaluate the Skew-Normal PDF.
-
-        Returns
-        -------
-        np.ndarray
-            The probability density function values for the input values.
-        """
         return self._pdf(x)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Compute the cumulative distribution function (CDF) of the skew-normal distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            The input values at which to evaluate the CDF.
-
-        Returns
-        -------
-        np.ndarray
-            The cumulative distribution function values for the input values.
-        """
         return skewnorm(s=self.shape, loc=self.location, scale=self.scale).cdf(x)
 
     def stats(self) -> Dict[str, float]:
-        """
-        Compute and return the mean, mode, and variance of the skew-normal distribution.
-
-        Returns
-        -------
-        dict
-            A dictionary containing the mean, mode, and variance of the distribution.
-        """
         alpha, omega, epsilon = self.shape, self.scale, self.location
         delta = alpha / np.sqrt(1 + alpha**2)
 
@@ -110,9 +52,9 @@ class SkewedNormalDistribution(BaseDistribution):
 
 
 def _skew_normal(x: np.ndarray,
-                 shape: Optional[float] = 0,
-                 location: Optional[float] = 0,
-                 scale: Optional[float] = 1) -> np.ndarray:
+                 shape: oFloat = 0.,
+                 location: oFloat = 0.,
+                 scale: oFloat = 1.) -> np.ndarray:
     """
     Compute the Skew-Normal distribution probability density function (PDF).
 
