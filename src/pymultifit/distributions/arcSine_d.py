@@ -1,6 +1,5 @@
 """Created on Aug 14 02:02:42 2024"""
 
-from . import oFloat
 from .beta_d import BetaDistribution
 
 
@@ -11,17 +10,17 @@ class ArcSineDistribution(BetaDistribution):
         super().__init__(alpha=0.5, beta=0.5)
 
     @classmethod
-    def with_amplitude(cls, amplitude: oFloat = 1., alpha: oFloat = 0.5, beta: oFloat = 0.5):
+    def with_amplitude(cls, amplitude: float = 1., alpha: float = 0.5, beta: float = 0.5):
         """
         Create an instance of ArcSineDistribution with a specified amplitude.
 
         Parameters
         ----------
-        amplitude : float, optional
+        amplitude : float
             The amplitude to apply to the PDF. Defaults to 1.
-        alpha: float, optional
+        alpha: float
             The alpha parameter of the ArcSine distribution. Defaults to 0.5.
-        beta: float, optional
+        beta: float
             The beta parameter of the ArcSine distribution. Defaults to 0.5.
 
         Returns

@@ -1,20 +1,17 @@
 """Created on Aug 14 01:28:13 2024"""
 
-from typing import Any, Dict
+from typing import Dict
 
 import numpy as np
 from scipy.special import gamma, gammainc
 
-from . import oFloat
 from ._backend import BaseDistribution
 
 
 class GammaDistribution(BaseDistribution):
     """Class for Gamma distribution."""
 
-    def __init__(self,
-                 alpha: oFloat = 1.,
-                 beta: oFloat = 1.):
+    def __init__(self, alpha: float = 1., beta: float = 1.):
         self.alpha = alpha
         self.beta = beta
 
@@ -22,17 +19,17 @@ class GammaDistribution(BaseDistribution):
         self.norm = True
 
     @classmethod
-    def with_amplitude(cls, amplitude: oFloat = 1., alpha: oFloat = 1., beta: oFloat = 1.):
+    def with_amplitude(cls, amplitude: float = 1., alpha: float = 1., beta: float = 1.):
         """
         Create an instance with a specified amplitude, without normalization.
 
         Parameters
         ----------
-        amplitude : float, optional
+        amplitude : float
             The amplitude to apply to the PDF. Defaults to 1.
-        alpha : float, optional
+        alpha : float
             The alpha parameter of the gamma distribution. Defaults to 1.
-        beta : float, optional
+        beta : float
             The beta parameter of the gamma distribution. Defaults to 1.
 
         Returns
@@ -54,7 +51,7 @@ class GammaDistribution(BaseDistribution):
     def cdf(self, x: np.ndarray) -> np.ndarray:
         return gammainc(self.alpha, self.beta * x)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> Dict[str, float]:
         a, b = self.alpha, self.beta
 
         mean_ = a / b
@@ -67,9 +64,7 @@ class GammaDistribution(BaseDistribution):
 
 
 def _gamma(x: np.ndarray,
-           amplitude: oFloat = 1.,
-           alpha: oFloat = 1.,
-           beta: oFloat = 1.,
+           amplitude: float = 1., alpha: float = 1., beta: float = 1.,
            normalize: bool = True) -> np.ndarray:
     """
     Computes the Gamma distribution PDF for given parameters.
@@ -78,13 +73,13 @@ def _gamma(x: np.ndarray,
     ----------
     x : np.ndarray
         Values at which to evaluate the PDF.
-    amplitude : float, optional
+    amplitude : float
         The scaling factor for the distribution. Defaults to 1.
-    alpha : float, optional
+    alpha : float
         The shape parameter of the Gamma distribution. Defaults to 1.
-    beta : float, optional
+    beta : float
         The rate parameter of the Gamma distribution. Defaults to 1.
-    normalize : bool, optional
+    normalize : bool
         Whether to normalize the distribution (i.e., set amplitude to 1). Defaults to True.
 
     Returns

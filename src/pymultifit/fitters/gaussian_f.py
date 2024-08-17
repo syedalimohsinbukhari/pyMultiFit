@@ -1,40 +1,38 @@
 """Created on Jul 18 00:25:57 2024"""
 
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
 from ._backend import BaseFitter
 
+oBool = Optional[bool]
+
 
 class GaussianFitter(BaseFitter):
     """A class for fitting multiple Gaussian functions to the given data."""
 
-    def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
-        super().__init__(n_fits, x_values, y_values, max_iterations)
+    def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
+        super().__init__(n_fits=n_fits, x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
 
     @staticmethod
-    def _fitter(x, params) -> np.array:
+    def _fitter(x: np.ndarray, params: list) -> np.array:
         return params[0] * np.exp(-(x - params[1])**2 / (2 * params[2]**2))
 
-    def _n_fitter(self, x, *params) -> np.array:
+    def _n_fitter(self, x: np.ndarray, *params: Any) -> np.ndarray:
         y = np.zeros_like(x)
-        for i in range(self.n_fits):
-            amp = params[i * self.n_par]
-            mu = params[i * self.n_par + 1]
-            sigma = params[i * self.n_par + 2]
-            y += self._fitter(x, [amp, mu, sigma])
+        params = np.reshape(params, (self.n_fits, self.n_par))
+        for amp, mu, sigma in params:
+            y += self._fitter(x=x, params=[amp, mu, sigma])
         return y
 
-    def _plot_individual_fitter(self, x, plotter):
-        for i in range(self.n_fits):
-            amp = self.params[i * self.n_par]
-            mu = self.params[i * self.n_par + 1]
-            sigma = self.params[i * self.n_par + 2]
-            plotter.plot(x, self._fitter(x, [amp, mu, sigma]), linestyle=':', label=f'Gaussian {i + 1}')
+    def _plot_individual_fitter(self, x: np.ndarray, plotter):
+        params = np.reshape(self.params, (self.n_fits, self.n_par))
+        for i, (amp, mu, sigma) in enumerate(params):
+            plotter.plot(x, self._fitter(x=x, params=[amp, mu, sigma]), ls=':', label=f'Gaussian {i + 1}')
 
-    def _get_overall_parameter_values(self) -> Tuple[List[float], List[float]]:
+    def _get_overall_parameter_values(self) -> tuple[list, list]:
         overall_fit = self.get_fit_values()
         _, mu, _ = self.parameter_extractor(mu=True)
 
@@ -48,9 +46,9 @@ class GaussianFitter(BaseFitter):
 
     def parameter_extractor(self,
                             parameter_dictionary: Optional[Dict[str, bool]] = None,
-                            amplitude: Optional[bool] = None,
-                            mu: Optional[bool] = None,
-                            sigma: Optional[bool] = None,
+                            amplitude: oBool = None,
+                            mu: oBool = None,
+                            sigma: oBool = None,
                             fit_amplitude: bool = False,
                             ) -> Tuple[List[float], List[float], List[float]]:
         """

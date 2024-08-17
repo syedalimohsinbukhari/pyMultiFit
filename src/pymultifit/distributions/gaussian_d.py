@@ -1,6 +1,6 @@
 """Created on Aug 03 20:07:50 2024"""
 
-from typing import Any, Dict, Optional
+from typing import Dict
 
 import numpy as np
 from scipy.special import erf
@@ -11,9 +11,7 @@ from ._backend import BaseDistribution
 class GaussianDistribution(BaseDistribution):
     """Class for Gaussian distribution."""
 
-    def __init__(self,
-                 mean: Optional[float] = 0.,
-                 standard_deviation: Optional[float] = 1.):
+    def __init__(self, mean: float = 0., standard_deviation: float = 1.):
         self.mean = mean
         self.std_ = standard_deviation
 
@@ -21,17 +19,17 @@ class GaussianDistribution(BaseDistribution):
         self.amplitude = 1.
 
     @classmethod
-    def with_amplitude(cls, amplitude: Optional[float] = 1., mean: Optional[float] = 0., standard_deviation: Optional[float] = 1.):
+    def with_amplitude(cls, amplitude: float = 1., mean: float = 0., standard_deviation: float = 1.):
         """
         Create an instance with a specified amplitude, without normalization.
 
         Parameters
         ----------
-        amplitude : float, optional
+        amplitude : float
             The amplitude to apply to the PDF. Defaults to 1.
-        mean : float, optional
+        mean : float
             The mean of the normal distribution. Defaults to 0.
-        standard_deviation : float, optional
+        standard_deviation : float
             The standard deviation of the normal distribution. Defaults to 1.
 
         Returns
@@ -56,7 +54,7 @@ class GaussianDistribution(BaseDistribution):
         den_ = self.std_ * np.sqrt(2)
         return 0.5 * (1 + erf(num_ / den_))
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> Dict[str, float]:
         mean_, std_ = self.mean, self.std_
         return {'mean': mean_,
                 'median': mean_,
@@ -65,9 +63,7 @@ class GaussianDistribution(BaseDistribution):
 
 
 def _gaussian(x: np.ndarray,
-              amplitude: Optional[float] = 1.,
-              mu: Optional[float] = 0.,
-              sigma: Optional[float] = 1.,
+              amplitude: float = 1., mu: float = 0., sigma: float = 1.,
               normalize: bool = True) -> np.ndarray:
     """
     Compute the Gaussian (Normal) distribution probability density function (PDF).

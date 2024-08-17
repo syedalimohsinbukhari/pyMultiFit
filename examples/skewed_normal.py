@@ -18,7 +18,5 @@ guess = [(4, 6, -6, 0.5), (3, -4, 2, 2), (4, 2, 7, 1.5)]
 
 fitter.fit(guess)
 
-print(fitter.get_value_error_pair(mean_values=True))
-
 plotter = fitter.plot_fit(show_individual=True, auto_label=True)
 plotter.show()

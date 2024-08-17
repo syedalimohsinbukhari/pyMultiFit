@@ -10,9 +10,7 @@ from ._backend import BaseDistribution
 class LaplaceDistribution(BaseDistribution):
     """Class for Laplace distribution."""
 
-    def __init__(self,
-                 mean: Optional[float] = 0,
-                 diversity: Optional[float] = 1):
+    def __init__(self, mean: float = 0, diversity: float = 1):
         self.mu = mean
         self.b = diversity
 
@@ -20,17 +18,17 @@ class LaplaceDistribution(BaseDistribution):
         self.amplitude = 1
 
     @classmethod
-    def with_amplitude(cls, amplitude: Optional[float] = 1., mean: Optional[float] = 0., diversity: Optional[float] = 1.):
+    def with_amplitude(cls, amplitude: float = 1., mean: float = 0., diversity: float = 1.):
         """
         Create an instance with a specified amplitude, without normalization.
 
         Parameters
         ----------
-        amplitude : float, optional
+        amplitude : float
             The amplitude (scale) of the distribution. Defaults to 1.
-        mean : float, optional
+        mean : float
             The mean (location parameter) of the distribution. Defaults to 0.
-        diversity : float, optional
+        diversity : float
             The diversity (scale parameter) of the distribution. Defaults to 1.
 
         Returns
@@ -45,7 +43,7 @@ class LaplaceDistribution(BaseDistribution):
         return instance
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return _laplace(x, amplitude=self.amplitude, mu=self.mu, b=self.b, normalize=self.norm)
+        return _laplace(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
@@ -57,10 +55,9 @@ class LaplaceDistribution(BaseDistribution):
         def _cdf2(x_):
             return 1 - 0.5 * np.exp(-(x_ - self.mu) / self.b)
 
-        # Use piecewise function to handle different branches for x <= mu and x > mu
         return np.piecewise(x, [x <= self.mu, x > self.mu], [_cdf1, _cdf2])
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> Dict[str, float]:
         mean_, b_ = self.mu, self.b
 
         return {
@@ -72,9 +69,7 @@ class LaplaceDistribution(BaseDistribution):
 
 
 def _laplace(x: np.ndarray,
-             amplitude: Optional[float] = 1.,
-             mu: Optional[float] = 0.,
-             b: Optional[float] = 1.,
+             amplitude: float = 1., mean: float = 0., diversity: float = 1.,
              normalize: bool = True) -> np.ndarray:
     """Compute the Laplace distribution's probability density function (PDF).
 
@@ -82,11 +77,11 @@ def _laplace(x: np.ndarray,
     ----------
     x : np.ndarray
         Points at which to evaluate the PDF.
-    amplitude : float, optional
+    amplitude : float
         The amplitude (scale) of the distribution. Defaults to 1.
-    mu : float, optional
+    mean : float
         The mean (location parameter) of the distribution. Defaults to 0.
-    b : float, optional
+    diversity : float
         The diversity (scale parameter) of the distribution. Defaults to 1.
     normalize : bool, optional
         Whether to normalize the PDF. Defaults to True.
@@ -96,10 +91,10 @@ def _laplace(x: np.ndarray,
     np.ndarray
         The PDF values at the given points.
     """
-    exponent_factor = abs(x - mu) / b
+    exponent_factor = abs(x - mean) / diversity
 
     if normalize:
-        normalization_factor = 2 * b
+        normalization_factor = 2 * diversity
         amplitude = 1
     else:
         normalization_factor = 1

@@ -1,20 +1,17 @@
 """Created on Aug 14 00:45:37 2024"""
 
-from typing import Any, Dict
+from typing import Dict
 
 import numpy as np
 from scipy.special import beta as beta_, betainc
 
-from . import oFloat
 from ._backend import BaseDistribution
 
 
 class BetaDistribution(BaseDistribution):
     """Class for Beta distribution."""
 
-    def __init__(self,
-                 alpha: oFloat = 1.,
-                 beta: oFloat = 1.):
+    def __init__(self, alpha: float = 1., beta: float = 1.):
         self.alpha = alpha
         self.beta = beta
 
@@ -28,17 +25,17 @@ class BetaDistribution(BaseDistribution):
         return self._pdf(x)
 
     @classmethod
-    def with_amplitude(cls, amplitude: oFloat = 1., alpha: oFloat = 1., beta: oFloat = 1.):
+    def with_amplitude(cls, amplitude: float = 1., alpha: float = 1., beta: float = 1.):
         """
         Create an instance with a specified amplitude, without normalization.
 
         Parameters
         ----------
-        amplitude : float, optional
+        amplitude : float
             The amplitude to apply to the PDF. Defaults to 1.
-        alpha : float, optional
+        alpha : float
             The alpha parameter of the beta distribution. Defaults to 1.
-        beta : float, optional
+        beta : float
             The beta parameter of the beta distribution. Defaults to 1.
 
         Returns
@@ -54,7 +51,7 @@ class BetaDistribution(BaseDistribution):
     def cdf(self, x: np.ndarray) -> np.ndarray:
         return betainc(self.alpha, self.beta, x)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> Dict[str, float]:
         a, b = self.alpha, self.beta
 
         mean_ = a / (a + b)
@@ -66,9 +63,7 @@ class BetaDistribution(BaseDistribution):
 
 
 def _beta(x: np.ndarray,
-          amplitude: oFloat = 1.,
-          alpha: oFloat = 1.,
-          beta: oFloat = 1.,
+          amplitude: float = 1., alpha: float = 1., beta: float = 1.,
           normalize: bool = True) -> np.ndarray:
     """
     Compute the beta probability density function (PDF).
@@ -77,13 +72,13 @@ def _beta(x: np.ndarray,
     ----------
     x : np.ndarray
         The input array for which to compute the PDF.
-    amplitude : float, optional
+    amplitude : float
         The amplitude to apply to the PDF. Default is 1.
-    alpha : float, optional
+    alpha : float
         The alpha (shape) parameter of the beta distribution. Default is 1.
-    beta : float, optional
+    beta : float
         The beta (shape) parameter of the beta distribution. Default is 1.
-    normalize : bool, optional
+    normalize : bool
         If True, the PDF is normalized using the beta function. Default is True.
 
     Returns
