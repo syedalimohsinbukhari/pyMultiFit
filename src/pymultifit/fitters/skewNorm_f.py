@@ -18,27 +18,26 @@ class SkewedNormalFitter(BaseFitter):
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
         super().__init__(n_fits, x_values, y_values, max_iterations)
-        self.n_par = 3
+        self.n_par = 4
 
     @staticmethod
     def _fitter(x, params):
-        # return params[0] * skewnorm.pdf(x, params[1], loc=params[2], scale=params[3])
-        return skewnorm.pdf(x, params[0], loc=params[1], scale=params[2])
+        return params[0] * skewnorm.pdf(x, params[1], loc=params[2], scale=params[3])
 
     def _n_fitter(self, x, *params):
         y = np.zeros_like(x)
         for i in range(self.n_fits):
-            # amp = params[i * self.n_par]
-            shape = params[i * self.n_par]
-            loc = params[i * self.n_par + 1]
-            scale = params[i * self.n_par + 2]
-            y += self._fitter(x, [shape, loc, scale])
+            amp = params[i * self.n_par]
+            shape = params[i * self.n_par + 1]
+            loc = params[i * self.n_par + 2]
+            scale = params[i * self.n_par + 3]
+            y += self._fitter(x, [amp, shape, loc, scale])
         return y
 
     def _plot_individual_fitter(self, x, plotter):
         for i in range(self.n_fits):
-            # amp = self.params[i * self.n_par]
-            shape = self.params[i * self.n_par]
-            loc = self.params[i * self.n_par + 1]
-            scale = self.params[i * self.n_par + 2]
-            plotter.plot(x, self._fitter(x, [shape, loc, scale]), linestyle=':', label=f'Skewed Normal {i + 1}')
+            amp = self.params[i * self.n_par]
+            shape = self.params[i * self.n_par + 1]
+            loc = self.params[i * self.n_par + 2]
+            scale = self.params[i * self.n_par + 3]
+            plotter.plot(x, self._fitter(x, [amp, shape, loc, scale]), linestyle=':', label=f'Skewed Normal {i + 1}')

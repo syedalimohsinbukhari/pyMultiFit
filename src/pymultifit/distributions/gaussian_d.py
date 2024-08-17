@@ -1,11 +1,10 @@
 """Created on Aug 03 20:07:50 2024"""
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import numpy as np
 from scipy.special import erf
 
-from . import oFloat
 from ._backend import BaseDistribution
 
 
@@ -13,8 +12,8 @@ class GaussianDistribution(BaseDistribution):
     """Class for Gaussian distribution."""
 
     def __init__(self,
-                 mean: oFloat = 0.,
-                 standard_deviation: oFloat = 1.):
+                 mean: Optional[float] = 0.,
+                 standard_deviation: Optional[float] = 1.):
         self.mean = mean
         self.std_ = standard_deviation
 
@@ -22,7 +21,7 @@ class GaussianDistribution(BaseDistribution):
         self.amplitude = 1.
 
     @classmethod
-    def with_amplitude(cls, amplitude: oFloat = 1., mean: oFloat = 0., standard_deviation: oFloat = 1.):
+    def with_amplitude(cls, amplitude: Optional[float] = 1., mean: Optional[float] = 0., standard_deviation: Optional[float] = 1.):
         """
         Create an instance with a specified amplitude, without normalization.
 
@@ -66,9 +65,9 @@ class GaussianDistribution(BaseDistribution):
 
 
 def _gaussian(x: np.ndarray,
-              amplitude: oFloat = 1.,
-              mu: oFloat = 0.,
-              sigma: oFloat = 1.,
+              amplitude: Optional[float] = 1.,
+              mu: Optional[float] = 0.,
+              sigma: Optional[float] = 1.,
               normalize: bool = True) -> np.ndarray:
     """
     Compute the Gaussian (Normal) distribution probability density function (PDF).

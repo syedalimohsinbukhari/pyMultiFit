@@ -1,11 +1,10 @@
 """Created on Aug 03 21:35:28 2024"""
 
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 from scipy.stats import skewnorm
 
-from . import oFloat
 from ._backend import BaseDistribution
 from .gaussian_d import GaussianDistribution
 
@@ -17,9 +16,9 @@ class SkewedNormalDistribution(BaseDistribution):
     """Class for Skewed Normal distribution."""
 
     def __init__(self,
-                 shape: oFloat = 1.,
-                 location: oFloat = 0.,
-                 scale: oFloat = 1.):
+                 shape: Optional[float] = 1.,
+                 location: Optional[float] = 0.,
+                 scale: Optional[float] = 1.):
         self.shape = shape
         self.location = location
         self.scale = scale
@@ -52,9 +51,9 @@ class SkewedNormalDistribution(BaseDistribution):
 
 
 def _skew_normal(x: np.ndarray,
-                 shape: oFloat = 0.,
-                 location: oFloat = 0.,
-                 scale: oFloat = 1.) -> np.ndarray:
+                 shape: Optional[float] = 0.,
+                 location: Optional[float] = 0.,
+                 scale: Optional[float] = 1.) -> np.ndarray:
     """
     Compute the Skew-Normal distribution probability density function (PDF).
 

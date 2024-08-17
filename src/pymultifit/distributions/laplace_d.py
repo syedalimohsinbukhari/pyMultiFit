@@ -1,10 +1,9 @@
 """Created on Aug 03 21:12:13 2024"""
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import numpy as np
 
-from . import oFloat
 from ._backend import BaseDistribution
 
 
@@ -12,8 +11,8 @@ class LaplaceDistribution(BaseDistribution):
     """Class for Laplace distribution."""
 
     def __init__(self,
-                 mean: oFloat = 0,
-                 diversity: oFloat = 1):
+                 mean: Optional[float] = 0,
+                 diversity: Optional[float] = 1):
         self.mu = mean
         self.b = diversity
 
@@ -21,7 +20,7 @@ class LaplaceDistribution(BaseDistribution):
         self.amplitude = 1
 
     @classmethod
-    def with_amplitude(cls, amplitude: oFloat = 1., mean: oFloat = 0., diversity: oFloat = 1.):
+    def with_amplitude(cls, amplitude: Optional[float] = 1., mean: Optional[float] = 0., diversity: Optional[float] = 1.):
         """
         Create an instance with a specified amplitude, without normalization.
 
@@ -73,9 +72,9 @@ class LaplaceDistribution(BaseDistribution):
 
 
 def _laplace(x: np.ndarray,
-             amplitude: oFloat = 1.,
-             mu: oFloat = 0.,
-             b: oFloat = 1.,
+             amplitude: Optional[float] = 1.,
+             mu: Optional[float] = 0.,
+             b: Optional[float] = 1.,
              normalize: bool = True) -> np.ndarray:
     """Compute the Laplace distribution's probability density function (PDF).
 

@@ -3,16 +3,17 @@
 from typing import List, Tuple
 
 import numpy as np
-from scipy.stats import skewnorm
 
-from ..distributions import GaussianDistribution as GDist, LogNormalDistribution
+from ..distributions import (GaussianDistribution as GDist,
+                             LogNormalDistribution as lNorm,
+                             SkewedNormalDistribution as skNorm)
 
+gdA = GDist.with_amplitude
+lnA = lNorm.with_amplitude
 
-# TODO:
-#   Reimplement these generators using the newly formed distributions.
 
 def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float, float]],
-                                 noise_level: float = 0.0, normalized: bool = False) -> np.ndarray:
+                                 noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Gaussian data with optional noise.
 
@@ -24,7 +25,7 @@ def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float,
         List of tuples containing the parameters for each Gaussian (amplitude, mean, standard deviation).
     noise_level : float, optional
         Standard deviation of the Gaussian noise to be added to the data, by default 0.0.
-    normalized: bool
+    normalize: bool
         If True, the function produces normalized data (Integration[PDF] < 1). Defaults to False.
 
     Returns
@@ -34,8 +35,10 @@ def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float,
     """
     y = np.zeros_like(x)
     for amp, mean, std in params:
-        y += GDist(amp, mean, std, normalized).pdf(x)
-        # y += pdf_ if normalized else amp * pdf_
+        if normalize:
+            y += GDist(mean=mean, standard_deviation=std).pdf(x)
+        else:
+            y += gdA(amplitude=amp, mean=mean, standard_deviation=std).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
@@ -61,15 +64,15 @@ def generate_multi_skewed_normal_data(x: np.ndarray, params: List[Tuple[float, f
         Y values of the multi-Skewed Normal data with added noise.
     """
     y = np.zeros_like(x)
-    for amp, shape, mean, std in params:
-        y += amp * skewnorm.pdf(x, shape, loc=mean, scale=std)
+    for amp, shape, location, scale in params:
+        y += skNorm(shape=shape, location=location, scale=scale).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
 
 
 def generate_multi_log_normal_data(x: np.ndarray, params: List[Tuple[float, float, float]],
-                                   noise_level: float = 0.0, normalized=False) -> np.ndarray:
+                                   noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-log_normal data with optional noise.
 
@@ -81,7 +84,7 @@ def generate_multi_log_normal_data(x: np.ndarray, params: List[Tuple[float, floa
         List of tuples containing the parameters for each Gaussian (amplitude, mean, standard deviation).
     noise_level : float, optional
         Standard deviation of the Gaussian noise to be added to the data, by default 0.0.
-    normalized: bool, optional
+    normalize: bool, optional
         Whether to get a normalized version of the distribution. Defaults to False.
 
     Returns
@@ -91,8 +94,10 @@ def generate_multi_log_normal_data(x: np.ndarray, params: List[Tuple[float, floa
     """
     y = np.zeros_like(x)
     for amp, mean, std in params:
-        pdf_ = LogNormalDistribution(std).pdf(x)
-        y += pdf_ if normalized else amp * pdf_
+        if normalize:
+            y += lNorm(mean=mean, standard_deviation=std).pdf(x)
+        else:
+            y += lnA(amplitude=amp, mean=mean, standard_deviation=std).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
