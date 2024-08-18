@@ -76,7 +76,7 @@ class BaseFitter:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def parameter_extractor(self, parameter_dictionary: Optional[Dict[str, bool]] = None):
+    def parameter_extractor(self):
         """Extract the required parameters from the fitters."""
         raise NotImplementedError("This method should be implemented by subclasses.")
 

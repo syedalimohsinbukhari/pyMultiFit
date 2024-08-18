@@ -1,10 +1,11 @@
 """Created on Jul 18 00:25:57 2024"""
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import numpy as np
 
-from ._backend import BaseFitter
+from ._backend.multiFitter import BaseFitter
+from ._backend.utilities import get_y_values_at_closest_x
 
 oBool = Optional[bool]
 
@@ -33,76 +34,54 @@ class GaussianFitter(BaseFitter):
             plotter.plot(x, self._fitter(x=x, params=[amp, mu, sigma]), ls=':', label=f'Gaussian {i + 1}')
 
     def _get_overall_parameter_values(self) -> tuple[list, list]:
-        overall_fit = self.get_fit_values()
-        _, mu, _ = self.parameter_extractor(mu=True)
-
-        amp = []
-        for mu_value in mu:
-            closest_index = (np.abs(self.x_values - mu_value)).argmin()
-            amplitude_value = overall_fit[closest_index]
-            amp.append(amplitude_value)
-
+        _, mu, _ = self.parameter_extractor(mean=True)
+        amp = get_y_values_at_closest_x(x_array=self.x_values, y_array=self.get_fit_values(), target_x_values=mu)
         return amp, mu
 
     def parameter_extractor(self,
-                            parameter_dictionary: Optional[Dict[str, bool]] = None,
-                            amplitude: oBool = None,
-                            mu: oBool = None,
-                            sigma: oBool = None,
-                            fit_amplitude: bool = False,
-                            ) -> Tuple[List[float], List[float], List[float]]:
+                            amplitude: bool = False, mean: bool = False, standard_deviation: bool = False,
+                            fit_amplitude: bool = False) -> Tuple[List[float], List[float], List[float]]:
         """
         Extracts parameter values based on provided flags.
 
         Parameters
         ----------
-        parameter_dictionary : dict, optional
-            A dictionary containing flags for 'amp', 'mu', and 'sigma'. The default is None.
         amplitude : bool, optional
-            Flag to extract amplitude values. Defaults to False if not provided.
-        mu : bool, optional
-            Flag to extract mu values. Defaults to False if not provided.
-        sigma : bool, optional
-            Flag to extract sigma values. Defaults to False if not provided.
-        fit_amplitude : bool
+            Flag to extract amplitude values. Defaults to False.
+        mean : bool, optional
+            Flag to extract mean (mu) values. Defaults to False.
+        standard_deviation : bool, optional
+            Flag to extract standard deviation (sigma) values. Defaults to False.
+        fit_amplitude : bool, optional
             Flag to extract overall amplitude values. Overwrites the default amplitude selection.
-            This will not give back the amplitudes of individual fitters, but rather the amplitude of overall fitters.
+            This will not return the amplitudes of individual fitters, but rather the amplitude of overall fitters.
             Defaults to False.
-
-        Notes
-        -----
-            If `overall_amplitude` is true, the function will not return `sigma` values.
 
         Returns
         -------
-        tuple of list of float
+        Tuple[List[float], List[float], List[float]]
             A tuple containing three lists in the following order:
             - Amplitude values if `amplitude` is True, otherwise an empty list.
-            - Mu values if `mu` is True, otherwise an empty list.
-            - Sigma values if `sigma` is True, otherwise an empty list.
+            - Mean (mu) values if `mean` is True, otherwise an empty list.
+            - Standard deviation (sigma) values if `standard_deviation` is True, otherwise an empty list.
         """
-
-        if parameter_dictionary is None:
-            parameter_dictionary = {}
-
-        # Use function parameters if provided, else fall back to dictionary values, and default to False if neither
-        # is provided
-        amplitude = amplitude if amplitude is not None else parameter_dictionary.get('amp', False)
-        mu = mu if mu is not None else parameter_dictionary.get('mu', False)
-        sigma = sigma if sigma is not None else parameter_dictionary.get('sigma', False)
-
-        # Guard clause to handle case where no parameters are requested
-        if not (amplitude or mu or sigma):
+        if not (amplitude or mean or standard_deviation):
             return [], [], []
 
         values = self.get_value_error_pair(mean_values=True)
 
         if fit_amplitude:
             amp_values, mu_values = self._get_overall_parameter_values()
-            sigma_values = []
-        else:
-            amp_values = [values[_ * self.n_par] for _ in range(self.n_fits)] if amplitude else []
-            mu_values = [values[_ * self.n_par + 1] for _ in range(self.n_fits)] if mu else []
-            sigma_values = [values[_ * self.n_par + 2] for _ in range(self.n_fits)] if sigma else []
+            return amp_values, mu_values, []
+
+        amp_values, mu_values, sigma_values = [], [], []
+
+        n_fits, n_par = self.n_fits, self.n_par
+        if amplitude:
+            amp_values = [values[i * n_par] for i in range(n_fits)]
+        if mean:
+            mu_values = [values[i * n_par + 1] for i in range(n_fits)]
+        if standard_deviation:
+            sigma_values = [values[i * n_par + 2] for i in range(n_fits)]
 
         return amp_values, mu_values, sigma_values
