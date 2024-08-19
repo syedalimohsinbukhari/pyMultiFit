@@ -36,6 +36,6 @@ Using pip: `pip install pymultifit`
 
 The following modules are currently implemented in `pymultifit` library,
 
-1. [`distributions`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/0003-ParEXTRACTION/docs/distributions.md)
-2. [`fitters`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/0003-ParEXTRACTION/docs/fitters.md)
-3. [`generators`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/0003-ParEXTRACTION/docs/generators.md)
+1. [`distributions`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/distributions.md)
+2. [`fitters`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/fitters.md)
+3. [`generators`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/generators.md)
