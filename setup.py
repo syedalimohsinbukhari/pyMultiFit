@@ -6,7 +6,7 @@ with open('README.md', 'r') as f:
 setup(
     name='pymultifit',
     version='0.1.2',
-    packages=find_packages(where="src", exclude=["test", "examples"]),
+    packages=find_packages(where="src", exclude=["test"]),
     url='https://github.com/syedalimohsinbukhari/pyMultiFit',
     license='MIT',
     author='Syed Ali Mohsin Bukhari',
