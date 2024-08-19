@@ -1,12 +1,18 @@
 # `pyMultiFit`
 
+- [`pyMultiFit`](#pymultifit)
+  - [What is `pymultifit`](#what-is-pymultifit)
+  - [How to install](#how-to-install)
+  - [Modules](#modules)
+
 A python multi-fit library for fitting the data with multiple `X` fitters.
 
-![GitHub-licence](https://img.shields.io/github/license/syedalimohsinbukhari/pymultifit?style=for-the-badge&color=blue)
-![GitHub top language](https://img.shields.io/github/languages/top/syedalimohsinbukhari/pymultifit?color=green&style=for-the-badge)
-![GitHub contributors](https://img.shields.io/github/contributors/syedalimohsinbukhari/pymultifit?style=for-the-badge)
-![Github Issues](https://img.shields.io/github/issues/syedalimohsinbukhari/pymultifit?color=red&style=for-the-badge)
-![GitHub PRs](https://img.shields.io/github/issues-pr/syedalimohsinbukhari/pymultifit?color=maroon&style=for-the-badge)
+![GitHub-licence](https://img.shields.io/github/license/syedalimohsinbukhari/pymultifit?style=for-the-badge&color=darkblue)
+![GitHub top language](https://img.shields.io/github/languages/top/syedalimohsinbukhari/pymultifit?color=lightgreen&style=for-the-badge)
+![GitHub contributors](https://img.shields.io/github/contributors/syedalimohsinbukhari/pymultifit?color=gold&style=for-the-badge)
+![Github Issues](https://img.shields.io/github/issues/syedalimohsinbukhari/pymultifit?color=orange&style=for-the-badge)
+![GitHub OPEN PRs](https://img.shields.io/github/issues-pr/syedalimohsinbukhari/pymultifit?color=darkred&style=for-the-badge)
+![GitHub CLOSED PRs](https://img.shields.io/github/issues-pr-closed/syedalimohsinbukhari/pymultifit?color=darkgreen&style=for-the-badge)
 
 ## What is `pymultifit`
 
@@ -16,7 +22,7 @@ Fitter implementations include,
 
 - `Gaussian` fitter,
 - `SkewedNormal` fitter,
-- `LogNormal` fitter, and
+- `LogNormal` fitter,
 - `Laplace` fitter, and more.
 
 Additionally, it provides capabilities to generated n-modal data as well through its `generators` module.

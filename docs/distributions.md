@@ -54,17 +54,20 @@ Here, $A$ represents the amplitude allowing for scaling of the distribution.
 The Skew-normal distribution is expressed as:
 
 $$
-f(x; \xi, \omega, \alpha) = \frac{2}{\omega} \phi\left(\frac{x - \xi}{\omega}\right) \Phi\left(\alpha \frac{x - \xi}{\omega}\right)
+f(x; \xi, \omega, \alpha) = \frac{2}{\omega} \phi\left(\frac{x - \xi}{\omega}\right) \Phi\left(\alpha \frac{x -
+\xi}{\omega}\right)
 $$
 
 where:
+
 - $\xi$ is the location parameter,
 - $\omega$ is the scale parameter,
 - $\alpha$ is the shape parameter,
 - $\phi(\cdot)$ is the probability density function of the standard normal distribution, and
 - $\Phi(\cdot)$ is the cumulative distribution function of the standard normal distribution.
 
-The Skew-normal distribution does not have an unnormalized form in this implementation. It is always normalized by design.
+The Skew-normal distribution does not have an unnormalized form in this implementation. It is always normalized by
+design.
 
 ## Laplace Distribution
 
