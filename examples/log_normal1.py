@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from src.pymultifit.fitters import LogNormalFitter
-from src.pymultifit.generators import generate_multi_log_normal_data
+from pymultifit.fitters import LogNormalFitter
+from pymultifit.generators import generate_multi_log_normal_data
 
 # taken from https://stackoverflow.com/a/19141711
 EPSILON = np.finfo(float).eps  # 2.220446049250313e-16

@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from src.pymultifit.fitters import SkewedNormalFitter
-from src.pymultifit.generators import generate_multi_skewed_normal_data
+from pymultifit.fitters import SkewedNormalFitter
+from pymultifit.generators import generate_multi_skewed_normal_data
 
 params = [(12, 2, -7, 1), (3, -4, 2, 2), (4, 2, 7, 1.5)]
 
