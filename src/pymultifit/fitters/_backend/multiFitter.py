@@ -65,7 +65,18 @@ class BaseFitter:
 
         self.params, self.covariance = _[0], _[1]
 
-    def parameter_extractor(self, parameter_dictionary: Optional[Dict[str, bool]] = None):
+    def _get_overall_parameter_values(self):
+        """
+        Returns the overall parameters of the multi-fitter.
+
+        Returns
+        -------
+        Tuple[List[float], List[float]]
+            A tuple containing the amplitude and mean value of the multi-fitter.
+        """
+        raise NotImplementedError("This method should be implemented by subclasses.")
+
+    def parameter_extractor(self):
         """Extract the required parameters from the fitters."""
         raise NotImplementedError("This method should be implemented by subclasses.")
 
@@ -132,7 +143,7 @@ class BaseFitter:
 
         plotter.plot(self.x_values, self.y_values, label='Data')
         plotter.plot(self.x_values, self._n_fitter(self.x_values, *self.params),
-                     label='Total Fit', linestyle='--')
+                     label='Total Fit', color='k')
 
         if show_individual:
             self._plot_individual_fitter(self.x_values, plotter)

@@ -2,21 +2,24 @@
 
 import numpy as np
 
-from src.pymultifit import LogNormal
-from src.pymultifit.backend.utilities import generate_multi_log_normal_data
+from src.pymultifit.fitters import LogNormalFitter
+from src.pymultifit.generators import generate_multi_log_normal_data
 
-params = [(5, 1, 1), (3, 2, 0.2), (2, 4, 0.2)]
+# taken from https://stackoverflow.com/a/19141711
+EPSILON = np.finfo(float).eps  # 2.220446049250313e-16
 
-x = np.linspace(0.001, 100, 2000)
+params = [(15, 1, 1), (3, 2, 0.2), (20, 4, 0.1)]
+
+x = np.linspace(EPSILON, 100, 2000)
 
 noise_level = 0.2
-y = generate_multi_log_normal_data(x, params, noise_level=noise_level)
+y = generate_multi_log_normal_data(x, params=params, noise_level=noise_level)
 
-fitter = LogNormal(3, x, y)
+fitter = LogNormalFitter(n_fits=3, x_values=x, y_values=y)
 
-guess = [(5, 1, 1), (3, 2, 0.2), (2, 4, 0.2)]
+guess = [(10, 1, 1), (3, 2, 0.2), (10, 4, 0.1)]
 
 fitter.fit(guess)
 
-plotter = fitter.plot_fit(True, auto_label=True)
+plotter = fitter.plot_fit(show_individual=True, auto_label=True)
 plotter.show()
