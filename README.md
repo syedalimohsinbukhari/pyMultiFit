@@ -12,12 +12,12 @@ A python multi-fit library for fitting the data with multiple `X` fitters.
 
 `pymultifit` is a library made specifically to tackle one problem, **fit the data with multiple fitters**.
 
-Current implementations include,
+Fitter implementations include,
 
 - `Gaussian` fitter,
 - `SkewedNormal` fitter,
 - `LogNormal` fitter, and
-- `Laplace` fitter.
+- `Laplace` fitter, and more.
 
 Additionally, it provides capabilities to generated n-modal data as well through its `generators` module.
 Along with this, the user can also generate probability distribution data using `distributions` module.
@@ -32,3 +32,4 @@ The following modules are currently implemented in `pymultifit` library,
 
 1. [`distributions`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/0003-ParEXTRACTION/docs/distributions.md)
 2. [`fitters`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/0003-ParEXTRACTION/docs/fitters.md)
+3. [`generators`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/0003-ParEXTRACTION/docs/generators.md)
