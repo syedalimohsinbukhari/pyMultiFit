@@ -31,7 +31,7 @@ class GaussianFitter(BaseFitter):
     def _plot_individual_fitter(self, x: np.ndarray, plotter):
         params = np.reshape(self.params, (self.n_fits, self.n_par))
         for i, (amp, mu, sigma) in enumerate(params):
-            plotter.plot(x, self._fitter(x=x, params=[amp, mu, sigma]), ls=':', label=f'Gaussian {i + 1}')
+            plotter.plot(x, self._fitter(x=x, params=[amp, mu, sigma]))
 
     def _get_overall_parameter_values(self) -> tuple[list, list]:
         _, mu, _ = self.parameter_extractor(mean=True)

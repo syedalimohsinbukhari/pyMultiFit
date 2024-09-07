@@ -35,7 +35,7 @@ class SkewedNormalFitter(BaseFitter):
     def _plot_individual_fitter(self, x, plotter):
         params = np.reshape(self.params, (self.n_fits, self.n_par))
         for i, (amp, shape, loc, scale) in enumerate(params):
-            plotter.plot(x, self._fitter(x, [amp, shape, loc, scale]), linestyle=':', label=f'Skewed Normal {i + 1}')
+            plotter.plot(x, self._fitter(x, [amp, shape, loc, scale]))
 
     def _get_overall_parameter_values(self) -> Tuple[List[float], List[float], List[float]]:
         _, shape, loc, _ = self.parameter_extractor(location=True)

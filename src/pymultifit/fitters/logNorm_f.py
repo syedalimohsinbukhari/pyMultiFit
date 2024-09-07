@@ -1,11 +1,11 @@
 """Created on Jul 18 19:01:45 2024"""
 
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 
 from ._backend.multiFitter import BaseFitter
-from ._backend.utilities import get_y_values_at_closest_x
+from ._backend.utilities import get_y_values_at_closest_x, sanity_check
 
 
 # TODO:
@@ -15,8 +15,9 @@ from ._backend.utilities import get_y_values_at_closest_x
 class LogNormalFitter(BaseFitter):
     """A class for fitting multiple Log Normal functions to the given data."""
 
-    def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
-        if any(x < 0 for x in x_values):
+    def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
+        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
+        if np.any(x_values < 0):
             raise ValueError("The LogNormal distribution must have x > 0. "
                              "Use `EPSILON` from the package to get as close to zero as possible.")
         super().__init__(n_fits=n_fits, x_values=x_values, y_values=y_values, max_iterations=max_iterations)
@@ -36,7 +37,7 @@ class LogNormalFitter(BaseFitter):
     def _plot_individual_fitter(self, x, plotter):
         params = np.reshape(self.params, (self.n_fits, self.n_par))
         for i, (amp, mu, sigma) in enumerate(params):
-            plotter.plot(x, self._fitter(x, [amp, mu, sigma]), linestyle=':', label=f'LogNormal {i + 1}')
+            plotter.plot(x, self._fitter(x, [amp, mu, sigma]))
 
     def _get_overall_parameter_values(self) -> tuple[list, list]:
         _, mu, _ = self.parameter_extractor(mean=True)

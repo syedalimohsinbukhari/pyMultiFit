@@ -33,7 +33,7 @@ class LaplaceFitter(BaseFitter):
     def _plot_individual_fitter(self, x, plotter):
         params = np.reshape(self.params, (self.n_fits, self.n_par))
         for i, (amp, mu, b) in enumerate(params):
-            plotter.plot(x, self._fitter(x, [amp, mu, b]), ls=':', label=f'Laplace {i + 1}')
+            plotter.plot(x, self._fitter(x, [amp, mu, b]))
 
     def _get_overall_parameter_values(self) -> tuple[list, list]:
         _, mu, _ = self.parameter_extractor(mean=True)

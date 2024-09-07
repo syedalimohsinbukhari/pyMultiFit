@@ -1,6 +1,6 @@
 """Created on Aug 03 21:12:13 2024"""
 
-from typing import Any, Dict, Optional
+from typing import Dict
 
 import numpy as np
 
@@ -60,12 +60,10 @@ class LaplaceDistribution(BaseDistribution):
     def stats(self) -> Dict[str, float]:
         mean_, b_ = self.mu, self.b
 
-        return {
-            'mean': mean_,
-            'median': mean_,
-            'mode': mean_,
-            'variance': 2 * b_**2
-        }
+        return {'mean': mean_,
+                'median': mean_,
+                'mode': mean_,
+                'variance': 2 * b_**2}
 
 
 def _laplace(x: np.ndarray,
