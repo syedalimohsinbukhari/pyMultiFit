@@ -6,6 +6,7 @@ import numpy as np
 
 from ._backend.multiFitter import BaseFitter
 from ._backend.utilities import get_y_values_at_closest_x
+from ..distributions.laplace_d import laplace_
 
 
 # TODO:
@@ -21,7 +22,7 @@ class LaplaceFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return params[0] * np.exp(-abs(x - params[1]) / params[2])
+        return laplace_(x, *params, normalize=False)
 
     def _n_fitter(self, x, *params):
         y = np.zeros_like(x)
@@ -33,7 +34,11 @@ class LaplaceFitter(BaseFitter):
     def _plot_individual_fitter(self, x, plotter):
         params = np.reshape(self.params, (self.n_fits, self.n_par))
         for i, (amp, mu, b) in enumerate(params):
-            plotter.plot(x, self._fitter(x, [amp, mu, b]), ls=':', label=f'Laplace {i + 1}')
+            plotter.plot(x, self._fitter(x, [amp, mu, b]),
+                         '--', label=f'Laplace {i + 1}('
+                                     f'{self.format_param(amp)}, '
+                                     f'{self.format_param(mu)}, '
+                                     f'{self.format_param(b)})')
 
     def _get_overall_parameter_values(self) -> tuple[list, list]:
         _, mu, _ = self.parameter_extractor(mean=True)

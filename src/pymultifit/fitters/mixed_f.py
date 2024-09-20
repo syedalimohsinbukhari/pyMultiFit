@@ -1,14 +1,17 @@
 """Created on Aug 10 23:08:38 2024"""
 
 import itertools
+from typing import Optional, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks
 
-from ..distributions import GaussianDistribution, LogNormalDistribution, SkewedNormalDistribution
-from ..others import line
+from ._backend.utilities import sanity_check
+from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
+from ..distributions import (GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution,
+                             SkewedNormalDistribution)
 
 
 class MixedDataFitter:
@@ -44,6 +47,8 @@ class MixedDataFitter:
         model_list : list of str
             List of models to fit (e.g., ['gaussian', 'gaussian', 'line']).
         """
+        x_data, y_data = sanity_check(x_values=x_data, y_values=y_data)
+
         self.x_data = x_data
         self.y_data = y_data
         self.model_list = model_list
@@ -63,7 +68,7 @@ class MixedDataFitter:
         ValueError
             If any model in the model list is not recognized.
         """
-        allowed_models = {'gaussian', 'line', 'log_normal', 'skew_normal'}
+        allowed_models = {GAUSSIAN, LINE, LOG_NORMAL, SKEW_NORMAL, LAPLACE}
         if not all(model in allowed_models for model in self.model_list):
             raise ValueError(f"All models must be one of {allowed_models}.")
 
@@ -97,24 +102,29 @@ class MixedDataFitter:
             param_index = 0
 
             for model in self.model_list:
-                if model in ['gaussian', 'normal']:
+                if model in [GAUSSIAN, NORMAL]:
                     amplitude, mean, std = params[param_index:param_index + 3]
                     y += GaussianDistribution.with_amplitude(amplitude, mean, std).pdf(x)
                     param_index += 3
 
-                elif model == 'line':
+                elif model == LINE:
                     slope, intercept = params[param_index:param_index + 2]
                     y += line(x, slope, intercept)
                     param_index += 2
 
-                elif model in ['skew_normal', 'skewNorm']:
+                elif model == SKEW_NORMAL:
                     shape, loc, scale = params[param_index:param_index + 3]
                     y += SkewedNormalDistribution(shape, loc, scale).pdf(x)
                     param_index += 3
 
-                elif model in ['log_normal', 'logNorm']:
+                elif model == LOG_NORMAL:
                     amplitude, mean, std = params[param_index:param_index + 3]
                     y += LogNormalDistribution.with_amplitude(amplitude, mean, std).pdf(x)
+                    param_index += 3
+
+                elif model == LAPLACE:
+                    amplitude, mean, diversity = params[param_index:param_index + 3]
+                    y += LaplaceDistribution.with_amplitude(amplitude, mean, diversity).pdf(x)
                     param_index += 3
 
             return y
@@ -135,13 +145,14 @@ class MixedDataFitter:
         ValueError
             If the length of initial parameters does not match the expected count.
         """
-        if len(p0) != self._expected_param_count():
-            raise ValueError(
-                f"Initial parameters length {len(p0)} does not match expected count {self._expected_param_count()}.")
+        p0_ = list(itertools.chain.from_iterable(p0))
+        if len(p0_) != self._expected_param_count():
+            raise ValueError(f"Initial parameters length {len(p0)} does not match expected "
+                             f"count {self._expected_param_count()}.")
 
         lower_bounds, upper_bounds = self._get_bounds()
 
-        _ = curve_fit(self.model_function, self.x_data, self.y_data, p0=p0, bounds=(lower_bounds, upper_bounds))
+        _ = curve_fit(self.model_function, self.x_data, self.y_data, p0_, bounds=(lower_bounds, upper_bounds))
         self.params, self.covariance = _[0], _[1]
 
     def _expected_param_count(self):
@@ -155,10 +166,13 @@ class MixedDataFitter:
         """
         count = 0
         for model in self.model_list:
-            if model == 'gaussian' or model == 'log_normal' or model == 'skew_normal':
+            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
                 count += 3
-            elif model == 'line':
+            elif model == LINE:
                 count += 2
+            elif model == SKEW_NORMAL:
+                count += 4
+
         return count
 
     def _get_bounds(self):
@@ -174,24 +188,27 @@ class MixedDataFitter:
         upper_bounds = []
 
         for model in self.model_list:
-            if model in ['gaussian', 'log_normal']:
+            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
                 lower_bounds.extend([0, -np.inf, 0])
                 upper_bounds.extend([np.inf, np.inf, np.inf])
-            elif model == 'line':
+            elif model == LINE:
                 lower_bounds.extend([-np.inf, -np.inf])
                 upper_bounds.extend([np.inf, np.inf])
-            elif model == 'skew_normal':
-                lower_bounds.extend([-np.inf, -np.inf, 0])
-                upper_bounds.extend([np.inf, np.inf, np.inf])
+            elif model == SKEW_NORMAL:
+                lower_bounds.extend([-np.inf, -np.inf, -np.inf, 0])
+                upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
 
         return lower_bounds, upper_bounds
 
-    def plot(self, plot_individuals=False, auto_label=False):
+    def plot(self, plot_individuals=False, auto_label=False,
+             fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None):
         """
         Plots the original data, fitted model, and optionally individual components.
 
         Parameters
         ----------
+        fig_size
+        ax
         plot_individuals : bool, optional
             Whether to plot individual fitted functions, by default False.
         auto_label : bool, optional
@@ -211,43 +228,53 @@ class MixedDataFitter:
         if self.y_data is None or self.params is None:
             raise ValueError("Data must be fitted before plotting.")
 
-        plt.plot(self.x_data, self.y_data, '-', label='data')
-        plt.plot(self.x_data, self.model_function(self.x_data, *self.params), 'k-', label='fitted')
+        plotter = ax if ax else plt
+        if not ax:
+            plt.figure(figsize=fig_size)
+
+        plotter.plot(self.x_data, self.y_data, '-', label='data')
+        plotter.plot(self.x_data, self.model_function(self.x_data, *self.params), 'k-', label='fitted')
 
         if plot_individuals:
             self._plot_individual_components()
 
         if auto_label:
-            plt.xlabel('X')
-            plt.ylabel('Y')
-            plt.title('MixedFittedData')
-            plt.legend(loc='best')
-            plt.tight_layout()
+            plotter.xlabel('X')
+            plotter.ylabel('Y')
+            plotter.title('MixedFittedData')
+            plotter.legend(loc='best')
+            plotter.tight_layout()
 
-        return plt
+        return plotter
 
     def _plot_individual_components(self):
         """Plots the individual fitted components of the model."""
-        model_dict = {
-            'gaussian': GaussianDistribution.with_amplitude,
-            'log_normal': LogNormalDistribution.with_amplitude,
-            'skew_normal': SkewedNormalDistribution
-        }
+        model_dict = {GAUSSIAN: GaussianDistribution.with_amplitude,
+                      LOG_NORMAL: LogNormalDistribution.with_amplitude,
+                      SKEW_NORMAL: SkewedNormalDistribution,
+                      LAPLACE: LaplaceDistribution.with_amplitude}
 
         param_index = 0
         for model in self.model_list:
-            if model == 'line':
+            if model == LINE:
                 slope, intercept = self.params[param_index:param_index + 2]
                 y_component = line(self.x_data, slope, intercept)
-                plt.plot(self.x_data, y_component, '--', label=f'Line({slope:.2f}, {intercept:.2f})')
+                plt.plot(self.x_data, y_component, '--',
+                         label=f'Line({self._format_param(slope)}, {self._format_param(intercept)})')
                 param_index += 2
 
             elif model in model_dict:
                 pars = self.params[param_index:param_index + 3]
                 y_component = model_dict[model](*pars).pdf(self.x_data)
                 plt.plot(self.x_data, y_component, '--',
-                         label=f'{model.capitalize()}({pars[0]:.3E}, {pars[1]:.3f}, {pars[2]:.3f})')
+                         label=f'{model.capitalize()}({self._format_param(pars[0])}, '
+                               f'{self._format_param(pars[1])}, {self._format_param(pars[2])})')
                 param_index += 3
+
+    @staticmethod
+    def _format_param(param):
+        """Dynamically formats the parameter based on its value."""
+        return f'{param:.4E}' if abs(param) < 0.001 else f'{param:.4f}'
 
     def _parameter_extractor(self):
         """
@@ -266,49 +293,50 @@ class MixedDataFitter:
             if model not in param_dict:
                 param_dict[model] = []
 
-            if model == 'line':
+            if model == LINE:
                 param_dict[model].extend([all_[p_index:p_index + 2]])
                 p_index += 2
-            elif model in ['gaussian', 'log_normal', 'skew_normal']:
+            elif model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
                 param_dict[model].extend([all_[p_index:p_index + 3]])
                 p_index += 3
+            elif model == SKEW_NORMAL:
+                param_dict[model].extend(([all_[p_index:p_index + 4]]))
+                p_index += 4
 
         return param_dict
 
-    def parameter_extractor(self, model, return_individual_values=False):
+    def parameter_extractor(self, model=None, return_individual_values=True):
         """
-        Extracts parameters for a specific model.
+        Extracts parameters for a specific model, or for all models if no model is specified.
 
         Parameters
         ----------
-        model : str
-            The model name to extract parameters for.
+        model : str, optional
+            The model name to extract parameters for. If None, extracts parameters for all models. Defaults to None.
         return_individual_values : bool, optional
-            If True, returns the parameters in a more detailed format, by default False.
+            If True, returns the parameters in a more detailed format.
+            This is automatically set to False if no model is specified. Defaults to True.
 
         Returns
         -------
-        list or tuple
-            The extracted parameters for the specified model.
-            If `return_individual_values` is True and the model is 'gaussian', returns separate lists for amplitude,
-            mean, and standard deviation. Otherwise, returns a list of parameter sets.
+        dict, list, or tuple
+            If `model` is None, returns a dictionary with model names as keys and lists of parameter sets as values.
+            If a specific model is specified, returns the extracted parameters for that model.
         """
         dict_ = self._parameter_extractor()
 
+        if model is None:
+            return dict_
+
         if return_individual_values:
             par_dict = dict_.get(model, [])
-            if model in ['gaussian', 'log_normal', 'skew_normal', 'laplace']:
-                flattened_list = list(itertools.chain.from_iterable(par_dict))
-                if len(flattened_list) > 1:
-                    amplitude = flattened_list[::3]
-                    mean = flattened_list[1::3]
-                    std = flattened_list[2::3]
-
-                    return amplitude, mean, std
-                else:
-                    return flattened_list
-            elif model == 'line':
-                return par_dict
+            flattened_list = list(itertools.chain.from_iterable(par_dict))
+            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
+                return flattened_list[::3], flattened_list[1::3], flattened_list[2::3]
+            elif model == LINE:
+                return [flattened_list[i] for i in range(2)]
+            elif model == SKEW_NORMAL:
+                return flattened_list[::4], flattened_list[1::4], flattened_list[2::4], flattened_list[3::4]
         else:
             return dict_.get(model, [])
 

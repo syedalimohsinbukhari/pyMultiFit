@@ -6,6 +6,7 @@ import numpy as np
 
 from ._backend.multiFitter import BaseFitter
 from ._backend.utilities import get_y_values_at_closest_x
+from ..distributions.gaussian_d import gaussian_
 
 oBool = Optional[bool]
 
@@ -19,7 +20,7 @@ class GaussianFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x: np.ndarray, params: list) -> np.array:
-        return params[0] * np.exp(-(x - params[1])**2 / (2 * params[2]**2))
+        return gaussian_(x, *params, normalize=False)
 
     def _n_fitter(self, x: np.ndarray, *params: Any) -> np.ndarray:
         y = np.zeros_like(x)
@@ -31,7 +32,16 @@ class GaussianFitter(BaseFitter):
     def _plot_individual_fitter(self, x: np.ndarray, plotter):
         params = np.reshape(self.params, (self.n_fits, self.n_par))
         for i, (amp, mu, sigma) in enumerate(params):
-            plotter.plot(x, self._fitter(x=x, params=[amp, mu, sigma]), ls=':', label=f'Gaussian {i + 1}')
+            plotter.plot(x, self._fitter(x=x, params=[amp, mu, sigma]),
+                         '--', label=f'Gaussian {i + 1}('
+                                     f'{self.format_param(amp)}, '
+                                     f'{self.format_param(mu)}, '
+                                     f'{self.format_param(sigma)})')
+
+    @staticmethod
+    def format_param(value, threshold1=0.001, threshold2=10_000):
+        """Formats the parameter value based on its magnitude."""
+        return f'{value:.3E}' if threshold2 < abs(value) or abs(value) < threshold1 else f'{value:.3f}'
 
     def _get_overall_parameter_values(self) -> tuple[list, list]:
         _, mu, _ = self.parameter_extractor(mean=True)

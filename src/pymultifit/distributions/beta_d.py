@@ -3,7 +3,7 @@
 from typing import Dict
 
 import numpy as np
-from scipy.special import beta as beta_, betainc
+from scipy.special import beta as beta_function, betainc
 
 from ._backend import BaseDistribution
 
@@ -89,7 +89,7 @@ def _beta(x: np.ndarray,
     numerator = x**(alpha - 1) * (1 - x)**(beta - 1)
 
     if normalize:
-        normalization_factor = beta_(alpha, beta)
+        normalization_factor = beta_function(alpha, beta)
         amplitude = 1.0
     else:
         normalization_factor = 1.0

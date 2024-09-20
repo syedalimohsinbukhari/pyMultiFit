@@ -4,13 +4,13 @@ from typing import List, Tuple
 
 import numpy as np
 
-from ..distributions import (GaussianDistribution as GDist,
-                             LaplaceDistribution as lDist, LogNormalDistribution as lNorm,
-                             SkewedNormalDistribution as skNorm)
+from ..distributions import (GaussianDistribution as GDist, LaplaceDistribution as lapD, line,
+                             LogNormalDistribution as lNorm, SkewedNormalDistribution as skNorm)
+from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL
 
 gdA = GDist.with_amplitude
 lnA = lNorm.with_amplitude
-ldA = lDist.with_amplitude
+lpA = lapD.with_amplitude
 
 
 def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float, float]],
@@ -128,9 +128,30 @@ def generate_multi_laplace_data(x: np.ndarray, params: List[Tuple[float, float, 
     y = np.zeros_like(x)
     for amp, mu, b in params:
         if normalize:
-            y += lDist(mean=mu, diversity=b).pdf(x)
+            y += lapD(mean=mu, diversity=b).pdf(x)
         else:
-            y += ldA(amplitude=amp, mean=mu, diversity=b).pdf(x)
+            y += lpA(amplitude=amp, mean=mu, diversity=b).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
+    return y
+
+
+def generate_mixed_model_data(x: np.ndarray, params: List[Tuple[float, ...]], model_list, noise_level=0.0):
+    y = np.zeros_like(x)
+    par_index = 0
+    for model in model_list:
+        if model == GAUSSIAN:
+            y += gdA(*params[par_index]).pdf(x)
+        elif model == LOG_NORMAL:
+            y += lnA(*params[par_index]).pdf(x)
+        elif model == LAPLACE:
+            y += lpA(*params[par_index]).pdf(x)
+        elif model == LINE:
+            y += line(*params[par_index])
+
+        par_index += 1
+
+    if noise_level > 0:
+        y += noise_level * np.random.normal(size=x.size)
+
     return y

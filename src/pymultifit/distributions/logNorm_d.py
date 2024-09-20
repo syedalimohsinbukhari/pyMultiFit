@@ -44,8 +44,7 @@ class LogNormalDistribution(BaseDistribution):
         return instance
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return _log_normal(x, amplitude=self.amplitude, mean=self.mean, standard_deviation=self.std_,
-                           normalize=self.norm)
+        return log_normal_(x, amplitude=self.amplitude, mean=self.mean, standard_deviation=self.std_, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
@@ -67,7 +66,7 @@ class LogNormalDistribution(BaseDistribution):
                 'variance': variance_}
 
 
-def _log_normal(x: np.ndarray,
+def log_normal_(x: np.ndarray,
                 amplitude: float = 1., mean: float = 0., standard_deviation: float = 1.,
                 normalize: bool = True) -> np.ndarray:
     """

@@ -1,6 +1,6 @@
 """Created on Aug 18 23:52:19 2024"""
 
-from typing import List, Union
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -40,3 +40,31 @@ def get_y_values_at_closest_x(x_array: np.ndarray, y_array: np.ndarray,
     closest_indices = np.abs(x_array[:, np.newaxis] - target_x_values).argmin(axis=0)
 
     return y_array[closest_indices].tolist()
+
+
+def sanity_check(x_values: Union[List[float], np.ndarray],
+                 y_values: Union[List[float], np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Convert input lists to NumPy arrays if necessary.
+
+    Parameters
+    ----------
+    x_values : list of float or np.ndarray
+        Input x-values that will be converted to a NumPy array if they are in list format.
+    y_values : list of float or np.ndarray
+        Input y-values that will be converted to a NumPy array if they are in list format.
+
+    Returns
+    -------
+    x_values : np.ndarray
+        The x-values as a NumPy array.
+    y_values : np.ndarray
+        The y-values as a NumPy array.
+    """
+    if isinstance(x_values, list):
+        x_values = np.array(x_values)
+
+    if isinstance(y_values, list):
+        y_values = np.array(y_values)
+
+    return x_values, y_values

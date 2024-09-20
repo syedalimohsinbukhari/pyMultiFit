@@ -162,4 +162,6 @@ cython_debug/
 .idea/
 /**/rough_*.py
 /**/*.sh
-/src/pymultifit/fitters/with_docs.py
+LYSO_Spectra/
+/latest_data/
+/SiPM_Onsemi_CSeries/

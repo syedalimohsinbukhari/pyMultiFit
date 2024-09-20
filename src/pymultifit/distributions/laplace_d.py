@@ -1,6 +1,6 @@
 """Created on Aug 03 21:12:13 2024"""
 
-from typing import Any, Dict, Optional
+from typing import Dict
 
 import numpy as np
 
@@ -43,7 +43,7 @@ class LaplaceDistribution(BaseDistribution):
         return instance
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return _laplace(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        return laplace_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
@@ -60,15 +60,13 @@ class LaplaceDistribution(BaseDistribution):
     def stats(self) -> Dict[str, float]:
         mean_, b_ = self.mu, self.b
 
-        return {
-            'mean': mean_,
-            'median': mean_,
-            'mode': mean_,
-            'variance': 2 * b_**2
-        }
+        return {'mean': mean_,
+                'median': mean_,
+                'mode': mean_,
+                'variance': 2 * b_**2}
 
 
-def _laplace(x: np.ndarray,
+def laplace_(x: np.ndarray,
              amplitude: float = 1., mean: float = 0., diversity: float = 1.,
              normalize: bool = True) -> np.ndarray:
     """Compute the Laplace distribution's probability density function (PDF).
