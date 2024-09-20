@@ -163,3 +163,5 @@ cython_debug/
 /**/rough_*.py
 /**/*.sh
 LYSO_Spectra/
+/latest_data/
+/SiPM_Onsemi_CSeries/

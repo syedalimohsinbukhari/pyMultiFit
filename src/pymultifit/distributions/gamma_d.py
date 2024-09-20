@@ -43,7 +43,7 @@ class GammaDistribution(BaseDistribution):
         return instance
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return _gamma(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, normalize=self.norm)
+        return gamma_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
@@ -63,7 +63,7 @@ class GammaDistribution(BaseDistribution):
                 'variance': variance_}
 
 
-def _gamma(x: np.ndarray,
+def gamma_(x: np.ndarray,
            amplitude: float = 1., alpha: float = 1., beta: float = 1.,
            normalize: bool = True) -> np.ndarray:
     """

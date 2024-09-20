@@ -1,3 +1,0 @@
-"""Created on Aug 29 19:49:34 2024"""
-
-BOLTZMANN_CONSTANT = 1.38064852e-23

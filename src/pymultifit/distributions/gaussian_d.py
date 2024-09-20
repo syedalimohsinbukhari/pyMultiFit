@@ -44,7 +44,7 @@ class GaussianDistribution(BaseDistribution):
         return instance
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return _gaussian(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
+        return gaussian_(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
@@ -62,7 +62,7 @@ class GaussianDistribution(BaseDistribution):
                 'variance': std_**2}
 
 
-def _gaussian(x: np.ndarray,
+def gaussian_(x: np.ndarray,
               amplitude: float = 1., mu: float = 0., sigma: float = 1.,
               normalize: bool = True) -> np.ndarray:
     """

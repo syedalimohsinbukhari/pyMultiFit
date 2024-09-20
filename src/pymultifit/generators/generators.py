@@ -6,7 +6,7 @@ import numpy as np
 
 from ..distributions import (GaussianDistribution as GDist, LaplaceDistribution as lapD, line,
                              LogNormalDistribution as lNorm, SkewedNormalDistribution as skNorm)
-from ... import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL
+from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL
 
 gdA = GDist.with_amplitude
 lnA = lNorm.with_amplitude
@@ -128,9 +128,9 @@ def generate_multi_laplace_data(x: np.ndarray, params: List[Tuple[float, float, 
     y = np.zeros_like(x)
     for amp, mu, b in params:
         if normalize:
-            y += lDist(mean=mu, diversity=b).pdf(x)
+            y += lapD(mean=mu, diversity=b).pdf(x)
         else:
-            y += ldA(amplitude=amp, mean=mu, diversity=b).pdf(x)
+            y += lpA(amplitude=amp, mean=mu, diversity=b).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y

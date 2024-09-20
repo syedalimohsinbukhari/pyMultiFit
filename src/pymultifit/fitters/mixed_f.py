@@ -166,10 +166,13 @@ class MixedDataFitter:
         """
         count = 0
         for model in self.model_list:
-            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, SKEW_NORMAL, LAPLACE]:
+            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
                 count += 3
             elif model == LINE:
                 count += 2
+            elif model == SKEW_NORMAL:
+                count += 4
+
         return count
 
     def _get_bounds(self):
@@ -192,8 +195,8 @@ class MixedDataFitter:
                 lower_bounds.extend([-np.inf, -np.inf])
                 upper_bounds.extend([np.inf, np.inf])
             elif model == SKEW_NORMAL:
-                lower_bounds.extend([-np.inf, -np.inf, 0])
-                upper_bounds.extend([np.inf, np.inf, np.inf])
+                lower_bounds.extend([-np.inf, -np.inf, -np.inf, 0])
+                upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
 
         return lower_bounds, upper_bounds
 
@@ -256,15 +259,22 @@ class MixedDataFitter:
             if model == LINE:
                 slope, intercept = self.params[param_index:param_index + 2]
                 y_component = line(self.x_data, slope, intercept)
-                plt.plot(self.x_data, y_component, '--', label=f'Line({slope:.2f}, {intercept:.2f})')
+                plt.plot(self.x_data, y_component, '--',
+                         label=f'Line({self._format_param(slope)}, {self._format_param(intercept)})')
                 param_index += 2
 
             elif model in model_dict:
                 pars = self.params[param_index:param_index + 3]
                 y_component = model_dict[model](*pars).pdf(self.x_data)
                 plt.plot(self.x_data, y_component, '--',
-                         label=f'{model.capitalize()}({pars[0]:.3E}, {pars[1]:.3f}, {pars[2]:.3f})')
+                         label=f'{model.capitalize()}({self._format_param(pars[0])}, '
+                               f'{self._format_param(pars[1])}, {self._format_param(pars[2])})')
                 param_index += 3
+
+    @staticmethod
+    def _format_param(param):
+        """Dynamically formats the parameter based on its value."""
+        return f'{param:.4E}' if abs(param) < 0.001 else f'{param:.4f}'
 
     def _parameter_extractor(self):
         """
@@ -286,9 +296,12 @@ class MixedDataFitter:
             if model == LINE:
                 param_dict[model].extend([all_[p_index:p_index + 2]])
                 p_index += 2
-            elif model in [GAUSSIAN, NORMAL, LOG_NORMAL, SKEW_NORMAL, LAPLACE]:
+            elif model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
                 param_dict[model].extend([all_[p_index:p_index + 3]])
                 p_index += 3
+            elif model == SKEW_NORMAL:
+                param_dict[model].extend(([all_[p_index:p_index + 4]]))
+                p_index += 4
 
         return param_dict
 
@@ -318,10 +331,12 @@ class MixedDataFitter:
         if return_individual_values:
             par_dict = dict_.get(model, [])
             flattened_list = list(itertools.chain.from_iterable(par_dict))
-            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, SKEW_NORMAL, LAPLACE]:
+            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
                 return flattened_list[::3], flattened_list[1::3], flattened_list[2::3]
             elif model == LINE:
                 return [flattened_list[i] for i in range(2)]
+            elif model == SKEW_NORMAL:
+                return flattened_list[::4], flattened_list[1::4], flattened_list[2::4], flattened_list[3::4]
         else:
             return dict_.get(model, [])
 

@@ -1,11 +1,17 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
+
+# safe keeping class names for spelling mistakes
+_gaussian = 'GaussianFitter'
+_lNormal = 'LogNormalFitter'
+_skNormal = 'SkewedNormalFitter'
+_laplace = 'Laplace Fitter'
 
 
 class BaseFitter:
@@ -45,6 +51,33 @@ class BaseFitter:
 
     def _plot_individual_fitter(self, x, plotter):
         raise NotImplementedError("This method should be implemented by subclasses.")
+
+    @staticmethod
+    def format_param(value, threshold=0.001):
+        """Formats the parameter value based on its magnitude."""
+        return f'{value:.3E}' if abs(value) < threshold else f'{value:.3f}'
+
+    def _get_bounds(self):
+        """
+        Sets the bounds for each parameter based on the model list.
+
+        Returns
+        -------
+        tuple of array_like
+            Lower and upper bounds for the parameters.
+        """
+        lower_bounds, upper_bounds = [], []
+
+        class_name = self.__class__.__name__
+
+        if class_name in [_gaussian, _lNormal, _laplace]:
+            lower_bounds.extend([0, -np.inf, 0])
+            upper_bounds.extend([np.inf, np.inf, np.inf])
+        elif class_name == _skNormal:
+            lower_bounds.extend([-np.inf, -np.inf, -np.inf, 0])
+            upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
+
+        return lower_bounds, upper_bounds
 
     def fit(self, p0):
         """
