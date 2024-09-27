@@ -1,14 +1,12 @@
 """Created on Jul 18 00:25:57 2024"""
 
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Tuple
 
 import numpy as np
 
 from ._backend.multiFitter import BaseFitter
 from ._backend.utilities import get_y_values_at_closest_x
-from ..distributions.gaussian_d import gaussian_
-
-oBool = Optional[bool]
+from ..distributions.gaussian_d import gaussianWA
 
 
 class GaussianFitter(BaseFitter):
@@ -20,7 +18,7 @@ class GaussianFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x: np.ndarray, params: list) -> np.array:
-        return gaussian_(x, *params, normalize=False)
+        return gaussianWA(*params).pdf(x)
 
     def _n_fitter(self, x: np.ndarray, *params: Any) -> np.ndarray:
         y = np.zeros_like(x)

@@ -6,7 +6,7 @@ with open('README.md', 'r') as f:
     readme = f.read()
 
 setup(name='pymultifit',
-      version='0.1.3',
+      version='0.1.4',
       packages=find_packages(where="src", exclude=["test"]),
       url='https://github.com/syedalimohsinbukhari/pyMultiFit',
       license='MIT',

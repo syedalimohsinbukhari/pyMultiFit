@@ -75,11 +75,13 @@ def gaussian_(x: np.ndarray,
     ----------
     x : np.ndarray
         The input values at which to evaluate the Gaussian PDF.
-    mu : float, optional
+    amplitude: float
+        The amplitude of the Gaussian distribution. Defaults to 1.
+    mu : float
         The mean of the Gaussian distribution. Defaults to 0.
-    sigma : float, optional
+    sigma : float
         The standard deviation of the Gaussian distribution. Defaults to 1.
-    normalize : bool, optional
+    normalize : bool
         If True, the function returns the normalized value of the PDF else the PDF is not normalized. Default is True.
 
 
@@ -101,3 +103,6 @@ def gaussian_(x: np.ndarray,
         normalization_factor = 1
 
     return amplitude * (np.exp(-exponent_factor) / normalization_factor)
+
+
+gaussianWA = GaussianDistribution.with_amplitude
