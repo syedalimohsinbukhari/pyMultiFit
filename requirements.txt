@@ -3,7 +3,7 @@ matplotlib
 scipy
 pybind11==2.13.5
 setuptools
-cmake
-gxx_linux-64
+cmake==3.30.3
+gxx_linux-64==12.4
 gxx
 gcc
