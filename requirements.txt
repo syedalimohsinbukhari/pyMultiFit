@@ -1,4 +1,9 @@
-matplotlib
 numpy==1.26.4
+matplotlib
 scipy
+pybind11==2.13.5
 setuptools
+cmake
+gxx_linux-64
+gxx
+gcc
