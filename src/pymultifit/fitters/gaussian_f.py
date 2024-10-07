@@ -3,6 +3,7 @@
 from typing import Any, List, Tuple
 
 import numpy as np
+from typing_extensions import deprecated
 
 from ._backend.multiFitter import BaseFitter
 from ._backend.utilities import get_y_values_at_closest_x
@@ -46,6 +47,7 @@ class GaussianFitter(BaseFitter):
         amp = get_y_values_at_closest_x(x_array=self.x_values, y_array=self.get_fit_values(), target_x_values=mu)
         return amp, mu
 
+    @deprecated("This function will be dropped in upcoming releases. Use get_parameters function instead")
     def parameter_extractor(self,
                             amplitude: bool = False, mean: bool = False, standard_deviation: bool = False,
                             fit_amplitude: bool = False) -> Tuple[List[float], List[float], List[float]]:
@@ -93,3 +95,29 @@ class GaussianFitter(BaseFitter):
             sigma_values = [values[i * n_par + 2] for i in range(n_fits)]
 
         return amp_values, mu_values, sigma_values
+
+    def get_parameters(self,
+                       amplitude: bool = False, mu: bool = False, sigma: bool = False,
+                       gaussian_number: tuple = None):
+        if not (amplitude or mu or sigma):
+            return [], [], []
+
+        values = self.get_value_error_pair(mean_values=True)
+
+        amp_values, mu_values, sigma_values = [], [], []
+
+        n_fits, n_par = self.n_fits, self.n_par
+        if amplitude:
+            amp_values = [values[i * n_par] for i in range(n_fits)]
+            if gaussian_number:
+                amp_values = [amp_values[i - 1] for i in gaussian_number]
+        if mu:
+            mu_values = [values[i * n_par + 1] for i in range(n_fits)]
+            if gaussian_number:
+                mu_values = [mu_values[i - 1] for i in gaussian_number]
+        if sigma:
+            sigma_values = [values[i * n_par + 2] for i in range(n_fits)]
+            if gaussian_number:
+                sigma_values = [sigma_values[i - 1] for i in gaussian_number]
+
+        return np.array(amp_values), np.array(mu_values), np.array(sigma_values)

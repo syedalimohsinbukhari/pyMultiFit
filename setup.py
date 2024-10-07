@@ -8,6 +8,7 @@ with open('README.md', 'r') as f:
 setup(name='pymultifit',
       version='0.1.4',
       packages=find_packages(where="src", exclude=["test"]),
+      package_dir={"": "src"},  # Tell setuptools where to look for packages
       url='https://github.com/syedalimohsinbukhari/pyMultiFit',
       license='MIT',
       author='Syed Ali Mohsin Bukhari',
@@ -18,6 +19,9 @@ setup(name='pymultifit',
       python_requires=">=3.9",
       install_requires=["setuptools", "numpy==1.26.4", "matplotlib", "scipy"],
       include_package_data=True,
+      package_data={
+          'pymultifit.sharedLib': ['*.so'],  # Include all .so files in sharedLib inside pymultifit
+      },
       classifiers=["License :: OSI Approved :: MIT License",
                    "Programming Language :: Python :: 3.9",
                    "Programming Language :: Python :: 3.10",

@@ -94,7 +94,7 @@ class BaseFitter:
         if len_guess != total_pars:
             raise ValueError(f"Initial guess length must be {3 * self.n_fits}.")
         _ = curve_fit(self._n_fitter, self.x_values, self.y_values, p0=p0,
-                      maxfev=self.max_iterations)
+                      maxfev=self.max_iterations, bounds=self._get_bounds())
 
         self.params, self.covariance = _[0], _[1]
 
