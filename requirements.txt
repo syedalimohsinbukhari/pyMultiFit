@@ -1,4 +1,12 @@
-matplotlib
 numpy==1.26.4
+matplotlib
 scipy
 setuptools
+typing-extensions
+pybind11==2.13.5
+cmake==3.27.9
+
+# Non pip dependencies
+# gxx_linux-64==12.4
+# gxx
+# gcc

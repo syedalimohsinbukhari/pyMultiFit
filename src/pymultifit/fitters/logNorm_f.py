@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from ._backend.multiFitter import BaseFitter
+from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import get_y_values_at_closest_x, sanity_check
 from ..distributions.logNorm_d import log_normal_
 

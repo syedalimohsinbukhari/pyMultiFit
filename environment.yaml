@@ -1,0 +1,15 @@
+name: multifit
+channels:
+    - default
+    - conda-forge
+dependencies:
+    - python==3.9.*
+    - numpy==1.26.4
+    - matplotlib
+    - scipy
+    - pybind11==2.13.5
+    - setuptools
+    - cmake
+    - gxx_linux-64==12.4
+    - gxx
+    - gcc
