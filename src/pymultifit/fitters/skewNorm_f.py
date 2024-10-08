@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 from scipy.stats import skewnorm
 
-from ._backend.multiFitter import BaseFitter
+from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import get_y_values_at_closest_x
 
 

@@ -4,7 +4,7 @@ from typing import Optional
 
 import numpy as np
 
-from ._backend.multiFitter import BaseFitter
+from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import get_y_values_at_closest_x
 from ..distributions.laplace_d import laplace_
 
