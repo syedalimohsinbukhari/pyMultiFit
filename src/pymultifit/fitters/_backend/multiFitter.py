@@ -5,7 +5,7 @@ from typing import Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import curve_fit
+from scipy.optimize import Bounds, curve_fit
 
 # safe keeping class names for spelling mistakes
 _gaussian = 'GaussianFitter'
@@ -66,18 +66,14 @@ class BaseFitter:
         tuple of array_like
             Lower and upper bounds for the parameters.
         """
-        lower_bounds, upper_bounds = [], []
-
         class_name = self.__class__.__name__
 
         if class_name in [_gaussian, _lNormal, _laplace]:
-            lower_bounds.extend([0, -np.inf, 0])
-            upper_bounds.extend([np.inf, np.inf, np.inf])
+            return Bounds(lb=[0, -np.inf, 0] * self.n_fits, ub=[np.inf, np.inf, np.inf] * self.n_fits)
         elif class_name == _skNormal:
-            lower_bounds.extend([-np.inf, -np.inf, -np.inf, 0])
-            upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
-
-        return lower_bounds, upper_bounds
+            return Bounds(lb=[-np.inf, -np.inf, -np.inf, 0] * self.n_fits, ub=[np.inf, np.inf, np.inf, np.inf] * self.n_fits)
+        else:
+            return Bounds()
 
     def fit(self, p0):
         """
@@ -93,7 +89,8 @@ class BaseFitter:
 
         if len_guess != total_pars:
             raise ValueError(f"Initial guess length must be {3 * self.n_fits}.")
-        _ = curve_fit(self._n_fitter, self.x_values, self.y_values, p0=p0,
+        # flatten idea taken from https://stackoverflow.com/a/73000598/3212945
+        _ = curve_fit(self._n_fitter, self.x_values, self.y_values, p0=np.array(p0).flatten(),
                       maxfev=self.max_iterations, bounds=self._get_bounds())
 
         self.params, self.covariance = _[0], _[1]
