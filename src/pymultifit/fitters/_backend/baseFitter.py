@@ -88,12 +88,12 @@ class BaseFitter:
         total_pars = self.n_par * self.n_fits
 
         if len_guess != total_pars:
-            raise ValueError(f"Initial guess length must be {3 * self.n_fits}.")
+            raise ValueError(f"Initial guess length must be {total_pars}.")
         # flatten idea taken from https://stackoverflow.com/a/73000598/3212945
-        _ = curve_fit(self._n_fitter, self.x_values, self.y_values, p0=np.array(p0).flatten(),
-                      maxfev=self.max_iterations, bounds=self._get_bounds())
+        self.params, self.covariance, *_ = curve_fit(self._n_fitter, self.x_values, self.y_values, p0=np.array(p0).flatten(),
+                                                     maxfev=self.max_iterations, bounds=self._get_bounds())
 
-        self.params, self.covariance = _[0], _[1]
+        # self.params, self.covariance = _[0], _[1]
 
     def _get_overall_parameter_values(self):
         """
