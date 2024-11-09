@@ -37,7 +37,7 @@ class PowerLawDistribution(BaseDistribution):
 
 
 def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize: bool = True):
-    return amplitude * x**-alpha
+    return amplitude * x**alpha
 
 
 powerLawWA = PowerLawDistribution.with_amplitude

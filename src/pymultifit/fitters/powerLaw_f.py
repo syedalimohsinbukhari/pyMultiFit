@@ -28,8 +28,8 @@ class PowerLawFitter(BaseFitter):
         for i, (amp, alpha) in enumerate(params):
             plotter.plot(x, self._fitter(x=x, params=[amp, alpha]),
                          '--', label=f'PowerLaw {i + 1}('
-                                     f'{self.format_param(amp)}'
-                                     f'{self.format_param(alpha)}')
+                                     f'{self.format_param(amp)} '
+                                     f'{self.format_param(alpha)})')
     
     def _get_overall_parameter_values(self):
         pass
