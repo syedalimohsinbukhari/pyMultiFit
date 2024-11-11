@@ -98,7 +98,7 @@ class MixedDataFitter:
             y : array_like
                 The computed y-values from the composite model.
             """
-            y = np.zeros_like(x)
+            y = np.zeros_like(x, dtype=float)
             param_index = 0
 
             for model in self.model_list:

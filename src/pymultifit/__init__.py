@@ -15,6 +15,7 @@ LAPLACE = 'laplace'
 GAMMA = 'gamma'
 BETA = 'beta'
 ARCSINE = 'arcSine'
+POWERLAW = 'powerlaw'
 
 LINE = 'line'
 LINEAR = LINE

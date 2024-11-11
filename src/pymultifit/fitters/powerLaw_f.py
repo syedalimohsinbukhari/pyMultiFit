@@ -17,7 +17,7 @@ class PowerLawFitter(BaseFitter):
         return powerLawWA(*params).pdf(x)
     
     def _n_fitter(self, x, *params):
-        y = np.zeros_like(x)
+        y = np.zeros_like(x, dtype=float)
         params = np.reshape(params, (self.n_fits, self.n_par))
         for amp, alpha in params:
             y += self._fitter(x=x, params=[amp, alpha])

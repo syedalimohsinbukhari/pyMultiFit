@@ -25,7 +25,7 @@ class LaplaceFitter(BaseFitter):
         return laplace_(x, *params, normalize=False)
 
     def _n_fitter(self, x, *params):
-        y = np.zeros_like(x)
+        y = np.zeros_like(x, dtype=float)
         params = np.reshape(params, (self.n_fits, self.n_par))
         for amp, mu, b in params:
             y += self._fitter(x, [amp, mu, b])

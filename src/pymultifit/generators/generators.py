@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 import numpy as np
 
-from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL
+from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, POWERLAW
 from ..distributions import (GaussianDistribution as GDist, LaplaceDistribution as lapD, line,
                              LogNormalDistribution as lNorm, PowerLawDistribution as plDist,
                              SkewedNormalDistribution as skNorm)
@@ -14,9 +14,11 @@ lnA = lNorm.with_amplitude
 lpA = lapD.with_amplitude
 plA = plDist.with_amplitude
 
+lTuples = List[Tuple[float, ...]]
 
-def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float, float]],
-                                 noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+
+def generate_multi_gaussian_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0,
+                                 normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Gaussian data with optional noise.
 
@@ -36,7 +38,7 @@ def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float,
     np.ndarray
         Y values of the multi-Gaussian data with added noise.
     """
-    y = np.zeros_like(x)
+    y = np.zeros_like(x, dtype=float)
     for amp, mean, std in params:
         if normalize:
             y += GDist(mean=mean, standard_deviation=std).pdf(x)
@@ -47,7 +49,7 @@ def generate_multi_gaussian_data(x: np.ndarray, params: List[Tuple[float, float,
     return y
 
 
-def generate_multi_skewed_normal_data(x: np.ndarray, params: List[Tuple[float, float, float, float]],
+def generate_multi_skewed_normal_data(x: np.ndarray, params: lTuples,
                                       noise_level: float = 0.0) -> np.ndarray:
     """
     Generate multi-Skewed Normal data with optional noise.
@@ -66,7 +68,7 @@ def generate_multi_skewed_normal_data(x: np.ndarray, params: List[Tuple[float, f
     np.ndarray
         Y values of the multi-Skewed Normal data with added noise.
     """
-    y = np.zeros_like(x)
+    y = np.zeros_like(x, dtype=float)
     for amp, shape, location, scale in params:
         y += skNorm(shape=shape, location=location, scale=scale).pdf(x)
     if noise_level > 0:
@@ -74,7 +76,7 @@ def generate_multi_skewed_normal_data(x: np.ndarray, params: List[Tuple[float, f
     return y
 
 
-def generate_multi_log_normal_data(x: np.ndarray, params: List[Tuple[float, float, float]],
+def generate_multi_log_normal_data(x: np.ndarray, params: lTuples,
                                    noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-log_normal data with optional noise.
@@ -95,7 +97,7 @@ def generate_multi_log_normal_data(x: np.ndarray, params: List[Tuple[float, floa
     np.ndarray
         Y values of the multi-Gaussian data with added noise.
     """
-    y = np.zeros_like(x)
+    y = np.zeros_like(x, dtype=float)
     for amp, mean, std in params:
         if normalize:
             y += lNorm(mean=mean, standard_deviation=std).pdf(x)
@@ -106,7 +108,7 @@ def generate_multi_log_normal_data(x: np.ndarray, params: List[Tuple[float, floa
     return y
 
 
-def generate_multi_laplace_data(x: np.ndarray, params: List[Tuple[float, float, float]], noise_level: float = 0.0,
+def generate_multi_laplace_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0,
                                 normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Laplace data with optional noise.
@@ -127,7 +129,7 @@ def generate_multi_laplace_data(x: np.ndarray, params: List[Tuple[float, float, 
     np.ndarray
         Y values of the multi-Laplace data with added noise.
     """
-    y = np.zeros_like(x)
+    y = np.zeros_like(x, dtype=float)
     for amp, mu, b in params:
         if normalize:
             y += lapD(mean=mu, diversity=b).pdf(x)
@@ -138,8 +140,8 @@ def generate_multi_laplace_data(x: np.ndarray, params: List[Tuple[float, float, 
     return y
 
 
-def generate_multi_powerlaw_data(x: np.ndarray, params, noise_level: float = 0.0):
-    y = np.zeros_like(x)
+def generate_multi_powerlaw_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0):
+    y = np.zeros_like(x, dtype=float)
     for amp, alpha in params:
         y += plA(amplitude=amp, alpha=alpha).pdf(x)
     if noise_level > 0:
@@ -147,8 +149,8 @@ def generate_multi_powerlaw_data(x: np.ndarray, params, noise_level: float = 0.0
     return y
 
 
-def generate_mixed_model_data(x: np.ndarray, params: List[Tuple[float, ...]], model_list, noise_level=0.0):
-    y = np.zeros_like(x)
+def generate_mixed_model_data(x: np.ndarray, params: lTuples, model_list, noise_level=0.0):
+    y = np.zeros_like(x, dtype=float)
     par_index = 0
     for model in model_list:
         if model == GAUSSIAN:
@@ -157,6 +159,8 @@ def generate_mixed_model_data(x: np.ndarray, params: List[Tuple[float, ...]], mo
             y += lnA(*params[par_index]).pdf(x)
         elif model == LAPLACE:
             y += lpA(*params[par_index]).pdf(x)
+        elif model == POWERLAW:
+            y += plA(*params[par_index]).pdf(x)
         elif model == LINE:
             y += line(*params[par_index])
         
