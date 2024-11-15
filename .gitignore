@@ -166,3 +166,4 @@ LYSO_Spectra/
 /latest_data/
 /SiPM_Onsemi_CSeries/
 /Required_Data/
+/**/*.fig
