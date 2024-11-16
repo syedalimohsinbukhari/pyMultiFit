@@ -1,12 +1,10 @@
 """Created on Jul 18 00:25:57 2024"""
 
-from typing import Any, List, Tuple
+from typing import Any, List
 
 import numpy as np
-from typing_extensions import deprecated
 
 from ._backend.baseFitter import BaseFitter
-from ._backend.utilities import get_y_values_at_closest_x
 from ..distributions.gaussian_d import gaussianWA
 
 
@@ -42,63 +40,40 @@ class GaussianFitter(BaseFitter):
         """Formats the parameter value based on its magnitude."""
         return f'{value:.3E}' if threshold2 < abs(value) or abs(value) < threshold1 else f'{value:.3f}'
     
-    def _get_overall_parameter_values(self) -> tuple[list, list]:
-        _, mu, _ = self.parameter_extractor(mean=True)
-        amp = get_y_values_at_closest_x(x_array=self.x_values, y_array=self.get_fit_values(), target_x_values=mu)
-        return amp, mu
-    
-    @deprecated("This function will be dropped in upcoming releases. Use get_parameters function instead")
-    def parameter_extractor(self,
-                            amplitude: bool = False, mean: bool = False, standard_deviation: bool = False,
-                            fit_amplitude: bool = False) -> Tuple[List[float], List[float], List[float]]:
+    def get_parameters(self,
+                       amplitude: bool = False, mu: bool = False, sigma: bool = False,
+                       gaussian_number: List[int, Any] = None):
         """
-        Extracts parameter values based on provided flags.
+        Extracts specific parameter values (amplitude, mean (mu), and standard deviation (sigma))
+        from the fitting process.
 
         Parameters
         ----------
         amplitude : bool, optional
-            Flag to extract amplitude values. Defaults to False.
-        mean : bool, optional
-            Flag to extract mean (mu) values. Defaults to False.
-        standard_deviation : bool, optional
-            Flag to extract standard deviation (sigma) values. Defaults to False.
-        fit_amplitude : bool, optional
-            Flag to extract overall amplitude values. Overwrites the default amplitude selection.
-            This will not return the amplitudes of individual fitters, but rather the amplitude of overall fitters.
-            Defaults to False.
+            If True, returns the amplitude values. Defaults to False.
+        mu : bool, optional
+            If True, returns the mean (mu) values. Defaults to False.
+        sigma : bool, optional
+            If True, returns the standard deviation (sigma) values. Defaults to False.
+        gaussian_number : list of int or None, optional
+            A list of indices specifying which Gaussian components to return values for.
+            If None, returns values for all components. Defaults to None.
 
         Returns
         -------
-        Tuple[List[float], List[float], List[float]]
-            A tuple containing three lists in the following order:
-            - Amplitude values if `amplitude` is True, otherwise an empty list.
-            - Mean (mu) values if `mean` is True, otherwise an empty list.
-            - Standard deviation (sigma) values if `standard_deviation` is True, otherwise an empty list.
+        tuple:
+            Three arrays corresponding to amplitude, mu, and sigma values.
+            
+            If a specific parameter is not requested (i.e., its corresponding argument is False), its array will be empty.
+
+            - `amp_values`: numpy array of amplitude values, or an empty array if `amplitude=False`.
+            - `mu_values`: numpy array of mean values (mu), or an empty array if `mu=False`.
+            - `sigma_values`: numpy array of standard deviation values, or an empty array if `sigma=False`.
+
+        Notes
+        -----
+        - The `gaussian_number` parameter is used to filter the returned values to specific Gaussian  components based on their indices. Indexing starts at 1.
         """
-        if not (amplitude or mean or standard_deviation):
-            return [], [], []
-        
-        values = self.get_value_error_pair(mean_values=True)
-        
-        if fit_amplitude:
-            amp_values, mu_values = self._get_overall_parameter_values()
-            return amp_values, mu_values, []
-        
-        amp_values, mu_values, sigma_values = [], [], []
-        
-        n_fits, n_par = self.n_fits, self.n_par
-        if amplitude:
-            amp_values = [values[i * n_par] for i in range(n_fits)]
-        if mean:
-            mu_values = [values[i * n_par + 1] for i in range(n_fits)]
-        if standard_deviation:
-            sigma_values = [values[i * n_par + 2] for i in range(n_fits)]
-        
-        return amp_values, mu_values, sigma_values
-    
-    def get_parameters(self,
-                       amplitude: bool = False, mu: bool = False, sigma: bool = False,
-                       gaussian_number: tuple = None):
         if not (amplitude or mu or sigma):
             return [], [], []
         

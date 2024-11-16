@@ -199,8 +199,8 @@ class MixedDataFitter:
                 upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
 
         return lower_bounds, upper_bounds
-
-    def plot(self, plot_individuals=False, auto_label=False,
+    
+    def plot_fit(self, show_individuals=False, auto_label=False,
              fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None):
         """
         Plots the original data, fitted model, and optionally individual components.
@@ -209,7 +209,7 @@ class MixedDataFitter:
         ----------
         fig_size
         ax
-        plot_individuals : bool, optional
+        show_individuals : bool, optional
             Whether to plot individual fitted functions, by default False.
         auto_label : bool, optional
             If True, automatically labels the plot with 'X', 'Y', 'MixedFittedData',
@@ -234,8 +234,8 @@ class MixedDataFitter:
 
         plotter.plot(self.x_data, self.y_data, '-', label='data')
         plotter.plot(self.x_data, self.model_function(self.x_data, *self.params), 'k-', label='fitted')
-
-        if plot_individuals:
+        
+        if show_individuals:
             self._plot_individual_components()
 
         if auto_label:
