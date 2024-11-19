@@ -1,11 +1,10 @@
 """Created on Jul 18 00:25:57 2024"""
 
-from typing import Any, Tuple
+from typing import Any
 
 import numpy as np
 
 from ._backend.baseFitter import BaseFitter
-from ._backend.utilities import parameter_logic
 from ..distributions.gaussian_d import gaussianWA
 
 
@@ -35,45 +34,3 @@ class GaussianFitter(BaseFitter):
                                      f'{self.format_param(amp)}, '
                                      f'{self.format_param(mu)}, '
                                      f'{self.format_param(sigma)})')
-
-    def get_parameters(self,
-                       amplitude: bool = True, mu: bool = True, sigma: bool = True,
-                       gaussian_number: Tuple[int, Any] = None):
-        """ Extracts specific parameter values (amplitude, mean (mu), and standard deviation (sigma)) from the fitting process.
-
-        Parameters
-        ----------
-        amplitude : bool, optional
-            If True, returns the amplitude values. Defaults to False.
-        mu : bool, optional
-            If True, returns the mean (mu) values. Defaults to False.
-        sigma : bool, optional
-            If True, returns the standard deviation (sigma) values. Defaults to False.
-        gaussian_number : list of int or None, optional
-            A list of indices specifying which Gaussian components to return values for.
-            If None, returns values for all components. Defaults to None.
-
-        Returns
-        -------
-        tuple:
-            Three arrays corresponding to amplitude, mu, and sigma values.
-
-            If a specific parameter is not requested (i.e., its corresponding argument is False), its array will be empty.
-
-            - `amp_values`: numpy array of amplitude values, or an empty array if `amplitude=False`.
-            - `mu_values`: numpy array of mean values (mu), or an empty array if `mu=False`.
-            - `sigma_values`: numpy array of standard deviation values, or an empty array if `sigma=False`.
-
-        Notes
-        -----
-        - The `gaussian_number` parameter is used to filter the returned values to specific Gaussian  components based on their indices. Indexing starts at 1.
-        """
-        if not (amplitude or mu or sigma):
-            return np.array([]), np.array([]), np.array([])
-
-        selected = parameter_logic(par_array=self.get_value_error_pair(), n_par=self.n_par,
-                                   selected_models=gaussian_number)
-
-        return (selected[:, 0] if amplitude else np.array([]),
-                selected[:, 1] if mu else np.array([]),
-                selected[:, 2] if sigma else np.array([]))

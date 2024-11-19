@@ -1,11 +1,13 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import Bounds, curve_fit
+
+from .utilities import parameter_logic
 
 # safe keeping class names for spelling mistakes
 _gaussian = 'GaussianFitter'
@@ -95,21 +97,6 @@ class BaseFitter:
                                                      p0=np.array(p0).flatten(),
                                                      maxfev=self.max_iterations, bounds=self._get_bounds())
 
-    def _get_overall_parameter_values(self):
-        """
-        Returns the overall parameters of the multi-fitter.
-
-        Returns
-        -------
-        Tuple[List[float], List[float]]
-            A tuple containing the amplitude and mean value of the multi-fitter.
-        """
-        raise NotImplementedError("This method should be implemented by subclasses.")
-
-    def parameter_extractor(self):
-        """Extract the required parameters from the fitters."""
-        raise NotImplementedError("This method should be implemented by subclasses.")
-
     def get_fit_values(self):
         """
         Get the fitted values.
@@ -189,3 +176,27 @@ class BaseFitter:
             plotter.tight_layout()
 
         return plotter
+
+    def get_parameters(self, select: Tuple[int, Any] = None):
+        """ Extracts specific parameter values from the fitting process.
+
+        Parameters
+        ----------
+        select : list of int or None, optional
+            A list of indices specifying which sub-model to return values for.
+            If None, returns values for all sub-models. Defaults to None.
+
+        Returns
+        -------
+        tuple:
+            Arrays corresponding to model parameters.
+
+        Notes
+        -----
+        - The `select` parameter is used to filter the returned values to specific sub-model based on their indices. Indexing starts at 1.
+        """
+
+        selected = parameter_logic(par_array=self.get_value_error_pair(),
+                                   n_par=self.n_par, selected_models=select)
+
+        return selected[:, range(self.n_par)].T
