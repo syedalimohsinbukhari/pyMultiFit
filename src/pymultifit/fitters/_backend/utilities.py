@@ -1,8 +1,13 @@
 """Created on Aug 18 23:52:19 2024"""
 
-from typing import List, Tuple, Union
+from typing import Callable, List, Tuple, Union
 
 import numpy as np
+
+# SAFEGUARD:
+xy_values = Union[List[float], np.ndarray]
+xy_tuple = Tuple[np.ndarray, np.ndarray]
+indexType = Union[int, List[int], None]
 
 
 def get_y_values_at_closest_x(x_array: np.ndarray, y_array: np.ndarray,
@@ -42,8 +47,7 @@ def get_y_values_at_closest_x(x_array: np.ndarray, y_array: np.ndarray,
     return y_array[closest_indices].tolist()
 
 
-def sanity_check(x_values: Union[List[float], np.ndarray],
-                 y_values: Union[List[float], np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+def sanity_check(x_values: xy_values, y_values: xy_values) -> xy_tuple:
     """
     Convert input lists to NumPy arrays if necessary.
 
@@ -68,3 +72,27 @@ def sanity_check(x_values: Union[List[float], np.ndarray],
         y_values = np.array(y_values)
 
     return x_values, y_values
+
+
+def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexType) -> np.ndarray:
+    """
+    Extracts specific parameter values from a given function based on the number of parameters per fit and selected indices.
+
+    Parameters
+    ----------
+    par_array : np.ndarray
+        A 2D array where the first column contains the parameter values.
+    n_par : int
+        The number of parameters per fit (e.g., amplitude, mu, sigma, etc.).
+    selected_models : int, list of int, or None
+        Indices of model components to extract.
+        - If None, selects all components.
+        - If int or list of int, selects the specified components (1-based indexing).
+
+    Returns
+    -------
+    np.ndarray
+        A 2D array containing the selected parameter values for the specified Gaussian components.
+    """
+    indices = np.array(selected_models) - 1 if selected_models is not None else slice(None)
+    return par_array.reshape(-1, n_par)[indices]
