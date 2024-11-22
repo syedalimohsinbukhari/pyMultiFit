@@ -1,6 +1,6 @@
 """Created on Aug 18 23:52:19 2024"""
 
-from typing import Callable, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -95,4 +95,4 @@ def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexTyp
         A 2D array containing the selected parameter values for the specified Gaussian components.
     """
     indices = np.array(selected_models) - 1 if selected_models is not None else slice(None)
-    return par_array[:, 0].reshape(-1, n_par)[indices]
+    return par_array.reshape(-1, n_par)[indices]

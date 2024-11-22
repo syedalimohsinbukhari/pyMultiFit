@@ -128,7 +128,12 @@ class BaseFitter:
         """
         pairs = np.array([np.array([i, j]) for i, j in zip(self._params(), self._standard_errors())])
 
-        return pairs[:, 0] if mean_values else pairs[:, 1] if std_values else pairs
+        if mean_values and std_values:
+            return pairs
+        elif mean_values:
+            return pairs[:, 0]
+        elif std_values:
+            return pairs[:, 1]
 
     def plot_fit(self, show_individual: bool = False, auto_label: bool = False,
                  fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None) -> plt:
@@ -177,7 +182,7 @@ class BaseFitter:
 
         return plotter
 
-    def get_parameters(self, select: Tuple[int, Any] = None):
+    def get_parameters(self, select: Tuple[int, Any] = None, errors: bool = False):
         """ Extracts specific parameter values from the fitting process.
 
         Parameters
@@ -185,6 +190,8 @@ class BaseFitter:
         select : list of int or None, optional
             A list of indices specifying which sub-model to return values for.
             If None, returns values for all sub-models. Defaults to None.
+        errors : bool, optional
+            Whether to return the standard deviations of the selected parameters. Defaults to False.
 
         Returns
         -------
@@ -196,7 +203,18 @@ class BaseFitter:
         - The `select` parameter is used to filter the returned values to specific sub-model based on their indices. Indexing starts at 1.
         """
 
-        selected = parameter_logic(par_array=self.get_value_error_pair(),
+        parameter_mean = self.get_value_error_pair(True, std_values=errors)
+
+        if not errors:
+            selected = parameter_logic(par_array=parameter_mean,
+                                       n_par=self.n_par, selected_models=select)
+
+            return selected[:, range(self.n_par)].T
+        else:
+            par_list = parameter_mean.reshape(self.n_fits, self.n_par, 2)
+            mean = parameter_logic(par_array=par_list[:, :, 0].flatten(),
+                                   n_par=self.n_par, selected_models=select)
+            std_ = parameter_logic(par_array=par_list[:, :, 1].flatten(),
                                    n_par=self.n_par, selected_models=select)
 
-        return selected[:, range(self.n_par)].T
+            return mean[:, range(self.n_par)].T, std_[:, range(self.n_par)].T

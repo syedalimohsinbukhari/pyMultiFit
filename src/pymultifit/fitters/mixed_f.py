@@ -6,7 +6,6 @@ from typing import Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
-from scipy.signal import find_peaks
 
 from ._backend.utilities import sanity_check
 from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
@@ -199,9 +198,9 @@ class MixedDataFitter:
                 upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
 
         return lower_bounds, upper_bounds
-    
+
     def plot_fit(self, show_individuals=False, auto_label=False,
-             fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None):
+                 fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None):
         """
         Plots the original data, fitted model, and optionally individual components.
 
@@ -234,7 +233,7 @@ class MixedDataFitter:
 
         plotter.plot(self.x_data, self.y_data, '-', label='data')
         plotter.plot(self.x_data, self.model_function(self.x_data, *self.params), 'k-', label='fitted')
-        
+
         if show_individuals:
             self._plot_individual_components()
 
@@ -305,7 +304,7 @@ class MixedDataFitter:
 
         return param_dict
 
-    def parameter_extractor(self, model=None, return_individual_values=True):
+    def get_parameters(self, model=None, return_individual_values=True):
         """
         Extracts parameters for a specific model, or for all models if no model is specified.
 
@@ -358,14 +357,3 @@ class MixedDataFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
 
         return self.model_function(self.x_data, *self.params)
-
-    def get_peaks(self):
-        """
-        Finds peaks in the fitted model values.
-
-        Returns
-        -------
-        tuple
-            Indices of peaks in the fitted model values.
-        """
-        return find_peaks(self.get_fit_values())
