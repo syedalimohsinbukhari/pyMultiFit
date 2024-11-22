@@ -1,7 +1,5 @@
 """Created on Nov 10 00:17:16 2024"""
 
-import numpy as np
-
 from ._backend.baseFitter import BaseFitter
 from ..distributions.powerLaw_d import powerLawWA
 
@@ -15,18 +13,3 @@ class PowerLawFitter(BaseFitter):
     @staticmethod
     def _fitter(x, params):
         return powerLawWA(*params).pdf(x)
-
-    def _n_fitter(self, x, *params):
-        y = np.zeros_like(x, dtype=float)
-        params = np.reshape(params, (self.n_fits, self.n_par))
-        for amp, alpha in params:
-            y += self._fitter(x=x, params=[amp, alpha])
-        return y
-
-    def _plot_individual_fitter(self, x, plotter):
-        params = np.reshape(self.params, (self.n_fits, self.n_par))
-        for i, (amp, alpha) in enumerate(params):
-            plotter.plot(x, self._fitter(x=x, params=[amp, alpha]),
-                         '--', label=f'PowerLaw {i + 1}('
-                                     f'{self.format_param(amp)} '
-                                     f'{self.format_param(alpha)})')

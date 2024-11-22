@@ -49,10 +49,18 @@ class BaseFitter:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     def _n_fitter(self, x, *params):
-        raise NotImplementedError("This method should be implemented by subclasses.")
+        y = np.zeros_like(x, dtype=float)
+        params = np.reshape(params, (self.n_fits, self.n_par))
+        for par in params:
+            y += self._fitter(x=x, params=par)
+        return y
 
-    def _plot_individual_fitter(self, x, plotter):
-        raise NotImplementedError("This method should be implemented by subclasses.")
+    def _plot_individual_fitter(self, x: np.ndarray, plotter):
+        params = np.reshape(self.params, (self.n_fits, self.n_par))
+        for i, par in enumerate(params):
+            plotter.plot(x, self._fitter(x=x, params=par),
+                         '--', label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
+                                     f'{", ".join(self.format_param(i) for i in par)})')
 
     @staticmethod
     def format_param(value, t_low=0.001, t_high=10_000):

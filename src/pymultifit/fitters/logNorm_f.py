@@ -25,19 +25,3 @@ class LogNormalFitter(BaseFitter):
     @staticmethod
     def _fitter(x, params):
         return log_normal_(x, *params, normalize=False)
-
-    def _n_fitter(self, x, *params):
-        y = np.zeros_like(x, dtype=float)
-        params = np.reshape(params, (self.n_fits, self.n_par))
-        for amp, mu, sigma in params:
-            y += self._fitter(x, [amp, mu, sigma])
-        return y
-
-    def _plot_individual_fitter(self, x, plotter):
-        params = np.reshape(self.params, (self.n_fits, self.n_par))
-        for i, (amp, mu, sigma) in enumerate(params):
-            plotter.plot(x, self._fitter(x, [amp, mu, sigma]),
-                         '--', label=f'LogNormal {i + 1}('
-                                     f'{self.format_param(amp)}, '
-                                     f'{self.format_param(mu)}, '
-                                     f'{self.format_param(sigma)})')
