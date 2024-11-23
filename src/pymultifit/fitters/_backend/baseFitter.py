@@ -19,7 +19,7 @@ _laplace = 'Laplace Fitter'
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    def __init__(self, n_fits: int, x_values, y_values, max_iterations: Optional[int] = 1000):
+    def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
         self.n_fits = n_fits
         self.x_values = x_values
         self.y_values = y_values
@@ -55,7 +55,7 @@ class BaseFitter:
             y += self._fitter(x=x, params=par)
         return y
 
-    def _plot_individual_fitter(self, x: np.ndarray, plotter):
+    def _plot_individual_fitter(self, x, plotter):
         params = np.reshape(self.params, (self.n_fits, self.n_par))
         for i, par in enumerate(params):
             plotter.plot(x, self._fitter(x=x, params=par),
@@ -118,7 +118,7 @@ class BaseFitter:
             raise RuntimeError('Fit not performed yet. Call fit() first.')
         return self._n_fitter(self.x_values, *self.params)
 
-    def get_value_error_pair(self, mean_values=False, std_values=False) -> np.ndarray:
+    def get_value_error_pair(self, mean_values=False, std_values=False):
         """
         Get the value/error pair of the fitted values.
 

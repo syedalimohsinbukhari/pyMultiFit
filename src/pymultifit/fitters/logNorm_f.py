@@ -1,7 +1,5 @@
 """Created on Jul 18 19:01:45 2024"""
 
-import numpy as np
-
 from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import sanity_check
 from ..distributions.logNorm_d import log_normal_
@@ -16,7 +14,7 @@ class LogNormalFitter(BaseFitter):
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        if np.any(x_values < 0):
+        if any(x_values < 0):
             raise ValueError("The LogNormal distribution must have x > 0. "
                              "Use `EPSILON` from the package to get as close to zero as possible.")
         super().__init__(n_fits=n_fits, x_values=x_values, y_values=y_values, max_iterations=max_iterations)
