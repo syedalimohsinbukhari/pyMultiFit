@@ -5,6 +5,7 @@ setuptools
 typing-extensions
 pybind11==2.13.5
 cmake==3.27.9
+mpyez==0.0.9a1
 
 # Non pip dependencies
 # gxx_linux-64==12.4

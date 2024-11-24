@@ -1,6 +1,7 @@
 """Created on Nov 24 02:45:12 2024"""
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 from src.pymultifit.fitters import MixedDataFitter
 from src.pymultifit.generators import generate_mixed_model_data
@@ -19,5 +20,5 @@ guess = [(0, 0), (1, -20, 1), (1, -5, 5), (1, -1, 0.5), (1, 2, 1), (1, 15, 2)]
 
 fitter.fit(guess)
 
-plotter = fitter.plot_fit(show_individuals=True, auto_label=True)
-plotter.show()
+plotter = fitter.plot_fit(show_individuals=True, x_label='X_data', y_label='Y_data', title='XY_plot', data_label='XY_data')
+plt.show()

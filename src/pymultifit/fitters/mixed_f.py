@@ -2,10 +2,13 @@
 
 import itertools
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from mpyez.backend.uPlotting import LinePlot
+from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
 
 from ._backend.utilities import sanity_check
@@ -209,63 +212,64 @@ class MixedDataFitter:
 
         return lower_bounds, upper_bounds
 
-    def plot_fit(self, show_individuals=False, auto_label=False,
-                 fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None):
+    def plot_fit(self, show_individuals=False,
+                 x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None, data_label: Optional[str] = None,
+                 axis: Optional[Axes] = None) -> plt:
         """
         Plots the original data, fitted model, and optionally individual components.
 
         Parameters
         ----------
-        fig_size
-        ax
         show_individuals : bool, optional
             Whether to plot individual fitted functions, by default False.
-        auto_label : bool, optional
-            If True, automatically labels the plot with 'X', 'Y', 'MixedFittedData',
-            applies a legend, and adjusts layout, by default False.
+        x_label: str
+            The label for the x-axis.
+        y_label: str
+            The label for the y-axis.
+        title: str
+            The title for the plot.
+        data_label: str
+            The label for the data.
+        axis: Axes, optional
+            Axes to plot instead of the entire figure. Defaults to None.
 
         Returns
         -------
-        matplotlib.pyplot
-            The plot object.
-
-        Raises
-        ------
-        ValueError
-            If data is not fitted before plotting.
+        plt
+            The plotter handle for the drawn plot.
         """
         if self.y_values is None or self.params is None:
             raise ValueError("Data must be fitted before plotting.")
 
-        plotter = ax if ax else plt
-        if not ax:
-            plt.figure(figsize=fig_size)
-
-        plotter.plot(self.x_values, self.y_values, '-', label='data')
-        plotter.plot(self.x_values, self.model_function(self.x_values, *self.params), 'k-', label='fitted')
+        plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=axis)
+        plot_xy(self.x_values, self.model_function(self.x_values, *self.params),
+                data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
 
         if show_individuals:
-            self._plot_individual_components()
+            self._plot_individual_fitter(plotter=plotter)
 
-        if auto_label:
-            plotter.xlabel('X')
-            plotter.ylabel('Y')
-            plotter.title('MixedFittedData')
-            plotter.legend(loc='best')
-            plotter.tight_layout()
+        plotter.set_xlabel(x_label if x_label else 'X')
+        plotter.set_ylabel(y_label if y_label else 'Y')
+        plotter.set_title(title if title else f'{self.__class__.__name__} fit')
+        plotter.legend(loc='best')
+        plt.tight_layout()
 
         return plotter
 
-    def _plot_individual_components(self):
-        """Plots the individual fitted components of the model."""
-
+    def _plot_individual_fitter(self, plotter):
+        x = self.x_values
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
         param_index = 0
         for i, model in enumerate(self.model_list):
+            color = colors[i % len(colors)]
             m_, p_ = model_dict[model]
             pars = self.params[param_index:param_index + p_]
-            y_component = m_(*pars).pdf(self.x_values)
-            plt.plot(self.x_values, y_component, '--',
-                     label=f'{model.capitalize()} {i + 1}({", ".join(self.format_param(i) for i in pars)})')
+            y_component = m_(*pars).pdf(x)
+            plot_xy(x, y_component,
+                    x_label='', y_label='', plot_title='',
+                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self.format_param(i) for i in pars)})',
+                    plot_dictionary=LinePlot(line_style='--', color=color),
+                    axis=plotter)
             param_index += p_
 
     @staticmethod

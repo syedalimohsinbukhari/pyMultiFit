@@ -16,3 +16,4 @@ dependencies:
     - pip
     -   pip:
             - typing-extensions
+            - mpyez --pre
