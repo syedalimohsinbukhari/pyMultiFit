@@ -49,14 +49,14 @@ class BaseFitter:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     def _n_fitter(self, x, *params):
-        y = np.zeros_like(x, dtype=float)
-        params = np.reshape(params, (self.n_fits, self.n_par))
+        y = np.zeros_like(a=x, dtype=float)
+        params = np.reshape(a=params, newshape=(self.n_fits, self.n_par))
         for par in params:
             y += self._fitter(x=x, params=par)
         return y
 
     def _plot_individual_fitter(self, x, plotter):
-        params = np.reshape(self.params, (self.n_fits, self.n_par))
+        params = np.reshape(a=self.params, newshape=(self.n_fits, self.n_par))
         for i, par in enumerate(params):
             plotter.plot(x, self._fitter(x=x, params=par),
                          '--', label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
@@ -94,6 +94,11 @@ class BaseFitter:
         ----------
         p0: List[int | float | ...]
             A list of initial guesses for the parameters of the Gaussian model.
+
+        Raises
+        ------
+        ValueError
+            If the length of initial parameters does not match the expected count.
         """
         len_guess = len(list(chain(*p0)))
         total_pars = self.n_par * self.n_fits
@@ -101,9 +106,8 @@ class BaseFitter:
         if len_guess != total_pars:
             raise ValueError(f"Initial guess length must be {total_pars}.")
         # flatten idea taken from https://stackoverflow.com/a/73000598/3212945
-        self.params, self.covariance, *_ = curve_fit(self._n_fitter, self.x_values, self.y_values,
-                                                     p0=np.array(p0).flatten(),
-                                                     maxfev=self.max_iterations, bounds=self._get_bounds())
+        self.params, self.covariance, *_ = curve_fit(f=self._n_fitter, xdata=self.x_values, ydata=self.y_values,
+                                                     p0=np.array(p0).flatten(), maxfev=self.max_iterations, bounds=self._get_bounds())
 
     def get_fit_values(self):
         """
@@ -116,7 +120,7 @@ class BaseFitter:
         """
         if self.params is None:
             raise RuntimeError('Fit not performed yet. Call fit() first.')
-        return self._n_fitter(self.x_values, *self.params)
+        return self._n_fitter(self.x_values, self.params)
 
     def get_value_error_pair(self, mean_values=False, std_values=False):
         """
@@ -176,7 +180,7 @@ class BaseFitter:
                      label='Total Fit', color='k')
 
         if show_individual:
-            self._plot_individual_fitter(self.x_values, plotter)
+            self._plot_individual_fitter(x=self.x_values, plotter=plotter)
 
         if auto_label:
             labels = {'x_label': plotter.set_xlabel if ax else plotter.xlabel,
@@ -211,7 +215,7 @@ class BaseFitter:
         - The `select` parameter is used to filter the returned values to specific sub-model based on their indices. Indexing starts at 1.
         """
 
-        parameter_mean = self.get_value_error_pair(True, std_values=errors)
+        parameter_mean = self.get_value_error_pair(mean_values=True, std_values=errors)
 
         if not errors:
             selected = parameter_logic(par_array=parameter_mean,

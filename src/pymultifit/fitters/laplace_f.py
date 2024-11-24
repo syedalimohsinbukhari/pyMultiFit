@@ -5,10 +5,6 @@ from ._backend.utilities import sanity_check
 from ..distributions.laplace_d import laplace_
 
 
-# TODO:
-#   Implement `_get_overall_parameter_values`
-#   Implement `parameter_extractor`
-
 class LaplaceFitter(BaseFitter):
     """A class for fitting multiple Laplace distributions to the given data."""
 

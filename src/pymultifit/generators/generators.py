@@ -162,11 +162,11 @@ def generate_mixed_model_data(x: np.ndarray, params: lTuples, model_list, noise_
         elif model == POWERLAW:
             y += plA(*params[par_index]).pdf(x)
         elif model == LINE:
-            y += line(*params[par_index])
-        
+            y += line(x, *params[par_index])
+
         par_index += 1
-    
+
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
-    
+
     return y
