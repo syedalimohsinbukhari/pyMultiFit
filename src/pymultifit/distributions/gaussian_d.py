@@ -6,6 +6,7 @@ import numpy as np
 from scipy.special import erf
 
 from ._backend import BaseDistribution
+from ..sharedLib import cppModels
 
 
 class GaussianDistribution(BaseDistribution):
@@ -75,11 +76,13 @@ def gaussian_(x: np.ndarray,
     ----------
     x : np.ndarray
         The input values at which to evaluate the Gaussian PDF.
-    mu : float, optional
+    amplitude: float
+        The amplitude of the Gaussian distribution. Defaults to 1.
+    mu : float
         The mean of the Gaussian distribution. Defaults to 0.
-    sigma : float, optional
+    sigma : float
         The standard deviation of the Gaussian distribution. Defaults to 1.
-    normalize : bool, optional
+    normalize : bool
         If True, the function returns the normalized value of the PDF else the PDF is not normalized. Default is True.
 
 
@@ -92,12 +95,7 @@ def gaussian_(x: np.ndarray,
     -----
     The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
     """
-    exponent_factor = (x - mu)**2 / (2 * sigma**2)
+    return cppModels.gaussianStatistics(x, amplitude, mu, sigma, normalize)
 
-    if normalize:
-        normalization_factor = sigma * np.sqrt(2 * np.pi)
-        amplitude = 1
-    else:
-        normalization_factor = 1
 
-    return amplitude * (np.exp(-exponent_factor) / normalization_factor)
+gaussianWA = GaussianDistribution.with_amplitude

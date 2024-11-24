@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
+
 EPSILON = np.finfo(float).eps
 
 GAUSSIAN = 'gaussian'
@@ -13,6 +15,7 @@ LAPLACE = 'laplace'
 GAMMA = 'gamma'
 BETA = 'beta'
 ARCSINE = 'arcSine'
+POWERLAW = 'powerlaw'
 
 LINE = 'line'
 LINEAR = LINE

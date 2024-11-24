@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from pymultifit.fitters import SkewedNormalFitter
-from pymultifit.generators import generate_multi_skewed_normal_data
+from src.pymultifit.fitters import SkewedNormalFitter
+from src.pymultifit.generators import generate_multi_skewed_normal_data
 
 params = [(12, 2, -7, 1), (3, -4, 2, 2), (4, 2, 7, 1.5)]
 
@@ -18,5 +18,5 @@ guess = [(4, 6, -6, 0.5), (3, -4, 2, 2), (4, 2, 7, 1.5)]
 
 fitter.fit(guess)
 
-plotter = fitter.plot_fit(show_individual=True, auto_label=True)
+plotter = fitter.plot_fit(show_individual=True, x_label='X_data', y_label='Y_data', title='XY_plot', data_label='XY_data')
 plotter.show()

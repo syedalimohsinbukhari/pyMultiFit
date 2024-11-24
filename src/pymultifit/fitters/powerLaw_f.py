@@ -1,19 +1,18 @@
-"""Created on Jul 18 13:54:03 2024"""
-
-from scipy.stats import skewnorm
+"""Created on Nov 10 00:17:16 2024"""
 
 from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import sanity_check
+from ..distributions.powerLaw_d import powerLawWA
 
 
-class SkewedNormalFitter(BaseFitter):
-    """A class for fitting multiple Skewed Normal functions to the given data."""
+class PowerLawFitter(BaseFitter):
+    """A class for fitting multiple PowerLaw functions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(n_fits=n_fits, x_values=x_values, y_values=y_values, max_iterations=max_iterations)
-        self.n_par = 4
+        self.n_par = 2
 
     @staticmethod
     def _fitter(x, params):
-        return params[0] * skewnorm.pdf(x, params[1], loc=params[2], scale=params[3])
+        return powerLawWA(*params).pdf(x)

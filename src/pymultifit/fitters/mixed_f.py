@@ -1,17 +1,54 @@
 """Created on Aug 10 23:08:38 2024"""
 
 import itertools
-from typing import Optional, Tuple
+from dataclasses import dataclass
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from mpyez.backend.uPlotting import LinePlot
+from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
-from scipy.signal import find_peaks
 
 from ._backend.utilities import sanity_check
 from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
-from ..distributions import (GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution,
-                             SkewedNormalDistribution)
+from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, SkewedNormalDistribution
+
+
+@dataclass
+class _Line:
+    """
+    Helper class for the line fitting function.
+
+    This class is intended for internal use only.
+    Provides a wrapper for evaluating a linear function with a given slope and intercept.
+    """
+    slope: float
+    intercept: float
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Calculates the value of the line function.
+
+        Parameters
+        ----------
+        x: np.ndarray
+            The input array to evaluate the line function.
+
+        Returns
+        -------
+        np.ndarray
+            The value of the line function for the given slope and intercept.
+        """
+        return line(x=x, slope=self.slope, intercept=self.intercept)
+
+
+model_dict = {LINE: [_Line, 2],
+              GAUSSIAN: [GaussianDistribution.with_amplitude, 3],
+              LOG_NORMAL: [LogNormalDistribution.with_amplitude, 3],
+              SKEW_NORMAL: [SkewedNormalDistribution, 4],
+              LAPLACE: [LaplaceDistribution.with_amplitude, 3]}
 
 
 class MixedDataFitter:
@@ -20,9 +57,9 @@ class MixedDataFitter:
 
     Attributes
     ----------
-    x_data : array_like
+    x_values : array_like
         The x-values for the data.
-    y_data : array_like
+    y_values : array_like
         The y-values for the data.
     model_list : list of str
         List of models to fit (e.g., ['gaussian', 'gaussian', 'line']).
@@ -34,24 +71,27 @@ class MixedDataFitter:
         The composite model function used for fitting.
     """
 
-    def __init__(self, x_data, y_data, model_list):
+    def __init__(self, x_values, y_values, model_list, max_iterations: int = 1000):
         """
         Initializes the MixedDataFitter with data and a list of models.
 
         Parameters
         ----------
-        x_data : array_like
+        x_values : array_like
             The x-values for the data.
-        y_data : array_like
+        y_values : array_like
             The y-values for the data.
         model_list : list of str
             List of models to fit (e.g., ['gaussian', 'gaussian', 'line']).
+        max_iterations: int, optional
+            The max number of iterations for fitting procedure.
         """
-        x_data, y_data = sanity_check(x_values=x_data, y_values=y_data)
+        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
 
-        self.x_data = x_data
-        self.y_data = y_data
+        self.x_values = x_values
+        self.y_values = y_values
         self.model_list = model_list
+        self.max_iterations = max_iterations
         self.params = None
         self.covariance = None
 
@@ -98,34 +138,13 @@ class MixedDataFitter:
             y : array_like
                 The computed y-values from the composite model.
             """
-            y = np.zeros_like(x)
+            y = np.zeros_like(x, dtype=float)
             param_index = 0
 
             for model in self.model_list:
-                if model in [GAUSSIAN, NORMAL]:
-                    amplitude, mean, std = params[param_index:param_index + 3]
-                    y += GaussianDistribution.with_amplitude(amplitude, mean, std).pdf(x)
-                    param_index += 3
-
-                elif model == LINE:
-                    slope, intercept = params[param_index:param_index + 2]
-                    y += line(x, slope, intercept)
-                    param_index += 2
-
-                elif model == SKEW_NORMAL:
-                    shape, loc, scale = params[param_index:param_index + 3]
-                    y += SkewedNormalDistribution(shape, loc, scale).pdf(x)
-                    param_index += 3
-
-                elif model == LOG_NORMAL:
-                    amplitude, mean, std = params[param_index:param_index + 3]
-                    y += LogNormalDistribution.with_amplitude(amplitude, mean, std).pdf(x)
-                    param_index += 3
-
-                elif model == LAPLACE:
-                    amplitude, mean, diversity = params[param_index:param_index + 3]
-                    y += LaplaceDistribution.with_amplitude(amplitude, mean, diversity).pdf(x)
-                    param_index += 3
+                func, n_par = model_dict[model]
+                y += func(*params[param_index:param_index + n_par]).pdf(x=x)
+                param_index += n_par
 
             return y
 
@@ -133,7 +152,7 @@ class MixedDataFitter:
 
     def fit(self, p0):
         """
-        Fits the model to the data using non-linear least squares.
+        Fit the data.
 
         Parameters
         ----------
@@ -145,15 +164,12 @@ class MixedDataFitter:
         ValueError
             If the length of initial parameters does not match the expected count.
         """
-        p0_ = list(itertools.chain.from_iterable(p0))
-        if len(p0_) != self._expected_param_count():
-            raise ValueError(f"Initial parameters length {len(p0)} does not match expected "
-                             f"count {self._expected_param_count()}.")
+        p0 = list(itertools.chain.from_iterable(p0))
+        if len(p0) != self._expected_param_count():
+            raise ValueError(f"Initial parameters length {len(p0)} does not match expected count {self._expected_param_count()}.")
 
-        lower_bounds, upper_bounds = self._get_bounds()
-
-        _ = curve_fit(self.model_function, self.x_data, self.y_data, p0_, bounds=(lower_bounds, upper_bounds))
-        self.params, self.covariance = _[0], _[1]
+        self.params, self.covariance, *_ = curve_fit(f=self.model_function, xdata=self.x_values, ydata=self.y_values,
+                                                     p0=p0, maxfev=self.max_iterations, bounds=self._get_bounds())
 
     def _expected_param_count(self):
         """
@@ -166,12 +182,8 @@ class MixedDataFitter:
         """
         count = 0
         for model in self.model_list:
-            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
-                count += 3
-            elif model == LINE:
-                count += 2
-            elif model == SKEW_NORMAL:
-                count += 4
+            _, n_par = model_dict[model]
+            count += n_par
 
         return count
 
@@ -200,81 +212,70 @@ class MixedDataFitter:
 
         return lower_bounds, upper_bounds
 
-    def plot(self, plot_individuals=False, auto_label=False,
-             fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None):
+    def plot_fit(self, show_individuals=False,
+                 x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None, data_label: Optional[str] = None,
+                 axis: Optional[Axes] = None) -> plt:
         """
         Plots the original data, fitted model, and optionally individual components.
 
         Parameters
         ----------
-        fig_size
-        ax
-        plot_individuals : bool, optional
+        show_individuals : bool, optional
             Whether to plot individual fitted functions, by default False.
-        auto_label : bool, optional
-            If True, automatically labels the plot with 'X', 'Y', 'MixedFittedData',
-            applies a legend, and adjusts layout, by default False.
+        x_label: str
+            The label for the x-axis.
+        y_label: str
+            The label for the y-axis.
+        title: str
+            The title for the plot.
+        data_label: str
+            The label for the data.
+        axis: Axes, optional
+            Axes to plot instead of the entire figure. Defaults to None.
 
         Returns
         -------
-        matplotlib.pyplot
-            The plot object.
-
-        Raises
-        ------
-        ValueError
-            If data is not fitted before plotting.
+        plt
+            The plotter handle for the drawn plot.
         """
-        if self.y_data is None or self.params is None:
+        if self.y_values is None or self.params is None:
             raise ValueError("Data must be fitted before plotting.")
 
-        plotter = ax if ax else plt
-        if not ax:
-            plt.figure(figsize=fig_size)
+        plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=axis)
+        plot_xy(self.x_values, self.model_function(self.x_values, *self.params),
+                data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
 
-        plotter.plot(self.x_data, self.y_data, '-', label='data')
-        plotter.plot(self.x_data, self.model_function(self.x_data, *self.params), 'k-', label='fitted')
+        if show_individuals:
+            self._plot_individual_fitter(plotter=plotter)
 
-        if plot_individuals:
-            self._plot_individual_components()
-
-        if auto_label:
-            plotter.xlabel('X')
-            plotter.ylabel('Y')
-            plotter.title('MixedFittedData')
-            plotter.legend(loc='best')
-            plotter.tight_layout()
+        plotter.set_xlabel(x_label if x_label else 'X')
+        plotter.set_ylabel(y_label if y_label else 'Y')
+        plotter.set_title(title if title else f'{self.__class__.__name__} fit')
+        plotter.legend(loc='best')
+        plt.tight_layout()
 
         return plotter
 
-    def _plot_individual_components(self):
-        """Plots the individual fitted components of the model."""
-        model_dict = {GAUSSIAN: GaussianDistribution.with_amplitude,
-                      LOG_NORMAL: LogNormalDistribution.with_amplitude,
-                      SKEW_NORMAL: SkewedNormalDistribution,
-                      LAPLACE: LaplaceDistribution.with_amplitude}
-
+    def _plot_individual_fitter(self, plotter):
+        x = self.x_values
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
         param_index = 0
-        for model in self.model_list:
-            if model == LINE:
-                slope, intercept = self.params[param_index:param_index + 2]
-                y_component = line(self.x_data, slope, intercept)
-                plt.plot(self.x_data, y_component, '--',
-                         label=f'Line({self._format_param(slope)}, {self._format_param(intercept)})')
-                param_index += 2
-
-            elif model in model_dict:
-                pars = self.params[param_index:param_index + 3]
-                y_component = model_dict[model](*pars).pdf(self.x_data)
-                plt.plot(self.x_data, y_component, '--',
-                         label=f'{model.capitalize()}({self._format_param(pars[0])}, '
-                               f'{self._format_param(pars[1])}, {self._format_param(pars[2])})')
-                param_index += 3
+        for i, model in enumerate(self.model_list):
+            color = colors[i % len(colors)]
+            m_, p_ = model_dict[model]
+            pars = self.params[param_index:param_index + p_]
+            y_component = m_(*pars).pdf(x)
+            plot_xy(x, y_component,
+                    x_label='', y_label='', plot_title='',
+                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self.format_param(i) for i in pars)})',
+                    plot_dictionary=LinePlot(line_style='--', color=color),
+                    axis=plotter)
+            param_index += p_
 
     @staticmethod
-    def _format_param(param):
-        """Dynamically formats the parameter based on its value."""
-        return f'{param:.4E}' if abs(param) < 0.001 else f'{param:.4f}'
+    def format_param(value, t_low=0.001, t_high=10_000):
+        """Formats the parameter value based on its magnitude."""
+        return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
 
     def _parameter_extractor(self):
         """
@@ -293,19 +294,13 @@ class MixedDataFitter:
             if model not in param_dict:
                 param_dict[model] = []
 
-            if model == LINE:
-                param_dict[model].extend([all_[p_index:p_index + 2]])
-                p_index += 2
-            elif model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
-                param_dict[model].extend([all_[p_index:p_index + 3]])
-                p_index += 3
-            elif model == SKEW_NORMAL:
-                param_dict[model].extend(([all_[p_index:p_index + 4]]))
-                p_index += 4
+            _, n_pars = model_dict[model]
+            param_dict[model].extend([all_[p_index:p_index + n_pars]])
+            p_index += n_pars
 
         return param_dict
 
-    def parameter_extractor(self, model=None, return_individual_values=True):
+    def get_parameters(self, model=None, return_individual_values=True):
         """
         Extracts parameters for a specific model, or for all models if no model is specified.
 
@@ -328,17 +323,14 @@ class MixedDataFitter:
         if model is None:
             return dict_
 
-        if return_individual_values:
-            par_dict = dict_.get(model, [])
-            flattened_list = list(itertools.chain.from_iterable(par_dict))
-            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
-                return flattened_list[::3], flattened_list[1::3], flattened_list[2::3]
-            elif model == LINE:
-                return [flattened_list[i] for i in range(2)]
-            elif model == SKEW_NORMAL:
-                return flattened_list[::4], flattened_list[1::4], flattened_list[2::4], flattened_list[3::4]
-        else:
-            return dict_.get(model, [])
+        par_dict = dict_.get(model, [])
+        if not return_individual_values:
+            return par_dict
+
+        _, n_par = model_dict[model]
+        flattened_list = list(itertools.chain.from_iterable(par_dict))
+
+        return tuple(flattened_list[i::n_par] for i in range(n_par))
 
     def get_fit_values(self):
         """
@@ -357,15 +349,4 @@ class MixedDataFitter:
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
 
-        return self.model_function(self.x_data, *self.params)
-
-    def get_peaks(self):
-        """
-        Finds peaks in the fitted model values.
-
-        Returns
-        -------
-        tuple
-            Indices of peaks in the fitted model values.
-        """
-        return find_peaks(self.get_fit_values())
+        return self.model_function(self.x_values, *self.params)
