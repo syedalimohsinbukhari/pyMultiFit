@@ -5,6 +5,9 @@ from typing import Any, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
+from mpyez.backend.uPlotting import LinePlot
+from mpyez.ezPlotting import plot_xy
 from scipy.optimize import Bounds, curve_fit
 
 from .utilities import parameter_logic
@@ -55,12 +58,17 @@ class BaseFitter:
             y += self._fitter(x=x, params=par)
         return y
 
-    def _plot_individual_fitter(self, x, plotter):
+    def _plot_individual_fitter(self, plotter):
+        x = self.x_values
         params = np.reshape(a=self.params, newshape=(self.n_fits, self.n_par))
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
         for i, par in enumerate(params):
-            plotter.plot(x, self._fitter(x=x, params=par),
-                         '--', label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
-                                     f'{", ".join(self.format_param(i) for i in par)})')
+            color = colors[i % len(colors)]
+            plot_xy(x, self._fitter(x=x, params=par),
+                    x_label='', y_label='', plot_title='',
+                    data_label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
+                               f'{", ".join(self.format_param(i) for i in par)})',
+                    plot_dictionary=LinePlot(line_style='--', color=color), axis=plotter)
 
     @staticmethod
     def format_param(value, t_low=0.001, t_high=10_000):
@@ -147,8 +155,9 @@ class BaseFitter:
         elif std_values:
             return pairs[:, 1]
 
-    def plot_fit(self, show_individual: bool = False, auto_label: bool = False,
-                 fig_size: Optional[Tuple[int, int]] = (12, 6), ax: Optional[plt.Axes] = None) -> plt:
+    def plot_fit(self, show_individual: bool = False,
+                 x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None, data_label: Optional[str] = None,
+                 axis: Optional[Axes] = None) -> plt:
         """
         Plot the fitted Skewed Normal functions on the data.
 
@@ -156,11 +165,15 @@ class BaseFitter:
         ----------
         show_individual: bool
             Whether to show individually fitted Skewed Normal functions.
-        auto_label: bool, optional
-            Whether to auto decorate the plot with x/y labels, title and other plot decorators. Defaults to False.
-        fig_size: Tuple[int, int], optional
-            Figure size to draw the plot on. Defaults to (12, 6)
-        ax: plt.Axes, optional
+        x_label: str
+            The label for the x-axis.
+        y_label: str
+            The label for the y-axis.
+        title: str
+            The title for the plot.
+        data_label: str
+            The label for the data.
+        axis: Axes, optional
             Axes to plot instead of the entire figure. Defaults to None.
 
         Returns
@@ -171,26 +184,18 @@ class BaseFitter:
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
 
-        plotter = ax if ax else plt
-        if not ax:
-            plt.figure(figsize=fig_size)
+        plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=axis)
 
-        plotter.plot(self.x_values, self.y_values, label='Data')
-        plotter.plot(self.x_values, self._n_fitter(self.x_values, *self.params),
-                     label='Total Fit', color='k')
+        plot_xy(self.x_values, self._n_fitter(self.x_values, *self.params),
+                data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
 
         if show_individual:
-            self._plot_individual_fitter(x=self.x_values, plotter=plotter)
+            self._plot_individual_fitter(plotter=plotter)
 
-        if auto_label:
-            labels = {'x_label': plotter.set_xlabel if ax else plotter.xlabel,
-                      'y_label': plotter.set_ylabel if ax else plotter.ylabel,
-                      'title': plotter.set_title if ax else plotter.title}
-            labels['x_label']('X')
-            labels['y_label']('Y')
-            labels['title'](f'{self.n_fits} {self.__class__.__name__} fit')
-            plotter.legend(loc='best')
-            plotter.tight_layout()
+        plotter.set_xlabel(x_label if x_label else 'X')
+        plotter.set_ylabel(y_label if y_label else 'Y')
+        plotter.set_title(title if title else f'{self.n_fits} {self.__class__.__name__} fit')
+        plt.tight_layout()
 
         return plotter
 

@@ -31,7 +31,7 @@ setup(name='pymultifit',
       long_description_content_type="text/markdown",
       python_requires=">=3.9",
       install_requires=["setuptools", "numpy==1.26.4", "matplotlib", "scipy",
-                        "pybind11==2.13.5", "cmake==3.27.9", "typing-extensions"],
+                        "pybind11==2.13.5", "cmake==3.27.9", "typing-extensions", "mpyez==0.0.9a1"],
       include_package_data=True,
       package_data={
           'pymultifit.sharedLib': ['*.so'],
