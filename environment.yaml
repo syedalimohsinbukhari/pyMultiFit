@@ -1,14 +1,3 @@
 name: multifit
-channels:
-    - default
-    - conda-forge
-dependencies:
-    - python==3.9.*
-    - numpy==1.26.4
-    - matplotlib
-    - scipy
-    - setuptools
-    - pip
-    -   pip:
-            - typing-extensions
-            - mpyez==0.0.9a1
+channels: [ default, conda-forge ]
+dependencies: [ python==3.9.*, numpy, matplotlib, scipy, setuptools, pip, { pip: [ typing-extensions, mpyez==0.0.9a2 ] } ]
