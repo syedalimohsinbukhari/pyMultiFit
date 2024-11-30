@@ -2,8 +2,8 @@
 
 from scipy.stats import skewnorm
 
-from ._backend.baseFitter import BaseFitter
-from ._backend.utilities import sanity_check
+from .backend.baseFitter import BaseFitter
+from .backend.utilities import sanity_check
 
 
 class SkewedNormalFitter(BaseFitter):

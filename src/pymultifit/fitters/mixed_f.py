@@ -11,7 +11,7 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
 
-from ._backend.utilities import sanity_check
+from .backend.utilities import sanity_check
 from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
 from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, SkewedNormalDistribution
 

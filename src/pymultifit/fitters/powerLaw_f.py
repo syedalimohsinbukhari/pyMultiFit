@@ -1,7 +1,7 @@
 """Created on Nov 10 00:17:16 2024"""
 
-from ._backend.baseFitter import BaseFitter
-from ._backend.utilities import sanity_check
+from .backend.baseFitter import BaseFitter
+from .backend.utilities import sanity_check
 from ..distributions import power_law_
 
 

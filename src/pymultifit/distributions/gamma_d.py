@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 from scipy.special import gamma, gammainc
 
-from ._backend import BaseDistribution
+from .backend import BaseDistribution
 
 
 class GammaDistribution(BaseDistribution):

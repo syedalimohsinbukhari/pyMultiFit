@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 from scipy.special import erf
 
-from ._backend import BaseDistribution
+from .backend import BaseDistribution
 
 
 class GaussianDistribution(BaseDistribution):

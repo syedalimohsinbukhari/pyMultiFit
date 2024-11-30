@@ -4,7 +4,7 @@ from typing import Dict
 
 import numpy as np
 
-from ._backend import BaseDistribution
+from .backend import BaseDistribution
 
 
 class LaplaceDistribution(BaseDistribution):

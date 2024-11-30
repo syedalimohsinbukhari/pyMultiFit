@@ -1,7 +1,7 @@
 """Created on Nov 30 05:33:38 2024"""
 
-from ._backend.baseFitter import BaseFitter
-from ._backend.utilities import sanity_check
+from .backend.baseFitter import BaseFitter
+from .backend.utilities import sanity_check
 from ..distributions import norris2005, norris2011
 
 
