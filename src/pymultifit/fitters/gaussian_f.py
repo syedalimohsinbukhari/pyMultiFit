@@ -2,7 +2,7 @@
 
 from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import sanity_check
-from ..distributions.gaussian_d import gaussian_
+from ..distributions import gaussian_
 
 
 class GaussianFitter(BaseFitter):

@@ -2,7 +2,7 @@
 
 from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import sanity_check
-from ..distributions.norris_d import norris2005, norris2011
+from ..distributions import norris2005, norris2011
 
 
 class Norris2005Fitter(BaseFitter):

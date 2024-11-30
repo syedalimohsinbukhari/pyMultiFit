@@ -2,7 +2,7 @@
 
 from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import sanity_check
-from ..distributions.powerLaw_d import powerLawWA
+from ..distributions import power_law_
 
 
 class PowerLawFitter(BaseFitter):
@@ -15,4 +15,4 @@ class PowerLawFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return powerLawWA(*params).pdf(x)
+        return power_law_(x, *params, normalize=False)

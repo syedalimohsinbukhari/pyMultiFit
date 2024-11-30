@@ -2,7 +2,7 @@
 
 from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import sanity_check
-from ..distributions.logNorm_d import log_normal_
+from ..distributions import log_normal_
 
 
 # TODO:

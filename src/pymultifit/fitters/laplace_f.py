@@ -2,7 +2,7 @@
 
 from ._backend.baseFitter import BaseFitter
 from ._backend.utilities import sanity_check
-from ..distributions.laplace_d import laplace_
+from ..distributions import laplace_
 
 
 class LaplaceFitter(BaseFitter):
