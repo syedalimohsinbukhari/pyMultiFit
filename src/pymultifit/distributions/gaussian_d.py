@@ -6,7 +6,6 @@ import numpy as np
 from scipy.special import erf
 
 from ._backend import BaseDistribution
-from ..sharedLib import cppModels
 
 
 class GaussianDistribution(BaseDistribution):
@@ -95,7 +94,15 @@ def gaussian_(x: np.ndarray,
     -----
     The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
     """
-    return cppModels.gaussianStatistics(x, amplitude, mu, sigma, normalize)
+    exponent_factor = (x - mu)**2 / (2 * sigma**2)
+
+    if normalize:
+        normalization_factor = sigma * np.sqrt(2 * np.pi)
+        amplitude = 1
+    else:
+        normalization_factor = 1
+
+    return amplitude * (np.exp(-exponent_factor) / normalization_factor)
 
 
 gaussianWA = GaussianDistribution.with_amplitude

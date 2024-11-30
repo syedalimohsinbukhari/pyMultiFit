@@ -64,11 +64,9 @@ class BaseFitter:
         colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
         for i, par in enumerate(params):
             color = colors[i % len(colors)]
-            plot_xy(x, self._fitter(x=x, params=par),
-                    x_label='', y_label='', plot_title='',
-                    data_label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
-                               f'{", ".join(self.format_param(i) for i in par)})',
-                    plot_dictionary=LinePlot(line_style='--', color=color), axis=plotter)
+            plot_xy(x, self._fitter(x=x, params=par), data_label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
+                                                                 f'{", ".join(self.format_param(i) for i in par)})',
+                    plot_dictionary=LinePlot(line_style='--', color=color), axis=plotter, x_label='', y_label='', plot_title='')
 
     @staticmethod
     def format_param(value, t_low=0.001, t_high=10_000):
@@ -186,8 +184,7 @@ class BaseFitter:
 
         plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=axis)
 
-        plot_xy(self.x_values, self._n_fitter(self.x_values, *self.params),
-                data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
+        plot_xy(self.x_values, self._n_fitter(self.x_values, *self.params), data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
 
         if show_individual:
             self._plot_individual_fitter(plotter=plotter)

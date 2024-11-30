@@ -7,13 +7,8 @@ dependencies:
     - numpy==1.26.4
     - matplotlib
     - scipy
-    - pybind11==2.13.5
     - setuptools
-    - cmake==3.27.9
-    - gxx_linux-64==12.4
-    - gxx
-    - gcc
     - pip
     -   pip:
             - typing-extensions
-            - mpyez --pre
+            - mpyez==0.0.9a1

@@ -5,8 +5,6 @@ requires = [
     "matplotlib",
     "scipy",
     "typing-extensions",
-    "pybind11==2.13.5",
-    "cmake==3.27.9",
     "mpyez==0.0.9a1"]
 
 build-backend = "setuptools.build_meta:__legacy__"
