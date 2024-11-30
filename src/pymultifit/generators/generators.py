@@ -9,6 +9,38 @@ from .. import distributions as dist, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, POWER
 lTuples = List[Tuple[float, ...]]
 
 
+def generate_multi_exponential_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0,
+                                    normalize: bool = False) -> np.ndarray:
+    """
+    Generate multi-Exponential data with optional noise.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        X values.
+    params : List[Tuple[float, ...]]
+        List of tuples containing the parameters for each Exponential (amplitude, scale).
+    noise_level : float, optional
+        Standard deviation of the Exponential noise to be added to the data, by default 0.0.
+    normalize: bool
+        If True, the function produces normalized data (Integration[PDF] < 1). Defaults to False.
+
+    Returns
+    -------
+    np.ndarray
+        Y values of the multi-Exponential data with added noise.
+    """
+    y = np.zeros_like(x, dtype=float)
+    for amp, scale in params:
+        if normalize:
+            y += dist.ExponentialDistribution(scale=scale).pdf(x)
+        else:
+            y += dist.ExponentialDistribution.with_amplitude(amplitude=amp, scale=scale).pdf(x)
+    if noise_level > 0:
+        y += noise_level * np.random.normal(size=x.size)
+    return y
+
+
 def generate_multi_gaussian_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0,
                                  normalize: bool = False) -> np.ndarray:
     """
