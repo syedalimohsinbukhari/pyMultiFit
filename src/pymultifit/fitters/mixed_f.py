@@ -1,7 +1,6 @@
 """Created on Aug 10 23:08:38 2024"""
 
 import itertools
-from dataclasses import dataclass
 from typing import Optional
 
 import matplotlib.pyplot as plt
@@ -11,12 +10,11 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
 
-from .backend.utilities import sanity_check
+from .backend import utilities as utils
 from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
 from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, SkewedNormalDistribution
 
 
-@dataclass
 class _Line:
     """
     Helper class for the line fitting function.
@@ -24,8 +22,10 @@ class _Line:
     This class is intended for internal use only.
     Provides a wrapper for evaluating a linear function with a given slope and intercept.
     """
-    slope: float
-    intercept: float
+
+    def __init__(self, slope: float, intercept: float):
+        self.slope = slope
+        self.intercept = intercept
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """
@@ -86,7 +86,7 @@ class MixedDataFitter:
         max_iterations: int, optional
             The max number of iterations for fitting procedure.
         """
-        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
+        x_values, y_values = utils.sanity_check(x_values=x_values, y_values=y_values)
 
         self.x_values = x_values
         self.y_values = y_values
