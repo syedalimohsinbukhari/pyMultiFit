@@ -8,45 +8,22 @@ from ._backend import BaseDistribution
 
 
 class PowerLawDistribution(BaseDistribution):
-    
-    def __init__(self, alpha):
+
+    def __init__(self, amplitude: float = 1.0, alpha: float = -1):
+        self.amplitude = amplitude
         self.alpha = alpha
-        
+
         self.norm = True
-        self.amplitude = 1.
-    
-    @classmethod
-    def with_amplitude(cls, amplitude: float = 1, alpha: float = -1):
-        """
-        Create an instance with a specified amplitude, without normalization.
 
-        Parameters
-        ----------
-        amplitude : float
-            The amplitude to apply to the PDF. Defaults to 1.
-        alpha : float
-            The decay of the spectrum. Defaults to -1.
-
-        Returns
-        -------
-        PowerLawDistribution
-            An instance of PowerLawDistribution with the specified parameters.
-        """
-        instance = cls(alpha=alpha)
-        instance.amplitude = amplitude
-        instance.norm = False
-        
-        return instance
-    
     def _pdf(self, x: np.ndarray):
         return power_law_(x, amplitude=self.amplitude, alpha=self.alpha, normalize=self.norm)
-    
+
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
-    
+
     def cdf(self, x: np.ndarray) -> np.ndarray:
         pass
-    
+
     def stats(self) -> Dict[str, Any]:
         pass
 
@@ -75,6 +52,3 @@ def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize
         Computed power-law values for each element in x.
     """
     return amplitude * x**-alpha
-
-
-powerLawWA = PowerLawDistribution.with_amplitude
