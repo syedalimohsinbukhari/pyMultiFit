@@ -1,4 +1,5 @@
 """Created on Nov 30 10:49:49 2024"""
+
 from typing import Any, Dict
 
 import numpy as np
