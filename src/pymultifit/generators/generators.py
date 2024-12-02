@@ -64,10 +64,7 @@ def generate_multi_gaussian_data(x: np.ndarray, params: lTuples, noise_level: fl
     """
     y = np.zeros_like(x, dtype=float)
     for amp, mean, std in params:
-        if normalize:
-            y += dist.GaussianDistribution(mean=mean, standard_deviation=std).pdf(x)
-        else:
-            y += dist.GaussianDistribution.with_amplitude(amplitude=amp, mean=mean, standard_deviation=std).pdf(x)
+        y += dist.GaussianDistribution(mean=mean, standard_deviation=std, amplitude=amp, normalize=normalize).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y

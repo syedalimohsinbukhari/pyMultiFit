@@ -45,10 +45,10 @@ class _Line:
 
 
 model_dict = {LINE: [_Line, 2],
-              GAUSSIAN: [GaussianDistribution.with_amplitude, 3],
-              LOG_NORMAL: [LogNormalDistribution.with_amplitude, 3],
+              GAUSSIAN: [GaussianDistribution, 3],
+              LOG_NORMAL: [LogNormalDistribution, 3],
               SKEW_NORMAL: [SkewedNormalDistribution, 4],
-              LAPLACE: [LaplaceDistribution.with_amplitude, 3]}
+              LAPLACE: [LaplaceDistribution, 3]}
 
 
 class MixedDataFitter:

@@ -11,37 +11,12 @@ from .backend import BaseDistribution
 class GaussianDistribution(BaseDistribution):
     """Class for Gaussian distribution."""
 
-    def __init__(self, mean: float = 0., standard_deviation: float = 1.):
+    def __init__(self, mean: float = 0., standard_deviation: float = 1., amplitude: float = 1.0, normalize: bool = False):
+        self.amplitude = 1. if normalize else amplitude
         self.mean = mean
         self.std_ = standard_deviation
 
-        self.norm = True
-        self.amplitude = 1.
-
-    @classmethod
-    def with_amplitude(cls, amplitude: float = 1., mean: float = 0., standard_deviation: float = 1.):
-        """
-        Create an instance with a specified amplitude, without normalization.
-
-        Parameters
-        ----------
-        amplitude : float
-            The amplitude to apply to the PDF. Defaults to 1.
-        mean : float
-            The mean of the normal distribution. Defaults to 0.
-        standard_deviation : float
-            The standard deviation of the normal distribution. Defaults to 1.
-
-        Returns
-        -------
-        GaussianDistribution
-            An instance of GaussianDistribution with the specified amplitude and parameters.
-        """
-        instance = cls(mean=mean, standard_deviation=standard_deviation)
-        instance.amplitude = amplitude
-        instance.norm = False
-
-        return instance
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return gaussian_(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
@@ -103,6 +78,3 @@ def gaussian_(x: np.ndarray,
         normalization_factor = 1
 
     return amplitude * (np.exp(-exponent_factor) / normalization_factor)
-
-
-gaussianWA = GaussianDistribution.with_amplitude
