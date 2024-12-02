@@ -4,36 +4,31 @@ from .beta_d import BetaDistribution
 
 
 class ArcSineDistribution(BetaDistribution):
-    """Class for ArcSince distribution, a special case of Beta distribution with alpha=0.5, and beta=0.5"""
+    """
+    Class for the ArcSine distribution, a special case of the Beta distribution with alpha=0.5 and beta=0.5.
 
-    def __init__(self):
-        super().__init__(alpha=0.5, beta=0.5)
+    The ArcSine distribution is a Beta distribution where both the shape parameters are fixed at 0.5.
+    The user can still provide an amplitude and normalization flag as options, but the alpha and beta parameters are overridden to always be 0.5.
 
-    @classmethod
-    def with_amplitude(cls, amplitude: float = 1., alpha: float = 0.5, beta: float = 0.5):
-        """
-        Create an instance of ArcSineDistribution with a specified amplitude.
+    Parameters
+    ----------
+    amplitude : float, optional
+        The scaling factor for the distribution. Default is 1.
+    alpha : float, optional
+        The alpha parameter for the Beta distribution. This value will be overridden to 0.5. Default is 0.5.
+    beta : float, optional
+        The beta parameter for the Beta distribution. This value will be overridden to 0.5. Default is 0.5.
+    normalize : bool, optional
+        Whether to normalize the distribution (i.e., set the PDF to integrate to 1). Default is False.
 
-        Parameters
-        ----------
-        amplitude : float
-            The amplitude to apply to the PDF. Defaults to 1.
-        alpha: float
-            The alpha parameter of the ArcSine distribution. Defaults to 0.5.
-        beta: float
-            The beta parameter of the ArcSine distribution. Defaults to 0.5.
+    Notes
+    -----
+    Although the `alpha` and `beta` parameters are accepted as inputs, they will always be set to 0.5 internally,
+    as the ArcSine distribution is a special case of the Beta distribution with these fixed parameters.
+    """
 
-        Returns
-        -------
-        ArcSineDistribution
-            An instance of ArcSineDistribution with the specified amplitude.
-
-        Notes
-        -----
-        The `alpha` and `beta` parameters are only here to match the BetaDistribution class signatures.
-        These parameters are internally overridden to produce the required ArcSine distribution.
-        """
-        instance = cls()
-        instance.amplitude = amplitude
-        instance.norm = False
-        return instance
+    def __init__(self, amplitude: float = 1., alpha: float = 0.5, beta: float = 0.5, normalize: bool = False):
+        # respect the user passed values if they're equal to 0.5, otherwise overwrite them.
+        alpha = alpha if alpha == 0.5 else 0.5
+        beta = beta if beta == 0.5 else 0.5
+        super().__init__(amplitude=amplitude, alpha=alpha, beta=beta, normalize=normalize)

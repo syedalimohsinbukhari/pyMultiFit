@@ -11,7 +11,7 @@ from .backend import BaseDistribution
 class GaussianDistribution(BaseDistribution):
     """Class for Gaussian distribution."""
 
-    def __init__(self, mean: float = 0., standard_deviation: float = 1., amplitude: float = 1.0, normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, mean: float = 0., standard_deviation: float = 1., normalize: bool = False):
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean
         self.std_ = standard_deviation
@@ -39,7 +39,7 @@ class GaussianDistribution(BaseDistribution):
 
 def gaussian_(x: np.ndarray,
               amplitude: float = 1., mu: float = 0., sigma: float = 1.,
-              normalize: bool = True) -> np.ndarray:
+              normalize: bool = False) -> np.ndarray:
     """
     Compute the Gaussian (Normal) distribution probability density function (PDF).
 

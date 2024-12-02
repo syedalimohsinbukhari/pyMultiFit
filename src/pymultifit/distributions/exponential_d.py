@@ -10,34 +10,11 @@ from .backend import BaseDistribution
 class ExponentialDistribution(BaseDistribution):
     """Class for Exponential distribution."""
 
-    def __init__(self, scale: float = 1.):
+    def __init__(self, amplitude: float = 1., scale: float = 1., normalize: bool = False):
+        self.amplitude = 1. if normalize else amplitude
         self.scale = scale
 
-        self.norm = True
-        self.amplitude = 1
-
-    @classmethod
-    def with_amplitude(cls, amplitude: float = 1., scale: float = 1.):
-        """
-        Create an instance with a specified amplitude, without normalization.
-
-        Parameters
-        ----------
-        amplitude : float
-            The amplitude to apply to the PDF. Defaults to 1.
-        scale : float
-            The scale of the exponential distribution. Defaults to 1.
-
-        Returns
-        -------
-        ExponentialDistribution
-            An instance of ExponentialDistribution with the specified amplitude and scale.
-        """
-        instance = cls(scale=scale)
-        instance.amplitude = amplitude
-        instance.norm = False
-
-        return instance
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return exponential_(x, amplitude=self.amplitude, scale=self.scale, normalize=self.norm)
@@ -57,7 +34,7 @@ class ExponentialDistribution(BaseDistribution):
 
 def exponential_(x: np.ndarray,
                  amplitude: float = 1., scale: float = 1.,
-                 normalize: bool = True) -> np.ndarray:
+                 normalize: bool = False) -> np.ndarray:
     """
     Compute the Exponential distribution probability density function (PDF).
 

@@ -11,37 +11,12 @@ from .backend import BaseDistribution
 class LogNormalDistribution(BaseDistribution):
     """Class for Log-Normal distribution."""
 
-    def __init__(self, mean: float = 0., standard_deviation: float = 1.):
+    def __init__(self, amplitude: float = 1., mean: float = 0., standard_deviation: float = 1., normalize: bool = False):
+        self.amplitude = 1. if normalize else amplitude
         self.mean = mean
         self.std_ = standard_deviation
 
-        self.norm = True
-        self.amplitude = 1
-
-    @classmethod
-    def with_amplitude(cls, amplitude: float = 1., mean: float = 0., standard_deviation: float = 1.):
-        """
-        Create an instance with a specified amplitude, without normalization.
-
-        Parameters
-        ----------
-        amplitude : float
-            The amplitude (scale) of the distribution. Defaults to 1.
-        mean : float
-            The mean of the logarithm of the distribution. Defaults to 0.
-        standard_deviation : float
-            The standard deviation of the logarithm of the distribution. Defaults to 1.
-
-        Returns
-        -------
-        LogNormalDistribution
-            An instance of LogNormalDistribution with specified amplitude.
-        """
-        instance = cls(mean=mean, standard_deviation=standard_deviation)
-        instance.amplitude = amplitude
-        instance.norm = False
-
-        return instance
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return log_normal_(x, amplitude=self.amplitude, mean=self.mean, standard_deviation=self.std_, normalize=self.norm)
@@ -68,7 +43,7 @@ class LogNormalDistribution(BaseDistribution):
 
 def log_normal_(x: np.ndarray,
                 amplitude: float = 1., mean: float = 0., standard_deviation: float = 1.,
-                normalize: bool = True) -> np.ndarray:
+                normalize: bool = False) -> np.ndarray:
     """
     Compute the Log-Normal distribution probability density function (PDF).
 

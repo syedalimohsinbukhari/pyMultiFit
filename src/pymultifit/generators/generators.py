@@ -9,8 +9,8 @@ from .. import distributions as dist, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, POWER
 lTuples = List[Tuple[float, ...]]
 
 
-def generate_multi_exponential_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0,
-                                    normalize: bool = False) -> np.ndarray:
+def generate_multi_exponential_data(x: np.ndarray, params: lTuples,
+                                    noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Exponential data with optional noise.
 
@@ -31,18 +31,15 @@ def generate_multi_exponential_data(x: np.ndarray, params: lTuples, noise_level:
         Y values of the multi-Exponential data with added noise.
     """
     y = np.zeros_like(x, dtype=float)
-    for amp, scale in params:
-        if normalize:
-            y += dist.ExponentialDistribution(scale=scale).pdf(x)
-        else:
-            y += dist.ExponentialDistribution.with_amplitude(amplitude=amp, scale=scale).pdf(x)
+    for pars in params:
+        y += dist.ExponentialDistribution(*pars, normalize=normalize).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
 
 
-def generate_multi_gaussian_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0,
-                                 normalize: bool = False) -> np.ndarray:
+def generate_multi_gaussian_data(x: np.ndarray, params: lTuples,
+                                 noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Gaussian data with optional noise.
 
@@ -63,8 +60,8 @@ def generate_multi_gaussian_data(x: np.ndarray, params: lTuples, noise_level: fl
         Y values of the multi-Gaussian data with added noise.
     """
     y = np.zeros_like(x, dtype=float)
-    for amp, mean, std in params:
-        y += dist.GaussianDistribution(mean=mean, standard_deviation=std, amplitude=amp, normalize=normalize).pdf(x)
+    for pars in params:
+        y += dist.GaussianDistribution(*pars, normalize=normalize).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
@@ -119,18 +116,15 @@ def generate_multi_log_normal_data(x: np.ndarray, params: lTuples,
         Y values of the multi-Gaussian data with added noise.
     """
     y = np.zeros_like(x, dtype=float)
-    for amp, mean, std in params:
-        if normalize:
-            y += dist.LogNormalDistribution(mean=mean, standard_deviation=std).pdf(x)
-        else:
-            y += dist.LogNormalDistribution.with_amplitude(amplitude=amp, mean=mean, standard_deviation=std).pdf(x)
+    for pars in params:
+        y += dist.LogNormalDistribution(*pars, normalize=normalize).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
 
 
-def generate_multi_laplace_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0,
-                                normalize: bool = False) -> np.ndarray:
+def generate_multi_laplace_data(x: np.ndarray, params: lTuples,
+                                noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Laplace data with optional noise.
 
@@ -151,57 +145,58 @@ def generate_multi_laplace_data(x: np.ndarray, params: lTuples, noise_level: flo
         Y values of the multi-Laplace data with added noise.
     """
     y = np.zeros_like(x, dtype=float)
-    for amp, mu, b in params:
-        if normalize:
-            y += dist.LaplaceDistribution(mean=mu, diversity=b).pdf(x)
-        else:
-            y += dist.LaplaceDistribution.with_amplitude(amplitude=amp, mean=mu, diversity=b).pdf(x)
+    for pars in params:
+        y += dist.LaplaceDistribution(*pars, normalize=normalize).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
 
 
-def generate_multi_powerlaw_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0):
-    y = np.zeros_like(x, dtype=float)
-    for amp, alpha in params:
-        y += dist.PowerLawDistribution(amplitude=amp, alpha=alpha).pdf(x)
-    if noise_level > 0:
-        y += noise_level * np.random.normal(size=x.size)
-    return y
-
-
-def generate_multi_norris2005_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0):
+def generate_multi_powerlaw_data(x: np.ndarray, params: lTuples,
+                                 noise_level: float = 0.0, normalize: bool = False):
     y = np.zeros_like(x, dtype=float)
     for pars in params:
-        y += dist.Norris2005Distribution(*pars).pdf(x)
+        y += dist.PowerLawDistribution(*pars, normalize=normalize).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
 
 
-def generate_multi_norris2011_data(x: np.ndarray, params: lTuples, noise_level: float = 0.0):
+def generate_multi_norris2005_data(x: np.ndarray, params: lTuples,
+                                   noise_level: float = 0.0, normalize: bool = False):
     y = np.zeros_like(x, dtype=float)
     for pars in params:
-        y += dist.Norris2011Distribution(*pars).pdf(x)
+        y += dist.Norris2005Distribution(*pars, normalize=normalize).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
 
 
-def generate_mixed_model_data(x: np.ndarray, params: lTuples, model_list, noise_level=0.0):
+def generate_multi_norris2011_data(x: np.ndarray, params: lTuples,
+                                   noise_level: float = 0.0, normalize: bool = False):
+    y = np.zeros_like(x, dtype=float)
+    for pars in params:
+        y += dist.Norris2011Distribution(*pars, normalize=normalize).pdf(x)
+    if noise_level > 0:
+        y += noise_level * np.random.normal(size=x.size)
+    return y
+
+
+def generate_mixed_model_data(x: np.ndarray, params: lTuples, model_list,
+                              noise_level=0.0, normalize: bool = False):
     y = np.zeros_like(x, dtype=float)
     par_index = 0
     for model in model_list:
         if model == GAUSSIAN:
-            y += dist.GaussianDistribution.with_amplitude(*params[par_index]).pdf(x)
+            y += dist.GaussianDistribution(*params[par_index], normalize=normalize).pdf(x)
         elif model == LOG_NORMAL:
-            y += dist.LogNormalDistribution.with_amplitude(*params[par_index]).pdf(x)
+            y += dist.LogNormalDistribution(*params[par_index], normalize=normalize).pdf(x)
         elif model == LAPLACE:
-            y += dist.LaplaceDistribution.with_amplitude(*params[par_index]).pdf(x)
+            y += dist.LaplaceDistribution(*params[par_index], normalize=normalize).pdf(x)
         elif model == SKEW_NORMAL:
             y += dist.SkewedNormalDistribution(*params[par_index]).pdf(x)
         elif model == POWERLAW:
-            y += dist.PowerLawDistribution(*params[par_index]).pdf(x)
+            y += dist.PowerLawDistribution(*params[par_index], normalize=normalize).pdf(x)
         elif model == LINE:
             y += dist.line(x, *params[par_index])
 
