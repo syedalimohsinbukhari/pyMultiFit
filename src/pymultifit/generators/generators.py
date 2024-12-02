@@ -1,15 +1,16 @@
 """Created on Jul 18 00:35:26 2024"""
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 
 from .. import distributions as dist, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, POWERLAW, SKEW_NORMAL
 
-lTuples = List[Tuple[float, ...]]
+listOfTuples = List[Tuple[float, ...]]
+listOfTuplesOrArray = Union[listOfTuples, np.ndarray]
 
 
-def generate_multi_exponential_data(x: np.ndarray, params: lTuples,
+def generate_multi_exponential_data(x: np.ndarray, params: listOfTuplesOrArray,
                                     noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Exponential data with optional noise.
@@ -38,7 +39,7 @@ def generate_multi_exponential_data(x: np.ndarray, params: lTuples,
     return y
 
 
-def generate_multi_gaussian_data(x: np.ndarray, params: lTuples,
+def generate_multi_gaussian_data(x: np.ndarray, params: listOfTuplesOrArray,
                                  noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Gaussian data with optional noise.
@@ -67,7 +68,7 @@ def generate_multi_gaussian_data(x: np.ndarray, params: lTuples,
     return y
 
 
-def generate_multi_skewed_normal_data(x: np.ndarray, params: lTuples,
+def generate_multi_skewed_normal_data(x: np.ndarray, params: listOfTuplesOrArray,
                                       noise_level: float = 0.0) -> np.ndarray:
     """
     Generate multi-Skewed Normal data with optional noise.
@@ -94,7 +95,7 @@ def generate_multi_skewed_normal_data(x: np.ndarray, params: lTuples,
     return y
 
 
-def generate_multi_log_normal_data(x: np.ndarray, params: lTuples,
+def generate_multi_log_normal_data(x: np.ndarray, params: listOfTuplesOrArray,
                                    noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-log_normal data with optional noise.
@@ -123,7 +124,7 @@ def generate_multi_log_normal_data(x: np.ndarray, params: lTuples,
     return y
 
 
-def generate_multi_laplace_data(x: np.ndarray, params: lTuples,
+def generate_multi_laplace_data(x: np.ndarray, params: listOfTuplesOrArray,
                                 noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
     Generate multi-Laplace data with optional noise.
@@ -152,7 +153,7 @@ def generate_multi_laplace_data(x: np.ndarray, params: lTuples,
     return y
 
 
-def generate_multi_powerlaw_data(x: np.ndarray, params: lTuples,
+def generate_multi_powerlaw_data(x: np.ndarray, params: listOfTuplesOrArray,
                                  noise_level: float = 0.0, normalize: bool = False):
     y = np.zeros_like(x, dtype=float)
     for pars in params:
@@ -162,7 +163,7 @@ def generate_multi_powerlaw_data(x: np.ndarray, params: lTuples,
     return y
 
 
-def generate_multi_norris2005_data(x: np.ndarray, params: lTuples,
+def generate_multi_norris2005_data(x: np.ndarray, params: listOfTuplesOrArray,
                                    noise_level: float = 0.0, normalize: bool = False):
     y = np.zeros_like(x, dtype=float)
     for pars in params:
@@ -172,7 +173,7 @@ def generate_multi_norris2005_data(x: np.ndarray, params: lTuples,
     return y
 
 
-def generate_multi_norris2011_data(x: np.ndarray, params: lTuples,
+def generate_multi_norris2011_data(x: np.ndarray, params: listOfTuplesOrArray,
                                    noise_level: float = 0.0, normalize: bool = False):
     y = np.zeros_like(x, dtype=float)
     for pars in params:
@@ -182,7 +183,7 @@ def generate_multi_norris2011_data(x: np.ndarray, params: lTuples,
     return y
 
 
-def generate_mixed_model_data(x: np.ndarray, params: lTuples, model_list,
+def generate_mixed_model_data(x: np.ndarray, params: listOfTuplesOrArray, model_list,
                               noise_level=0.0, normalize: bool = False):
     y = np.zeros_like(x, dtype=float)
     par_index = 0
