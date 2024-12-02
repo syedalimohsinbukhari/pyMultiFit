@@ -9,12 +9,12 @@ from .backend import BaseDistribution
 
 class Norris2005Distribution(BaseDistribution):
 
-    def __init__(self, amplitude: float = 1., rise_time: float = 1., decay_time: float = 1.):
+    def __init__(self, amplitude: float = 1., rise_time: float = 1., decay_time: float = 1., normalize: bool = False):
         self.amplitude = amplitude
         self.rise_time = rise_time
         self.decay_time = decay_time
 
-        self.norm = True
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return norris2005(x, amplitude=self.amplitude, rise_time=self.rise_time, decay_time=self.decay_time, normalize=self.norm)
@@ -31,12 +31,12 @@ class Norris2005Distribution(BaseDistribution):
 
 class Norris2011Distribution(BaseDistribution):
 
-    def __init__(self, amplitude: float = 1., tau: float = 1., xi: float = 1.):
+    def __init__(self, amplitude: float = 1., tau: float = 1., xi: float = 1., normalize: bool = False):
         self.amplitude = amplitude
         self.tau = tau
         self.xi = xi
 
-        self.norm = True
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return norris2011(x, amplitude=self.amplitude, tau=self.tau, xi=self.xi, normalize=self.norm)
@@ -53,13 +53,11 @@ class Norris2011Distribution(BaseDistribution):
 
 def norris2005(x: np.ndarray,
                amplitude: float = 1., rise_time: float = 1., decay_time: float = 1.,
-               normalize: bool = True) -> np.ndarray:
+               normalize: bool = False) -> np.ndarray:
     """
     Computes the Norris 2005 light curve model.
 
-    The Norris 2005 model describes a light curve with an asymmetric shape
-    characterized by exponential rise and decay times. This function wraps the
-    implementation from `cppModels.norrisOld`.
+    The Norris 2005 model describes a light curve with an asymmetric shape characterized by exponential rise and decay times.
 
     Parameters
     ----------
@@ -73,7 +71,7 @@ def norris2005(x: np.ndarray,
         The characteristic decay time of the light curve. Default is 1.0.
     normalize : bool, optional
         Included for consistency with other distributions in the library.
-        This parameter does not affect the output since normalization is not required for the Norris 2005 model. Default is True.
+        This parameter does not affect the output since normalization is not required for the Norris 2005 model. Default is False.
 
     Returns
     -------
@@ -93,14 +91,12 @@ def norris2005(x: np.ndarray,
 
 def norris2011(x: np.ndarray,
                amplitude: float = 1., tau: float = 1., xi: float = 1.,
-               normalize: bool = True) -> np.ndarray:
+               normalize: bool = False) -> np.ndarray:
     """
     Computes the Norris 2011 light curve model.
 
-    The Norris 2011 model is a reformulation of the original Norris 2005 model,
-    expressed in terms of different parameters to facilitate better scaling
-    across various energy bands in gamma-ray burst (GRB) light curves. The
-    light curve is modeled as:
+    The Norris 2011 model is a reformulation of the original Norris 2005 model, expressed in terms of different parameters to facilitate better
+    scaling across various energy bands in gamma-ray burst (GRB) light curves. The light curve is modeled as:
 
         P(t) = A * exp(-ξ * (t / τ + τ / t))
 
@@ -118,7 +114,7 @@ def norris2011(x: np.ndarray,
         The asymmetry parameter (ξ in the formula). Default is 1.0.
     normalize : bool, optional
         Included for consistency with other distributions in the library.
-        This parameter does not affect the output since normalization is not required for the Norris 2011 model. Default is True.
+        This parameter does not affect the output since normalization is not required for the Norris 2011 model. Default is False.
 
     Returns
     -------

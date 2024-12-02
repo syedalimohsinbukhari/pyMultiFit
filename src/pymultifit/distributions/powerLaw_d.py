@@ -9,11 +9,11 @@ from .backend import BaseDistribution
 
 class PowerLawDistribution(BaseDistribution):
 
-    def __init__(self, amplitude: float = 1.0, alpha: float = -1):
+    def __init__(self, amplitude: float = 1.0, alpha: float = -1, normalize: bool = False):
         self.amplitude = amplitude
         self.alpha = alpha
 
-        self.norm = True
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray):
         return power_law_(x, amplitude=self.amplitude, alpha=self.alpha, normalize=self.norm)
@@ -28,7 +28,7 @@ class PowerLawDistribution(BaseDistribution):
         pass
 
 
-def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize: bool = True) -> np.ndarray:
+def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize: bool = False) -> np.ndarray:
     """
     Compute a power-law function for a given set of x values.
 
@@ -44,7 +44,7 @@ def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize
     alpha : float, optional
         The exponent of the power law, by default -1.
     normalize : bool, optional
-        Included for consistency with other PDF functions. Has no effect on the output. Defaults to True.
+        Included for consistency with other PDF functions. Has no effect on the output. Defaults to False.
 
     Returns
     -------

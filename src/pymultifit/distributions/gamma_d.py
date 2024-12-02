@@ -11,36 +11,12 @@ from .backend import BaseDistribution
 class GammaDistribution(BaseDistribution):
     """Class for Gamma distribution."""
 
-    def __init__(self, alpha: float = 1., beta: float = 1.):
+    def __init__(self, amplitude: float = 1., alpha: float = 1., beta: float = 1., normalize: bool = False):
+        self.amplitude = 1. if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
 
-        self.amplitude = 1
-        self.norm = True
-
-    @classmethod
-    def with_amplitude(cls, amplitude: float = 1., alpha: float = 1., beta: float = 1.):
-        """
-        Create an instance with a specified amplitude, without normalization.
-
-        Parameters
-        ----------
-        amplitude : float
-            The amplitude to apply to the PDF. Defaults to 1.
-        alpha : float
-            The alpha parameter of the gamma distribution. Defaults to 1.
-        beta : float
-            The beta parameter of the gamma distribution. Defaults to 1.
-
-        Returns
-        -------
-        GammaDistribution
-            An instance of GammaDistribution with the specified amplitude and parameters.
-        """
-        instance = cls(alpha=alpha, beta=beta)
-        instance.amplitude = amplitude
-        instance.norm = False
-        return instance
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return gamma_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, normalize=self.norm)
@@ -65,7 +41,7 @@ class GammaDistribution(BaseDistribution):
 
 def gamma_(x: np.ndarray,
            amplitude: float = 1., alpha: float = 1., beta: float = 1.,
-           normalize: bool = True) -> np.ndarray:
+           normalize: bool = False) -> np.ndarray:
     """
     Computes the Gamma distribution PDF for given parameters.
 

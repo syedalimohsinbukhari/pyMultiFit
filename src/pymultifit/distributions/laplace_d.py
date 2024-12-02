@@ -10,37 +10,12 @@ from .backend import BaseDistribution
 class LaplaceDistribution(BaseDistribution):
     """Class for Laplace distribution."""
 
-    def __init__(self, mean: float = 0, diversity: float = 1):
+    def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
+        self.amplitude = 1. if normalize else amplitude
         self.mu = mean
         self.b = diversity
 
-        self.norm = True
-        self.amplitude = 1
-
-    @classmethod
-    def with_amplitude(cls, amplitude: float = 1., mean: float = 0., diversity: float = 1.):
-        """
-        Create an instance with a specified amplitude, without normalization.
-
-        Parameters
-        ----------
-        amplitude : float
-            The amplitude (scale) of the distribution. Defaults to 1.
-        mean : float
-            The mean (location parameter) of the distribution. Defaults to 0.
-        diversity : float
-            The diversity (scale parameter) of the distribution. Defaults to 1.
-
-        Returns
-        -------
-        LaplaceDistribution
-            An instance of LaplaceDistribution with specified amplitude.
-        """
-        instance = cls(mean=mean, diversity=diversity)
-        instance.amplitude = amplitude
-        instance.norm = False
-
-        return instance
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return laplace_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
@@ -68,7 +43,7 @@ class LaplaceDistribution(BaseDistribution):
 
 def laplace_(x: np.ndarray,
              amplitude: float = 1., mean: float = 0., diversity: float = 1.,
-             normalize: bool = True) -> np.ndarray:
+             normalize: bool = False) -> np.ndarray:
     """Compute the Laplace distribution's probability density function (PDF).
 
     Parameters

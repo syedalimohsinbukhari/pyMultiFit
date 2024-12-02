@@ -64,8 +64,9 @@ class BaseFitter:
         colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
         for i, par in enumerate(params):
             color = colors[i % len(colors)]
-            plot_xy(x, self._fitter(x=x, params=par), data_label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
-                                                                 f'{", ".join(self.format_param(i) for i in par)})',
+            plot_xy(x_data=x, y_data=self._fitter(x=x, params=par),
+                    data_label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
+                               f'{", ".join(self.format_param(i) for i in par)})',
                     plot_dictionary=LinePlot(line_style='--', color=color), axis=plotter, x_label='', y_label='', plot_title='')
 
     @staticmethod
@@ -85,7 +86,8 @@ class BaseFitter:
         class_name = self.__class__.__name__
 
         if class_name in [_gaussian, _lNormal, _laplace]:
-            return Bounds(lb=[0, -np.inf, 0] * self.n_fits, ub=[np.inf, np.inf, np.inf] * self.n_fits)
+            return Bounds(lb=[0, -np.inf, 0] * self.n_fits,
+                          ub=[np.inf, np.inf, np.inf] * self.n_fits)
         elif class_name == _skNormal:
             return Bounds(lb=[-np.inf, -np.inf, -np.inf, 0] * self.n_fits,
                           ub=[np.inf, np.inf, np.inf, np.inf] * self.n_fits)
@@ -144,7 +146,7 @@ class BaseFitter:
         np.ndarray
             An array consisting of only values, only errors or both.
         """
-        pairs = np.array([np.array([i, j]) for i, j in zip(self._params(), self._standard_errors())])
+        pairs = np.column_stack([self._params(), self._standard_errors()])
 
         if mean_values and std_values:
             return pairs
@@ -182,9 +184,11 @@ class BaseFitter:
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
 
-        plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=axis)
+        plotter = plot_xy(x_data=self.x_values, y_data=self.y_values, data_label=data_label if data_label else 'Data', axis=axis)
 
-        plot_xy(self.x_values, self._n_fitter(self.x_values, *self.params), data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
+        plot_xy(x_data=self.x_values, y_data=self._n_fitter(self.x_values, *self.params),
+                x_label=x_label, y_label=y_label, plot_title=title, data_label='Total Fit',
+                plot_dictionary=LinePlot(color='k'), axis=plotter)
 
         if show_individual:
             self._plot_individual_fitter(plotter=plotter)
@@ -216,19 +220,15 @@ class BaseFitter:
         -----
         - The `select` parameter is used to filter the returned values to specific sub-model based on their indices. Indexing starts at 1.
         """
-
         parameter_mean = self.get_value_error_pair(mean_values=True, std_values=errors)
 
         if not errors:
-            selected = parameter_logic(par_array=parameter_mean,
-                                       n_par=self.n_par, selected_models=select)
+            selected = parameter_logic(par_array=parameter_mean, n_par=self.n_par, selected_models=select)
 
             return selected[:, range(self.n_par)].T
         else:
             par_list = parameter_mean.reshape(self.n_fits, self.n_par, 2)
-            mean = parameter_logic(par_array=par_list[:, :, 0].flatten(),
-                                   n_par=self.n_par, selected_models=select)
-            std_ = parameter_logic(par_array=par_list[:, :, 1].flatten(),
-                                   n_par=self.n_par, selected_models=select)
+            mean = parameter_logic(par_array=par_list[:, :, 0].flatten(), n_par=self.n_par, selected_models=select)
+            std_ = parameter_logic(par_array=par_list[:, :, 1].flatten(), n_par=self.n_par, selected_models=select)
 
             return mean[:, range(self.n_par)].T, std_[:, range(self.n_par)].T
