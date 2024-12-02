@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from .exponential_d import exponential_, ExponentialDistribution
 from .gaussian_d import gaussian_, GaussianDistribution
 from .laplace_d import laplace_, LaplaceDistribution
 from .logNorm_d import log_normal_, LogNormalDistribution
