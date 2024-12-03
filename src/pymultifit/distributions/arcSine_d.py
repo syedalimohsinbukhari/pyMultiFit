@@ -1,6 +1,6 @@
 """Created on Aug 14 02:02:42 2024"""
 
-from .beta_d import BetaDistribution
+from . import BetaDistribution
 
 
 class ArcSineDistribution(BetaDistribution):

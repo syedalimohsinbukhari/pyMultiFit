@@ -8,27 +8,27 @@ from scipy.special import gamma, gammainc
 from .backend import BaseDistribution
 
 
-class GammaDistribution(BaseDistribution):
+class GammaDistributionSR(BaseDistribution):
     """Class for Gamma distribution."""
 
-    def __init__(self, amplitude: float = 1., alpha: float = 1., beta: float = 1., normalize: bool = False):
+    def __init__(self, amplitude: float = 1., shape: float = 1., rate: float = 1., normalize: bool = False):
         self.amplitude = 1. if normalize else amplitude
-        self.alpha = alpha
-        self.beta = beta
+        self.shape = shape
+        self.rate = rate
 
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return gamma_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, normalize=self.norm)
+        return gamma_(x, amplitude=self.amplitude, alpha=self.shape, beta=self.rate, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return gammainc(self.alpha, self.beta * x)
+        return gammainc(self.shape, self.rate * x)
 
     def stats(self) -> Dict[str, float]:
-        a, b = self.alpha, self.beta
+        a, b = self.shape, self.rate
 
         mean_ = a / b
         mode_ = (a - 1) / b if a >= 1 else 0
@@ -37,6 +37,11 @@ class GammaDistribution(BaseDistribution):
         return {'mean': mean_,
                 'mode': mode_,
                 'variance': variance_}
+
+
+class GammaDistributionSS(GammaDistributionSR):
+    def __init__(self, amplitude: float = 1., shape: float = 1., scale: float = 1., normalize: bool = False):
+        super().__init__(amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
 
 
 def gamma_(x: np.ndarray,
