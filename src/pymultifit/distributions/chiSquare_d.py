@@ -1,13 +1,13 @@
 """Created on Dec 03 17:37:05 2024"""
 
-from . import gamma_, GammaDistributionSR
+from .gamma_d import gamma_ss_, GammaDistributionSS
 
 
-class ChiSquareDistribution(GammaDistributionSR):
+class ChiSquareDistribution(GammaDistributionSS):
     """Class for chi-squared distribution."""
 
     def __init__(self, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):
-        super().__init__(amplitude=amplitude, shape=degree_of_freedom / 2., rate=1 / 2., normalize=normalize)
+        super().__init__(amplitude=amplitude, shape=degree_of_freedom / 2., scale=2., normalize=normalize)
 
 
 def chi_squared_(x, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):
@@ -43,4 +43,4 @@ def chi_squared_(x, amplitude: float = 1., degree_of_freedom: float = 1., normal
 
     If `normalize` is True, the distribution will be scaled such that the maximum value of the PDF is 1.
     """
-    return gamma_(x, amplitude=amplitude, alpha=degree_of_freedom / 2., beta=1 / 2., normalize=normalize)
+    return gamma_ss_(x, amplitude=amplitude, shape=degree_of_freedom / 2., scale=2., normalize=normalize)

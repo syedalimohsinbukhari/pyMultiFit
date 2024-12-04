@@ -5,34 +5,40 @@ from typing import Any, Dict
 import numpy as np
 from scipy.special import erf
 
-from . import gaussian_, GaussianDistribution
 from .backend import BaseDistribution
+from .gaussian_d import gaussian_, GaussianDistribution
 
 
 class FoldedHalfNormalDistribution(BaseDistribution):
     """Class for folded half-normal distribution."""
 
-    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, standard_deviation: float = 1., normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, variance: float = 1., normalize: bool = False):
+        if variance < 0:
+            raise ValueError(f"Variance for {self.__class__.__name__} cannot be < 0.")
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean
-        self.std_ = standard_deviation
+        self.var_ = variance
 
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_half_normal_(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
+        return folded_half_normal_(x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        g1_cdf = GaussianDistribution(amplitude=self.amplitude, mean=self.mean, standard_deviation=self.std_, normalize=self.norm).cdf(x)
-        g2_cdf = GaussianDistribution(amplitude=self.amplitude, mean=-self.mean, standard_deviation=self.std_, normalize=self.norm).cdf(x)
-
-        return g1_cdf + g2_cdf
+        result = np.zeros_like(x)
+        mask = x >= 0
+        g1_cdf = GaussianDistribution(amplitude=self.amplitude, mean=self.mean,
+                                      standard_deviation=np.sqrt(self.var_), normalize=self.norm).cdf(x[mask])
+        g2_cdf = GaussianDistribution(amplitude=self.amplitude, mean=-self.mean,
+                                      standard_deviation=np.sqrt(self.var_), normalize=self.norm).cdf(x[mask])
+        result[mask] = g1_cdf + g2_cdf
+        return result
 
     def stats(self) -> Dict[str, Any]:
-        mean_, std_ = self.mean, self.std_
+        mean_, std_ = self.mean, np.sqrt(self.var_)
 
         f1 = std_ * np.sqrt(2 / np.pi) * np.exp(-mean_**2 / (2 * std_**2))
         f2 = mean_ * erf(mean_ / (np.sqrt(2 * np.pi)))
@@ -45,7 +51,7 @@ class FoldedHalfNormalDistribution(BaseDistribution):
 
 
 def folded_half_normal_(x: np.ndarray,
-                        amplitude: float = 1., mu: float = 0.0, sigma: float = 1.0,
+                        amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
                         normalize: bool = False) -> np.ndarray:
     """
     Compute the folded half-normal distribution.
@@ -61,7 +67,7 @@ def folded_half_normal_(x: np.ndarray,
         The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
     mu : float, optional
         The mean (`mu`) of the original normal distribution. Defaults to 0.0.
-    sigma : float, optional
+    variance : float, optional
         The standard deviation (`sigma`) of the original normal distribution. Defaults to 1.0.
     normalize : bool, optional
         If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
@@ -80,7 +86,11 @@ def folded_half_normal_(x: np.ndarray,
 
     where `g_1` and `g_2` are the Gaussian distributions with the specified parameters.
     """
-    g1 = gaussian_(x=x, amplitude=amplitude, mu=mu, sigma=sigma, normalize=normalize)
-    g2 = gaussian_(x=x, amplitude=amplitude, mu=-mu, sigma=sigma, normalize=normalize)
+    sigma = np.sqrt(variance)
+    mask = x >= 0
+    g1 = gaussian_(x[mask], amplitude=amplitude, mu=mu, sigma=sigma, normalize=normalize)
+    g2 = gaussian_(x[mask], amplitude=amplitude, mu=-mu, sigma=sigma, normalize=normalize)
+    result = np.zeros_like(x)
+    result[mask] = g1 + g2
 
-    return g1 + g2
+    return result

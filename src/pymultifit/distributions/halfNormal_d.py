@@ -2,14 +2,14 @@
 
 import numpy as np
 
-from . import folded_half_normal_, FoldedHalfNormalDistribution
+from .foldedHalfNormal_d import folded_half_normal_, FoldedHalfNormalDistribution
 
 
 class HalfNormalDistribution(FoldedHalfNormalDistribution):
     """A class for half folded normal distribution."""
 
     def __init__(self, amplitude: float = 1.0, scale: float = 1.0, normalize: bool = False):
-        super().__init__(amplitude=amplitude, mean=0, standard_deviation=scale, normalize=normalize)
+        super().__init__(amplitude=amplitude, mean=0, variance=scale, normalize=normalize)
 
 
 def half_normal_(x: np.ndarray,
@@ -49,4 +49,4 @@ def half_normal_(x: np.ndarray,
 
     The half-normal distribution is a special case of the folded half-normal distribution with `mu = 0`.
     """
-    return folded_half_normal_(x, amplitude=amplitude, mu=0, sigma=scale, normalize=normalize)
+    return folded_half_normal_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
