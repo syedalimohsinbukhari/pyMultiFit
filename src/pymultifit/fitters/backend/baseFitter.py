@@ -10,7 +10,7 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import Bounds, curve_fit
 
-from .utilities import parameter_logic
+from ..utilities import parameter_logic
 
 # safe keeping class names for spelling mistakes
 _gaussian = 'GaussianFitter'

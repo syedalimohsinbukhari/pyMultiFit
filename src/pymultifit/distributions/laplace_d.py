@@ -5,6 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution
+from .utilities import laplace_
 
 
 class LaplaceDistribution(BaseDistribution):
@@ -39,37 +40,3 @@ class LaplaceDistribution(BaseDistribution):
                 'median': mean_,
                 'mode': mean_,
                 'variance': 2 * b_**2}
-
-
-def laplace_(x: np.ndarray,
-             amplitude: float = 1., mean: float = 0., diversity: float = 1.,
-             normalize: bool = False) -> np.ndarray:
-    """Compute the Laplace distribution's probability density function (PDF).
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Points at which to evaluate the PDF.
-    amplitude : float
-        The amplitude (scale) of the distribution. Defaults to 1.
-    mean : float
-        The mean (location parameter) of the distribution. Defaults to 0.
-    diversity : float
-        The diversity (scale parameter) of the distribution. Defaults to 1.
-    normalize : bool, optional
-        Whether to normalize the PDF. Defaults to True.
-
-    Returns
-    -------
-    np.ndarray
-        The PDF values at the given points.
-    """
-    exponent_factor = abs(x - mean) / diversity
-
-    if normalize:
-        normalization_factor = 2 * diversity
-        amplitude = 1
-    else:
-        normalization_factor = 1
-
-    return amplitude * (np.exp(-exponent_factor) / normalization_factor)
