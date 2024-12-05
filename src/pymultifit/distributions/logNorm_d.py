@@ -6,6 +6,7 @@ import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution
+from .utilities import log_normal_
 
 
 class LogNormalDistribution(BaseDistribution):
@@ -39,55 +40,3 @@ class LogNormalDistribution(BaseDistribution):
                 'median': median_,
                 'mode': mode_,
                 'variance': variance_}
-
-
-def log_normal_(x: np.ndarray,
-                amplitude: float = 1., mean: float = 0., standard_deviation: float = 1.,
-                normalize: bool = False) -> np.ndarray:
-    """
-    Compute the Log-Normal distribution probability density function (PDF).
-
-    The Log-Normal PDF is given by:
-
-    f(x) = (1 / (x * sigma * sqrt(2 * pi))) * exp(- (log(x) - mu)**2 / (2 * sigma**2))
-
-    Parameters
-    ----------
-    x : np.ndarray
-        The input values at which to evaluate the Log-Normal PDF. Must be positive.
-    amplitude : float
-        The amplitude (scale) of the distribution. Defaults to 1.
-    mean : float
-        The mean of the logarithm of the distribution (i.e., mu of the normal distribution in log-space). Defaults to 0.
-    standard_deviation : float
-        The standard deviation of the logarithm of the distribution (i.e., sigma of the normal distribution in
-        log-space). Defaults to 1.
-    normalize : bool
-        If True, the function returns the normalized value of the PDF. Defaults to True.
-
-    Returns
-    -------
-    np.ndarray
-        The probability density function values for the input values.
-
-    Raises
-    ------
-    ValueError
-        If any value in `x` is less than or equal to zero.
-
-    Notes
-    -----
-    The input `x` must be positive because the logarithm of zero or negative numbers is undefined.
-    """
-    if np.any(x <= 0):
-        raise ValueError("x must be positive for the log-normal distribution.")
-
-    exponent_factor = (np.log(x) - mean)**2 / (2 * standard_deviation**2)
-
-    if normalize:
-        normalization_factor = standard_deviation * x * np.sqrt(2 * np.pi)
-        amplitude = 1
-    else:
-        normalization_factor = 1
-
-    return amplitude * np.exp(-exponent_factor) / normalization_factor

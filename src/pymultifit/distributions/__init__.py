@@ -2,16 +2,18 @@
 
 from typing import Optional
 
-from .beta_d import _beta, BetaDistribution
-from .chiSquare_d import chi_squared_, ChiSquareDistribution
-from .exponential_d import exponential_, ExponentialDistribution
-from .gamma_d import gamma_, GammaDistributionSR, GammaDistributionSS
-from .gaussian_d import gaussian_, GaussianDistribution
-from .laplace_d import laplace_, LaplaceDistribution
-from .logNorm_d import log_normal_, LogNormalDistribution
-from .norris_d import norris2005, Norris2005Distribution, norris2011, Norris2011Distribution
+from .beta_d import BetaDistribution
+from .chiSquare_d import ChiSquareDistribution
+from .exponential_d import ExponentialDistribution
+from .foldedHalfNormal_d import FoldedHalfNormalDistribution
+from .gamma_d import GammaDistributionSR, GammaDistributionSS
+from .gaussian_d import GaussianDistribution
+from .halfNormal_d import HalfNormalDistribution
+from .laplace_d import LaplaceDistribution
+from .logNorm_d import LogNormalDistribution
+from .norris_d import Norris2005Distribution, Norris2011Distribution
 from .others import cubic, line, linear, nth_polynomial, quadratic
-from .powerLaw_d import power_law_, PowerLawDistribution
+from .powerLaw_d import PowerLawDistribution
 from .skewNorm_d import SkewedNormalDistribution
 
 oFloat = Optional[float]

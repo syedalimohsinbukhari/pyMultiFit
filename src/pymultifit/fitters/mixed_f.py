@@ -10,7 +10,7 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
 
-from .backend import utilities as utils
+from .utilities import sanity_check
 from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
 from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, SkewedNormalDistribution
 
@@ -86,7 +86,7 @@ class MixedDataFitter:
         max_iterations: int, optional
             The max number of iterations for fitting procedure.
         """
-        x_values, y_values = utils.sanity_check(x_values=x_values, y_values=y_values)
+        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
 
         self.x_values = x_values
         self.y_values = y_values

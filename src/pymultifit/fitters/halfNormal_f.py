@@ -1,12 +1,12 @@
-"""Created on Nov 30 11:30:45 2024"""
+"""Created on Dec 04 23:29:32 2024"""
 
 from .backend import BaseFitter
 from .utilities import sanity_check
-from ..distributions.utilities import exponential_
+from ..distributions.utilities import half_normal_
 
 
-class ExponentialFitter(BaseFitter):
-    """A class for fitting multiple Exponential functions to the given data."""
+class HalfNormalFitter(BaseFitter):
+    """A class for fitting multiple half-normal functions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -15,4 +15,4 @@ class ExponentialFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return exponential_(x, *params, normalize=False)
+        return half_normal_(x, *params, normalize=False)

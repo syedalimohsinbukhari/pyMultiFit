@@ -1,18 +1,18 @@
-"""Created on Nov 30 11:30:45 2024"""
+"""Created on Dec 04 23:24:55 2024"""
 
 from .backend import BaseFitter
 from .utilities import sanity_check
-from ..distributions.utilities import exponential_
+from ..distributions.utilities import folded_half_normal_
 
 
-class ExponentialFitter(BaseFitter):
-    """A class for fitting multiple Exponential functions to the given data."""
+class FoldedHalfNormalFitter(BaseFitter):
+    """A class for fitting multiple Folded half-normal functions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(n_fits=n_fits, x_values=x_values, y_values=y_values, max_iterations=max_iterations)
-        self.n_par = 2
+        self.n_par = 3
 
     @staticmethod
     def _fitter(x, params):
-        return exponential_(x, *params, normalize=False)
+        return folded_half_normal_(x, *params, normalize=False)
