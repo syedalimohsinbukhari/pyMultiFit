@@ -460,10 +460,10 @@ def norris2005(x: np.ndarray,
         Norris, J. P. (2005). ApJ, 627, 324–345.
         Robert, J. N. (2011). MNRAS, 419, 2, 1650-1659.
     """
-    xi = np.sqrt(rise_time / decay_time)
     tau = np.sqrt(rise_time * decay_time)
+    xi = np.sqrt(rise_time / decay_time)
 
-    return norris2011(x, amplitude, tau, xi)
+    return norris2011(x, amplitude=amplitude, tau=tau, xi=xi)
 
 
 def norris2011(x: np.ndarray,

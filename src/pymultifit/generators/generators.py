@@ -59,6 +59,16 @@ def generate_multi_fhnd_data(x: np.ndarray, params: listOfTuplesOrArray,
     return y
 
 
+def generate_multi_hnd_data(x: np.ndarray, params: listOfTuplesOrArray,
+                            noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+    y = np.zeros_like(x, dtype=float)
+    for pars in params:
+        y += dist.HalfNormalDistribution(*pars, normalize=normalize).pdf(x)
+    if noise_level > 0:
+        y += noise_level * np.random.normal(size=x.size)
+    return y
+
+
 def generate_multi_gaussian_data(x: np.ndarray, params: listOfTuplesOrArray,
                                  noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """
