@@ -15,9 +15,9 @@ class GaussianDistribution(BaseDistribution):
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0., standard_deviation: float = 1., normalize: bool = False):
         if amplitude < 0:
-            raise NegativeAmplitudeError("Amplitude cannot be negative. Please provide a non-negative value.")
+            raise NegativeAmplitudeError("Amplitude cannot be negative.")
         if standard_deviation < 0:
-            raise NegativeStandardDeviationError("Standard deviation cannot be negative. Provide a non-negative value.")
+            raise NegativeStandardDeviationError("Standard deviation cannot be negative.")
 
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean

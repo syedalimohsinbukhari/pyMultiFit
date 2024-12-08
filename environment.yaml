@@ -8,6 +8,8 @@ dependencies:
     - scipy
     - setuptools
     - typing-extensions
+    - pytest
+    - pytest-cov
     - pip
     -   pip:
             - mpyez==0.0.9a3

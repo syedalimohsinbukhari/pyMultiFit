@@ -14,3 +14,8 @@ class NegativeAmplitudeError(DistributionError):
 class NegativeStandardDeviationError(DistributionError):
     """Raised when the standard deviation is negative."""
     pass
+
+
+class NegativeVarianceError(DistributionError):
+    """Raised when the variance value is negative."""
+    pass
