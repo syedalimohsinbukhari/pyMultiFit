@@ -32,7 +32,7 @@ jobs:
 
             # 4. Run tests and generate coverage report
             -   name: Run tests with coverage
-                run: pytest --cov=src tests/
+                run: pytest --cov=src src/tests/
 
             -   name: Upload test results to Codecov
                 if: ${{ !cancelled() }}
