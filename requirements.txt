@@ -3,4 +3,4 @@ matplotlib
 scipy
 setuptools
 typing-extensions
-mpyez==0.0.9a3
+mpyez==0.1.0
