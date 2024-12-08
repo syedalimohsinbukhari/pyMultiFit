@@ -1,6 +1,6 @@
-numpy>=1.26.0,<2.1.0
+numpy<2.1.0
 matplotlib
 scipy
 setuptools
 typing-extensions
-mpyez==0.1.0
+mpyez
