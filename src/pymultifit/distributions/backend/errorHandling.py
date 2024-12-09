@@ -1,22 +1,24 @@
 """Created on Dec 09 02:28:10 2024"""
 
+neg_message = "cannot be negative."
+
 
 class DistributionError(Exception):
     """Base class for distribution-related errors."""
     pass
 
 
-class NegativeAmplitudeError(Exception):
+class NegativeAmplitudeError(DistributionError):
     """Raised when the amplitude is negative."""
 
-    def __init__(self, message="Amplitude cannot be negative!"):
+    def __init__(self, message=f"Amplitude {neg_message}"):
         super().__init__(message)
 
 
 class NegativeStandardDeviationError(DistributionError):
     """Raised when the standard deviation is negative."""
 
-    def __init__(self, message="Standard deviation cannot be negative."):
+    def __init__(self, message=f"Standard deviation {neg_message}"):
         super().__init__(message)
 
 
@@ -51,7 +53,7 @@ class DegreeOfFreedomError(DistributionError):
 class NegativeShapeError(DistributionError):
     """Raised when the value of shape parameter is negative."""
 
-    def __init__(self, message="The shape parameter cannot be negative."):
+    def __init__(self, message=f"Shape {neg_message}"):
         super().__init__(message)
 
 

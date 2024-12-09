@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from scipy.stats import norm
 
-from ..pymultifit.distributions import GaussianDistribution
-from ..pymultifit.distributions.backend.errorHandling import NegativeAmplitudeError, NegativeStandardDeviationError
+from ...pymultifit.distributions import GaussianDistribution
+from ...pymultifit.distributions.backend import errorHandling as erH
 
 
 def test_initialization():
@@ -20,10 +20,10 @@ def test_initialization():
 
 
 def test_constraints():
-    with pytest.raises(NegativeAmplitudeError, match="Amplitude cannot be negative!"):
+    with pytest.raises(erH.NegativeAmplitudeError, match=f"Amplitude {erH.neg_message}"):
         GaussianDistribution(amplitude=-1.0, normalize=True)
 
-    with pytest.raises(NegativeStandardDeviationError, match="Standard deviation cannot be negative."):
+    with pytest.raises(erH.NegativeStandardDeviationError, match="Standard deviation cannot be negative."):
         GaussianDistribution(amplitude=1.0, standard_deviation=-3.0, normalize=True)
 
 
