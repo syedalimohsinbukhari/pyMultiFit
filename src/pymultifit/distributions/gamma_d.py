@@ -6,6 +6,7 @@ import numpy as np
 from scipy.special import gammainc
 
 from .backend import BaseDistribution
+from .backend.errorHandling import NegativeAmplitudeError, NegativeRateError, NegativeScaleError, NegativeShapeError
 from .utilities import gamma_sr_
 
 
@@ -13,6 +14,12 @@ class GammaDistributionSR(BaseDistribution):
     """Class for Gamma distribution."""
 
     def __init__(self, amplitude: float = 1., shape: float = 1., rate: float = 1., normalize: bool = False):
+        if amplitude < 0:
+            raise NegativeAmplitudeError()
+        elif shape < 0:
+            raise NegativeShapeError()
+        elif rate < 0:
+            raise NegativeRateError()
         self.amplitude = 1. if normalize else amplitude
         self.shape = shape
         self.rate = rate
@@ -42,4 +49,10 @@ class GammaDistributionSR(BaseDistribution):
 
 class GammaDistributionSS(GammaDistributionSR):
     def __init__(self, amplitude: float = 1., shape: float = 1., scale: float = 1., normalize: bool = False):
+        if amplitude < 0:
+            raise NegativeAmplitudeError()
+        elif shape < 0:
+            raise NegativeShapeError()
+        elif scale < 0:
+            raise NegativeScaleError()
         super().__init__(amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)

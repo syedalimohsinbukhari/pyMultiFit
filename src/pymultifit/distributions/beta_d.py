@@ -6,6 +6,7 @@ import numpy as np
 from scipy.special import betainc
 
 from .backend import BaseDistribution
+from .backend.errorHandling import NegativeAlphaError, NegativeAmplitudeError, NegativeBetaError
 from .utilities import beta_
 
 
@@ -13,6 +14,12 @@ class BetaDistribution(BaseDistribution):
     """Class for Beta distribution."""
 
     def __init__(self, amplitude: float = 1., alpha: float = 1., beta: float = 1., normalize: bool = False):
+        if amplitude < 0:
+            raise NegativeAmplitudeError()
+        elif alpha < 0:
+            raise NegativeAlphaError()
+        elif beta < 0:
+            raise NegativeBetaError()
         self.amplitude = 1. if normalize else amplitude
         self.alpha = alpha
         self.beta = beta

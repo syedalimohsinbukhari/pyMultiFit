@@ -6,6 +6,7 @@ import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution
+from .backend.errorHandling import NegativeAmplitudeError, NegativeStandardDeviationError
 from .utilities import log_normal_
 
 
@@ -13,6 +14,10 @@ class LogNormalDistribution(BaseDistribution):
     """Class for Log-Normal distribution."""
 
     def __init__(self, amplitude: float = 1., mean: float = 0., standard_deviation: float = 1., normalize: bool = False):
+        if amplitude < 0:
+            raise NegativeAmplitudeError()
+        elif standard_deviation < 0:
+            raise NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean
         self.std_ = standard_deviation
