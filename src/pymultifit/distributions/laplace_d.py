@@ -5,6 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution
+from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
 from .utilities import laplace_
 
 
@@ -12,6 +13,10 @@ class LaplaceDistribution(BaseDistribution):
     """Class for Laplace distribution."""
 
     def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
+        if amplitude < 0:
+            raise NegativeAmplitudeError()
+        elif diversity < 0:
+            raise NegativeScaleError('diversity')
         self.amplitude = 1. if normalize else amplitude
         self.mu = mean
         self.b = diversity

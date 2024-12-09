@@ -16,9 +16,9 @@ class FoldedHalfNormalDistribution(BaseDistribution):
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0.0, variance: float = 1., normalize: bool = False):
         if amplitude < 0:
-            raise NegativeAmplitudeError("Amplitude cannot be negative.")
-        if variance < 0:
-            raise NegativeVarianceError(f"Variance for {self.__class__.__name__} cannot be negative.")
+            raise NegativeAmplitudeError()
+        elif variance < 0:
+            raise NegativeVarianceError()
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean
         self.var_ = variance

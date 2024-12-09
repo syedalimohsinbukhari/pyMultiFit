@@ -20,7 +20,7 @@ def test_initialization():
 
 
 def test_constraints():
-    with pytest.raises(NegativeAmplitudeError, match="Amplitude cannot be negative"):
+    with pytest.raises(NegativeAmplitudeError, match="Amplitude cannot be negative!"):
         GaussianDistribution(amplitude=-1.0, normalize=True)
 
     with pytest.raises(NegativeStandardDeviationError, match="Standard deviation cannot be negative."):
