@@ -46,7 +46,7 @@ class NegativeBetaError(DistributionError):
 class DegreeOfFreedomError(DistributionError):
     """Raised when the degree of freedom is a float instead of int."""
 
-    def __init__(self, message=r"The degree of freedom parameter can only be integer, k $\in N^+$"):
+    def __init__(self, message=r"DOF can only be integer, k $\in N^+$"):
         super().__init__(message)
 
 

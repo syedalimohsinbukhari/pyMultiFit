@@ -13,7 +13,7 @@ class LaplaceDistribution(BaseDistribution):
     """Class for Laplace distribution."""
 
     def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
-        if amplitude < 0:
+        if not normalize and amplitude < 0:
             raise NegativeAmplitudeError()
         elif diversity < 0:
             raise NegativeScaleError('diversity')
