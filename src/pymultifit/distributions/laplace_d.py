@@ -13,9 +13,9 @@ class LaplaceDistribution(BaseDistribution):
     """Class for Laplace distribution."""
 
     def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
-        if not normalize and amplitude < 0:
+        if not normalize and amplitude <= 0:
             raise NegativeAmplitudeError()
-        elif diversity < 0:
+        elif diversity <= 0:
             raise NegativeScaleError('diversity')
         self.amplitude = 1. if normalize else amplitude
         self.mu = mean
@@ -36,7 +36,14 @@ class LaplaceDistribution(BaseDistribution):
         def _cdf2(x_):
             return 1 - 0.5 * np.exp(-(x_ - self.mu) / self.b)
 
-        return np.piecewise(x, [x <= self.mu, x > self.mu], [_cdf1, _cdf2])
+        # to ensure equality with scipy, had to break down the output with empty array so that sorting is not needed.
+        result = np.empty_like(x, dtype=np.float64)
+
+        mask_leq = x <= self.mu
+        result[mask_leq] = _cdf1(x[mask_leq])
+        result[~mask_leq] = _cdf2(x[~mask_leq])
+
+        return result
 
     def stats(self) -> Dict[str, float]:
         mean_, b_ = self.mu, self.b
