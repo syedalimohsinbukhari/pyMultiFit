@@ -23,8 +23,8 @@ class TestGammaDistributionSS:
 
     @staticmethod
     def test_constraints():
-        with pytest.raises(erH.NegativeAmplitudeError, match=f"Amplitude {erH.neg_message}"):
-            GammaDistributionSS(amplitude=-1.0, normalize=True)
+        distribution = GammaDistributionSS(amplitude=-1.0, normalize=True)
+        assert distribution.amplitude == 1.0
 
         with pytest.raises(erH.NegativeShapeError, match=f"Shape {erH.neg_message}"):
             GammaDistributionSS(amplitude=1.0, shape=-1.0, normalize=True)
@@ -81,8 +81,8 @@ class TestGammaDistributionSR:
 
     @staticmethod
     def test_constraints():
-        with pytest.raises(erH.NegativeAmplitudeError, match=f"Amplitude {erH.neg_message}"):
-            GammaDistributionSR(amplitude=-1.0, normalize=True)
+        distribution = GammaDistributionSR(amplitude=-1.0, normalize=True)
+        assert distribution.amplitude == 1.0
 
         with pytest.raises(erH.NegativeShapeError, match=f"Shape {erH.neg_message}"):
             GammaDistributionSR(amplitude=1.0, shape=-1.0, normalize=True)
