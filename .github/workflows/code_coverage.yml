@@ -21,10 +21,21 @@ jobs:
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt pytest pytest-cov
 
+            -   name: Test with pytest
+                run: |
+                    pytest --cov --junitxml=junit.xml -o junit_family=legacy
+
             -   name: Run tests
                 run: pytest --cov --cov-report=xml
 
             -   name: Upload results to Codecov
+                if: ${{ !cancelled() }}
                 uses: codecov/codecov-action@v5
+                with:
+                    token: ${{ secrets.CODECOV_TOKEN }}
+
+            -   name: Upload test results to Codecov
+                if: ${{ !cancelled() }}
+                uses: codecov/test-results-action@v1
                 with:
                     token: ${{ secrets.CODECOV_TOKEN }}
