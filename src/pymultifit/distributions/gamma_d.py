@@ -49,10 +49,11 @@ class GammaDistributionSR(BaseDistribution):
 
 class GammaDistributionSS(GammaDistributionSR):
     def __init__(self, amplitude: float = 1., shape: float = 1., scale: float = 1., normalize: bool = False):
+        self.scale = scale
         if amplitude < 0:
             raise NegativeAmplitudeError()
         elif shape < 0:
             raise NegativeShapeError()
         elif scale < 0:
             raise NegativeScaleError()
-        super().__init__(amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
+        super().__init__(amplitude=amplitude, shape=shape, rate=1 / self.scale, normalize=normalize)

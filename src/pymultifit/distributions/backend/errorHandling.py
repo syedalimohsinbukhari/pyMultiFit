@@ -60,7 +60,7 @@ class NegativeShapeError(DistributionError):
 class NegativeRateError(DistributionError):
     """Raised when the value of rate parameter is negative."""
 
-    def __init__(self, message="The rate parameter cannot be negative."):
+    def __init__(self, message=f"Rate {neg_message}"):
         super().__init__(message)
 
 
@@ -68,4 +68,4 @@ class NegativeScaleError(DistributionError):
     """Raised when the value of scale parameter is negative."""
 
     def __init__(self, parameter='scale'):
-        super().__init__(f"The {parameter} parameter cannot be negative")
+        super().__init__(f"{parameter.capitalize()} {neg_message}")
