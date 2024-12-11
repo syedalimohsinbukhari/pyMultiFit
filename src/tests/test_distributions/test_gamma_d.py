@@ -41,7 +41,7 @@ class TestGammaDistributionSS:
 
     @staticmethod
     def test_stats():
-        def check_stats_SS(distribution):
+        def check_stats_ss(distribution):
             """check stats for the gammaSS distribution"""
             stats = distribution.stats()
             assert stats['mean'] == distribution.shape * distribution.scale
@@ -54,9 +54,9 @@ class TestGammaDistributionSS:
             assert stats['variance'] == distribution.shape * distribution.scale
 
         dist1 = GammaDistributionSS(amplitude=1.0, shape=1.0, scale=1.0, normalize=True)
-        check_stats_SS(dist1)
+        check_stats_ss(dist1)
         dist2 = GammaDistributionSS(amplitude=1.0, shape=0.5, scale=1.0, normalize=True)
-        check_stats_SS(dist2)
+        check_stats_ss(dist2)
 
     @staticmethod
     def test_cdf():
@@ -99,7 +99,7 @@ class TestGammaDistributionSR:
 
     @staticmethod
     def test_stats():
-        def check_stats_SR(distribution):
+        def check_stats_sr(distribution):
             """check stats for the gammaSS distribution"""
             stats = distribution.stats()
             assert stats['mean'] == distribution.shape / distribution.rate
@@ -112,9 +112,9 @@ class TestGammaDistributionSR:
             assert stats['variance'] == distribution.shape / distribution.rate
 
         dist1 = GammaDistributionSR(amplitude=1.0, shape=1.0, rate=1.0, normalize=True)
-        check_stats_SR(dist1)
+        check_stats_sr(dist1)
         dist2 = GammaDistributionSR(amplitude=1.0, shape=0.5, rate=1.0, normalize=True)
-        check_stats_SR(dist2)
+        check_stats_sr(dist2)
 
     @staticmethod
     def test_cdf():
