@@ -8,8 +8,8 @@ class ChiSquareDistribution(GammaDistributionSS):
     """Class for chi-squared distribution."""
 
     def __init__(self, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):
-        if not normalize and amplitude < 0:
+        if not normalize and amplitude <= 0:
             raise NegativeAmplitudeError()
-        elif not isinstance(degree_of_freedom, int):
+        elif not isinstance(degree_of_freedom, int) or degree_of_freedom <= 0:
             raise DegreeOfFreedomError()
         super().__init__(amplitude=amplitude, shape=degree_of_freedom / 2., scale=2., normalize=normalize)

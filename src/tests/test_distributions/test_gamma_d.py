@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from scipy.stats import gamma
 
+from ...pymultifit import EPSILON
 from ...pymultifit.distributions import GammaDistributionSR, GammaDistributionSS
 from ...pymultifit.distributions.backend import errorHandling as erH
 
@@ -118,7 +119,34 @@ class TestGammaDistributionSR:
 
     @staticmethod
     def test_cdf():
-        x = np.array([0, 1, 2])
-        distribution = GammaDistributionSR(amplitude=1.0, shape=1.0, rate=2.0, normalize=True)
-        expected = gamma.cdf(x, a=1.0, scale=1 / 2.0)
-        np.testing.assert_allclose(distribution.cdf(x), expected, rtol=1e-5)
+        # Test systematic parameter coverage
+        x = np.linspace(EPSILON, 5, 11)  # Test CDF evaluation over a fixed range
+        for mean_ in [EPSILON, 1, 2, 3, 4, 5, 6]:
+            for diversity_ in np.linspace(EPSILON, 5, 21):
+                distribution = GammaDistributionSS(amplitude=1.0, shape=mean_, scale=diversity_, normalize=True)
+                expected = gamma.cdf(x, a=mean_, scale=diversity_)
+                np.testing.assert_allclose(actual=distribution.cdf(x), desired=expected, rtol=1e-5)
+
+        # Test edge cases with specific `x` values
+        for mean_ in [EPSILON, 10, 100]:
+            for diversity_ in [EPSILON, 0.5, 2.0]:
+                x = np.array([mean_, mean_ + 10])  # Extreme values
+                distribution = GammaDistributionSS(amplitude=1.0, shape=mean_, scale=diversity_, normalize=True)
+                expected = gamma.cdf(x, a=mean_, scale=diversity_)
+                np.testing.assert_allclose(actual=distribution.cdf(x), desired=expected, rtol=1e-5)
+
+        # Test randomized inputs
+        for _ in range(10):  # Run 10 random tests
+            mean_ = np.random.uniform(EPSILON, 10)
+            diversity_ = np.random.uniform(EPSILON, 5)
+            x = np.random.uniform(EPSILON, mean_ + 10, 10)
+            distribution = GammaDistributionSS(amplitude=1.0, shape=mean_, scale=diversity_, normalize=True)
+            expected = gamma.cdf(x, a=mean_, scale=diversity_)
+            np.testing.assert_allclose(actual=distribution.cdf(x), desired=expected, rtol=1e-5)
+
+        # Test invalid inputs
+        with pytest.raises(erH.NegativeShapeError, match=f"Shape {erH.neg_message}"):
+            GammaDistributionSS(amplitude=1.0, shape=0, normalize=True)
+
+        with pytest.raises(erH.NegativeScaleError, match=f"Scale {erH.neg_message}"):
+            GammaDistributionSS(amplitude=1.0, scale=0, normalize=True)

@@ -8,8 +8,8 @@ class ExponentialDistribution(GammaDistributionSR):
     """Class for Exponential distribution."""
 
     def __init__(self, amplitude: float = 1., scale: float = 1., normalize: bool = False):
-        if not normalize and amplitude < 0:
+        if not normalize and amplitude <= 0:
             raise NegativeAmplitudeError()
-        elif scale < 0:
+        elif scale <= 0:
             raise NegativeScaleError()
         super().__init__(amplitude=amplitude, shape=1., rate=scale, normalize=normalize)

@@ -14,9 +14,9 @@ class GaussianDistribution(BaseDistribution):
     """Class for Gaussian distribution."""
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0., standard_deviation: float = 1., normalize: bool = False):
-        if not normalize and amplitude < 0:
+        if not normalize and amplitude <= 0:
             raise NegativeAmplitudeError()
-        elif standard_deviation < 0:
+        elif standard_deviation <= 0:
             raise NegativeStandardDeviationError()
 
         self.amplitude = 1. if normalize else amplitude

@@ -7,7 +7,6 @@ from scipy.stats import laplace
 from ...pymultifit import EPSILON
 from ...pymultifit.distributions import LaplaceDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
-from ...pymultifit.distributions.backend.errorHandling import neg_message
 
 
 class TestLaplaceDistribution:
@@ -85,5 +84,5 @@ class TestLaplaceDistribution:
             np.testing.assert_allclose(actual=distribution.cdf(x), desired=expected, rtol=1e-5)
 
         # Test invalid inputs
-        with pytest.raises(erH.NegativeScaleError, match=f"Diversity {neg_message}"):
+        with pytest.raises(erH.NegativeScaleError, match=f"Diversity {erH.neg_message}"):
             LaplaceDistribution(amplitude=1.0, mean=0, diversity=0, normalize=True)

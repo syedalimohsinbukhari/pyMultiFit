@@ -14,11 +14,11 @@ class BetaDistribution(BaseDistribution):
     """Class for Beta distribution."""
 
     def __init__(self, amplitude: float = 1., alpha: float = 1., beta: float = 1., normalize: bool = False):
-        if not normalize and amplitude < 0:
+        if not normalize and amplitude <= 0:
             raise NegativeAmplitudeError()
-        elif alpha < 0:
+        elif alpha <= 0:
             raise NegativeAlphaError()
-        elif beta < 0:
+        elif beta <= 0:
             raise NegativeBetaError()
         self.amplitude = 1. if normalize else amplitude
         self.alpha = alpha
