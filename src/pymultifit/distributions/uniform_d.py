@@ -11,6 +11,8 @@ class UniformDistribution(BaseDistribution):
     def __init__(self, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
+        elif high < low:
+            raise erH.InvalidUniformParameters()
         self.amplitude = 1 if normalize else amplitude
         self.low = low
         self.high = high
@@ -75,7 +77,7 @@ def uniform_(x: np.ndarray,
         raise ValueError("`low` must be less than `high`.")
 
     if normalize:
-        amplitude = 1.0 / (high - low)
+        amplitude = 1.0
 
     # Compute the PDF values
     pdf_values = np.where((x >= low) & (x <= high), amplitude / (high - low), 0.0)

@@ -69,3 +69,10 @@ class NegativeScaleError(DistributionError):
 
     def __init__(self, parameter='scale'):
         super().__init__(f"{parameter.capitalize()} {neg_message}")
+
+
+class InvalidUniformParameters(DistributionError):
+    """Raised when the parameters of uniform distributions are not valid."""
+
+    def __init__(self, message="High < Low, invalid parameter selection."):
+        super().__init__(message)
