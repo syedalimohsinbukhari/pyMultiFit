@@ -46,17 +46,17 @@ class TestGammaDistributionSS:
 
     @staticmethod
     def test_stats():
-        def check_stats_ss(distribution):
+        def check_stats_ss(dist_):
             """check stats for the gammaSS distribution"""
-            stats = distribution.stats()
-            assert stats['mean'] == distribution.shape * distribution.scale
+            stats = dist_.stats()
+            assert stats['mean'] == dist_.shape * dist_.scale
             # no median value available so check for []
             assert stats.get('median', []) == []
-            if distribution.shape >= 1:
-                assert stats['mode'] == (distribution.shape - 1) * distribution.scale
+            if dist_.shape >= 1:
+                assert stats['mode'] == (dist_.shape - 1) * dist_.scale
             else:
                 assert stats['mode'] == 0
-            assert stats['variance'] == distribution.shape * distribution.scale
+            assert stats['variance'] == dist_.shape * dist_.scale
 
         dist1 = GammaDistributionSS(amplitude=1.0, shape=1.0, scale=1.0, normalize=True)
         check_stats_ss(dist1)

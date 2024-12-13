@@ -15,5 +15,6 @@ from .norris_d import Norris2005Distribution, Norris2011Distribution
 from .others import cubic, line, linear, nth_polynomial, quadratic
 from .powerLaw_d import PowerLawDistribution
 from .skewNorm_d import SkewedNormalDistribution
+from .uniform_d import UniformDistribution
 
 oFloat = Optional[float]
