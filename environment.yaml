@@ -11,4 +11,4 @@ dependencies:
     - pytest
     - pip
     -   pip:
-            - mpyez==0.0.9a3
+            - mpyez
