@@ -31,17 +31,10 @@ class TestGaussianDistribution:
         assert distribution.amplitude == 1.0
 
         with pytest.raises(erH.NegativeStandardDeviationError, match=f"Standard deviation {erH.neg_message}"):
-            GaussianDistribution(amplitude=1.0, standard_deviation=-3.0, normalize=True)
+            GaussianDistribution(standard_deviation=-3.0)
 
     @staticmethod
-    def test_pdf():
-        x = np.array([0, 1, 2])
-        dist = GaussianDistribution(amplitude=1.0, mean=1.0, standard_deviation=0.5, normalize=True)
-        expected = norm.pdf(x, loc=1.0, scale=0.5)
-        np.testing.assert_allclose(actual=dist._pdf(x), desired=expected)
-
-    @staticmethod
-    def test_edge_cases():
+    def test_edge_case():
         dist = GaussianDistribution()
         x = np.array([])
         result = dist.pdf(x)
@@ -49,16 +42,27 @@ class TestGaussianDistribution:
 
     @staticmethod
     def test_stats():
-        dist = GaussianDistribution(amplitude=1.0, mean=2.0, standard_deviation=3.0)
-        stats = dist.stats()
-        assert stats["mean"] == 2.0
-        assert stats["median"] == 2.0
-        assert stats["mode"] == 2.0
-        assert stats["variance"] == 9.0  # Variance = std_dev^2
+        distribution = GaussianDistribution(amplitude=1.0, mean=2.0, standard_deviation=3.0)
+        d_stats = distribution.stats()
+        assert d_stats["mean"] == distribution.mean
+        assert d_stats["median"] == distribution.mean
+        assert d_stats["mode"] == distribution.mean
+        assert d_stats["variance"] == distribution.std_**2
 
     @staticmethod
-    def test_cdf():
-        x = np.array([0, 1, 2])
-        dist = GaussianDistribution(amplitude=1.0, mean=1.0, standard_deviation=0.5, normalize=True)
-        expected = norm.cdf(x, loc=1.0, scale=0.5)  # Use scipy's implementation for comparison
-        np.testing.assert_allclose(dist.cdf(x), expected, rtol=1e-5)
+    def test_pdf_cdf():
+        def _cdf_pdf_custom(x_, dist_, what='cdf'):
+            return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
+
+        def _cdf_pdf_scipy(x_, loc, scale, what='cdf'):
+            return norm.cdf(x_, loc=loc, scale=scale) if what == 'cdf' else norm.pdf(x_, loc=loc, scale=scale)
+
+        for i in ['cdf', 'pdf']:
+            for _ in range(50):  # Run 50 random tests
+                loc_ = np.random.uniform(low=-10, high=10)
+                scale_ = np.random.uniform(low=0.1, high=5)
+                x = np.random.uniform(low=loc_ - 10, high=loc_ + 10, size=50)
+                distribution = GaussianDistribution(mean=loc_, standard_deviation=scale_, normalize=True)
+                expected = _cdf_pdf_scipy(x_=x, loc=loc_, scale=scale_, what=i)
+                np.testing.assert_allclose(actual=_cdf_pdf_custom(x_=x, dist_=distribution, what=i),
+                                           desired=expected, rtol=1e-5, atol=1e-8)

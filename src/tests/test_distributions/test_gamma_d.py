@@ -24,14 +24,18 @@ class TestGammaDistributionSS:
 
     @staticmethod
     def test_constraints():
+        with pytest.raises(erH.NegativeAmplitudeError, match=f"Amplitude {erH.neg_message}"):
+            GammaDistributionSS(amplitude=-1.0)
+
+        # amplitude should be internally updated to 1.0 if `normalize` is called
         distribution = GammaDistributionSS(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
         with pytest.raises(erH.NegativeShapeError, match=f"Shape {erH.neg_message}"):
-            GammaDistributionSS(amplitude=1.0, shape=-1.0, normalize=True)
+            GammaDistributionSS(shape=-1.0)
 
         with pytest.raises(erH.NegativeScaleError, match=f"Scale {erH.neg_message}"):
-            GammaDistributionSS(amplitude=1.0, shape=1.0, scale=-3.0, normalize=True)
+            GammaDistributionSS(scale=-3.0)
 
     @staticmethod
     def test_edge_cases():
@@ -60,11 +64,22 @@ class TestGammaDistributionSS:
         check_stats_ss(dist2)
 
     @staticmethod
-    def test_cdf():
-        x = np.array([0, 1, 2])
-        distribution = GammaDistributionSS(amplitude=1.0, shape=1.0, scale=1.0, normalize=True)
-        expected = gamma.cdf(x, a=1.0, scale=1.0)
-        np.testing.assert_allclose(distribution.cdf(x), expected, rtol=1e-5)
+    def test_pdf_cdf():
+        def _cdf_pdf_custom(x_, dist_, what='cdf'):
+            return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
+
+        def _cdf_pdf_scipy(x_, loc, scale, what='cdf'):
+            return gamma.cdf(x_, a=loc, scale=scale) if what == 'cdf' else gamma.pdf(x_, a=loc, scale=scale)
+
+        for i in ['cdf', 'pdf']:
+            for _ in range(50):  # Run 50 random tests
+                loc_ = np.random.uniform(low=EPSILON, high=10)
+                scale_ = np.random.uniform(low=EPSILON, high=5)
+                x = np.random.uniform(low=loc_ - 10, high=loc_ + 10, size=50)
+                distribution = GammaDistributionSS(shape=loc_, scale=scale_, normalize=True)
+                expected = _cdf_pdf_scipy(x_=x, loc=loc_, scale=scale_, what=i)
+                np.testing.assert_allclose(actual=_cdf_pdf_custom(x_=x, dist_=distribution, what=i),
+                                           desired=expected, rtol=1e-5, atol=1e-8)
 
 
 class TestGammaDistributionSR:

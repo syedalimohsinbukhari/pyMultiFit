@@ -5,8 +5,7 @@ from typing import Dict
 import numpy as np
 from scipy.special import gammainc
 
-from .backend import BaseDistribution
-from .backend.errorHandling import NegativeAmplitudeError, NegativeRateError, NegativeScaleError, NegativeShapeError
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities import gamma_sr_
 
 
@@ -15,11 +14,11 @@ class GammaDistributionSR(BaseDistribution):
 
     def __init__(self, amplitude: float = 1., shape: float = 1., rate: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:
-            raise NegativeAmplitudeError()
+            raise erH.NegativeAmplitudeError()
         elif shape <= 0:
-            raise NegativeShapeError()
+            raise erH.NegativeShapeError()
         elif rate <= 0:
-            raise NegativeRateError()
+            raise erH.NegativeRateError()
         self.amplitude = 1. if normalize else amplitude
         self.shape = shape
         self.rate = rate
@@ -30,10 +29,10 @@ class GammaDistributionSR(BaseDistribution):
         return gamma_sr_(x, amplitude=self.amplitude, shape=self.shape, rate=self.rate, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
+        return np.nan_to_num(x=self._pdf(x), copy=False, nan=0)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return gammainc(self.shape, self.rate * x)
+        return np.nan_to_num(x=gammainc(self.shape, self.rate * x), copy=False, nan=0)
 
     def stats(self) -> Dict[str, float]:
         a, b = self.shape, self.rate
@@ -51,9 +50,9 @@ class GammaDistributionSS(GammaDistributionSR):
     def __init__(self, amplitude: float = 1., shape: float = 1., scale: float = 1., normalize: bool = False):
         self.scale = scale
         if not normalize and amplitude <= 0:
-            raise NegativeAmplitudeError()
+            raise erH.NegativeAmplitudeError()
         elif shape <= 0:
-            raise NegativeShapeError()
+            raise erH.NegativeShapeError()
         elif scale <= 0:
-            raise NegativeScaleError()
+            raise erH.NegativeScaleError()
         super().__init__(amplitude=amplitude, shape=shape, rate=1 / self.scale, normalize=normalize)
