@@ -5,8 +5,7 @@ from typing import Dict
 import numpy as np
 from scipy.special import betainc, betaincinv
 
-from .backend import BaseDistribution
-from .backend.errorHandling import NegativeAlphaError, NegativeAmplitudeError, NegativeBetaError
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities import beta_
 
 
@@ -15,11 +14,11 @@ class BetaDistribution(BaseDistribution):
 
     def __init__(self, amplitude: float = 1., alpha: float = 1., beta: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:
-            raise NegativeAmplitudeError()
+            raise erH.NegativeAmplitudeError()
         elif alpha <= 0:
-            raise NegativeAlphaError()
+            raise erH.NegativeAlphaError()
         elif beta <= 0:
-            raise NegativeBetaError()
+            raise erH.NegativeBetaError()
         self.amplitude = 1. if normalize else amplitude
         self.alpha = alpha
         self.beta = beta

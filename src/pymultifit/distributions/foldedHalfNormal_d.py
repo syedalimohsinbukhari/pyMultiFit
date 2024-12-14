@@ -5,8 +5,7 @@ from typing import Any, Dict
 import numpy as np
 from scipy.special import erf
 
-from .backend import BaseDistribution
-from .backend.errorHandling import NegativeAmplitudeError, NegativeVarianceError
+from .backend import BaseDistribution, errorHandling as erH
 from .gaussian_d import GaussianDistribution
 from .utilities import folded_half_normal_
 
@@ -16,9 +15,9 @@ class FoldedHalfNormalDistribution(BaseDistribution):
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0.0, variance: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:
-            raise NegativeAmplitudeError()
+            raise erH.NegativeAmplitudeError()
         elif variance <= 0:
-            raise NegativeVarianceError()
+            raise erH.NegativeVarianceError()
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean
         self.var_ = variance
