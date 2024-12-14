@@ -32,14 +32,14 @@ class NegativeVarianceError(DistributionError):
 class NegativeAlphaError(DistributionError):
     """Raised when the alpha parameter value is negative."""
 
-    def __init__(self, message=r"The $\alpha$ parameter cannot be negative."):
+    def __init__(self, message=fr"Alpha {neg_message}."):
         super().__init__(message)
 
 
 class NegativeBetaError(DistributionError):
     """Raised when the beta parameter value is negative."""
 
-    def __init__(self, message=r"The $\beta$ parameter cannot be negative."):
+    def __init__(self, message=fr"Beta {neg_message}"):
         super().__init__(message)
 
 

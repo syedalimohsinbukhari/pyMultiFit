@@ -3,7 +3,7 @@
 from typing import Dict
 
 import numpy as np
-from scipy.special import betainc
+from scipy.special import betainc, betaincinv
 
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAlphaError, NegativeAmplitudeError, NegativeBetaError
@@ -39,7 +39,14 @@ class BetaDistribution(BaseDistribution):
         a, b = self.alpha, self.beta
 
         mean_ = a / (a + b)
+        median_ = betaincinv(a, b, 0.5)
+        mode_ = []
+        if np.logical_and(a > 1, b > 1):
+            mode_ = (a - 1) / (a + b - 2)
+
         variance_ = (a * b) / ((a + b)**2 * (a + b + 1))
 
         return {'mean': mean_,
+                'median': median_,
+                'mode': mode_,
                 'variance': variance_}
