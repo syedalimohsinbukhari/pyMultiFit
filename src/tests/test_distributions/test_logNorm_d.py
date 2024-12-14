@@ -50,7 +50,7 @@ class TestGaussianDistribution:
         assert d_stats["variance"] == (np.exp(dist_.std_**2) - 1) * np.exp(2 * dist_.mean + dist_.std_**2)
 
     @staticmethod
-    def test_pdf_cdf_lognorm():
+    def test_pdf_cdf_log_norm():
         def _cdf_pdf_custom(x_, dist_, what='cdf'):
             """Evaluate the CDF or PDF for the custom LogNormalDistribution."""
             return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
