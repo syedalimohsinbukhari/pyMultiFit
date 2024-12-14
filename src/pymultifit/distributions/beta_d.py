@@ -26,6 +26,8 @@ class BetaDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
+        if np.any(np.logical_or(x < 0, x > 1)):
+            raise erH.XOutOfRange()
         return beta_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:

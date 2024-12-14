@@ -37,6 +37,9 @@ class TestBetaDistribution:
         with pytest.raises(erH.NegativeBetaError, match=f"Beta {erH.neg_message}"):
             BetaDistribution(beta=-3.0)
 
+        with pytest.raises(erH.XOutOfRange, match="X out of range."):
+            BetaDistribution().pdf(np.array([-1, 0, 1, 2]))
+
     @staticmethod
     def test_edge_case():
         dist = BetaDistribution()
