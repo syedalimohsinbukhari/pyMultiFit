@@ -26,15 +26,25 @@ class BetaDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        if np.any(np.logical_or(x < 0, x > 1)):
-            raise erH.XOutOfRange()
         return beta_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
+        y = np.zeros_like(x, dtype=float)
+        mask_ = np.logical_and(x > 0, x < 1)
+        y[mask_] = self._pdf(x[mask_])
+
+        # hack to match beta distribution at x = 0 and x = 1
+        y[np.logical_or(x == 0, x == 1)] = np.inf
+        return y
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return betainc(self.alpha, self.beta, x)
+        y = np.zeros_like(x, dtype=float)
+        mask_ = np.logical_and(x > 0, x < 1)
+        y[mask_] = betainc(self.alpha, self.beta, x[mask_])
+
+        # hack to match scipy beta cdf at x >= 1
+        y[x >= 1] = 1
+        return y
 
     def stats(self) -> Dict[str, float]:
         a, b = self.alpha, self.beta
