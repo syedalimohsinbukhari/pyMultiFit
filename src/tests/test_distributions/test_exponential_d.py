@@ -8,7 +8,7 @@ from ...pymultifit.distributions import ExponentialDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
 
-class TestGaussianDistribution:
+class TestExponentialDistribution:
 
     @staticmethod
     def test_initialization():

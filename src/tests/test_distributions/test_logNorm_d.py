@@ -8,7 +8,7 @@ from ...pymultifit.distributions import LogNormalDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
 
-class TestGaussianDistribution:
+class TestLogNormalDistribution:
 
     @staticmethod
     def test_initialization():

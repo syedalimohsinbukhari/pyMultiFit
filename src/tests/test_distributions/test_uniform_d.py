@@ -7,7 +7,7 @@ from ...pymultifit.distributions import UniformDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
 
-class TestGaussianDistribution:
+class TestUniformDistribution:
 
     @staticmethod
     def test_initialization():

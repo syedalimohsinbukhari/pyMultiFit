@@ -1,7 +1,7 @@
 """Created on Aug 03 17:13:21 2024"""
 
 __all__ = ['beta_', 'chi_squared_', 'exponential_', 'folded_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check',
-           'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_']
+           'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_', 'uniform_']
 
 import numpy as np
 from scipy.special import gamma
@@ -538,3 +538,49 @@ def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize
         Computed power-law values for each element in x.
     """
     return amplitude * x**-alpha
+
+
+def uniform_(x: np.ndarray,
+             amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
+             normalize: bool = False) -> np.ndarray:
+    """
+    Compute the Uniform distribution probability density function (PDF).
+
+    The Uniform PDF is given by:
+    f(x) = amplitude / (high - low) for x ∈ [low, high]
+           0 otherwise
+
+    Parameters
+    ----------
+    x : np.ndarray
+        The input values at which to evaluate the Uniform PDF.
+    low : float
+        The lower bound of the Uniform distribution. Defaults to 0.
+    high : float
+        The upper bound of the Uniform distribution. Defaults to 1.
+    amplitude : float
+        The amplitude of the Uniform distribution. Defaults to 1.
+    normalize : bool
+        If True, the function returns the normalized PDF (amplitude = 1 / (high - low)).
+        Defaults to False.
+
+    Returns
+    -------
+    np.ndarray
+        The probability density function values for the input values.
+
+    Notes
+    -----
+    - The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
+    - If `normalize=True`, the amplitude is overridden to ensure the PDF integrates to 1.
+    """
+    if low >= high:
+        raise ValueError("`low` must be less than `high`.")
+
+    if normalize:
+        amplitude = 1.0
+
+    # Compute the PDF values
+    pdf_values = np.where((x >= low) & (x <= high), amplitude / (high - low), 0.0)
+
+    return pdf_values
