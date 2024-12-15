@@ -12,4 +12,4 @@ class NormalDistribution(FoldedNormalDistribution):
             raise erH.NegativeAmplitudeError()
         elif scale <= 0:
             raise erH.NegativeScaleError()
-        super().__init__(amplitude=amplitude, mean=0, variance=scale, normalize=normalize)
+        super().__init__(amplitude=amplitude, mean=0, sigma=scale, normalize=normalize)

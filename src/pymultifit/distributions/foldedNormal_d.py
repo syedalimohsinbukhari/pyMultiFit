@@ -6,39 +6,39 @@ import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .gaussian_d import GaussianDistribution
 from .utilities import folded_normal_
 
 
 class FoldedNormalDistribution(BaseDistribution):
     """Class for folded half-normal distribution."""
 
-    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, variance: float = 1., normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif variance <= 0:
-            raise erH.NegativeVarianceError()
+        elif sigma <= 0:
+            raise erH.NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean
-        self.var_ = variance
+        self.sigma = sigma
 
+        self.c = abs(mean) / sigma
+        self.var_ = sigma**2
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return folded_normal_(x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
+        y = np.zeros_like(x, dtype=float)
+        y[x >= 0] += self._pdf(x[x >= 0])
+        return y
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        result = np.zeros_like(x)
+        y = np.zeros_like(x, dtype=float)
         mask = x >= 0
-        g1_cdf = GaussianDistribution(amplitude=self.amplitude, mean=self.mean,
-                                      standard_deviation=np.sqrt(self.var_), normalize=self.norm).cdf(x[mask])
-        g2_cdf = GaussianDistribution(amplitude=self.amplitude, mean=-self.mean,
-                                      standard_deviation=np.sqrt(self.var_), normalize=self.norm).cdf(x[mask])
-        result[mask] = g1_cdf + g2_cdf
-        return result
+        frac1, frac2 = (x[mask] - self.mean) / np.sqrt(2 * self.var_), (x[mask] + self.mean) / np.sqrt(2 * self.var_)
+        y[mask] += 0.5 * (erf(frac1) + erf(frac2))
+        return y
 
     def stats(self) -> Dict[str, Any]:
         mean_, std_ = self.mean, np.sqrt(self.var_)

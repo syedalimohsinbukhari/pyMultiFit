@@ -53,7 +53,7 @@ def generate_multi_folded_normal_data(x: np.ndarray, params: listOfTuplesOrArray
                                       noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     y = np.zeros_like(x, dtype=float)
     for pars in params:
-        y += dist.FoldedNormalDistribution(*pars, normalize=normalize).pdf(x)
+        y += dist.FoldedNormalDistribution(normalize=normalize).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
