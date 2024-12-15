@@ -1,10 +1,10 @@
 """Created on Dec 04 03:57:18 2024"""
 
 from .backend import errorHandling as erH
-from .foldedHalfNormal_d import FoldedHalfNormalDistribution
+from .foldedNormal_d import FoldedNormalDistribution
 
 
-class HalfNormalDistribution(FoldedHalfNormalDistribution):
+class NormalDistribution(FoldedNormalDistribution):
     """A class for half normal distribution."""
 
     def __init__(self, amplitude: float = 1.0, scale: float = 1.0, normalize: bool = False):

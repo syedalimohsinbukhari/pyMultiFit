@@ -5,10 +5,10 @@ from typing import Optional
 from .beta_d import BetaDistribution
 from .chiSquare_d import ChiSquareDistribution
 from .exponential_d import ExponentialDistribution
-from .foldedHalfNormal_d import FoldedHalfNormalDistribution
+from .foldedNormal_d import FoldedNormalDistribution
 from .gamma_d import GammaDistributionSR, GammaDistributionSS
 from .gaussian_d import GaussianDistribution
-from .halfNormal_d import HalfNormalDistribution
+from .halfNormal_d import NormalDistribution
 from .laplace_d import LaplaceDistribution
 from .logNorm_d import LogNormalDistribution
 from .norris_d import Norris2005Distribution, Norris2011Distribution

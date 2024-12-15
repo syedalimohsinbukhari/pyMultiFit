@@ -1,10 +1,10 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['beta_', 'chi_squared_', 'exponential_', 'folded_half_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check',
+__all__ = ['beta_', 'chi_squared_', 'exponential_', 'folded_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check',
            'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_']
 
 import numpy as np
-from scipy.special import beta as beta_f, gamma
+from scipy.special import gamma
 
 
 def integral_check(pdf_function, x_range: tuple) -> float:
@@ -55,7 +55,8 @@ def beta_(x: np.ndarray,
     numerator = x**(alpha - 1) * (1 - x)**(beta - 1)
 
     if normalize:
-        normalization_factor = beta_f(alpha, beta)
+        normalization_factor = gamma(alpha) * gamma(beta)
+        normalization_factor /= gamma(alpha + beta)
         amplitude = 1.0
     else:
         normalization_factor = 1.0
@@ -131,9 +132,9 @@ def exponential_(x: np.ndarray,
     return gamma_sr_(x, amplitude=amplitude, shape=1., rate=scale, normalize=normalize)
 
 
-def folded_half_normal_(x: np.ndarray,
-                        amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
-                        normalize: bool = False) -> np.ndarray:
+def folded_normal_(x: np.ndarray,
+                   amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
+                   normalize: bool = False) -> np.ndarray:
     """
     Compute the folded half-normal distribution.
 
@@ -204,7 +205,8 @@ def gamma_sr_(x: np.ndarray,
     numerator = x**(shape - 1) * np.exp(-rate * x)
 
     if normalize:
-        normalization_factor = gamma(shape) / rate**shape
+        normalization_factor = gamma(shape)
+        normalization_factor /= rate**shape
         amplitude = 1
     else:
         normalization_factor = 1
@@ -339,7 +341,7 @@ def half_normal_(x: np.ndarray,
 
     The half-normal distribution is a special case of the folded half-normal distribution with `mu = 0`.
     """
-    return folded_half_normal_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
+    return folded_normal_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
 
 
 def laplace_(x: np.ndarray,

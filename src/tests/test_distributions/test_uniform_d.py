@@ -74,7 +74,7 @@ class TestGaussianDistribution:
 
                 x = np.random.uniform(low=low_ - 5, high=high_ + 5, size=50)
 
-                distribution = UniformDistribution(low=low_, high=high_)
+                distribution = UniformDistribution(low=low_, high=high_, normalize=True)
                 scale_ = high_ - low_
 
                 expected = _cdf_pdf_scipy(x_=x, loc=low_, scale=scale_, what=i)
