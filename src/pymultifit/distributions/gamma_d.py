@@ -26,6 +26,8 @@ class GammaDistributionSR(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
+        if np.any(x < 0):
+            raise erH.XOutOfRange()
         return gamma_sr_(x, amplitude=self.amplitude, shape=self.shape, rate=self.rate, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:

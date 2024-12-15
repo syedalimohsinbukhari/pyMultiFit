@@ -5,20 +5,19 @@ from typing import Any, Dict
 import numpy as np
 from scipy.special import erf
 
-from .backend import BaseDistribution
-from .backend.errorHandling import NegativeAmplitudeError, NegativeVarianceError
+from .backend import BaseDistribution, errorHandling as erH
 from .gaussian_d import GaussianDistribution
-from .utilities import folded_half_normal_
+from .utilities import folded_normal_
 
 
-class FoldedHalfNormalDistribution(BaseDistribution):
+class FoldedNormalDistribution(BaseDistribution):
     """Class for folded half-normal distribution."""
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0.0, variance: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:
-            raise NegativeAmplitudeError()
+            raise erH.NegativeAmplitudeError()
         elif variance <= 0:
-            raise NegativeVarianceError()
+            raise erH.NegativeVarianceError()
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean
         self.var_ = variance
@@ -26,7 +25,7 @@ class FoldedHalfNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_half_normal_(x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
+        return folded_normal_(x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)

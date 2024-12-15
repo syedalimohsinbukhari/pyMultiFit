@@ -4,7 +4,7 @@ from typing import Dict
 
 import numpy as np
 
-from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
+from .backend import errorHandling as erH
 from .gamma_d import GammaDistributionSR
 
 
@@ -13,9 +13,9 @@ class ExponentialDistribution(GammaDistributionSR):
 
     def __init__(self, amplitude: float = 1., scale: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:
-            raise NegativeAmplitudeError()
+            raise erH.NegativeAmplitudeError()
         elif scale <= 0:
-            raise NegativeScaleError()
+            raise erH.NegativeScaleError()
         self.scale = scale
         super().__init__(amplitude=amplitude, shape=1., rate=scale, normalize=normalize)
 

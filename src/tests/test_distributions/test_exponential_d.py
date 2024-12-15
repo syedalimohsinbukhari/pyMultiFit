@@ -8,7 +8,7 @@ from ...pymultifit.distributions import ExponentialDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
 
-class TestGaussianDistribution:
+class TestExponentialDistribution:
 
     @staticmethod
     def test_initialization():
@@ -49,7 +49,7 @@ class TestGaussianDistribution:
         assert d_stats["variance"] == 1 / dist_.scale**2
 
     @staticmethod
-    def test_pdf_cdf_exponential():
+    def test_pdf_cdf():
         def _cdf_pdf_custom(x_, dist_, what='cdf'):
             return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
 
