@@ -5,7 +5,7 @@ from typing import Any, Dict
 import numpy as np
 import pytest
 
-from ...pymultifit.distributions.backend import BaseDistribution
+from ....pymultifit.distributions.backend import BaseDistribution
 
 
 class MockDistribution(BaseDistribution):
