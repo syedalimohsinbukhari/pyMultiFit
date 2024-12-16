@@ -3,13 +3,12 @@ channels:
     - conda-forge
 dependencies:
     - python==3.9.*
-    - numpy>=1.26.0,<2.1.0
+    - numpy<2.1.0
     - matplotlib
     - scipy
     - setuptools
     - typing-extensions
     - pytest
-    - pytest-cov
     - pip
     -   pip:
-            - mpyez==0.0.9a3
+            - mpyez

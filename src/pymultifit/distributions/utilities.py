@@ -1,10 +1,10 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['beta_', 'chi_squared_', 'exponential_', 'folded_half_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check',
-           'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_']
+__all__ = ['beta_', 'chi_squared_', 'exponential_', 'folded_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check',
+           'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_', 'uniform_']
 
 import numpy as np
-from scipy.special import beta as beta_f, gamma
+from scipy.special import gamma
 
 
 def integral_check(pdf_function, x_range: tuple) -> float:
@@ -55,7 +55,8 @@ def beta_(x: np.ndarray,
     numerator = x**(alpha - 1) * (1 - x)**(beta - 1)
 
     if normalize:
-        normalization_factor = beta_f(alpha, beta)
+        normalization_factor = gamma(alpha) * gamma(beta)
+        normalization_factor /= gamma(alpha + beta)
         amplitude = 1.0
     else:
         normalization_factor = 1.0
@@ -131,9 +132,9 @@ def exponential_(x: np.ndarray,
     return gamma_sr_(x, amplitude=amplitude, shape=1., rate=scale, normalize=normalize)
 
 
-def folded_half_normal_(x: np.ndarray,
-                        amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
-                        normalize: bool = False) -> np.ndarray:
+def folded_normal_(x: np.ndarray,
+                   amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
+                   normalize: bool = False) -> np.ndarray:
     """
     Compute the folded half-normal distribution.
 
@@ -204,7 +205,8 @@ def gamma_sr_(x: np.ndarray,
     numerator = x**(shape - 1) * np.exp(-rate * x)
 
     if normalize:
-        normalization_factor = gamma(shape) / rate**shape
+        normalization_factor = gamma(shape)
+        normalization_factor /= rate**shape
         amplitude = 1
     else:
         normalization_factor = 1
@@ -339,7 +341,7 @@ def half_normal_(x: np.ndarray,
 
     The half-normal distribution is a special case of the folded half-normal distribution with `mu = 0`.
     """
-    return folded_half_normal_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
+    return folded_normal_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
 
 
 def laplace_(x: np.ndarray,
@@ -536,3 +538,49 @@ def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize
         Computed power-law values for each element in x.
     """
     return amplitude * x**-alpha
+
+
+def uniform_(x: np.ndarray,
+             amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
+             normalize: bool = False) -> np.ndarray:
+    """
+    Compute the Uniform distribution probability density function (PDF).
+
+    The Uniform PDF is given by:
+    f(x) = amplitude / (high - low) for x ∈ [low, high]
+           0 otherwise
+
+    Parameters
+    ----------
+    x : np.ndarray
+        The input values at which to evaluate the Uniform PDF.
+    low : float
+        The lower bound of the Uniform distribution. Defaults to 0.
+    high : float
+        The upper bound of the Uniform distribution. Defaults to 1.
+    amplitude : float
+        The amplitude of the Uniform distribution. Defaults to 1.
+    normalize : bool
+        If True, the function returns the normalized PDF (amplitude = 1 / (high - low)).
+        Defaults to False.
+
+    Returns
+    -------
+    np.ndarray
+        The probability density function values for the input values.
+
+    Notes
+    -----
+    - The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
+    - If `normalize=True`, the amplitude is overridden to ensure the PDF integrates to 1.
+    """
+    if low >= high:
+        raise ValueError("`low` must be less than `high`.")
+
+    if normalize:
+        amplitude = 1.0
+
+    # Compute the PDF values
+    pdf_values = np.where((x >= low) & (x <= high), amplitude / (high - low), 0.0)
+
+    return pdf_values
