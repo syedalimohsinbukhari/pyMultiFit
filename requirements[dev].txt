@@ -9,3 +9,5 @@ memory_profiler
 sphinx
 sphinx_rtd_theme
 sphinx-autobuild
+numpydoc
+nbsphinx
