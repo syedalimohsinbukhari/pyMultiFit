@@ -16,8 +16,7 @@ release = 'v0.2.2'
 
 extensions = ['sphinx.ext.autodoc',  # For automatic documentation from docstrings
               'sphinx.ext.napoleon',  # To support Google or NumPy-style docstrings
-              'sphinx.ext.viewcode',  # Adds source code links
-              ]
+              'sphinx.ext.viewcode']
 
 templates_path = ['_templates']
 exclude_patterns = []
