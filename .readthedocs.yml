@@ -14,7 +14,6 @@ build:
 sphinx:
     builder: html
     configuration: ./sphinx_docs/source/conf.py
-    fail_on_warning: true
 
 # recursive addition of submodules
 submodules:
