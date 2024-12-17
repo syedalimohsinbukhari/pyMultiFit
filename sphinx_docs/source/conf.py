@@ -27,13 +27,13 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.doctest",
               "sphinx.ext.extlinks",
               "sphinx.ext.intersphinx",
+              "sphinx_copybutton",
               "numpydoc",
               "nbsphinx",
               "sphinx.ext.viewcode",
               "matplotlib.sphinxext.plot_directive"]
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
-                       "numpy": ("https://docs.scipy.org/stable/", None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
                        "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
                        "matplotlib": ("https://matplotlib.org/stable/", None)}
@@ -112,7 +112,7 @@ html_context = {
     # ),
     "github_project": "pyMultiFit",
     "github_repo": "pymultifit",
-    "github_version": "master",
+    "github_version": "doc",
 }
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

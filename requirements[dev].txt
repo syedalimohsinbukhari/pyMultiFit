@@ -1,13 +1,13 @@
 numpy<2.1.0
-matplotlib
 scipy
-setuptools
-typing-extensions
+matplotlib
 mpyez
 pytest
+build
 memory_profiler
 sphinx
 sphinx_rtd_theme
-sphinx-autobuild
+sphinx_copybutton
 numpydoc
 nbsphinx
+sphinx-autobuild

@@ -1,4 +1,4 @@
 [build-system]
-requires = ["setuptools", "numpy<2.1.0", "matplotlib", "scipy", "typing-extensions", "mpyez"]
+requires = ["setuptools", "numpy<2.1.0", "matplotlib", "scipy", "mpyez"]
 
 build-backend = "setuptools.build_meta:__legacy__"
