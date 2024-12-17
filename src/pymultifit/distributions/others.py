@@ -38,7 +38,7 @@ def linear(x: np.ndarray, a: optFloat = 1., b: optFloat = 1) -> np.ndarray:
     Computes the y-values of a linear function given x-values.
 
     This function calculates the y-values for a linear equation of the form
-    `y = a * x + b `.
+    y = a * x + b.
 
     Parameters
     ----------

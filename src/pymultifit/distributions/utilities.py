@@ -217,13 +217,10 @@ def gamma_sr_(x: np.ndarray,
 def gamma_ss_(x: np.ndarray,
               amplitude: float = 1., shape: float = 1., scale: float = 1.,
               normalize: bool = False) -> np.ndarray:
-    """
-    Compute the Gamma distribution using the shape and scale parameterization.
+    """Compute the Gamma distribution using the shape and scale parameterization.
 
     This function wraps the Gamma distribution parameterized by `shape` and `rate` and provides an interface for  `shape` and `scale`.
     The relationship between scale and rate is defined as:
-    .. math::
-        \text{rate} = \frac{1}{\text{scale}}
 
     Parameters
     ----------
