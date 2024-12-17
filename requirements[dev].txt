@@ -4,3 +4,5 @@ scipy
 setuptools
 typing-extensions
 mpyez
+pytest
+memory_profiler
