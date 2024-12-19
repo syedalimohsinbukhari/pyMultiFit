@@ -159,10 +159,10 @@ Option 2: Using Conda
       conda activate multifit
 
 **Next Steps**
-Now that you have installed **pyMultiFit**, head over to the :doc:`usage` section to start exploring its features and capabilities.
+Now that you have installed **pyMultiFit**, head over to the :doc:`tutorials` section to start exploring its features and capabilities.
 
 .. toctree::
    :maxdepth: 2
    :hidden:
 
-   usage
+   tutorials

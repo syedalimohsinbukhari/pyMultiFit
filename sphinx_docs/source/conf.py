@@ -30,8 +30,12 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx_copybutton",
               "numpydoc",
               "nbsphinx",
+              "nbsphinx_link",
               "sphinx.ext.viewcode",
               "matplotlib.sphinxext.plot_directive"]
+
+nbsphinx_execute = 'auto'
+source_suffix = [".rst", ".md"]
 
 # intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
 #                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
