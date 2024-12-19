@@ -23,6 +23,7 @@ Fitter implementations include,
 - `Gaussian` fitter,
 - `SkewedNormal` fitter,
 - `LogNormal` fitter,
+- `Exponential` fitter,
 - `Laplace` fitter, and more.
 
 Additionally, it provides capabilities to generated n-modal data as well through its `generators` module.
