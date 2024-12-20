@@ -1,16 +1,4 @@
-"""baseDistribution
-
-This module defines a base class for statistical distributions to provide a consistent interface
-for probability density function (PDF), cumulative distribution function (CDF), and statistical properties.
-
-Classes
--------
-`BaseDistribution`
-    An abstract base class for statistical distributions, intended to be subclassed to provide specific
-    implementations of distributions. This class is not meant to be instantiated directly by end users.
-
-Created on Aug 03 22:06:29 2024
-"""
+"""Created on Aug 03 22:06:29 2024"""
 
 from typing import Any, Dict
 

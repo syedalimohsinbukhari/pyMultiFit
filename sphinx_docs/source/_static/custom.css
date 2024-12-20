@@ -1,6 +1,6 @@
 /* Set a fixed width for the main content area */
 .wy-nav-content {
-    max-width: 900px;  /* Adjust to match approximately 150 characters */
+    max-width: 1024px;  /* Adjust to match approximately 150 characters */
     margin: 0 auto;   /* Center the content */
 }
 
@@ -8,4 +8,17 @@
 pre, code {
     white-space: pre-wrap;  /* Wrap long lines */
     word-wrap: break-word;  /* Break long words */
+}
+
+/* Ensure the list-table takes up the full width */
+.docutils .longtable {
+    width: 100%; /* Allow the table to take full width */
+}
+
+/* Adjust column proportions to 25% and 75% */
+.docutils .longtable td:first-child {
+    width: 25%; /* First column width */
+}
+.docutils .longtable td:last-child {
+    width: 75%; /* Second column width */
 }

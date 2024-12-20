@@ -12,7 +12,7 @@ sphinx
 sphinx_rtd_theme
 sphinx_copybutton
 sphinx_gallery
-numpydoc
+sphinxcontrib-napoleon
 nbsphinx
 nbsphinx_link
 sphinx_autobuild

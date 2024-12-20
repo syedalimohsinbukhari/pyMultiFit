@@ -10,7 +10,7 @@ from .utilities import gamma_sr_
 
 
 class GammaDistributionSR(BaseDistribution):
-    """Class for Gamma distribution."""
+    """Class for Gamma distribution with shape and rate parameters."""
 
     def __init__(self, amplitude: float = 1., shape: float = 1., rate: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:
@@ -49,6 +49,7 @@ class GammaDistributionSR(BaseDistribution):
 
 
 class GammaDistributionSS(GammaDistributionSR):
+    """Class for Gamma distribution with shape and scale parameters."""
     def __init__(self, amplitude: float = 1., shape: float = 1., scale: float = 1., normalize: bool = False):
         self.scale = scale
         if not normalize and amplitude <= 0:

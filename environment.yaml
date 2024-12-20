@@ -16,7 +16,7 @@ dependencies:
     - sphinx
     - sphinx-rtd-theme
     - sphinx-copybutton
-    - numpydoc
+    - sphinxcontrib-napoleon
     - nbsphinx
     - nbsphinx-link
     - sphinx-gallery

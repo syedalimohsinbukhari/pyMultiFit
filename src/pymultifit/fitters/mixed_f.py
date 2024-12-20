@@ -5,7 +5,6 @@ from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
@@ -262,7 +261,7 @@ class MixedDataFitter:
 
     def plot_fit(self, show_individuals=False,
                  x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None, data_label: Optional[str] = None,
-                 axis: Optional[Axes] = None) -> plt:
+                 figure_size: tuple = (12, 6)) -> tuple:
         """
         Plots the original data, fitted model, and optionally individual components.
 
@@ -278,18 +277,19 @@ class MixedDataFitter:
             The title for the plot.
         data_label: str
             The label for the data.
-        axis: Axes, optional
-            Axes to plot instead of the entire figure. Defaults to None.
+        figure_size: tuple, optional
+            The size of the figure, by default (12, 6).
 
         Returns
         -------
-        plt
-            The plotter handle for the drawn plot.
+        tuple
+            The figure and axes handle for the drawn plot.
         """
         if self.y_values is None or self.params is None:
             raise ValueError("Data must be fitted before plotting.")
 
-        plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=axis)
+        fig, ax = plt.subplots(figsize=figure_size)
+        plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=ax)
         plot_xy(x_data=self.x_values, y_data=self.model_function(self.x_values, *self.params),
                 data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
 
@@ -300,9 +300,9 @@ class MixedDataFitter:
         plotter.set_ylabel(y_label if y_label else 'Y')
         plotter.set_title(title if title else f'{self.__class__.__name__} fit')
         plotter.legend(loc='best')
-        plt.tight_layout()
+        fig.tight_layout()
 
-        return plotter
+        return fig, plotter
 
     def get_fit_values(self):
         """
