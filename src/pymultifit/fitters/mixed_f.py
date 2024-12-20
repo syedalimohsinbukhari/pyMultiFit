@@ -99,18 +99,9 @@ class MixedDataFitter:
         self._validate_models()
         self.model_function = self._create_model_function()
 
-    def _validate_models(self):
-        """
-        Validate the models in the model list.
-
-        Raises
-        ------
-        ValueError
-            If any model in the model list is not recognized.
-        """
-        allowed_models = {GAUSSIAN, LINE, LOG_NORMAL, SKEW_NORMAL, LAPLACE}
-        if not all(model in allowed_models for model in self.model_list):
-            raise ValueError(f"All models must be one of {allowed_models}.")
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
+                f"model_list={self.model_list}, max_iterations={self.max_iterations})")
 
     def _create_model_function(self):
         """
@@ -149,27 +140,6 @@ class MixedDataFitter:
             return y
 
         return _composite_model
-
-    def fit(self, p0):
-        """
-        Fit the data.
-
-        Parameters
-        ----------
-        p0 : array_like
-            Initial guess for the fitting parameters.
-
-        Raises
-        ------
-        ValueError
-            If the length of initial parameters does not match the expected count.
-        """
-        p0 = list(itertools.chain.from_iterable(p0))
-        if len(p0) != self._expected_param_count():
-            raise ValueError(f"Initial parameters length {len(p0)} does not match expected count {self._expected_param_count()}.")
-
-        self.params, self.covariance, *_ = curve_fit(f=self.model_function, xdata=self.x_values, ydata=self.y_values,
-                                                     p0=p0, maxfev=self.max_iterations, bounds=self._get_bounds())
 
     def _expected_param_count(self):
         """
@@ -212,6 +182,84 @@ class MixedDataFitter:
 
         return lower_bounds, upper_bounds
 
+    def _parameter_extractor(self):
+        """
+        Extracts the parameters for each model in the model list.
+
+        Returns
+        -------
+        dict
+            A dictionary where the keys are model names and the values are lists of parameters.
+        """
+        all_ = self.params
+        p_index = 0
+        param_dict = {}
+
+        for model in self.model_list:
+            if model not in param_dict:
+                param_dict[model] = []
+
+            _, n_pars = model_dict[model]
+            param_dict[model].extend([all_[p_index:p_index + n_pars]])
+            p_index += n_pars
+
+        return param_dict
+
+    def _plot_individual_fitter(self, plotter):
+        x = self.x_values
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
+        param_index = 0
+        for i, model in enumerate(self.model_list):
+            color = colors[i % len(colors)]
+            m_, p_ = model_dict[model]
+            pars = self.params[param_index:param_index + p_]
+            y_component = m_(*pars).pdf(x)
+            plot_xy(x_data=x, y_data=y_component,
+                    x_label='', y_label='', plot_title='',
+                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self.format_param(i) for i in pars)})',
+                    plot_dictionary=LinePlot(line_style='--', color=color),
+                    axis=plotter)
+            param_index += p_
+
+    def _validate_models(self):
+        """
+        Validate the models in the model list.
+
+        Raises
+        ------
+        ValueError
+            If any model in the model list is not recognized.
+        """
+        allowed_models = {GAUSSIAN, LINE, LOG_NORMAL, SKEW_NORMAL, LAPLACE}
+        if not all(model in allowed_models for model in self.model_list):
+            raise ValueError(f"All models must be one of {allowed_models}.")
+
+    def fit(self, p0):
+        """
+        Fit the data.
+
+        Parameters
+        ----------
+        p0 : array_like
+            Initial guess for the fitting parameters.
+
+        Raises
+        ------
+        ValueError
+            If the length of initial parameters does not match the expected count.
+        """
+        p0 = list(itertools.chain.from_iterable(p0))
+        if len(p0) != self._expected_param_count():
+            raise ValueError(f"Initial parameters length {len(p0)} does not match expected count {self._expected_param_count()}.")
+
+        self.params, self.covariance, *_ = curve_fit(f=self.model_function, xdata=self.x_values, ydata=self.y_values,
+                                                     p0=p0, maxfev=self.max_iterations, bounds=self._get_bounds())
+
+    @staticmethod
+    def format_param(value, t_low=0.001, t_high=10_000):
+        """Formats the parameter value based on its magnitude."""
+        return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
+
     def plot_fit(self, show_individuals=False,
                  x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None, data_label: Optional[str] = None,
                  axis: Optional[Axes] = None) -> plt:
@@ -242,7 +290,7 @@ class MixedDataFitter:
             raise ValueError("Data must be fitted before plotting.")
 
         plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=axis)
-        plot_xy(self.x_values, self.model_function(self.x_values, *self.params),
+        plot_xy(x_data=self.x_values, y_data=self.model_function(self.x_values, *self.params),
                 data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
 
         if show_individuals:
@@ -256,49 +304,24 @@ class MixedDataFitter:
 
         return plotter
 
-    def _plot_individual_fitter(self, plotter):
-        x = self.x_values
-        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
-        param_index = 0
-        for i, model in enumerate(self.model_list):
-            color = colors[i % len(colors)]
-            m_, p_ = model_dict[model]
-            pars = self.params[param_index:param_index + p_]
-            y_component = m_(*pars).pdf(x)
-            plot_xy(x, y_component,
-                    x_label='', y_label='', plot_title='',
-                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self.format_param(i) for i in pars)})',
-                    plot_dictionary=LinePlot(line_style='--', color=color),
-                    axis=plotter)
-            param_index += p_
-
-    @staticmethod
-    def format_param(value, t_low=0.001, t_high=10_000):
-        """Formats the parameter value based on its magnitude."""
-        return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
-
-    def _parameter_extractor(self):
+    def get_fit_values(self):
         """
-        Extracts the parameters for each model in the model list.
+        Gets the y-values from the fitted model.
 
         Returns
         -------
-        dict
-            A dictionary where the keys are model names and the values are lists of parameters.
+        array_like
+            The fitted y-values from the model.
+
+        Raises
+        ------
+        RuntimeError
+            If the model has not been fitted yet.
         """
-        all_ = self.params
-        p_index = 0
-        param_dict = {}
+        if self.params is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
 
-        for model in self.model_list:
-            if model not in param_dict:
-                param_dict[model] = []
-
-            _, n_pars = model_dict[model]
-            param_dict[model].extend([all_[p_index:p_index + n_pars]])
-            p_index += n_pars
-
-        return param_dict
+        return self.model_function(self.x_values, *self.params)
 
     def get_parameters(self, model=None, return_individual_values=True):
         """
@@ -331,22 +354,3 @@ class MixedDataFitter:
         flattened_list = list(itertools.chain.from_iterable(par_dict))
 
         return tuple(flattened_list[i::n_par] for i in range(n_par))
-
-    def get_fit_values(self):
-        """
-        Gets the y-values from the fitted model.
-
-        Returns
-        -------
-        array_like
-            The fitted y-values from the model.
-
-        Raises
-        ------
-        RuntimeError
-            If the model has not been fitted yet.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        return self.model_function(self.x_values, *self.params)
