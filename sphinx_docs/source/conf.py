@@ -7,6 +7,8 @@ import datetime
 import os
 import sys
 
+from sphinx_gallery.sorting import ExampleTitleSortKey
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -36,6 +38,7 @@ extensions = ["sphinx.ext.autodoc",
 
 nbsphinx_execute = 'auto'
 source_suffix = [".rst", ".md"]
+suppress_warnings = ["config.cache"]
 
 # intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
 #                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
@@ -72,7 +75,6 @@ plot_formats = ["png"]
 
 templates_path = ['_templates']
 exclude_patterns = ["_build", "**.ipynb_checkpoints", "**.ipynb", "**.md5"]
-source_suffix = {'.rst': 'restructuredtext'}
 
 # General information about the project
 year = datetime.date.today().year

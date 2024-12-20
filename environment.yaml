@@ -8,6 +8,8 @@ dependencies:
     - matplotlib
     - scipy
     - pytest
+    - jupyter
+    - notebook
     - build
     - memory_profiler
     - sphinx
@@ -15,6 +17,8 @@ dependencies:
     - sphinx-copybutton
     - numpydoc
     - nbsphinx
+    - nbsphinx-link
+    - sphinx-gallery
     - sphinx-autobuild
     - pip
     -   pip:

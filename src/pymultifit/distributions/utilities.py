@@ -65,38 +65,38 @@ def beta_(x: np.ndarray,
 
 
 def chi_squared_(x, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):
-    """
-    Compute the Chi-Squared distribution.
-
-    The Chi-Squared distribution is a special case of the Gamma distribution with `alpha = degree_of_freedom / 2` and `beta = 1 / 2`.
-
-    Parameters
-    ----------
-    x : array-like
-        The input values at which to evaluate the Chi-Squared distribution.
-    amplitude : float, optional
-        The amplitude of the distribution. Defaults to 1.
-        Ignored if `normalize` is set to True.
-    degree_of_freedom : float, optional
-        The degrees of freedom of the Chi-Squared distribution. Defaults to 1.
-    normalize : bool, optional
-        If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
-
-    Returns
-    -------
-    array-like
-        The computed Chi-Squared distribution values for the input `x`.
-
-    Notes
-    -----
-    The Chi-Squared distribution is related to the Gamma distribution by:
-    .. math::
-        f(x; k) = \\frac{x^{(k/2) - 1} e^{-x/2}}{2^{k/2} \\Gamma(k/2)}
-
-    where `k` is the degrees of freedom, and `Γ(k)` is the Gamma function.
-
-    If `normalize` is True, the distribution will be scaled such that the maximum value of the PDF is 1.
-    """
+    # """
+    # Compute the Chi-Squared distribution.
+    #
+    # The Chi-Squared distribution is a special case of the Gamma distribution with `alpha = degree_of_freedom / 2` and `beta = 1 / 2`.
+    #
+    # Parameters
+    # ----------
+    # x : array-like
+    #     The input values at which to evaluate the Chi-Squared distribution.
+    # amplitude : float, optional
+    #     The amplitude of the distribution. Defaults to 1.
+    #     Ignored if `normalize` is set to True.
+    # degree_of_freedom : float, optional
+    #     The degrees of freedom of the Chi-Squared distribution. Defaults to 1.
+    # normalize : bool, optional
+    #     If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
+    #
+    # Returns
+    # -------
+    # array-like
+    #     The computed Chi-Squared distribution values for the input `x`.
+    #
+    # Notes
+    # -----
+    # The Chi-Squared distribution is related to the Gamma distribution by:
+    # .. math::
+    #     f(x; k) = \\frac{x^{(k/2) - 1} e^{-x/2}}{2^{k/2} \\Gamma(k/2)}
+    #
+    # where `k` is the degrees of freedom, and `Γ(k)` is the Gamma function.
+    #
+    # If `normalize` is True, the distribution will be scaled such that the maximum value of the PDF is 1.
+    # """
     return gamma_ss_(x, amplitude=amplitude, shape=degree_of_freedom / 2., scale=2., normalize=normalize)
 
 
@@ -135,39 +135,39 @@ def exponential_(x: np.ndarray,
 def folded_normal_(x: np.ndarray,
                    amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
                    normalize: bool = False) -> np.ndarray:
-    """
-    Compute the folded half-normal distribution.
-
-    The folded half-normal distribution is the sum of two Gaussian distributions mirrored around `mu`.
-    It is defined as the sum of a normal distribution centered at `mu` and another mirrored at `-mu`.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array where the folded half-normal distribution is evaluated.
-    amplitude : float, optional
-        The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
-    mu : float, optional
-        The mean (`mu`) of the original normal distribution. Defaults to 0.0.
-    variance : float, optional
-        The standard deviation (`sigma`) of the original normal distribution. Defaults to 1.0.
-    normalize : bool, optional
-        If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
-
-    Returns
-    -------
-    np.ndarray
-        The computed folded half-normal distribution values for the input `x`.
-
-    Notes
-    -----
-    The folded half-normal distribution is defined as the sum of two Gaussian
-    distributions:
-    .. math::
-        f(x; \\mu, \\sigma) = g_1(x; \\mu, \\sigma) + g_2(x; -\\mu, \\sigma)
-
-    where `g_1` and `g_2` are the Gaussian distributions with the specified parameters.
-    """
+    # """
+    # Compute the folded half-normal distribution.
+    #
+    # The folded half-normal distribution is the sum of two Gaussian distributions mirrored around `mu`.
+    # It is defined as the sum of a normal distribution centered at `mu` and another mirrored at `-mu`.
+    #
+    # Parameters
+    # ----------
+    # x : np.ndarray
+    #     Input array where the folded half-normal distribution is evaluated.
+    # amplitude : float, optional
+    #     The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
+    # mu : float, optional
+    #     The mean (`mu`) of the original normal distribution. Defaults to 0.0.
+    # variance : float, optional
+    #     The standard deviation (`sigma`) of the original normal distribution. Defaults to 1.0.
+    # normalize : bool, optional
+    #     If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
+    #
+    # Returns
+    # -------
+    # np.ndarray
+    #     The computed folded half-normal distribution values for the input `x`.
+    #
+    # Notes
+    # -----
+    # The folded half-normal distribution is defined as the sum of two Gaussian
+    # distributions:
+    # .. math::
+    #     f(x; \\mu, \\sigma) = g_1(x; \\mu, \\sigma) + g_2(x; -\\mu, \\sigma)
+    #
+    # where `g_1` and `g_2` are the Gaussian distributions with the specified parameters.
+    # """
     sigma = np.sqrt(variance)
     mask = x >= 0
     g1 = gaussian_(x[mask], amplitude=amplitude, mu=mu, sigma=sigma, normalize=normalize)
@@ -217,44 +217,44 @@ def gamma_sr_(x: np.ndarray,
 def gamma_ss_(x: np.ndarray,
               amplitude: float = 1., shape: float = 1., scale: float = 1.,
               normalize: bool = False) -> np.ndarray:
-    """Compute the Gamma distribution using the shape and scale parameterization.
-
-    This function wraps the Gamma distribution parameterized by `shape` and `rate` and provides an interface for  `shape` and `scale`.
-    The relationship between scale and rate is defined as:
-
-    Parameters
-    ----------
-    x : np.ndarray
-        The input values at which to evaluate the Gamma distribution.
-    amplitude : float, optional
-        The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
-    shape : float, optional
-        The shape parameter (`k`) of the Gamma distribution. Defaults to 1.
-    scale : float, optional
-        The scale parameter (`\theta`) of the Gamma distribution. Defaults to 1. The rate parameter is computed as `1 / scale`.
-    normalize : bool, optional
-        If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
-
-    Returns
-    -------
-    np.ndarray
-        The computed Gamma distribution values for the input `x`.
-
-    Notes
-    -----
-    The Gamma distribution parameterized by shape and scale is defined as:
-    .. math::
-        f(x; k, \theta) = \frac{x^{k-1} e^{-x / \theta}}{\theta^k \Gamma(k)}
-
-    where:
-        - `k` is the shape parameter
-        - `\theta` is the scale parameter
-        - `\Gamma(k)` is the Gamma function.
-
-    This function computes the equivalent Gamma distribution using the relationship between scale (`\theta`) and rate (`\beta`) where:
-    .. math::
-        \beta = \frac{1}{\theta}.
-    """
+    # """Compute the Gamma distribution using the shape and scale parameterization.
+    #
+    # This function wraps the Gamma distribution parameterized by `shape` and `rate` and provides an interface for  `shape` and `scale`.
+    # The relationship between scale and rate is defined as:
+    #
+    # Parameters
+    # ----------
+    # x : np.ndarray
+    #     The input values at which to evaluate the Gamma distribution.
+    # amplitude : float, optional
+    #     The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
+    # shape : float, optional
+    #     The shape parameter (`k`) of the Gamma distribution. Defaults to 1.
+    # scale : float, optional
+    #     The scale parameter (`\theta`) of the Gamma distribution. Defaults to 1. The rate parameter is computed as `1 / scale`.
+    # normalize : bool, optional
+    #     If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
+    #
+    # Returns
+    # -------
+    # np.ndarray
+    #     The computed Gamma distribution values for the input `x`.
+    #
+    # Notes
+    # -----
+    # The Gamma distribution parameterized by shape and scale is defined as:
+    # .. math::
+    #     f(x; k, \theta) = \frac{x^{k-1} e^{-x / \theta}}{\theta^k \Gamma(k)}
+    #
+    # where:
+    #     - `k` is the shape parameter
+    #     - `\theta` is the scale parameter
+    #     - `\Gamma(k)` is the Gamma function.
+    #
+    # This function computes the equivalent Gamma distribution using the relationship between scale (`\theta`) and rate (`\beta`) where:
+    # .. math::
+    #     \beta = \frac{1}{\theta}.
+    # """
     return gamma_sr_(x, amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
 
 
@@ -430,35 +430,35 @@ def log_normal_(x: np.ndarray,
 def norris2005(x: np.ndarray,
                amplitude: float = 1., rise_time: float = 1., decay_time: float = 1.,
                normalize: bool = False) -> np.ndarray:
-    """
-    Computes the Norris 2005 light curve model.
-
-    The Norris 2005 model describes a light curve with an asymmetric shape characterized by exponential rise and decay times.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        The input time array at which to evaluate the light curve model.
-    amplitude : float, optional
-        The amplitude of the light curve peak. Default is 1.0.
-    rise_time : float, optional
-        The characteristic rise time of the light curve. Default is 1.0.
-    decay_time : float, optional
-        The characteristic decay time of the light curve. Default is 1.0.
-    normalize : bool, optional
-        Included for consistency with other distributions in the library.
-        This parameter does not affect the output since normalization is not required for the Norris 2005 model. Default is False.
-
-    Returns
-    -------
-    np.ndarray
-        The evaluated Norris 2005 model at the input times `x`.
-
-    References
-    ----------
-        Norris, J. P. (2005). ApJ, 627, 324–345.
-        Robert, J. N. (2011). MNRAS, 419, 2, 1650-1659.
-    """
+    # """
+    # Computes the Norris 2005 light curve model.
+    #
+    # The Norris 2005 model describes a light curve with an asymmetric shape characterized by exponential rise and decay times.
+    #
+    # Parameters
+    # ----------
+    # x : np.ndarray
+    #     The input time array at which to evaluate the light curve model.
+    # amplitude : float, optional
+    #     The amplitude of the light curve peak. Default is 1.0.
+    # rise_time : float, optional
+    #     The characteristic rise time of the light curve. Default is 1.0.
+    # decay_time : float, optional
+    #     The characteristic decay time of the light curve. Default is 1.0.
+    # normalize : bool, optional
+    #     Included for consistency with other distributions in the library.
+    #     This parameter does not affect the output since normalization is not required for the Norris 2005 model. Default is False.
+    #
+    # Returns
+    # -------
+    # np.ndarray
+    #     The evaluated Norris 2005 model at the input times `x`.
+    #
+    # References
+    # ----------
+    #     Norris, J. P. (2005). ApJ, 627, 324–345.
+    #     Robert, J. N. (2011). MNRAS, 419, 2, 1650-1659.
+    # """
     tau = np.sqrt(rise_time * decay_time)
     xi = np.sqrt(rise_time / decay_time)
 
@@ -468,44 +468,44 @@ def norris2005(x: np.ndarray,
 def norris2011(x: np.ndarray,
                amplitude: float = 1., tau: float = 1., xi: float = 1.,
                normalize: bool = False) -> np.ndarray:
-    """
-    Computes the Norris 2011 light curve model.
-
-    The Norris 2011 model is a reformulation of the original Norris 2005 model, expressed in terms of different parameters to facilitate better
-    scaling across various energy bands in gamma-ray burst (GRB) light curves. The light curve is modeled as:
-
-        P(t) = A * exp(-ξ * (t / τ + τ / t))
-
-    where τ and ξ are derived from the rise and decay times of the pulse.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        The input time array at which to evaluate the light curve model.
-    amplitude : float, optional
-        The amplitude of the light curve peak (A in the formula). Default is 1.0.
-    tau : float, optional
-        The pulse timescale parameter (τ in the formula). Default is 1.0.
-    xi : float, optional
-        The asymmetry parameter (ξ in the formula). Default is 1.0.
-    normalize : bool, optional
-        Included for consistency with other distributions in the library.
-        This parameter does not affect the output since normalization is not required for the Norris 2011 model. Default is False.
-
-    Returns
-    -------
-    np.ndarray
-        The evaluated Norris 2011 model at the input times `x`.
-
-    Notes
-    -----
-    - In this parameterization, the pulse peak occurs at t_peak = τ.
-
-    References
-    ----------
-        Norris, J. P. (2005). ApJ, 627, 324–345.
-        Norris, J. P. (2011). MNRAS, 419, 2, 1650–1659.
-    """
+    # """
+    # Computes the Norris 2011 light curve model.
+    #
+    # The Norris 2011 model is a reformulation of the original Norris 2005 model, expressed in terms of different parameters to facilitate better
+    # scaling across various energy bands in gamma-ray burst (GRB) light curves. The light curve is modeled as:
+    #
+    #     P(t) = A * exp(-ξ * (t / τ + τ / t))
+    #
+    # where τ and ξ are derived from the rise and decay times of the pulse.
+    #
+    # Parameters
+    # ----------
+    # x : np.ndarray
+    #     The input time array at which to evaluate the light curve model.
+    # amplitude : float, optional
+    #     The amplitude of the light curve peak (A in the formula). Default is 1.0.
+    # tau : float, optional
+    #     The pulse timescale parameter (τ in the formula). Default is 1.0.
+    # xi : float, optional
+    #     The asymmetry parameter (ξ in the formula). Default is 1.0.
+    # normalize : bool, optional
+    #     Included for consistency with other distributions in the library.
+    #     This parameter does not affect the output since normalization is not required for the Norris 2011 model. Default is False.
+    #
+    # Returns
+    # -------
+    # np.ndarray
+    #     The evaluated Norris 2011 model at the input times `x`.
+    #
+    # Notes
+    # -----
+    # - In this parameterization, the pulse peak occurs at t_peak = τ.
+    #
+    # References
+    # ----------
+    #     Norris, J. P. (2005). ApJ, 627, 324–345.
+    #     Norris, J. P. (2011). MNRAS, 419, 2, 1650–1659.
+    # """
     fraction1 = x / tau
     fraction2 = tau / x
     return amplitude * np.exp(-xi * (fraction1 + fraction2))
@@ -540,37 +540,37 @@ def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize
 def uniform_(x: np.ndarray,
              amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
              normalize: bool = False) -> np.ndarray:
-    """
-    Compute the Uniform distribution probability density function (PDF).
-
-    The Uniform PDF is given by:
-    f(x) = amplitude / (high - low) for x ∈ [low, high]
-           0 otherwise
-
-    Parameters
-    ----------
-    x : np.ndarray
-        The input values at which to evaluate the Uniform PDF.
-    low : float
-        The lower bound of the Uniform distribution. Defaults to 0.
-    high : float
-        The upper bound of the Uniform distribution. Defaults to 1.
-    amplitude : float
-        The amplitude of the Uniform distribution. Defaults to 1.
-    normalize : bool
-        If True, the function returns the normalized PDF (amplitude = 1 / (high - low)).
-        Defaults to False.
-
-    Returns
-    -------
-    np.ndarray
-        The probability density function values for the input values.
-
-    Notes
-    -----
-    - The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
-    - If `normalize=True`, the amplitude is overridden to ensure the PDF integrates to 1.
-    """
+    # """
+    # Compute the Uniform distribution probability density function (PDF).
+    #
+    # The Uniform PDF is given by:
+    # f(x) = amplitude / (high - low) for x ∈ [low, high]
+    #        0 otherwise
+    #
+    # Parameters
+    # ----------
+    # x : np.ndarray
+    #     The input values at which to evaluate the Uniform PDF.
+    # low : float
+    #     The lower bound of the Uniform distribution. Defaults to 0.
+    # high : float
+    #     The upper bound of the Uniform distribution. Defaults to 1.
+    # amplitude : float
+    #     The amplitude of the Uniform distribution. Defaults to 1.
+    # normalize : bool
+    #     If True, the function returns the normalized PDF (amplitude = 1 / (high - low)).
+    #     Defaults to False.
+    #
+    # Returns
+    # -------
+    # np.ndarray
+    #     The probability density function values for the input values.
+    #
+    # Notes
+    # -----
+    # - The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
+    # - If `normalize=True`, the amplitude is overridden to ensure the PDF integrates to 1.
+    # """
     if low >= high:
         raise ValueError("`low` must be less than `high`.")
 
