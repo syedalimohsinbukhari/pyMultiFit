@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.pymultifit.fitters import SkewedNormalFitter
-from src.pymultifit.generators import generate_multi_skewed_normal_data
+from src.pymultifit.generators import multi_skewed_normal
 
 params = [(12, 2, -7, 1), (3, -4, 2, 2), (4, 2, 7, 1.5)]
 
 x = np.linspace(-15, 15, 10_000)
 
 noise_level = 1e-2
-y = generate_multi_skewed_normal_data(x, params=params, noise_level=noise_level)
+y = multi_skewed_normal(x, params=params, noise_level=noise_level)
 
 fitter = SkewedNormalFitter(n_fits=3, x_values=x, y_values=y)
 

@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 
 from src.pymultifit import EPSILON
 from src.pymultifit.fitters import LogNormalFitter
-from src.pymultifit.generators import generate_multi_log_normal_data
+from src.pymultifit.generators import multi_log_normal
 
 params = [(15, 1, 1), (3, 2, 0.2), (20, 4, 0.1)]
 
 x = np.linspace(EPSILON, 100, 2000)
 
 noise_level = 0.2
-y = generate_multi_log_normal_data(x, params=params, noise_level=noise_level)
+y = multi_log_normal(x, params=params, noise_level=noise_level)
 
 fitter = LogNormalFitter(n_fits=3, x_values=x, y_values=y)
 
