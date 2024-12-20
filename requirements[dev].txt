@@ -14,4 +14,4 @@ sphinx_gallery
 numpydoc
 nbsphinx
 nbsphinx_link
-sphinx-autobuild
+sphinx_autobuild

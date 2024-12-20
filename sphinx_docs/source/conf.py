@@ -7,8 +7,6 @@ import datetime
 import os
 import sys
 
-from sphinx_gallery.sorting import ExampleTitleSortKey
-
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -29,6 +27,7 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.doctest",
               "sphinx.ext.extlinks",
               "sphinx.ext.intersphinx",
+              # "sphinx_gallery.gen_gallery", # have to work on gallery later
               "sphinx_copybutton",
               "numpydoc",
               "nbsphinx",
@@ -37,7 +36,7 @@ extensions = ["sphinx.ext.autodoc",
               "matplotlib.sphinxext.plot_directive"]
 
 nbsphinx_execute = 'auto'
-source_suffix = [".rst", ".md"]
+source_suffix = {'.rst': 'restructuredtext', '.md': 'restructuredtext'}
 suppress_warnings = ["config.cache"]
 
 # intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
@@ -120,5 +119,10 @@ html_context = {
     "github_repo": "pymultifit",
     "github_version": "doc",
 }
+
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
+def setup(app):
+    app.add_css_file("style.css")

@@ -1,5 +1,5 @@
-Overview of pyMultiFit
-======================
+Overview
+========
 
 **pyMultiFit** is an open-source Python library designed to simplify **fitting multiple models** or a **mixture of models** to data with ease. It is particularly useful for researchers working with signals, spectra, and experimental datasets.
 
@@ -50,7 +50,8 @@ With **pyMultiFit**, you can focus more on analyzing your data and less on redef
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Where to next?
+   :caption: pyMultiFit
 
    self
    installation
+   tutorials

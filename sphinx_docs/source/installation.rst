@@ -4,9 +4,6 @@ Installation
 This section guides you through the installation process for **pyMultiFit**.
 Whether you're a user or a developer, follow the steps below to get started quickly.
 
-Dependencies
-------------
-
 **pyMultiFit** depends on a few core libraries to ensure smooth functionality:
 
 - `python >= 3.9 <https://www.python.org>`_
@@ -18,12 +15,12 @@ Dependencies
 -------------------------------
 
 Installation for Users
-======================
+-----------------------
 
 If you are a **user** looking to install and use the library, follow these steps.
 
 Using Pip with Virtual Environment
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. **Create a virtual environment**:
 
@@ -58,7 +55,7 @@ Using Pip with Virtual Environment
       python -c "import pymultifit; print('pyMultiFit installed successfully!')"
 
 Using Conda
------------
+^^^^^^^^^^^
 
 1. **Create a new Conda environment**:
 
@@ -87,12 +84,9 @@ Using Conda
 --------------------------------
 
 Installation for Developers
-===========================
+---------------------------
 
 If you are a **developer** looking to contribute or set up the library for development purposes, follow these steps for a complete setup.
-
-Fork and Clone the Repository
------------------------------
 
 1. **Fork** the repository:
    Visit the `pyMultiFit repository <https://github.com/syedalimohsinbukhari/pyMultiFit>`_ and fork it to your GitHub account.
@@ -105,13 +99,10 @@ Fork and Clone the Repository
 
 3. Alternatively, download the ZIP archive from the `main branch <https://codeload.github.com/syedalimohsinbukhari/pyMultiFit/zip/refs/heads/main>`_ and extract it.
 
-Setting Up the Development Environment
---------------------------------------
+4. Use **pip with a virtual environment** or **conda** to set up the development environment.
 
-You can use **pip with a virtual environment** or **conda** to set up the development environment.
-
-Option 1: Using Pip with Virtual Environment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using Pip with Virtual Environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. **Create a virtual environment**:
 
@@ -141,8 +132,8 @@ Option 1: Using Pip with Virtual Environment
 
       pip install -r requirements[dev].txt
 
-Option 2: Using Conda
-^^^^^^^^^^^^^^^^^^^^^^
+Using Conda
+^^^^^^^^^^^
 
 1. **Create a Conda environment**:
 
@@ -160,9 +151,3 @@ Option 2: Using Conda
 
 **Next Steps**
 Now that you have installed **pyMultiFit**, head over to the :doc:`tutorials` section to start exploring its features and capabilities.
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-
-   tutorials
