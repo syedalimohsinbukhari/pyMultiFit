@@ -29,11 +29,11 @@ extensions = ["sphinx.ext.autodoc",
               "sphinx.ext.intersphinx",
               # "sphinx_gallery.gen_gallery", # have to work on gallery later
               "sphinx_copybutton",
-              # "numpydoc",
+              "numpydoc",
               "nbsphinx",
               "nbsphinx_link",
               "sphinx.ext.viewcode",
-              'sphinx.ext.napoleon',
+              # 'sphinx.ext.napoleon',
               "matplotlib.sphinxext.plot_directive"]
 
 nbsphinx_execute = 'auto'
@@ -48,7 +48,11 @@ suppress_warnings = ["config.cache"]
 autosummary_generate = True
 autodoc_default_flags = ["members"]
 autodoc_typehints = "none"
-add_module_names = False
+add_module_names = True
+
+numpydoc_show_class_members = True
+numpydoc_show_inherited_class_members = True
+numpydoc_class_members_toctree = False
 
 # sphinx_gallery_conf = {
 #     # path to your examples scripts
