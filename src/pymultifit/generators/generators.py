@@ -33,12 +33,12 @@ def multi_chi_squared(x: np.ndarray, params: listOfTuplesOrArray,
     np.ndarray
         Y values of the multi-Chi-Squared data with added noise.
     """
-    return multi_distribution(x=x, distribution_func=dist.ChiSquareDistribution, params=params, noise_level=noise_level, normalize=normalize)
+    return multi_base(x=x, distribution_func=dist.ChiSquareDistribution, params=params, noise_level=noise_level, normalize=normalize)
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_distribution(x: np.ndarray, distribution_func: Callable, params: listOfTuplesOrArray,
-                       noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_base(x: np.ndarray, distribution_func: Callable, params: listOfTuplesOrArray,
+               noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """Generate data based on a combination of distributions with optional noise.
 
     Returns
@@ -67,7 +67,7 @@ def multi_exponential(x: np.ndarray, params: listOfTuplesOrArray,
     np.ndarray
         Y values of the multi-Exponential data with added noise.
     """
-    return multi_distribution(x=x, distribution_func=dist.ExponentialDistribution, params=params, noise_level=noise_level, normalize=normalize)
+    return multi_base(x=x, distribution_func=dist.ExponentialDistribution, params=params, noise_level=noise_level, normalize=normalize)
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
@@ -80,7 +80,7 @@ def multi_folded_normal(x: np.ndarray, params: listOfTuplesOrArray,
     np.ndarray
         Y values of the multi-Folded Normal data with added noise.
     """
-    return multi_distribution(x=x, distribution_func=dist.FoldedNormalDistribution, params=params, noise_level=noise_level, normalize=normalize)
+    return multi_base(x=x, distribution_func=dist.FoldedNormalDistribution, params=params, noise_level=noise_level, normalize=normalize)
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
@@ -93,7 +93,7 @@ def multi_gaussian(x: np.ndarray, params: listOfTuplesOrArray,
     np.ndarray
         Y values of the multi-Gaussian data with added noise.
     """
-    return multi_distribution(x=x, distribution_func=dist.GaussianDistribution, params=params, noise_level=noise_level, normalize=normalize)
+    return multi_base(x=x, distribution_func=dist.GaussianDistribution, params=params, noise_level=noise_level, normalize=normalize)
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
@@ -106,7 +106,7 @@ def multi_half_normal(x: np.ndarray, params: listOfTuplesOrArray,
     np.ndarray
         Y values of the multi-Half-Normal data with added noise.
     """
-    return multi_distribution(x=x, distribution_func=dist.HalfNormalDistribution, params=params, noise_level=noise_level, normalize=normalize)
+    return multi_base(x=x, distribution_func=dist.HalfNormalDistribution, params=params, noise_level=noise_level, normalize=normalize)
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
@@ -119,7 +119,7 @@ def multi_laplace(x: np.ndarray, params: listOfTuplesOrArray,
     np.ndarray
         Y values of the multi-Laplace data with added noise.
     """
-    return multi_distribution(x=x, distribution_func=dist.LaplaceDistribution, params=params, noise_level=noise_level, normalize=normalize)
+    return multi_base(x=x, distribution_func=dist.LaplaceDistribution, params=params, noise_level=noise_level, normalize=normalize)
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
@@ -132,7 +132,7 @@ def multi_log_normal(x: np.ndarray, params: listOfTuplesOrArray,
     np.ndarray
         Y values of the multi-Log-Normal data with added noise.
     """
-    return multi_distribution(x=x, distribution_func=dist.LogNormalDistribution, params=params, noise_level=noise_level, normalize=normalize)
+    return multi_base(x=x, distribution_func=dist.LogNormalDistribution, params=params, noise_level=noise_level, normalize=normalize)
 
 
 # def multi_norris2005(x: np.ndarray, params: listOfTuplesOrArray,

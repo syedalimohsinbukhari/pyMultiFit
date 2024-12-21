@@ -48,11 +48,9 @@ With **pyMultiFit**, you can focus more on analyzing your data and less on redef
 
 
 .. toctree::
-   :maxdepth: 2
    :hidden:
-   :caption: pyMultiFit
 
    self
    installation
    tutorials
-   api/index
+   api_index
