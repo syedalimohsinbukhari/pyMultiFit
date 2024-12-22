@@ -9,6 +9,8 @@ from .utilities import uniform_
 
 
 class UniformDistribution(BaseDistribution):
+    """Class for Uniform Distribution."""
+
     def __init__(self, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()

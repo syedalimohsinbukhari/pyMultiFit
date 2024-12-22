@@ -50,7 +50,6 @@ With **pyMultiFit**, you can focus more on analyzing your data and less on redef
 .. toctree::
    :hidden:
 
-   self
    installation
    tutorials
    api_index

@@ -29,7 +29,8 @@ def integral_check(pdf_function, x_range: tuple) -> float:
 
 
 def arc_sine_pdf_(x: np.array,
-                  amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
+                  amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                  normalize: bool = False) -> np.array:
     """
     Compute the probability density function (PDF) of the Arcsine distribution.
 
@@ -97,7 +98,7 @@ def arc_sine_cdf_(x: np.array, loc: float = 0.0, scale: float = 1.0) -> np.array
     The standard Arcsine distribution is defined on the interval [0, 1] with a CDF of:
 
     .. math::
-       F(x) = (2/\pi)\sin^{-1} \sqrt{x}
+       F(x) = \\frac{2}{\\pi}\\arcsin\\left[\\sqrt{x}\\right]
 
     This implementation generalizes the distribution to an interval [loc, loc + scale] using a
     location-scale transformation.
@@ -158,6 +159,9 @@ def beta_(x: np.ndarray,
     np.ndarray
         The probability density function values for the given input.
     """
+    if x.size == 0:
+        return np.array([])
+
     numerator = x**(alpha - 1) * (1 - x)**(beta - 1)
 
     if normalize:
@@ -167,7 +171,10 @@ def beta_(x: np.ndarray,
     else:
         normalization_factor = 1.0
 
-    return amplitude * (numerator / normalization_factor)
+    pdf_ = amplitude * (numerator / normalization_factor)
+    pdf_[(x <= 0) | (x >= 1)] = np.inf
+
+    return pdf_
 
 
 def chi_squared_(x, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):

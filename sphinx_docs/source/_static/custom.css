@@ -1,6 +1,6 @@
 /* Set a fixed width for the main content area */
-.wy-nav-content {
-    max-width: 1101px;  /* Adjust to match approximately 150 characters */
+.bd-content {
+    max-width: 1201px;  /* Adjust to match approximately 150 characters */
     margin: 0 auto;   /* Center the content */
 }
 

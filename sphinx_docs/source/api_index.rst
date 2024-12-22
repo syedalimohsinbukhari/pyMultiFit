@@ -20,3 +20,14 @@ The documentation first goes through a birdseye view for these three modules, fo
    pymultifit.fitters
    pymultifit.generators
    distributions/arcSine_d
+   distributions/beta_d
+   distributions/chiSquare_d
+   distributions/exponential_d
+   distributions/foldedNormal_d
+   distributions/gamma_d
+   distributions/gaussian_d
+   distributions/halfNormal_d
+   distributions/laplace_d
+   distributions/logNormal_d
+   distributions/skewNormal_d
+   distributions/uniform_d

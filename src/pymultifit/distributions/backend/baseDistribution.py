@@ -29,6 +29,22 @@ class BaseDistribution:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
+    def _cdf(self, x: np.ndarray) -> np.ndarray:
+        """
+        Compute the cumulative density function (CDF) for the distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Input values at which to evaluate the PDF.
+
+        Returns
+        -------
+        np.ndarray
+            The CDF values at the input values.
+        """
+        raise NotImplementedError("Subclasses should implement this method.")
+
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """
         Compute the probability density function (PDF) for the distribution.
@@ -61,7 +77,7 @@ class BaseDistribution:
         np.ndarray
             The CDF values at the input values.
         """
-        raise NotImplementedError("Subclasses should implement this method.")
+        return self._cdf(x)
 
     def stats(self) -> Dict[str, Any]:
         """

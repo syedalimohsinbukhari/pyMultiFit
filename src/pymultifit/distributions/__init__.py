@@ -10,11 +10,11 @@ from .gamma_d import GammaDistributionSR, GammaDistributionSS
 from .gaussian_d import GaussianDistribution
 from .halfNormal_d import HalfNormalDistribution
 from .laplace_d import LaplaceDistribution
-from .logNorm_d import LogNormalDistribution
+from .logNormal_d import LogNormalDistribution
 from .norris_d import Norris2005Distribution, Norris2011Distribution
 from .others import cubic, line, linear, nth_polynomial, quadratic
 from .powerLaw_d import PowerLawDistribution
-from .skewNorm_d import SkewedNormalDistribution
+from .skewNormal_d import SkewNormalDistribution
 from .uniform_d import UniformDistribution
 
 oFloat = Optional[float]

@@ -10,7 +10,7 @@ from .utilities import folded_normal_
 
 
 class FoldedNormalDistribution(BaseDistribution):
-    """Class for folded half-normal distribution."""
+    """Class for FoldedNormal distribution."""
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:

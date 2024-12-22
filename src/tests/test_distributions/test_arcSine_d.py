@@ -12,8 +12,8 @@ class TestArcSineDistribution:
     def test_initialization():
         dist_ = ArcSineDistribution(amplitude=2.0, normalize=False)
         assert dist_.amplitude == 2.0
-        assert dist_.alpha == 0.5
-        assert dist_.beta == 0.5
+        assert dist_.loc == 0.
+        assert dist_.scale == 1.0
         assert not dist_.norm
 
         x = np.linspace(0, 1, 100)

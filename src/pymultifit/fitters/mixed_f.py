@@ -11,7 +11,7 @@ from scipy.optimize import curve_fit
 
 from .utilities import sanity_check
 from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
-from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, SkewedNormalDistribution
+from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, SkewNormalDistribution
 
 
 class _Line:
@@ -46,7 +46,7 @@ class _Line:
 model_dict = {LINE: [_Line, 2],
               GAUSSIAN: [GaussianDistribution, 3],
               LOG_NORMAL: [LogNormalDistribution, 3],
-              SKEW_NORMAL: [SkewedNormalDistribution, 4],
+              SKEW_NORMAL: [SkewNormalDistribution, 4],
               LAPLACE: [LaplaceDistribution, 3]}
 
 

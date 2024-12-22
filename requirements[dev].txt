@@ -10,6 +10,7 @@ build
 memory_profiler
 sphinx
 sphinx_rtd_theme
+pydata_sphinx_theme
 sphinx_copybutton
 sphinx_gallery
 sphinxcontrib-napoleon

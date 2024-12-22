@@ -9,25 +9,20 @@ from .utilities import arc_sine_cdf_, arc_sine_pdf_
 
 
 class ArcSineDistribution(BaseDistribution):
+    """Class for ArcSine distribution."""
 
     def __init__(self, amplitude: float = 1., loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
         self.amplitude = 1 if normalize else amplitude
         self.loc = loc
         self.scale = scale
 
-        self.norm_ = normalize
+        self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return arc_sine_pdf_(x=x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm_)
+        return arc_sine_pdf_(x=x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
 
     def _cdf(self, x: np.array) -> np.array:
         return arc_sine_cdf_(x=x, loc=self.loc, scale=self.scale)
-
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
-
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return self._cdf(x)
 
     def stats(self) -> Dict[str, Any]:
         mean_ = 0.5

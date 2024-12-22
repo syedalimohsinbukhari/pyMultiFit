@@ -186,7 +186,7 @@ def multi_skewed_normal(x: np.ndarray, params: listOfTuplesOrArray,
     """
     y = np.zeros_like(x, dtype=float)
     for amp, shape, location, scale in params:
-        y += dist.SkewedNormalDistribution(shape=shape, location=location, scale=scale).pdf(x)
+        y += dist.SkewNormalDistribution(shape=shape, location=location, scale=scale).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y
@@ -218,7 +218,7 @@ def multiple_models(x: np.ndarray, params: listOfTuplesOrArray, model_list,
     model_mapping = {GAUSSIAN: dist.GaussianDistribution,
                      LOG_NORMAL: dist.LogNormalDistribution,
                      LAPLACE: dist.LaplaceDistribution,
-                     SKEW_NORMAL: dist.SkewedNormalDistribution,
+                     SKEW_NORMAL: dist.SkewNormalDistribution,
                      POWERLAW: dist.PowerLawDistribution,
                      LINE: dist.line}
 

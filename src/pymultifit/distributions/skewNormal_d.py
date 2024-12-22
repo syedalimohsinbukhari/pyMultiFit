@@ -11,8 +11,8 @@ from .backend import BaseDistribution
 # TODO:
 #   See if normalization factor can be used to un-normalize the pdf.
 
-class SkewedNormalDistribution(BaseDistribution):
-    """Class for Skewed Normal distribution."""
+class SkewNormalDistribution(BaseDistribution):
+    """Class for SkewNormal distribution."""
 
     def __init__(self, shape: float = 1., location: float = 0., scale: float = 1.):
         self.shape = shape

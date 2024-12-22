@@ -7,7 +7,7 @@ from .gamma_d import GammaDistributionSS
 
 
 class ChiSquareDistribution(GammaDistributionSS):
-    """Class for chi-squared distribution."""
+    """Class for ChiSquare distribution."""
 
     def __init__(self, amplitude: float = 1., degree_of_freedom: int = 1, normalize: bool = False):
         if not normalize and amplitude <= 0:

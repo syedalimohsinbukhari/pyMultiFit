@@ -1,23 +1,15 @@
 ArcSine Distribution
 ====================
 
-The parent module for this distribution is: :mod:`pymultifit.distributions.arcSine_d`
-
-Class
------
+The parent module for this distribution is: :mod:`pymultifit.distributions.arcSine_d`.
 
 .. autoclass:: pymultifit.distributions.arcSine_d.ArcSineDistribution
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :no-members:
 
-Backend function
-----------------
+This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
 
-.. autofunction:: pymultifit.distributions.utilities.beta_
-
-
---------------------------------------------
+* :mod:`~pymultifit.distributions.utilities.arc_sine_pdf_`
+* :mod:`~pymultifit.distributions.utilities.arc_sine_cdf_`
 
 Full Import
 -----------

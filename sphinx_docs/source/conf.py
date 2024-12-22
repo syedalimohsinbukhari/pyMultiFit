@@ -47,8 +47,9 @@ suppress_warnings = ["config.cache"]
 
 autosummary_generate = True
 autodoc_default_flags = ["members"]
-autodoc_typehints = "none"
-add_module_names = True
+autodoc_typehints = "signature"
+add_module_names = False
+html_show_sourcelink = False
 
 numpydoc_show_class_members = True
 numpydoc_show_inherited_class_members = True
@@ -92,12 +93,11 @@ html_short_title = "pyMultiFit"
 html_extra_path = []
 pygments_style = "default"
 add_function_parentheses = True
-html_show_sourcelink = True
 html_show_sphinx = True
 html_show_copyright = True
 
 # Theme config
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 # html_theme_options = {
 #     "github_url": "https://github.com/syedalimohsinbukhari/pyMultiFit",
 # }
