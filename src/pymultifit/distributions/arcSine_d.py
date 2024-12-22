@@ -1,34 +1,40 @@
 """Created on Aug 14 02:02:42 2024"""
 
-from .beta_d import BetaDistribution
+from typing import Any, Dict
+
+import numpy as np
+
+from .backend import BaseDistribution
+from .utilities import arc_sine_cdf_, arc_sine_pdf_
 
 
-class ArcSineDistribution(BetaDistribution):
-    """
-    Class for the ArcSine distribution, a special case of the Beta distribution with alpha=0.5 and beta=0.5.
+class ArcSineDistribution(BaseDistribution):
 
-    The ArcSine distribution is a Beta distribution where both the shape parameters are fixed at 0.5.
-    The user can still provide an amplitude and normalization flag as options, but the alpha and beta parameters are overridden to always be 0.5.
+    def __init__(self, amplitude: float = 1., loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
+        self.amplitude = 1 if normalize else amplitude
+        self.loc = loc
+        self.scale = scale
 
-    Parameters
-    ----------
-    amplitude : float, optional
-        The scaling factor for the distribution. Default is 1.
-    alpha : float, optional
-        The alpha parameter for the Beta distribution. This value will be overridden to 0.5. Default is 0.5.
-    beta : float, optional
-        The beta parameter for the Beta distribution. This value will be overridden to 0.5. Default is 0.5.
-    normalize : bool, optional
-        Whether to normalize the distribution (i.e., set the PDF to integrate to 1). Default is False.
+        self.norm_ = normalize
 
-    Notes
-    -----
-    Although the `alpha` and `beta` parameters are accepted as inputs, they will always be set to 0.5 internally,
-    as the ArcSine distribution is a special case of the Beta distribution with these fixed parameters.
-    """
+    def _pdf(self, x: np.ndarray) -> np.ndarray:
+        return arc_sine_pdf_(x=x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm_)
 
-    def __init__(self, amplitude: float = 1., alpha: float = 0.5, beta: float = 0.5, normalize: bool = False):
-        # respect the user passed values if they're equal to 0.5, otherwise overwrite them.
-        alpha = alpha if alpha == 0.5 else 0.5
-        beta = beta if beta == 0.5 else 0.5
-        super().__init__(amplitude=amplitude, alpha=alpha, beta=beta, normalize=normalize)
+    def _cdf(self, x: np.array) -> np.array:
+        return arc_sine_cdf_(x=x, loc=self.loc, scale=self.scale)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return self._pdf(x)
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        return self._cdf(x)
+
+    def stats(self) -> Dict[str, Any]:
+        mean_ = 0.5
+        median_ = 0.5
+        variance_ = 1 / 8
+
+        return {'mean': mean_,
+                'median': median_,
+                'model': [],
+                'variance': variance_}

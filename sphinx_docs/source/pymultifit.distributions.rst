@@ -12,11 +12,6 @@ Subpackages
 Submodules
 ----------
 
-.. automodule:: pymultifit.distributions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pymultifit.distributions.arcSine\_d module
 ------------------------------------------
 

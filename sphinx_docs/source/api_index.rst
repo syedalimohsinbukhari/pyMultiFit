@@ -7,6 +7,8 @@ The Application Programming Interface (API) of `pyMultiFit` provides tools for s
 * **Fitters**: Classes implementing fitting algorithms for statistical models.
 * **Generators**: Functions for generating synthetic datasets.
 
+The documentation first goes through a birdseye view for these three modules, followed by detailed documentation for each class and function.
+
 .. toctree::
    :hidden:
 
@@ -17,3 +19,4 @@ The Application Programming Interface (API) of `pyMultiFit` provides tools for s
    pymultifit.distributions
    pymultifit.fitters
    pymultifit.generators
+   distributions/arcSine_d

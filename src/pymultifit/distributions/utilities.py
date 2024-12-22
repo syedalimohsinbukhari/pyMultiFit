@@ -1,7 +1,7 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['beta_', 'chi_squared_', 'exponential_', 'folded_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check',
-           'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_', 'uniform_']
+__all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'beta_', 'chi_squared_', 'exponential_', 'folded_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_',
+           'half_normal_', 'integral_check', 'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_', 'uniform_']
 
 import numpy as np
 from scipy.special import gamma
@@ -26,6 +26,112 @@ def integral_check(pdf_function, x_range: tuple) -> float:
     from scipy.integrate import quad
     integral = quad(lambda x: pdf_function(x), x_range[0], x_range[1])[0]
     return integral
+
+
+def arc_sine_pdf_(x: np.array,
+                  amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
+    """
+    Compute the probability density function (PDF) of the Arcsine distribution.
+
+    The Arcsine distribution is defined over a specified interval `[loc, loc + scale]`
+    and can be optionally normalized or scaled with a custom amplitude. Values
+    outside the interval are assigned a PDF of 0.
+
+    Parameters
+    ----------
+    x : np.array
+        Input array of values where the PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0. Ignored if `normalize` is True.
+    loc : float, optional
+        The location parameter, specifying the lower bound of the distribution. Defaults to 0.0.
+    scale : float, optional
+        The scale parameter, specifying the width of the distribution. Defaults to 1.0.
+    normalize : bool, optional
+        If True, normalize the PDF so that its integral over `[loc, loc + scale]` is 1.0.
+        Defaults to False.
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as `x`, containing the evaluated PDF values.
+
+    Notes
+    -----
+    - The standard Arcsine distribution is defined on `[0, 1]` with a PDF of:
+
+      .. math::
+         f(x) = \\frac{1}{\\pi \\sqrt{x(1-x)}}
+
+      This implementation generalizes it to an interval `[loc, loc + scale]` using
+      a location-scale transformation.
+
+    - Numerical stability is ensured by adding a small epsilon (`1e-10`) to the denominator
+      to avoid division by zero at the boundaries of the interval.
+
+    - The PDF is scaled by `1 / scale` to ensure proper normalization for the location-scale
+      transformation.
+    """
+    x = (x - loc) / scale
+
+    un_normalized = 1 / np.sqrt(x * (1 - x))
+
+    if normalize:
+        normalization_factor = np.pi
+        amplitude = 1
+    else:
+        normalization_factor = 1
+
+    pdf_ = amplitude * (un_normalized / normalization_factor)
+
+    mask = (x >= 0) & (x <= 1)
+    pdf_[~mask] = 0
+
+    return pdf_ / scale
+
+
+def arc_sine_cdf_(x: np.array, loc: float = 0.0, scale: float = 1.0) -> np.array:
+    """
+    Compute the Cumulative Distribution Function (CDF) of the Arcsine distribution.
+
+    The standard Arcsine distribution is defined on the interval [0, 1] with a CDF of:
+
+    .. math::
+       F(x) = (2/\pi)\sin^{-1} \sqrt{x}
+
+    This implementation generalizes the distribution to an interval [loc, loc + scale] using a
+    location-scale transformation.
+
+    Parameters
+    ----------
+    x : np.array
+        Input array of values where the CDF is evaluated.
+    loc : float, optional
+        The location parameter, specifying the lower bound of the distribution. Defaults to 0.0.
+    scale : float, optional
+        The scale parameter, specifying the width of the distribution. Defaults to 1.0.
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as `x`, containing the evaluated CDF values.
+
+    Notes
+    -----
+    - The standard Arcsine CDF is scaled for a generalized interval `[loc, loc + scale]`.
+    - Values below `loc` are assigned a CDF of 0, and values above `loc + scale` are assigned a
+      CDF of 1.
+    """
+    y = (x - loc) / scale
+
+    cdf = np.zeros_like(x)
+
+    mask = (y >= 0) & (y <= 1)
+    cdf[mask] = (2 / np.pi) * np.arcsin(np.sqrt(y[mask]))
+
+    cdf[y > 1] = 1.0
+
+    return cdf
 
 
 def beta_(x: np.ndarray,
