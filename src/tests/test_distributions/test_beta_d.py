@@ -5,7 +5,7 @@ import pytest
 from scipy.special import betaincinv
 from scipy.stats import beta
 
-from pymultifit import EPSILON
+from ...pymultifit import EPSILON
 from ...pymultifit.distributions import BetaDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
