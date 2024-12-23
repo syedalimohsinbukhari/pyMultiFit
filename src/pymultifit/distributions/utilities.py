@@ -1,10 +1,14 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'beta_', 'chi_squared_', 'exponential_', 'folded_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_',
-           'half_normal_', 'integral_check', 'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_', 'uniform_']
+__all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'beta_pdf_', 'beta_cdf_', 'beta_logpdf_', 'chi_squared_', 'exponential_', 'folded_normal_', 'gamma_sr_',
+           'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check', 'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_',
+           'uniform_']
 
 import numpy as np
-from scipy.special import gamma
+from custom_inherit import doc_inherit
+from scipy.special import betainc, gamma, gammaln
+
+doc_style = 'numpy_napoleon_with_merge'
 
 
 def integral_check(pdf_function, x_range: tuple) -> float:
@@ -31,12 +35,8 @@ def integral_check(pdf_function, x_range: tuple) -> float:
 def arc_sine_pdf_(x: np.array,
                   amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                   normalize: bool = False) -> np.array:
-    """
+    r"""
     Compute the probability density function (PDF) of the Arcsine distribution.
-
-    The Arcsine distribution is defined over a specified interval `[loc, loc + scale]`
-    and can be optionally normalized or scaled with a custom amplitude. Values
-    outside the interval are assigned a PDF of 0.
 
     Parameters
     ----------
@@ -49,7 +49,7 @@ def arc_sine_pdf_(x: np.array,
     scale : float, optional
         The scale parameter, specifying the width of the distribution. Defaults to 1.0.
     normalize : bool, optional
-        If True, normalize the PDF so that its integral over `[loc, loc + scale]` is 1.0.
+        If True, the distribution will be normalized such that the total area under the PDF equals 1.
         Defaults to False.
 
     Returns
@@ -62,16 +62,9 @@ def arc_sine_pdf_(x: np.array,
     - The standard Arcsine distribution is defined on `[0, 1]` with a PDF of:
 
       .. math::
-         f(x) = \\frac{1}{\\pi \\sqrt{x(1-x)}}
+         f(x) = \frac{1}{\pi \sqrt{x(1-x)}}
 
-      This implementation generalizes it to an interval `[loc, loc + scale]` using
-      a location-scale transformation.
-
-    - Numerical stability is ensured by adding a small epsilon (`1e-10`) to the denominator
-      to avoid division by zero at the boundaries of the interval.
-
-    - The PDF is scaled by `1 / scale` to ensure proper normalization for the location-scale
-      transformation.
+      This implementation generalizes it to an interval `[loc, loc + scale]` using a location-scale transformation.
     """
     x = (x - loc) / scale
 
@@ -135,34 +128,57 @@ def arc_sine_cdf_(x: np.array, loc: float = 0.0, scale: float = 1.0) -> np.array
     return cdf
 
 
-def beta_(x: np.ndarray,
-          amplitude: float = 1., alpha: float = 1., beta: float = 1.,
-          normalize: bool = False) -> np.ndarray:
+def beta_pdf_(x: np.array,
+              amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+              normalize: bool = False) -> np.array:
     """
-    Compute the beta probability density function (PDF).
+    Compute the Beta probability density function (PDF) for given input values.
 
     Parameters
     ----------
-    x : np.ndarray
-        The input array for which to compute the PDF.
-    amplitude : float
-        The amplitude to apply to the PDF. Default is 1.
-    alpha : float
-        The alpha (shape) parameter of the beta distribution. Default is 1.
-    beta : float
-        The beta (shape) parameter of the beta distribution. Default is 1.
-    normalize : bool
-        If True, the PDF is normalized using the beta function. Default is True.
+    x : np.array
+        The input array for which to compute the Beta PDF.
+    amplitude : float, optional
+        A scaling factor applied to the PDF. Default is 1.0.
+        Ignored if **normalize** is `True`.
+    alpha : float, optional
+        The alpha (shape) parameter of the Beta distribution. Default is 1.0.
+    beta : float, optional
+        The beta (shape) parameter of the Beta distribution. Default is 1.0.
+    loc : float, optional
+        The location parameter - shifting. Default is 0.0.
+    scale : float, optional
+        The scale parameter - scaling. Default is 1.0.
+    normalize : bool, optional
+        If True, the distribution will be normalized such that the total area under the PDF equals 1.
+        Defaults to False.
 
     Returns
     -------
-    np.ndarray
-        The probability density function values for the given input.
+    np.array
+        Array of the same shape as `x`, containing the evaluated PDF values.
+
+    Notes
+    -----
+        The Beta PDF is defined as:
+
+        .. math::
+              f(y; \\alpha, \\beta) = \\frac{y^{\\alpha - 1} (1 - y)^{\\beta - 1}}{B(\\alpha, \\beta)}
+
+        where :math:`B(\\alpha, \\beta)` is the Beta function, and :math:`y` is a transformed value of :math:`x` such that:
+
+        .. math::
+          y = \\frac{x - \\text{loc}}{\\text{scale}}
+
+        see, :obj:`scipy.special.beta`.
     """
     if x.size == 0:
         return np.array([])
 
-    numerator = x**(alpha - 1) * (1 - x)**(beta - 1)
+    y = (x - loc) / scale
+    pdf_ = np.zeros_like(y, dtype=float)
+
+    numerator = y**(alpha - 1) * (1 - y)**(beta - 1)
 
     if normalize:
         normalization_factor = gamma(alpha) * gamma(beta)
@@ -171,45 +187,151 @@ def beta_(x: np.ndarray,
     else:
         normalization_factor = 1.0
 
-    pdf_ = amplitude * (numerator / normalization_factor)
-    pdf_[(x <= 0) | (x >= 1)] = np.inf
+    mask_ = _beta_masking(alpha=alpha, beta=beta, y=y)
 
-    return pdf_
+    pdf_[~mask_] = amplitude * (numerator[~mask_] / normalization_factor)
+
+    if alpha <= 1:
+        pdf_[y == 0] = np.inf
+    if beta <= 1:
+        pdf_[y == 1] = np.inf
+
+    # handle the cases where nans can occur with nan_to_num
+    return np.nan_to_num(x=pdf_ / scale, copy=False, nan=0)
+
+
+@doc_inherit(parent=beta_pdf_, style=doc_style)
+def beta_logpdf_(x: np.array,
+                 amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
+                 loc: float = 0.0, scale: float = 1.0,
+                 normalize: bool = False) -> np.array:
+    r"""
+    Compute the log of the beta probability density function (log-PDF).
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated log-PDF values.
+
+    Notes
+    -----
+
+    """
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / scale
+    logpdf_ = np.full_like(y, -np.inf, dtype=float)  # Default to -inf for invalid regions
+
+    mask_ = _beta_masking(alpha=alpha, beta=beta, y=y)
+
+    log_numerator = (alpha - 1) * np.log(y) + (beta - 1) * np.log(1 - y)
+
+    if normalize:
+        log_normalization = gammaln(alpha) + gammaln(beta) - gammaln(alpha + beta)
+        amplitude = 1.0
+    else:
+        log_normalization = 0.0
+
+    logpdf_[~mask_] = np.log(amplitude) + log_numerator[~mask_] - log_normalization
+
+    if alpha <= 1:
+        logpdf_[y == 0] = np.inf
+    if beta <= 1:
+        logpdf_[y == 1] = np.inf
+
+    return logpdf_ - np.log(scale)
+
+
+def _beta_masking(alpha, beta, y):
+    out_of_range_mask = np.logical_or(y < 0, y > 1)
+    undefined_mask = np.zeros_like(y, dtype=bool)
+    if alpha <= 1:
+        undefined_mask = np.logical_or(undefined_mask, y == 0)
+    if beta <= 1:
+        undefined_mask = np.logical_or(undefined_mask, y == 1)
+    mask_ = np.logical_or(out_of_range_mask, undefined_mask)
+    return mask_
+
+
+def beta_cdf_(x: np.array,
+              amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+              normalize: bool = False) -> np.array:
+    r"""
+    Compute the Beta cumulative density function (CDF) for given input values.
+
+    Parameters
+    ----------
+    x : np.array
+        The input array for which to compute the Beta PDF.
+    amplitude : float, optional
+        For API consistency only.
+    alpha : float, optional
+        The alpha (shape) parameter of the Beta distribution. Default is 1.0.
+    beta : float, optional
+        The beta (shape) parameter of the Beta distribution. Default is 1.0.
+    loc : float, optional
+        The location parameter - shifting. Default is 0.0.
+    scale : float, optional
+        The scale parameter - scaling. Default is 1.0.
+    normalize : bool, optional
+        For API consistency only.
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated CDF values.
+
+    Notes
+    -----
+    - The Beta CDF is defined as:
+
+      .. math::
+          I_x(\alpha, \beta)
+
+      where :math:`I_x(\alpha, \beta)` is the regularized incomplete Beta function, see :obj:`scipy.special.betainc`.
+    """
+    y = (x - loc) / scale
+    cdf_ = np.zeros_like(y, dtype=float)
+
+    mask_ = np.logical_and(y > 0, y < 1)
+    cdf_[mask_] = betainc(alpha, beta, y[mask_])
+    cdf_[y >= 1] = 1
+    return cdf_
 
 
 def chi_squared_(x, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):
-    # """
-    # Compute the Chi-Squared distribution.
-    #
-    # The Chi-Squared distribution is a special case of the Gamma distribution with `alpha = degree_of_freedom / 2` and `beta = 1 / 2`.
-    #
-    # Parameters
-    # ----------
-    # x : array-like
-    #     The input values at which to evaluate the Chi-Squared distribution.
-    # amplitude : float, optional
-    #     The amplitude of the distribution. Defaults to 1.
-    #     Ignored if `normalize` is set to True.
-    # degree_of_freedom : float, optional
-    #     The degrees of freedom of the Chi-Squared distribution. Defaults to 1.
-    # normalize : bool, optional
-    #     If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
-    #
-    # Returns
-    # -------
-    # array-like
-    #     The computed Chi-Squared distribution values for the input `x`.
-    #
-    # Notes
-    # -----
-    # The Chi-Squared distribution is related to the Gamma distribution by:
-    # .. math::
-    #     f(x; k) = \\frac{x^{(k/2) - 1} e^{-x/2}}{2^{k/2} \\Gamma(k/2)}
-    #
-    # where `k` is the degrees of freedom, and `Γ(k)` is the Gamma function.
-    #
-    # If `normalize` is True, the distribution will be scaled such that the maximum value of the PDF is 1.
-    # """
+    """
+    Compute the Chi-Squared distribution.
+
+    The Chi-Squared distribution is a special case of the Gamma distribution with `alpha = degree_of_freedom / 2` and `beta = 1 / 2`.
+
+    Parameters
+    ----------
+    x : np.array
+        The input values at which to evaluate the Chi-Squared distribution.
+    amplitude : float, optional
+        The amplitude of the distribution. Defaults to 1. Ignored if **normalize** is set to ``True``.
+    degree_of_freedom : float, optional
+        The degrees of freedom of the ChiSquare distribution. Defaults to 1.
+    normalize : bool, optional
+        If True, the distribution will be normalized so that the PDF is at most 1. Defaults to ``False``.
+
+    Returns
+    -------
+    np.array
+        The computed Chi-Squared distribution values for the input :math:`x`.
+
+    Notes
+    -----
+    The Chi-Squared distribution is related to the Gamma distribution by:
+    .. math::
+        f(x; k) = \\frac{x^{(k/2) - 1} e^{-x/2}}{2^{k/2} \\Gamma(k/2)}
+
+    where `k` is the degrees of freedom, and `Γ(k)` is the Gamma function.
+
+    If `normalize` is True, the distribution will be scaled such that the maximum value of the PDF is 1.
+    """
     return gamma_ss_(x, amplitude=amplitude, shape=degree_of_freedom / 2., scale=2., normalize=normalize)
 
 

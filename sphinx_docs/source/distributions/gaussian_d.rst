@@ -1,5 +1,5 @@
 Gaussian Distribution
-====================
+=====================
 
 The parent module for this distribution is: :mod:`pymultifit.distributions.gaussian_d`.
 

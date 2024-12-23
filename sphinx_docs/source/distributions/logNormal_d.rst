@@ -1,5 +1,5 @@
 LogNormal Distribution
-====================
+======================
 
 The parent module for this distribution is: :mod:`pymultifit.distributions.logNormal_d`.
 

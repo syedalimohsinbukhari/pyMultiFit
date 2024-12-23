@@ -1,5 +1,5 @@
 FoldedNormal Distribution
-====================
+=========================
 
 The parent module for this distribution is: :mod:`pymultifit.distributions.foldedNormal_d`.
 

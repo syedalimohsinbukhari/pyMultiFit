@@ -1,5 +1,5 @@
 HalfNormal Distribution
-====================
+=======================
 
 The parent module for this distribution is: :mod:`pymultifit.distributions.halfNormal_d`.
 

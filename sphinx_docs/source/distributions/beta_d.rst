@@ -10,6 +10,7 @@ This class internally utilizes the following functions from the :mod:`~pymultifi
 
 * :mod:`~pymultifit.distributions.utilities.beta_pdf_`
 * :mod:`~pymultifit.distributions.utilities.beta_cdf_`
+* :mod:`~pymultifit.distributions.utilities.beta_logpdf_`
 
 Full Import
 -----------

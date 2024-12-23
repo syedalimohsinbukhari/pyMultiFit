@@ -1,5 +1,5 @@
 ChiSquare Distribution
-====================
+======================
 
 The parent module for this distribution is: :mod:`pymultifit.distributions.chiSquare_d`.
 

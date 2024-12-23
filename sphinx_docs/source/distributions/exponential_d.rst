@@ -1,5 +1,5 @@
 Exponential Distribution
-====================
+========================
 
 The parent module for this distribution is: :mod:`pymultifit.distributions.exponential_d`.
 
