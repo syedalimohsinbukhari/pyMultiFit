@@ -5,7 +5,7 @@ from typing import Any, Dict
 import numpy as np
 
 from .backend import BaseDistribution
-from .utilities import arc_sine_cdf_, arc_sine_pdf_
+from .utilities import arc_sine_cdf_, arc_sine_log_pdf, arc_sine_pdf_
 
 
 class ArcSineDistribution(BaseDistribution):
@@ -18,11 +18,14 @@ class ArcSineDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def _pdf(self, x: np.array) -> np.array:
         return arc_sine_pdf_(x=x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
 
     def _cdf(self, x: np.array) -> np.array:
         return arc_sine_cdf_(x=x, loc=self.loc, scale=self.scale)
+
+    def logpdf(self, x: np.array) -> np.array:
+        return arc_sine_log_pdf(x=x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
 
     def stats(self) -> Dict[str, Any]:
         mean_ = 0.5

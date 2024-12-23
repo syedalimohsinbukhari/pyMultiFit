@@ -47,7 +47,7 @@ intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
 
 autosummary_generate = True
 autodoc_default_flags = ["members"]
-autodoc_typehints = "signature"
+autodoc_typehints = "none"
 add_module_names = False
 html_show_sourcelink = False
 

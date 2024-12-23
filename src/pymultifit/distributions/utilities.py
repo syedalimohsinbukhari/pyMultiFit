@@ -36,35 +36,41 @@ def arc_sine_pdf_(x: np.array,
                   amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                   normalize: bool = False) -> np.array:
     r"""
-    Compute the probability density function (PDF) of the Arcsine distribution.
+    Compute the probability density function (PDF) of the ArcSine distribution.
 
     Parameters
     ----------
     x : np.array
         Input array of values where the PDF is evaluated.
     amplitude : float, optional
-        The amplitude of the PDF. Defaults to 1.0. Ignored if `normalize` is True.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     loc : float, optional
-        The location parameter, specifying the lower bound of the distribution. Defaults to 0.0.
+        The location parameter, specifying the lower bound of the distribution.
+        Defaults to 0.0.
     scale : float, optional
-        The scale parameter, specifying the width of the distribution. Defaults to 1.0.
+        The scale parameter, specifying the width of the distribution.
+        Defaults to 1.0.
     normalize : bool, optional
-        If True, the distribution will be normalized such that the total area under the PDF equals 1.
-        Defaults to False.
+        If True, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Returns
     -------
     np.array
-        Array of the same shape as `x`, containing the evaluated PDF values.
+        Array of the same shape as :math:`x`, containing the evaluated PDF values.
 
     Notes
     -----
-    - The standard Arcsine distribution is defined on `[0, 1]` with a PDF of:
+    The ArcSine PDF is defined as:
 
-      .. math::
-         f(x) = \frac{1}{\pi \sqrt{x(1-x)}}
+    .. math:: f(y) = \frac{1}{\pi \sqrt{y(1-y)}}
 
-      This implementation generalizes it to an interval `[loc, loc + scale]` using a location-scale transformation.
+    where, :math:`y` is a transformed value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final PDF is expressed as :math:`f(y)/\text{scale}`
     """
     x = (x - loc) / scale
 
@@ -84,37 +90,34 @@ def arc_sine_pdf_(x: np.array,
     return pdf_ / scale
 
 
-def arc_sine_cdf_(x: np.array, loc: float = 0.0, scale: float = 1.0) -> np.array:
-    """
-    Compute the Cumulative Distribution Function (CDF) of the Arcsine distribution.
-
-    The standard Arcsine distribution is defined on the interval [0, 1] with a CDF of:
-
-    .. math::
-       F(x) = \\frac{2}{\\pi}\\arcsin\\left[\\sqrt{x}\\right]
-
-    This implementation generalizes the distribution to an interval [loc, loc + scale] using a
-    location-scale transformation.
+@doc_inherit(parent=arc_sine_pdf_, style=doc_style)
+def arc_sine_cdf_(x: np.array,
+                  amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                  normalize: bool = False) -> np.array:
+    r"""
+    Compute the cumulative density function (CDF) of the ArcSine distribution.
 
     Parameters
     ----------
-    x : np.array
-        Input array of values where the CDF is evaluated.
-    loc : float, optional
-        The location parameter, specifying the lower bound of the distribution. Defaults to 0.0.
-    scale : float, optional
-        The scale parameter, specifying the width of the distribution. Defaults to 1.0.
+    amplitude: float, optional
+        For API consistency only.
+    normalize: bool, optional
+        For API consistency only.
 
     Returns
     -------
     np.array
-        Array of the same shape as `x`, containing the evaluated CDF values.
+        Array of the same size as :math:`x` containing the evaluated CDF values.
 
     Notes
     -----
-    - The standard Arcsine CDF is scaled for a generalized interval `[loc, loc + scale]`.
-    - Values below `loc` are assigned a CDF of 0, and values above `loc + scale` are assigned a
-      CDF of 1.
+    The ArcSine CDF is defined as:
+
+    .. math:: F(y) = \frac{2}{\pi}\arcsin\left[\sqrt{y}\right]
+
+    where, :math:`y` is a transformed value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
     """
     y = (x - loc) / scale
 
@@ -126,6 +129,61 @@ def arc_sine_cdf_(x: np.array, loc: float = 0.0, scale: float = 1.0) -> np.array
     cdf[y > 1] = 1.0
 
     return cdf
+
+
+@doc_inherit(parent=arc_sine_pdf_, style=doc_style)
+def arc_sine_log_pdf(x: np.array,
+                     amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                     normalize: bool = False) -> np.array:
+    r"""
+    Compute the log of the ArcSine probability density function (log-PDF).
+
+    Parameters
+    ----------
+    x : np.array
+        Input values where the log-PDF is to be evaluated.
+    amplitude : float, optional
+        Scaling factor for the PDF (default is 1.0).
+    loc : float, optional
+        Location parameter (default is 0.0).
+    scale : float, optional
+        Scale parameter (default is 1.0).
+    normalize : bool, optional
+        If True, normalizes the PDF (default is False).
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as `x`, containing the evaluated log-PDF values.
+    """
+    if x.size == 0:
+        return np.array([])
+
+    # Transform x to y
+    y = (x - loc) / scale
+    logpdf_ = np.full_like(y, -np.inf, dtype=float)  # Default to -inf for invalid regions
+
+    # Apply mask for valid range (0 < y < 1)
+    mask_ = (y > 0) & (y < 1)
+
+    # Compute the unnormalized log-PDF
+    log_numerator = 0.5 * np.log(y) + 0.5 * np.log(1 - y)
+
+    # Normalization factor
+    if normalize:
+        log_normalization = np.log(np.pi)  # Log of normalization constant
+        amplitude = 1.0
+    else:
+        log_normalization = 0.0
+
+    # Assign values only for valid range
+    logpdf_[mask_] = np.log(amplitude) - log_numerator[mask_] - log_normalization
+
+    logpdf_[y == 0] = np.inf
+    logpdf_[y == 1] = np.inf
+
+    # Return the log-PDF, adjusted for the scale
+    return logpdf_ - np.log(scale)
 
 
 def beta_pdf_(x: np.array,
@@ -160,17 +218,15 @@ def beta_pdf_(x: np.array,
 
     Notes
     -----
-        The Beta PDF is defined as:
+    The Beta PDF is defined as:
 
-        .. math::
-              f(y; \\alpha, \\beta) = \\frac{y^{\\alpha - 1} (1 - y)^{\\beta - 1}}{B(\\alpha, \\beta)}
+    .. math:: f(y; \\alpha, \\beta) = \\frac{y^{\\alpha - 1} (1 - y)^{\\beta - 1}}{B(\\alpha, \\beta)}
 
-        where :math:`B(\\alpha, \\beta)` is the Beta function, and :math:`y` is a transformed value of :math:`x` such that:
+    where :math:`B(\\alpha, \\beta)` is the Beta function, and :math:`y` is a transformed value of :math:`x` such that:
 
-        .. math::
-          y = \\frac{x - \\text{loc}}{\\text{scale}}
+    .. math:: y = \\frac{x - \\text{loc}}{\\text{scale}}
 
-        see, :obj:`scipy.special.beta`.
+    see, :obj:`scipy.special.beta`.
     """
     if x.size == 0:
         return np.array([])
@@ -231,7 +287,7 @@ def beta_logpdf_(x: np.array,
         log_normalization = gammaln(alpha) + gammaln(beta) - gammaln(alpha + beta)
         amplitude = 1.0
     else:
-        log_normalization = 0.0
+        log_normalization = 1.0
 
     logpdf_[~mask_] = np.log(amplitude) + log_numerator[~mask_] - log_normalization
 
@@ -284,12 +340,11 @@ def beta_cdf_(x: np.array,
 
     Notes
     -----
-    - The Beta CDF is defined as:
+    The Beta CDF is defined as:
 
-      .. math::
-          I_x(\alpha, \beta)
+    .. math:: I_x(\alpha, \beta)
 
-      where :math:`I_x(\alpha, \beta)` is the regularized incomplete Beta function, see :obj:`scipy.special.betainc`.
+    where :math:`I_x(\alpha, \beta)` is the regularized incomplete Beta function, see :obj:`scipy.special.betainc`.
     """
     y = (x - loc) / scale
     cdf_ = np.zeros_like(y, dtype=float)

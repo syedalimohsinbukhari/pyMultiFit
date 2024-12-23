@@ -62,3 +62,19 @@ Derived Distributions
    * - :class:`UniformDistribution <pymultifit.distributions.uniform_d.UniformDistribution>`
      - Uniform distribution.
      - :math:`\dfrac{1}{b-a}\ \forall\ x\in[a,b]\ \text{else}\ 0`
+
+
+.. toctree::
+   :hidden:
+
+   ArcSineDistribution      <distributions/arcSine_d>
+   BetaDistribution         <distributions/beta_d>
+   ChiSquareDistribution    <distributions/chiSquare_d>
+   ExponentialDistribution  <distributions/exponential_d>
+   FoldedNormalDistribution <distributions/foldedNormal_d>
+   GaussianDistribution     <distributions/gaussian_d>
+   HalfNormalDistribution   <distributions/halfNormal_d>
+   LaplaceDistribution      <distributions/laplace_d>
+   LogNormalDistribution    <distributions/logNormal_d>
+   SkewNormalDistribution   <distributions/skewNormal_d>
+   UniformDistribution      <distributions/uniform_d>
