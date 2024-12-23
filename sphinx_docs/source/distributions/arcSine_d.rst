@@ -10,6 +10,7 @@ This class internally utilizes the following functions from the :mod:`~pymultifi
 
 * :mod:`~pymultifit.distributions.utilities.arc_sine_pdf_`
 * :mod:`~pymultifit.distributions.utilities.arc_sine_cdf_`
+* :mod:`~pymultifit.distributions.utilities.arc_sine_logpdf_`
 
 Full Import
 -----------

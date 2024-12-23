@@ -36,7 +36,7 @@ def arc_sine_pdf_(x: np.array,
                   amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                   normalize: bool = False) -> np.array:
     r"""
-    Compute the probability density function (PDF) of the ArcSine distribution.
+    Compute the PDF of the ArcSine distribution.
 
     Parameters
     ----------
@@ -72,9 +72,9 @@ def arc_sine_pdf_(x: np.array,
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`
     """
-    x = (x - loc) / scale
+    y = (x - loc) / scale
 
-    un_normalized = 1 / np.sqrt(x * (1 - x))
+    un_normalized = 1 / np.sqrt(y * (1 - y))
 
     if normalize:
         normalization_factor = np.pi
@@ -83,8 +83,7 @@ def arc_sine_pdf_(x: np.array,
         normalization_factor = 1
 
     pdf_ = amplitude * (un_normalized / normalization_factor)
-
-    mask = (x >= 0) & (x <= 1)
+    mask = np.logical_and(y >= 0, y <= 1)
     pdf_[~mask] = 0
 
     return pdf_ / scale
@@ -95,7 +94,7 @@ def arc_sine_cdf_(x: np.array,
                   amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                   normalize: bool = False) -> np.array:
     r"""
-    Compute the cumulative density function (CDF) of the ArcSine distribution.
+    Compute the CDF of the ArcSine distribution.
 
     Parameters
     ----------
@@ -120,36 +119,19 @@ def arc_sine_cdf_(x: np.array,
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
     """
     y = (x - loc) / scale
-
-    cdf = np.zeros_like(x)
-
-    mask = (y >= 0) & (y <= 1)
+    cdf = np.zeros_like(a=y, dtype=float)
+    mask = np.logical_and(y >= 0, y <= 1)
     cdf[mask] = (2 / np.pi) * np.arcsin(np.sqrt(y[mask]))
-
     cdf[y > 1] = 1.0
-
     return cdf
 
 
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
-def arc_sine_log_pdf(x: np.array,
+def arc_sine_logpdf_(x: np.array,
                      amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                      normalize: bool = False) -> np.array:
     r"""
-    Compute the log of the ArcSine probability density function (log-PDF).
-
-    Parameters
-    ----------
-    x : np.array
-        Input values where the log-PDF is to be evaluated.
-    amplitude : float, optional
-        Scaling factor for the PDF (default is 1.0).
-    loc : float, optional
-        Location parameter (default is 0.0).
-    scale : float, optional
-        Scale parameter (default is 1.0).
-    normalize : bool, optional
-        If True, normalizes the PDF (default is False).
+    Compute the logPDF of the ArcSine Distribution.
 
     Returns
     -------
@@ -159,30 +141,23 @@ def arc_sine_log_pdf(x: np.array,
     if x.size == 0:
         return np.array([])
 
-    # Transform x to y
     y = (x - loc) / scale
-    logpdf_ = np.full_like(y, -np.inf, dtype=float)  # Default to -inf for invalid regions
+    logpdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
 
-    # Apply mask for valid range (0 < y < 1)
-    mask_ = (y > 0) & (y < 1)
+    mask_ = np.logical_and(y > 0, y < 1)
 
-    # Compute the unnormalized log-PDF
     log_numerator = 0.5 * np.log(y) + 0.5 * np.log(1 - y)
 
-    # Normalization factor
     if normalize:
         log_normalization = np.log(np.pi)  # Log of normalization constant
         amplitude = 1.0
     else:
         log_normalization = 0.0
 
-    # Assign values only for valid range
     logpdf_[mask_] = np.log(amplitude) - log_numerator[mask_] - log_normalization
-
     logpdf_[y == 0] = np.inf
     logpdf_[y == 1] = np.inf
 
-    # Return the log-PDF, adjusted for the scale
     return logpdf_ - np.log(scale)
 
 
@@ -287,7 +262,7 @@ def beta_logpdf_(x: np.array,
         log_normalization = gammaln(alpha) + gammaln(beta) - gammaln(alpha + beta)
         amplitude = 1.0
     else:
-        log_normalization = 1.0
+        log_normalization = 0.0
 
     logpdf_[~mask_] = np.log(amplitude) + log_numerator[~mask_] - log_normalization
 
