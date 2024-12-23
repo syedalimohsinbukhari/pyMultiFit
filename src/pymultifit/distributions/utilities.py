@@ -1,8 +1,8 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'beta_pdf_', 'beta_cdf_', 'beta_logpdf_', 'chi_squared_', 'exponential_', 'folded_normal_', 'gamma_sr_',
-           'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check', 'laplace_', 'log_normal_', 'norris2005', 'norris2011', 'power_law_',
-           'uniform_']
+__all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_', 'beta_pdf_', 'beta_cdf_', 'beta_logpdf_', 'chi_squared_', 'exponential_',
+           'folded_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check', 'laplace_', 'log_normal_', 'norris2005',
+           'norris2011', 'power_law_', 'uniform_']
 
 import numpy as np
 from custom_inherit import doc_inherit

@@ -41,7 +41,7 @@ class BetaDistribution(BaseDistribution):
         else:
             return np.full(shape=x.shape, fill_value=np.nan)
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
+    def logpdf(self, x: np.array) -> np.array:
         return beta_logpdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
