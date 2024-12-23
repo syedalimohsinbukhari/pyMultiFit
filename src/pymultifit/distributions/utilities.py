@@ -1,12 +1,25 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_', 'beta_pdf_', 'beta_cdf_', 'beta_logpdf_', 'chi_squared_', 'exponential_',
-           'folded_normal_', 'gamma_sr_', 'gamma_ss_', 'gaussian_', 'half_normal_', 'integral_check', 'laplace_', 'log_normal_', 'norris2005',
-           'norris2011', 'power_law_', 'uniform_']
+__all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_',
+           'beta_pdf_', 'beta_cdf_', 'beta_logpdf_',
+           'chi_square_pdf_',
+           'exponential_pdf_',
+           'folded_normal_',
+           'gamma_sr_pdf_', 'gamma_sr_cdf_',
+           'gamma_ss_',
+           'gaussian_',
+           'half_normal_',
+           'integral_check',
+           'laplace_',
+           'log_normal_',
+           'norris2005',
+           'norris2011',
+           'power_law_',
+           'uniform_']
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, gamma, gammaln
+from scipy.special import betainc, gamma, gammainc, gammaln
 
 doc_style = 'numpy_napoleon_with_merge'
 
@@ -131,7 +144,7 @@ def arc_sine_logpdf_(x: np.array,
                      amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                      normalize: bool = False) -> np.array:
     r"""
-    Compute the logPDF of the ArcSine Distribution.
+    Compute logPDF of the ArcSine Distribution.
 
     Returns
     -------
@@ -228,7 +241,8 @@ def beta_pdf_(x: np.array,
         pdf_[y == 1] = np.inf
 
     # handle the cases where nans can occur with nan_to_num
-    return np.nan_to_num(x=pdf_ / scale, copy=False, nan=0)
+    # np.inf and -np.inf to not affect the infinite values
+    return np.nan_to_num(x=pdf_ / scale, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
@@ -237,7 +251,7 @@ def beta_logpdf_(x: np.array,
                  loc: float = 0.0, scale: float = 1.0,
                  normalize: bool = False) -> np.array:
     r"""
-    Compute the log of the beta probability density function (log-PDF).
+    Compute logPDF of the Beta distribution.
 
     Returns
     -------
@@ -289,7 +303,7 @@ def beta_cdf_(x: np.array,
               amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0, loc: float = 0.0, scale: float = 1.0,
               normalize: bool = False) -> np.array:
     r"""
-    Compute the Beta cumulative density function (CDF) for given input values.
+    Compute the CDF of Beta distribution.
 
     Parameters
     ----------
@@ -330,8 +344,8 @@ def beta_cdf_(x: np.array,
     return cdf_
 
 
-def chi_squared_(x, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):
-    """
+def chi_square_pdf_(x, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):
+    r"""
     Compute the Chi-Squared distribution.
 
     The Chi-Squared distribution is a special case of the Gamma distribution with `alpha = degree_of_freedom / 2` and `beta = 1 / 2`.
@@ -362,12 +376,12 @@ def chi_squared_(x, amplitude: float = 1., degree_of_freedom: float = 1., normal
 
     If `normalize` is True, the distribution will be scaled such that the maximum value of the PDF is 1.
     """
-    return gamma_ss_(x, amplitude=amplitude, shape=degree_of_freedom / 2., scale=2., normalize=normalize)
+    return gamma_sr_pdf_(x=x, amplitude=amplitude, shape=degree_of_freedom / 2., rate=0.5, normalize=normalize)
 
 
-def exponential_(x: np.ndarray,
-                 amplitude: float = 1., scale: float = 1.,
-                 normalize: bool = False) -> np.ndarray:
+def exponential_pdf_(x: np.ndarray,
+                     amplitude: float = 1., scale: float = 1.,
+                     normalize: bool = False) -> np.ndarray:
     """
     Compute the Exponential distribution probability density function (PDF).
 
@@ -394,7 +408,7 @@ def exponential_(x: np.ndarray,
     -----
     The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
     """
-    return gamma_sr_(x, amplitude=amplitude, shape=1., rate=scale, normalize=normalize)
+    return gamma_sr_pdf_(x, amplitude=amplitude, shape=1., rate=scale, normalize=normalize)
 
 
 def folded_normal_(x: np.ndarray,
@@ -443,29 +457,31 @@ def folded_normal_(x: np.ndarray,
     return result
 
 
-def gamma_sr_(x: np.ndarray,
-              amplitude: float = 1., shape: float = 1., rate: float = 1.,
-              normalize: bool = False) -> np.ndarray:
-    """
-    Computes the Gamma distribution PDF for given parameters.
+def gamma_sr_pdf_(x: np.ndarray,
+                  amplitude: float = 1., shape: float = 1., rate: float = 1.,
+                  normalize: bool = False) -> np.ndarray:
+    r"""
+    Compute PDF for Gamma distribution with shape and rate parameters.
 
     Parameters
     ----------
-    x : np.ndarray
-        Values at which to evaluate the PDF.
-    amplitude : float
-        The scaling factor for the distribution. Defaults to 1.
+    x : np.array
+        Input array of values where the PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     shape : float
-        The shape parameter of the Gamma distribution. Defaults to 1.
+        The shape parameter, :math:`\alpha` . Defaults to 1.
     rate : float
-        The rate parameter of the Gamma distribution. Defaults to 1.
-    normalize : bool
-        Whether to normalize the distribution (i.e., set amplitude to 1). Defaults to True.
+        The rate parameter, :math:`\lambda`. Defaults to 1.
+    normalize : bool, optional
+        If True, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Returns
     -------
-    np.ndarray
-        The probability density function evaluated at `x`.
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
     """
     numerator = x**(shape - 1) * np.exp(-rate * x)
 
@@ -477,6 +493,23 @@ def gamma_sr_(x: np.ndarray,
         normalization_factor = 1
 
     return amplitude * (numerator / normalization_factor)
+
+
+@doc_inherit(parent=gamma_sr_pdf_, style=doc_style)
+def gamma_sr_cdf_(x: np.array,
+                  amplitude: float = 1., shape: float = 1., rate: float = 1.,
+                  normalize: bool = False) -> np.array:
+    """
+    Compute PDF for Gamma distribution with shape and rate parameters.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: float, optional
+        For API consistency only.
+    """
+    return np.nan_to_num(x=gammainc(shape, rate * x), copy=False, nan=0)
 
 
 def gamma_ss_(x: np.ndarray,
@@ -520,7 +553,7 @@ def gamma_ss_(x: np.ndarray,
     # .. math::
     #     \beta = \frac{1}{\theta}.
     # """
-    return gamma_sr_(x, amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
+    return gamma_sr_pdf_(x, amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
 
 
 def gaussian_(x: np.ndarray,

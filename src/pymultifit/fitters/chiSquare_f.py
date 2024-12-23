@@ -2,7 +2,7 @@
 
 from .backend import BaseFitter
 from .utilities import sanity_check
-from ..distributions.utilities import chi_squared_
+from ..distributions.utilities import chi_square_pdf_
 
 
 class ChiSquareFitter(BaseFitter):
@@ -15,4 +15,4 @@ class ChiSquareFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return chi_squared_(x, *params, normalize=False)
+        return chi_square_pdf_(x, normalize=False)

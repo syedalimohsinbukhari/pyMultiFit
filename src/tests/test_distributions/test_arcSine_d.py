@@ -12,15 +12,15 @@ class TestArcSineDistribution:
     def test_initialization():
         dist_ = ArcSineDistribution(amplitude=2.0, normalize=False)
         assert dist_.amplitude == 2.0
-        assert dist_.loc == 0.
+        assert dist_.loc == 0.0
         assert dist_.scale == 1.0
         assert not dist_.norm
 
-        x = np.linspace(0, 1, 100)
+        x = np.linspace(start=0, stop=1, num=100)
         _distribution1 = ArcSineDistribution(normalize=True)
         _distribution2 = beta.pdf(x, a=0.5, b=0.5)
 
-        np.testing.assert_allclose(actual=_distribution1.pdf(x), desired=_distribution2, atol=1e-8, rtol=1e-5)
+        np.testing.assert_allclose(actual=_distribution1.pdf(x), desired=_distribution2, rtol=1e-5, atol=1e-8)
 
     @staticmethod
     def test_pdf_cdf():
@@ -35,5 +35,5 @@ class TestArcSineDistribution:
             pdf_scipy = arcsine.pdf(x)
             cdf_scipy = arcsine.cdf(x)
 
-            np.testing.assert_allclose(pdf_custom, pdf_scipy, rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(cdf_custom, cdf_scipy, rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=pdf_custom, desired=pdf_scipy, rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=cdf_custom, desired=cdf_scipy, rtol=1e-5, atol=1e-8)

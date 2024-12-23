@@ -2,7 +2,7 @@
 
 from .backend import BaseFitter
 from .utilities import sanity_check
-from ..distributions.utilities import exponential_
+from ..distributions.utilities import exponential_pdf_
 
 
 class ExponentialFitter(BaseFitter):
@@ -15,4 +15,4 @@ class ExponentialFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return exponential_(x, *params, normalize=False)
+        return exponential_pdf_(x, normalize=False)

@@ -51,9 +51,11 @@ autodoc_typehints = "none"
 add_module_names = False
 html_show_sourcelink = False
 
+
 numpydoc_show_class_members = True
 numpydoc_show_inherited_class_members = True
 numpydoc_class_members_toctree = False
+
 
 # sphinx_gallery_conf = {
 #     # path to your examples scripts
