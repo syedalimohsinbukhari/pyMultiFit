@@ -7,10 +7,10 @@ __all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_',
            'folded_normal_pdf_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_',
            'gamma_ss_',
-           'gaussian_pdf_',
+           'gaussian_pdf_', 'gaussian_cdf_',
            'half_normal_',
            'integral_check',
-           'laplace_',
+           'laplace_pdf_', 'laplace_cdf_',
            'log_normal_',
            'norris2005',
            'norris2011',
@@ -19,7 +19,7 @@ __all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_',
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, gamma, gammainc, gammaln
+from scipy.special import betainc, erf, gamma, gammainc, gammaln
 
 doc_style = 'numpy_napoleon_with_merge'
 
@@ -169,13 +169,13 @@ def beta_pdf_(x: np.array,
     -----
     The Beta PDF is defined as:
 
-    .. math:: f(y; \\alpha, \\beta) = \\frac{y^{\\alpha - 1} (1 - y)^{\\beta - 1}}{B(\\alpha, \\beta)}
+    .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 - y)^{\beta - 1}}{B(\alpha, \beta)}
 
-    where :math:`B(\\alpha, \\beta)` is the Beta function, and :math:`y` is a transformed value of :math:`x` such that:
+    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`scipy.special.beta`), and :math:`y` is a transformed value of :math:`x` such that:
 
-    .. math:: y = \\frac{x - \\text{loc}}{\\text{scale}}
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
 
-    see, :obj:`scipy.special.beta`.
+    The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
     if x.size == 0:
         return np.array([])
@@ -405,20 +405,21 @@ def folded_normal_pdf_(x: np.array,
     variance : float, optional
         The variance parameter, :math:`\sigma^2`. Defaults to 1.0.
     normalize : bool, optional
-        If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
+        If ``True``, the distribution will be normalized to integrate to 1.
+        Defaults to False.
 
     Returns
     -------
     np.array
-        The computed folded half-normal distribution values for the input `x`.
+        The computed folded normal distribution values for the input `x`.
 
     Notes
     -----
-    The folded half-normal distribution is defined as the sum of two Gaussian distributions:
+    The PDF of :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution` is given by:
 
-    .. math:: f(x; \mu, \sigma^2) = \phi(x; \mu, \sigma) + \phi(x; -\mu, \sigma)
+    .. math:: f(x; \mu, \sigma^2) = \phi(x; \mu, \sigma) + \phi(x; -\mu, \sigma),
 
-    where :math:`\phi` is the PDF for the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`.
+    where :math:`\phi` is the PDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`.
     """
     sigma = np.sqrt(variance)
     result = np.zeros_like(a=x, dtype=float)
@@ -532,44 +533,42 @@ def gamma_sr_cdf_(x: np.array,
 def gamma_ss_(x: np.array,
               amplitude: float = 1., shape: float = 1., scale: float = 1.,
               normalize: bool = False) -> np.array:
-    # """Compute the Gamma distribution using the shape and scale parameterization.
-    #
-    # This function wraps the Gamma distribution parameterized by `shape` and `rate` and provides an interface for  `shape` and `scale`.
-    # The relationship between scale and rate is defined as:
-    #
-    # Parameters
-    # ----------
-    # x : np.array
-    #     The input values at which to evaluate the Gamma distribution.
-    # amplitude : float, optional
-    #     The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
-    # shape : float, optional
-    #     The shape parameter (`k`) of the Gamma distribution. Defaults to 1.
-    # scale : float, optional
-    #     The scale parameter (`\theta`) of the Gamma distribution. Defaults to 1. The rate parameter is computed as `1 / scale`.
-    # normalize : bool, optional
-    #     If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
-    #
-    # Returns
-    # -------
-    # np.array
-    #     The computed Gamma distribution values for the input `x`.
-    #
-    # Notes
-    # -----
-    # The Gamma distribution parameterized by shape and scale is defined as:
-    # .. math::
-    #     f(x; k, \theta) = \frac{x^{k-1} e^{-x / \theta}}{\theta^k \Gamma(k)}
-    #
-    # where:
-    #     - `k` is the shape parameter
-    #     - `\theta` is the scale parameter
-    #     - `\Gamma(k)` is the Gamma function.
-    #
-    # This function computes the equivalent Gamma distribution using the relationship between scale (`\theta`) and rate (`\beta`) where:
-    # .. math::
-    #     \beta = \frac{1}{\theta}.
-    # """
+    r"""
+    Compute the PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape) and :math:`\theta` (scale) parameters.
+
+    Parameters
+    ----------
+    x : np.array
+        The input values at which to evaluate the Gamma distribution.
+    amplitude : float, optional
+        The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
+    shape : float, optional
+        The shape parameter (`k`) of the Gamma distribution. Defaults to 1.
+    scale : float, optional
+        The scale parameter (`\theta`) of the Gamma distribution. Defaults to 1. The rate parameter is computed as `1 / scale`.
+    normalize : bool, optional
+        If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
+
+    Returns
+    -------
+    np.array
+        The computed Gamma distribution values for the input `x`.
+
+    Notes
+    -----
+    The Gamma distribution parameterized by shape and scale is defined as:
+    .. math::
+        f(x; k, \theta) = \frac{x^{k-1} e^{-x / \theta}}{\theta^k \Gamma(k)}
+
+    where:
+        - `k` is the shape parameter
+        - `\theta` is the scale parameter
+        - `\Gamma(k)` is the Gamma function.
+
+    This function computes the equivalent Gamma distribution using the relationship between scale (`\theta`) and rate (`\beta`) where:
+    .. math::
+        \beta = \frac{1}{\theta}.
+    """
     return gamma_sr_pdf_(x, amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
 
 
@@ -601,7 +600,13 @@ def gaussian_pdf_(x: np.array,
 
     Notes
     -----
-    The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
+    The Gaussian PDF is defined as:
+
+    .. math::
+        f(x; \mu, \sigma) = \phi\left(\dfrac{x-\mu}{\sigma}\right) =
+        \dfrac{1}{\sqrt{2\pi\sigma}}\exp\left[-\dfrac{1}{2}\left(\dfrac{x-\mu}{\sigma}\right)^2\right]
+
+    The final PDF is expressed as :math:`f(x)`.
     """
     exponent_factor = (x - mu)**2 / (2 * sigma**2)
 
@@ -612,6 +617,38 @@ def gaussian_pdf_(x: np.array,
         normalization_factor = 1
 
     return amplitude * (np.exp(-exponent_factor) / normalization_factor)
+
+
+@doc_inherit(parent=gaussian_pdf_, style=doc_style)
+def gaussian_cdf_(x: np.array,
+                  amplitude: float = 1., mu: float = 0., sigma: float = 1.,
+                  normalize: bool = False) -> np.array:
+    r"""
+    Compute CDF for the :mod:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: float, optional
+        For API consistency only.
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Gaussian CDF is defined as:
+
+    .. math::
+        F(x) = \Phi\left(\dfrac{x-\mu}{\sigma}\right) =
+        \dfrac{1}{2} \left[1 + \text{erf}\left(\dfrac{x - \mu}{\sigma\sqrt{2}}\right)\right]
+    """
+    num_ = x - mu
+    den_ = sigma * np.sqrt(2)
+    return 0.5 * (1 + erf(num_ / den_))
 
 
 def half_normal_(x: np.array,
@@ -654,28 +691,39 @@ def half_normal_(x: np.array,
     return folded_normal_pdf_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
 
 
-def laplace_(x: np.array,
-             amplitude: float = 1., mean: float = 0., diversity: float = 1.,
-             normalize: bool = False) -> np.array:
-    """Compute the Laplace distribution's probability density function (PDF).
+def laplace_pdf_(x: np.array,
+                 amplitude: float = 1., mean: float = 0., diversity: float = 1.,
+                 normalize: bool = False) -> np.array:
+    r"""
+    Compute PDF for :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
     Parameters
     ----------
     x : np.array
-        Points at which to evaluate the PDF.
-    amplitude : float
-        The amplitude (scale) of the distribution. Defaults to 1.
-    mean : float
-        The mean (location parameter) of the distribution. Defaults to 0.
-    diversity : float
-        The diversity (scale parameter) of the distribution. Defaults to 1.
+        Input array of values where the PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    mean : float, optional
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    diversity : float, optional
+        The diversity parameter, :math:`b`. Defaults to 1.0.
     normalize : bool, optional
-        Whether to normalize the PDF. Defaults to True.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Returns
     -------
     np.array
-        The PDF values at the given points.
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Laplace PDF is defined as:
+
+    .. math:: f(x\ |\ \mu, b) = \dfrac{1}{2b}\exp\left(-\dfrac{|x - \mu|}{b}\right)
+
+    The final PDF is expressed as :math:`f(x)`.
     """
     exponent_factor = abs(x - mean) / diversity
 
@@ -686,6 +734,52 @@ def laplace_(x: np.array,
         normalization_factor = 1
 
     return amplitude * (np.exp(-exponent_factor) / normalization_factor)
+
+
+@doc_inherit(parent=laplace_pdf_, style=doc_style)
+def laplace_cdf_(x: np.array,
+                 amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
+                 normalize: bool = False) -> np.array:
+    r"""
+    Compute CDF for :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: bool, optional
+        For API consistency only.
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Laplace CDF is defined as:
+
+    .. math:: F(x) =
+        \begin{cases}
+        \dfrac{1}{2}\exp\left(\dfrac{x-\mu}{b}\right) &,&x\leq\mu\\
+        1 - \dfrac{1}{2}\exp\left(-\dfrac{x-\mu}{b}\right) &,&x\geq\mu
+        \end{cases}
+    """
+
+    def _cdf1(x_):
+        return 0.5 * np.exp((x_ - mean) / diversity)
+
+    def _cdf2(x_):
+        return 1 - 0.5 * np.exp(-(x_ - mean) / diversity)
+
+    # to ensure equality with scipy, had to break down the output with empty array so that sorting is not needed.
+    result = np.zeros_like(a=x, dtype=np.float64)
+
+    mask_leq = x <= mean
+    result[mask_leq] += _cdf1(x[mask_leq])
+    result[~mask_leq] += _cdf2(x[~mask_leq])
+
+    return result
 
 
 def log_normal_(x: np.array,

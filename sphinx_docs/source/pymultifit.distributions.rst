@@ -12,14 +12,6 @@ Subpackages
 Submodules
 ----------
 
-pymultifit.distributions.gamma\_d module
-----------------------------------------
-
-.. automodule:: pymultifit.distributions.gamma_d
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pymultifit.distributions.norris\_d module
 -----------------------------------------
 

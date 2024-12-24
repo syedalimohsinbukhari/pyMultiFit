@@ -64,12 +64,11 @@ class TestBetaDistribution:
         loc, scale = 0, 1
 
         def _multipy(dist, func_type):
-            return dist.pdf if func_type == 'pdf' else dist.cdf if func_type == 'cdf' else dist.logpdf
+            return dist.pdf if func_type == 'pdf' else dist.cdf
 
         def _scipy(a_, b_, loc_, scale_, func_type):
             return [beta(a=a_, b=b_, loc=loc_, scale=scale_).pdf(x_) if func_type == 'pdf' else
-                    beta(a=a_, b=b_, loc=loc_, scale=scale_).cdf(x_) if func_type == 'cdf' else
-                    beta(a=a_, b=b_, loc=loc_, scale=scale_).logpdf(x_)][0]
+                    beta(a=a_, b=b_, loc=loc_, scale=scale_).cdf(x_)][0]
 
         for func_ in ['pdf', 'cdf']:
             for _ in range(50):  # Run 50 random tests

@@ -2,7 +2,7 @@
 
 from .backend import BaseFitter
 from .utilities import sanity_check
-from ..distributions.utilities import laplace_
+from ..distributions.utilities import laplace_pdf_
 
 
 class LaplaceFitter(BaseFitter):
@@ -15,4 +15,4 @@ class LaplaceFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return laplace_(x, *params, normalize=False)
+        return laplace_pdf_(x, *params, normalize=False)

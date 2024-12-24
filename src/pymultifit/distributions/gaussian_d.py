@@ -3,10 +3,9 @@
 from typing import Dict
 
 import numpy as np
-from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import gaussian_pdf_
+from .utilities import gaussian_cdf_, gaussian_pdf_
 
 
 class GaussianDistribution(BaseDistribution):
@@ -26,13 +25,8 @@ class GaussianDistribution(BaseDistribution):
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return gaussian_pdf_(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
-
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        num_ = x - self.mean
-        den_ = self.std_ * np.sqrt(2)
-        return 0.5 * (1 + erf(num_ / den_))
+    def _cdf(self, x: np.array) -> np.array:
+        return gaussian_cdf_(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
         mean_, std_ = self.mean, self.std_

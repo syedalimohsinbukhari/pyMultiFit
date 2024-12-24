@@ -72,6 +72,8 @@ Derived Distributions
    ChiSquareDistribution    <distributions/chiSquare_d>
    ExponentialDistribution  <distributions/exponential_d>
    FoldedNormalDistribution <distributions/foldedNormal_d>
+   GammaDistributionSR      <distributions/gamma_sr_d>
+   GammaDistributionSS      <distributions/gamma_ss_d>
    GaussianDistribution     <distributions/gaussian_d>
    HalfNormalDistribution   <distributions/halfNormal_d>
    LaplaceDistribution      <distributions/laplace_d>
