@@ -4,7 +4,7 @@ __all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_',
            'beta_pdf_', 'beta_cdf_', 'beta_logpdf_',
            'chi_square_pdf_',
            'exponential_pdf_',
-           'folded_normal_',
+           'folded_normal_pdf_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_',
            'gamma_ss_',
            'gaussian_pdf_',
@@ -387,47 +387,44 @@ def exponential_pdf_(x: np.array,
     return gamma_sr_pdf_(x, amplitude=amplitude, shape=1., rate=scale, normalize=normalize)
 
 
-def folded_normal_(x: np.array,
-                   amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
-                   normalize: bool = False) -> np.array:
-    # """
-    # Compute the folded half-normal distribution.
-    #
-    # The folded half-normal distribution is the sum of two Gaussian distributions mirrored around `mu`.
-    # It is defined as the sum of a normal distribution centered at `mu` and another mirrored at `-mu`.
-    #
-    # Parameters
-    # ----------
-    # x : np.array
-    #     Input array where the folded half-normal distribution is evaluated.
-    # amplitude : float, optional
-    #     The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
-    # mu : float, optional
-    #     The mean (`mu`) of the original normal distribution. Defaults to 0.0.
-    # variance : float, optional
-    #     The standard deviation (`sigma`) of the original normal distribution. Defaults to 1.0.
-    # normalize : bool, optional
-    #     If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
-    #
-    # Returns
-    # -------
-    # np.array
-    #     The computed folded half-normal distribution values for the input `x`.
-    #
-    # Notes
-    # -----
-    # The folded half-normal distribution is defined as the sum of two Gaussian
-    # distributions:
-    # .. math::
-    #     f(x; \\mu, \\sigma) = g_1(x; \\mu, \\sigma) + g_2(x; -\\mu, \\sigma)
-    #
-    # where `g_1` and `g_2` are the Gaussian distributions with the specified parameters.
-    # """
+def folded_normal_pdf_(x: np.array,
+                       amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
+                       normalize: bool = False) -> np.array:
+    r"""
+    Compute PDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
+
+    Parameters
+    ----------
+    x : np.array
+        Input array of values where the PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    mu : float, optional
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    variance : float, optional
+        The variance parameter, :math:`\sigma^2`. Defaults to 1.0.
+    normalize : bool, optional
+        If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
+
+    Returns
+    -------
+    np.array
+        The computed folded half-normal distribution values for the input `x`.
+
+    Notes
+    -----
+    The folded half-normal distribution is defined as the sum of two Gaussian distributions:
+
+    .. math:: f(x; \mu, \sigma^2) = \phi(x; \mu, \sigma) + \phi(x; -\mu, \sigma)
+
+    where :math:`\phi` is the PDF for the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`.
+    """
     sigma = np.sqrt(variance)
+    result = np.zeros_like(a=x, dtype=float)
     mask = x >= 0
     g1 = gaussian_pdf_(x[mask], amplitude=amplitude, mu=mu, sigma=sigma, normalize=normalize)
     g2 = gaussian_pdf_(x[mask], amplitude=amplitude, mu=-mu, sigma=sigma, normalize=normalize)
-    result = np.zeros_like(x)
     result[mask] = g1 + g2
 
     return result
@@ -466,11 +463,24 @@ def gamma_sr_pdf_(x: np.array,
     The Gamma PDF is given by:
 
     .. math::
-        f(x; \alpha, \lambda) =
+        f(y; \alpha, \lambda) =
         \begin{cases}
-        \frac{\lambda^\alpha}{\Gamma(\alpha)} (x - \text{loc})^{\alpha - 1} e^{-\lambda (x - \text{loc})}, & x > \text{loc}, \\
-        0, & x \leq \text{loc}.
+        \dfrac{\lambda^\alpha}{\Gamma(\alpha)} y^{\alpha - 1} e^{-\lambda y}, & y > \text{loc}, \\
+        0, & y \leq \text{loc}.
         \end{cases}
+
+    where :math:`y` is a transformed value of :math:`x`, defined as:
+
+    .. math:: y = x - \text{loc}
+
+    The final PDF is expressed as :math:`f(y)`.
+
+    .. important::
+        The :obj:`scipy.stats.gamma` distribution is related to this function as
+
+        .. math:: \lambda = \frac{1}{\text{scale}},
+
+        thus the final PDF doesn't need re-transformation by :math:`\text{scale}` division.
     """
     y = x - loc
     numerator = y**(shape - 1) * np.exp(-rate * y)
@@ -501,6 +511,20 @@ def gamma_sr_cdf_(x: np.array,
         For API consistency only.
     normalize: float, optional
         For API consistency only.
+
+    Notes
+    -----
+        The Gamma CDF is defined as:
+
+        .. math::
+            F(y; \alpha, \lambda) = \dfrac{1}{\Gamma(\alpha)}\gamma(\alpha, \lambda y)
+
+        where, :math:`y` is a transformed value of :math:`x`, defined as:
+
+        .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+        and, :math:`\gamma(\alpha, \lambda y)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
+
     """
     return np.nan_to_num(x=gammainc(shape, rate * x), copy=False, nan=0)
 
@@ -627,7 +651,7 @@ def half_normal_(x: np.array,
 
     The half-normal distribution is a special case of the folded half-normal distribution with `mu = 0`.
     """
-    return folded_normal_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
+    return folded_normal_pdf_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
 
 
 def laplace_(x: np.array,

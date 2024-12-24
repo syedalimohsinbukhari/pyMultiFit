@@ -15,11 +15,11 @@ The parent module for this distribution is: :mod:`~pymultifit.distributions.beta
 
 This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
 
-* :mod:`~pymultifit.distributions.utilities.beta_pdf_`
-* :mod:`~pymultifit.distributions.utilities.beta_cdf_`
+* :func:`~pymultifit.distributions.utilities.beta_pdf_`
+* :func:`~pymultifit.distributions.utilities.beta_cdf_`
 
 ..
-    * :mod:`~pymultifit.distributions.utilities.beta_logpdf_`
+    * :func:`~pymultifit.distributions.utilities.beta_logpdf_`
 
 Recommended Import
 ^^^^^^^^^^^^^^^^^^

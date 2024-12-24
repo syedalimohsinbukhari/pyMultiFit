@@ -40,10 +40,10 @@ nbsphinx_execute = 'auto'
 source_suffix = {'.rst': 'restructuredtext', '.md': 'restructuredtext'}
 suppress_warnings = ["config.cache"]
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
-                       'scipy': ('https://docs.scipy.org/doc/scipy/', None),
-                       "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
-                       "matplotlib": ("https://matplotlib.org/stable/", None)}
+# intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
+#                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+#                        "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
+#                        "matplotlib": ("https://matplotlib.org/stable/", None)}
 
 autosummary_generate = True
 autodoc_default_flags = ["members"]

@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import folded_normal_
+from .utilities import folded_normal_pdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):
@@ -26,7 +26,7 @@ class FoldedNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_normal_(x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
+        return folded_normal_pdf_(x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         y = np.zeros_like(x, dtype=float)

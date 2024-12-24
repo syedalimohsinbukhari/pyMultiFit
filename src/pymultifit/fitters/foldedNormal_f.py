@@ -2,7 +2,7 @@
 
 from .backend import BaseFitter
 from .utilities import sanity_check
-from ..distributions.utilities import folded_normal_
+from ..distributions.utilities import folded_normal_pdf_
 
 
 class FoldedHalfNormalFitter(BaseFitter):
@@ -15,4 +15,4 @@ class FoldedHalfNormalFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return folded_normal_(x, normalize=False)
+        return folded_normal_pdf_(x, normalize=False)
