@@ -1,9 +1,7 @@
-.. include:: ./../substitutions.rst
-
 ArcSine Distribution
 ====================
 
-The parent module for this distribution is: :mod:`pymultifit.distributions.arcSine_d`.
+The parent module for this distribution is :mod:`~pymultifit.distributions.arcSine_d`.
 
 .. autoclass:: pymultifit.distributions.arcSine_d.ArcSineDistribution
    :no-members:
@@ -14,13 +12,13 @@ The parent module for this distribution is: :mod:`pymultifit.distributions.arcSi
     * :math:`\alpha_\text{beta} = 0.5`,
     * :math:`\lambda_\text{beta} = 0.5`.
 
-This class internally utilizes the following functions from the |utilities| module:
+This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
 
-* |beta_pdf_|
-* |beta_cdf_|
+* :func:`~pymultifit.distributions.utilities.beta_pdf_`
+* :func:`~pymultifit.distributions.utilities.beta_cdf_`
 
 ..
-    * |beta_logpdf_|
+    * :func:`~pymultifit.distributions.utilities.beta_logpdf_`
 
 Recommended Import
 ^^^^^^^^^^^^^^^^^^

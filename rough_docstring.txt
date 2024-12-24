@@ -12,7 +12,7 @@ PFD generic docstring
         The amplitude of the PDF. Defaults to 1.0.
         Ignored if **normalize** is ``True``.
     normalize : bool, optional
-        If True, the distribution is normalized so that the total area under the PDF equals 1.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
     Returns

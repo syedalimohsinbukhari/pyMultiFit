@@ -68,18 +68,20 @@ class TestGammaDistributionSR:
         def _cdf_pdf_custom(x_, dist_, what='cdf'):
             return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
 
-        def _cdf_pdf_scipy(x_, shape, rate, what='cdf'):
-            return gamma.cdf(x_, a=shape, scale=1 / rate) if what == 'cdf' else gamma.pdf(x_, a=shape, scale=1 / rate)
+        def _cdf_pdf_scipy(x_, shape, rate, loc, what='cdf'):
+            return [gamma.cdf(x_, a=shape, scale=1 / rate) if what == 'cdf' else
+                    gamma.pdf(x_, a=shape, scale=1 / rate, loc=loc)][0]
 
         for i in ['cdf', 'pdf']:
             for _ in range(50):  # Run 50 random tests
+                loc_ = np.random.uniform(-5, 5)
                 shape_ = np.random.uniform(low=EPSILON, high=100)  # Shape parameter (alpha > 0)
                 scale_ = np.random.uniform(low=EPSILON, high=50)  # Scale parameter (scale > 0)
 
                 x = np.random.uniform(low=0, high=15, size=100)  # Generate valid x values
-                distribution = GammaDistributionSR(shape=shape_, rate=scale_, normalize=True)
+                distribution = GammaDistributionSR(shape=shape_, rate=scale_, loc=loc_, normalize=True)
 
-                expected = _cdf_pdf_scipy(x_=x, shape=shape_, rate=scale_, what=i)
+                expected = _cdf_pdf_scipy(x_=x, shape=shape_, rate=scale_, loc=loc_, what=i)
                 actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=i)
 
                 np.testing.assert_allclose(actual=actual, desired=expected, rtol=1e-5, atol=1e-8)

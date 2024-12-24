@@ -1,7 +1,7 @@
 Beta Distribution
 ====================
 
-The parent module for this distribution is: :mod:`pymultifit.distributions.beta_d`.
+The parent module for this distribution is: :mod:`~pymultifit.distributions.beta_d`.
 
 .. autoclass:: pymultifit.distributions.beta_d.BetaDistribution
    :no-members:

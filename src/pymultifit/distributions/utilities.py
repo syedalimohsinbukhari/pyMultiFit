@@ -59,7 +59,7 @@ def arc_sine_pdf_(x: np.array,
         The amplitude of the PDF. Defaults to 1.0.
         Ignored if **normalize** is ``True``.
     loc : float, optional
-        The location parameter, specifying the lower bound of the distribution.
+        The location parameter specifying the lower bound of the distribution.
         Defaults to 0.0.
     scale : float, optional
         The scale parameter, specifying the width of the distribution.
@@ -85,21 +85,7 @@ def arc_sine_pdf_(x: np.array,
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`
     """
-    y = (x - loc) / scale
-
-    un_normalized = 1 / np.sqrt(y * (1 - y))
-
-    if normalize:
-        normalization_factor = np.pi
-        amplitude = 1
-    else:
-        normalization_factor = 1
-
-    pdf_ = amplitude * (un_normalized / normalization_factor)
-    mask = np.logical_and(y >= 0, y <= 1)
-    pdf_[~mask] = 0
-
-    return pdf_ / scale
+    return beta_pdf_(x=x, amplitude=amplitude, alpha=0.5, beta=0.5, loc=loc, scale=scale, normalize=normalize)
 
 
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
@@ -131,12 +117,7 @@ def arc_sine_cdf_(x: np.array,
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
     """
-    y = (x - loc) / scale
-    cdf = np.zeros_like(a=y, dtype=float)
-    mask = np.logical_and(y >= 0, y <= 1)
-    cdf[mask] = (2 / np.pi) * np.arcsin(np.sqrt(y[mask]))
-    cdf[y > 1] = 1.0
-    return cdf
+    return beta_cdf_(x=x, amplitude=amplitude, alpha=0.5, beta=0.5, loc=loc, scale=scale, normalize=normalize)
 
 
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
@@ -151,34 +132,14 @@ def arc_sine_logpdf_(x: np.array,
     np.array
         Array of the same shape as `x`, containing the evaluated log-PDF values.
     """
-    if x.size == 0:
-        return np.array([])
-
-    y = (x - loc) / scale
-    logpdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
-
-    mask_ = np.logical_and(y > 0, y < 1)
-
-    log_numerator = 0.5 * np.log(y) + 0.5 * np.log(1 - y)
-
-    if normalize:
-        log_normalization = np.log(np.pi)  # Log of normalization constant
-        amplitude = 1.0
-    else:
-        log_normalization = 0.0
-
-    logpdf_[mask_] = np.log(amplitude) - log_numerator[mask_] - log_normalization
-    logpdf_[y == 0] = np.inf
-    logpdf_[y == 1] = np.inf
-
-    return logpdf_ - np.log(scale)
+    return beta_logpdf_(x=x, amplitude=amplitude, alpha=0.5, beta=0.5, loc=loc, scale=scale, normalize=normalize)
 
 
 def beta_pdf_(x: np.array,
               amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0, loc: float = 0.0, scale: float = 1.0,
               normalize: bool = False) -> np.array:
-    """
-    Compute PDF of the Beta distribution.
+    r"""
+    Compute PDF of the :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
     Parameters
     ----------
@@ -192,7 +153,7 @@ def beta_pdf_(x: np.array,
     beta : float, optional
         The :math:`\beta` parameter. Default is 1.0.
     loc : float, optional
-        The location parameter - shifting. Default is 0.0.
+        The location parameter :math:`-` for shifting. Default is 0.0.
     scale : float, optional
         The scale parameter - scaling. Default is 1.0.
     normalize : bool, optional
@@ -303,7 +264,7 @@ def beta_cdf_(x: np.array,
               amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0, loc: float = 0.0, scale: float = 1.0,
               normalize: bool = False) -> np.array:
     r"""
-    Compute the CDF of Beta distribution.
+    Compute CDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
     Parameters
     ----------
@@ -312,11 +273,11 @@ def beta_cdf_(x: np.array,
     amplitude : float, optional
         For API consistency only.
     alpha : float, optional
-        The alpha (shape) parameter of the Beta distribution. Default is 1.0.
+        The shape parameter, :math:`\alpha`. Default is 1.0.
     beta : float, optional
-        The beta (shape) parameter of the Beta distribution. Default is 1.0.
+        The shape parameter, :math:`\beta`. Default is 1.0.
     loc : float, optional
-        The location parameter - shifting. Default is 0.0.
+        The location parameter :math:`-` for shifting. Default is 0.0.
     scale : float, optional
         The scale parameter - scaling. Default is 1.0.
     normalize : bool, optional
@@ -333,7 +294,7 @@ def beta_cdf_(x: np.array,
 
     .. math:: I_x(\alpha, \beta)
 
-    where :math:`I_x(\alpha, \beta)` is the regularized incomplete Beta function, see :obj:`scipy.special.betainc`.
+    where :math:`I_x(\alpha, \beta)` is the regularized incomplete Beta function, see :obj:`~scipy.special.betainc`.
     """
     y = (x - loc) / scale
     cdf_ = np.zeros_like(y, dtype=float)
@@ -346,75 +307,89 @@ def beta_cdf_(x: np.array,
 
 def chi_square_pdf_(x, amplitude: float = 1., degree_of_freedom: float = 1., normalize: bool = False):
     r"""
-    Compute the Chi-Squared distribution.
-
-    The Chi-Squared distribution is a special case of the Gamma distribution with `alpha = degree_of_freedom / 2` and `beta = 1 / 2`.
+    Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
     Parameters
     ----------
     x : np.array
-        The input values at which to evaluate the Chi-Squared distribution.
+        Input array of values where the PDF is evaluated.
     amplitude : float, optional
-        The amplitude of the distribution. Defaults to 1.
-        Ignored if **normalize** is set to ``True``.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     degree_of_freedom : float, optional
-        The degrees of freedom of the distribution. Defaults to 1.
+        The degrees of freedom parameter. Defaults to 1.
     normalize : bool, optional
-        If True, the distribution will be normalized so that the PDF is at most 1. Defaults to ``False``.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Returns
     -------
     np.array
-        The computed Chi-Squared distribution values for the input :math:`x`.
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----
-    The Chi-Squared distribution is related to the Gamma distribution by:
-    .. math::
-        f(x; k) = \\frac{x^{(k/2) - 1} e^{-x/2}}{2^{k/2} \\Gamma(k/2)}
+    The ChiSquare PDF is defined as:
 
-    where `k` is the degrees of freedom, and `Γ(k)` is the Gamma function.
+    .. math:: f(y; k) = \dfrac{y^{(k/2) - 1} e^{-y/2}}{2^{k/2} \Gamma(k/2)}
 
-    If `normalize` is True, the distribution will be scaled such that the maximum value of the PDF is 1.
+    where :math:`k` is the degrees of freedom, and :math:`\Gamma(k)` is the :obj:`~scipy.special.gamma` function.
+    Additionally :math:`y` is a transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
+
+    The final PDF is expressed as :math:`f(y)/\text{scale}`
     """
     return gamma_sr_pdf_(x=x, amplitude=amplitude, shape=degree_of_freedom / 2., rate=0.5, normalize=normalize)
 
 
-def exponential_pdf_(x: np.ndarray,
+def exponential_pdf_(x: np.array,
                      amplitude: float = 1., scale: float = 1.,
-                     normalize: bool = False) -> np.ndarray:
-    """
-    Compute the Exponential distribution probability density function (PDF).
-
-    The Exponential PDF is given by:
-    f(x; lambda) = lambda * exp(-lambda * x), for x >= 0, otherwise 0.
+                     normalize: bool = False) -> np.array:
+    r"""
+    Compute the PDF of :mod:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
     Parameters
     ----------
-    x : np.ndarray
-        The input values at which to evaluate the Exponential PDF. Should be non-negative.
-    amplitude : float
-        The amplitude of the exponential distribution. Defaults to 1.
+    x : np.array
+        Input array of values where the PDF is evaluated, supports :math:`x \geq 0`.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     scale : float
-        The scale parameter (lambda) of the exponential distribution. Defaults to 1.
-    normalize : bool
-        If True, the function normalizes the PDF. Otherwise, the amplitude scales the PDF. Defaults to True.
+        The scale parameter, :math:`\lambda`. Defaults to 1.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Returns
     -------
-    np.ndarray
-        The probability density function values for the input values. For values of `x < 0`, the PDF is 0.
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----
-    The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
+    The Exponential PDF is given by:
+
+    .. math::
+        f(y, \lambda) =
+        \begin{cases}
+        \lambda \exp\left[-\lambda y\right] &; x \geq 0, \\
+        0 &; y < 0.
+        \end{cases}
+
+    where, :math:`y` is a transformed value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final PDF is expressed as :math:`f(y)/\text{scale}`
     """
     return gamma_sr_pdf_(x, amplitude=amplitude, shape=1., rate=scale, normalize=normalize)
 
 
-def folded_normal_(x: np.ndarray,
+def folded_normal_(x: np.array,
                    amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
-                   normalize: bool = False) -> np.ndarray:
+                   normalize: bool = False) -> np.array:
     # """
     # Compute the folded half-normal distribution.
     #
@@ -423,7 +398,7 @@ def folded_normal_(x: np.ndarray,
     #
     # Parameters
     # ----------
-    # x : np.ndarray
+    # x : np.array
     #     Input array where the folded half-normal distribution is evaluated.
     # amplitude : float, optional
     #     The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
@@ -436,7 +411,7 @@ def folded_normal_(x: np.ndarray,
     #
     # Returns
     # -------
-    # np.ndarray
+    # np.array
     #     The computed folded half-normal distribution values for the input `x`.
     #
     # Notes
@@ -458,11 +433,11 @@ def folded_normal_(x: np.ndarray,
     return result
 
 
-def gamma_sr_pdf_(x: np.ndarray,
-                  amplitude: float = 1., shape: float = 1., rate: float = 1.,
-                  normalize: bool = False) -> np.ndarray:
+def gamma_sr_pdf_(x: np.array,
+                  amplitude: float = 1.0, shape: float = 1.0, rate: float = 1.0,
+                  loc: float = 0.0, normalize: bool = False) -> np.array:
     r"""
-    Compute PDF for Gamma distribution with shape and rate parameters.
+    Compute the PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` with :math:`\alpha` (shape) and :math:`\lambda` (rate) parameters.
 
     Parameters
     ----------
@@ -471,20 +446,34 @@ def gamma_sr_pdf_(x: np.ndarray,
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
         Ignored if **normalize** is ``True``.
-    shape : float
-        The shape parameter, :math:`\alpha` . Defaults to 1.
-    rate : float
-        The rate parameter, :math:`\lambda`. Defaults to 1.
+    shape : float, optional
+        The shape parameter, :math:`\alpha`. Defaults to 1.0.
+    rate : float, optional
+        The rate parameter, :math:`\lambda`. Defaults to 1.0.
+    loc : float, optional
+        The location parameter :math:`-` for shifting. Defaults to 0.0.
     normalize : bool, optional
-        If True, the distribution is normalized so that the total area under the PDF equals 1.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
     Returns
     -------
     np.array
-        Array of the same shape as :math:`x`, containing the evaluated values.
+        Array of the same shape as :math:`x`, containing the evaluated PDF values.
+
+    Notes
+    -----
+    The Gamma PDF is given by:
+
+    .. math::
+        f(x; \alpha, \lambda) =
+        \begin{cases}
+        \frac{\lambda^\alpha}{\Gamma(\alpha)} (x - \text{loc})^{\alpha - 1} e^{-\lambda (x - \text{loc})}, & x > \text{loc}, \\
+        0, & x \leq \text{loc}.
+        \end{cases}
     """
-    numerator = x**(shape - 1) * np.exp(-rate * x)
+    y = x - loc
+    numerator = y**(shape - 1) * np.exp(-rate * y)
 
     if normalize:
         normalization_factor = gamma(shape)
@@ -493,15 +482,18 @@ def gamma_sr_pdf_(x: np.ndarray,
     else:
         normalization_factor = 1
 
-    return amplitude * (numerator / normalization_factor)
+    pdf_ = amplitude * (numerator / normalization_factor)
+    pdf_[x < loc] = 0
+
+    return pdf_
 
 
 @doc_inherit(parent=gamma_sr_pdf_, style=doc_style)
 def gamma_sr_cdf_(x: np.array,
                   amplitude: float = 1., shape: float = 1., rate: float = 1.,
                   normalize: bool = False) -> np.array:
-    """
-    Compute PDF for Gamma distribution with shape and rate parameters.
+    r"""
+    Compute CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` with :math:`\alpha` and :math:`\lambda` parameters.
 
     Parameters
     ----------
@@ -513,9 +505,9 @@ def gamma_sr_cdf_(x: np.array,
     return np.nan_to_num(x=gammainc(shape, rate * x), copy=False, nan=0)
 
 
-def gamma_ss_(x: np.ndarray,
+def gamma_ss_(x: np.array,
               amplitude: float = 1., shape: float = 1., scale: float = 1.,
-              normalize: bool = False) -> np.ndarray:
+              normalize: bool = False) -> np.array:
     # """Compute the Gamma distribution using the shape and scale parameterization.
     #
     # This function wraps the Gamma distribution parameterized by `shape` and `rate` and provides an interface for  `shape` and `scale`.
@@ -523,7 +515,7 @@ def gamma_ss_(x: np.ndarray,
     #
     # Parameters
     # ----------
-    # x : np.ndarray
+    # x : np.array
     #     The input values at which to evaluate the Gamma distribution.
     # amplitude : float, optional
     #     The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
@@ -536,7 +528,7 @@ def gamma_ss_(x: np.ndarray,
     #
     # Returns
     # -------
-    # np.ndarray
+    # np.array
     #     The computed Gamma distribution values for the input `x`.
     #
     # Notes
@@ -557,9 +549,9 @@ def gamma_ss_(x: np.ndarray,
     return gamma_sr_pdf_(x, amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
 
 
-def gaussian_pdf_(x: np.ndarray,
+def gaussian_pdf_(x: np.array,
                   amplitude: float = 1., mu: float = 0., sigma: float = 1.,
-                  normalize: bool = False) -> np.ndarray:
+                  normalize: bool = False) -> np.array:
     r"""
     Compute PDF for the :mod:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
@@ -598,8 +590,8 @@ def gaussian_pdf_(x: np.ndarray,
     return amplitude * (np.exp(-exponent_factor) / normalization_factor)
 
 
-def half_normal_(x: np.ndarray,
-                 amplitude: float = 1.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
+def half_normal_(x: np.array,
+                 amplitude: float = 1.0, scale: float = 1.0, normalize: bool = False) -> np.array:
     """
     Compute the half-normal distribution.
 
@@ -608,7 +600,7 @@ def half_normal_(x: np.ndarray,
 
     Parameters
     ----------
-    x : np.ndarray
+    x : np.array
         The input values at which to evaluate the half-normal distribution.
     amplitude : float, optional
         The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
@@ -620,7 +612,7 @@ def half_normal_(x: np.ndarray,
 
     Returns
     -------
-    np.ndarray
+    np.array
         The computed half-normal distribution values for the input `x`.
 
     Notes
@@ -638,14 +630,14 @@ def half_normal_(x: np.ndarray,
     return folded_normal_(x, amplitude=amplitude, mu=0, variance=scale, normalize=normalize)
 
 
-def laplace_(x: np.ndarray,
+def laplace_(x: np.array,
              amplitude: float = 1., mean: float = 0., diversity: float = 1.,
-             normalize: bool = False) -> np.ndarray:
+             normalize: bool = False) -> np.array:
     """Compute the Laplace distribution's probability density function (PDF).
 
     Parameters
     ----------
-    x : np.ndarray
+    x : np.array
         Points at which to evaluate the PDF.
     amplitude : float
         The amplitude (scale) of the distribution. Defaults to 1.
@@ -658,7 +650,7 @@ def laplace_(x: np.ndarray,
 
     Returns
     -------
-    np.ndarray
+    np.array
         The PDF values at the given points.
     """
     exponent_factor = abs(x - mean) / diversity
@@ -672,9 +664,9 @@ def laplace_(x: np.ndarray,
     return amplitude * (np.exp(-exponent_factor) / normalization_factor)
 
 
-def log_normal_(x: np.ndarray,
+def log_normal_(x: np.array,
                 amplitude: float = 1., mean: float = 0., standard_deviation: float = 1.,
-                normalize: bool = False) -> np.ndarray:
+                normalize: bool = False) -> np.array:
     """
     Compute the Log-Normal distribution probability density function (PDF).
 
@@ -684,7 +676,7 @@ def log_normal_(x: np.ndarray,
 
     Parameters
     ----------
-    x : np.ndarray
+    x : np.array
         The input values at which to evaluate the Log-Normal PDF. Must be positive.
     amplitude : float
         The amplitude (scale) of the distribution. Defaults to 1.
@@ -698,7 +690,7 @@ def log_normal_(x: np.ndarray,
 
     Returns
     -------
-    np.ndarray
+    np.array
         The probability density function values for the input values.
 
     Raises
@@ -724,9 +716,9 @@ def log_normal_(x: np.ndarray,
     return amplitude * np.exp(-exponent_factor) / normalization_factor
 
 
-def norris2005(x: np.ndarray,
+def norris2005(x: np.array,
                amplitude: float = 1., rise_time: float = 1., decay_time: float = 1.,
-               normalize: bool = False) -> np.ndarray:
+               normalize: bool = False) -> np.array:
     # """
     # Computes the Norris 2005 light curve model.
     #
@@ -734,7 +726,7 @@ def norris2005(x: np.ndarray,
     #
     # Parameters
     # ----------
-    # x : np.ndarray
+    # x : np.array
     #     The input time array at which to evaluate the light curve model.
     # amplitude : float, optional
     #     The amplitude of the light curve peak. Default is 1.0.
@@ -748,7 +740,7 @@ def norris2005(x: np.ndarray,
     #
     # Returns
     # -------
-    # np.ndarray
+    # np.array
     #     The evaluated Norris 2005 model at the input times `x`.
     #
     # References
@@ -762,9 +754,9 @@ def norris2005(x: np.ndarray,
     return norris2011(x, amplitude=amplitude, tau=tau, xi=xi)
 
 
-def norris2011(x: np.ndarray,
+def norris2011(x: np.array,
                amplitude: float = 1., tau: float = 1., xi: float = 1.,
-               normalize: bool = False) -> np.ndarray:
+               normalize: bool = False) -> np.array:
     # """
     # Computes the Norris 2011 light curve model.
     #
@@ -777,7 +769,7 @@ def norris2011(x: np.ndarray,
     #
     # Parameters
     # ----------
-    # x : np.ndarray
+    # x : np.array
     #     The input time array at which to evaluate the light curve model.
     # amplitude : float, optional
     #     The amplitude of the light curve peak (A in the formula). Default is 1.0.
@@ -791,7 +783,7 @@ def norris2011(x: np.ndarray,
     #
     # Returns
     # -------
-    # np.ndarray
+    # np.array
     #     The evaluated Norris 2011 model at the input times `x`.
     #
     # Notes
@@ -808,7 +800,7 @@ def norris2011(x: np.ndarray,
     return amplitude * np.exp(-xi * (fraction1 + fraction2))
 
 
-def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize: bool = False) -> np.ndarray:
+def power_law_(x: np.array, amplitude: float = 1, alpha: float = -1, normalize: bool = False) -> np.array:
     """
     Compute a power-law function for a given set of x values.
 
@@ -817,7 +809,7 @@ def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize
 
     Parameters
     ----------
-    x : np.ndarray
+    x : np.array
         Input values for which the power-law function will be evaluated.
     amplitude : float, optional
         The amplitude or scaling factor of the power law, by default 1.
@@ -828,15 +820,15 @@ def power_law_(x: np.ndarray, amplitude: float = 1, alpha: float = -1, normalize
 
     Returns
     -------
-    np.ndarray
+    np.array
         Computed power-law values for each element in x.
     """
     return amplitude * x**-alpha
 
 
-def uniform_(x: np.ndarray,
+def uniform_(x: np.array,
              amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
-             normalize: bool = False) -> np.ndarray:
+             normalize: bool = False) -> np.array:
     # """
     # Compute the Uniform distribution probability density function (PDF).
     #
@@ -846,7 +838,7 @@ def uniform_(x: np.ndarray,
     #
     # Parameters
     # ----------
-    # x : np.ndarray
+    # x : np.array
     #     The input values at which to evaluate the Uniform PDF.
     # low : float
     #     The lower bound of the Uniform distribution. Defaults to 0.
@@ -860,7 +852,7 @@ def uniform_(x: np.ndarray,
     #
     # Returns
     # -------
-    # np.ndarray
+    # np.array
     #     The probability density function values for the input values.
     #
     # Notes
