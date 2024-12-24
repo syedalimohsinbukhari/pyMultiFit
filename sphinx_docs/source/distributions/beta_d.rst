@@ -21,16 +21,16 @@ This class internally utilizes the following functions from the :mod:`~pymultifi
 ..
     * :mod:`~pymultifit.distributions.utilities.beta_logpdf_`
 
-Full Import
------------
-
-.. code-block:: python
-
-   from pymultifit.distributions.beta_d import BetaDistribution
-
 Recommended Import
-------------------
+^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
    from pymultifit.distributions import BetaDistribution
+
+Full Import
+^^^^^^^^^^^
+
+.. code-block:: python
+
+   from pymultifit.distributions.beta_d import BetaDistribution

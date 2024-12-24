@@ -2,7 +2,7 @@
 
 from .backend import BaseFitter
 from .utilities import sanity_check
-from ..distributions.utilities import gaussian_
+from ..distributions.utilities import gaussian_pdf_
 
 
 class GaussianFitter(BaseFitter):
@@ -15,4 +15,4 @@ class GaussianFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return gaussian_(x, *params, normalize=False)
+        return gaussian_pdf_(x, normalize=False)

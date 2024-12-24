@@ -7,7 +7,7 @@ __all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_',
            'folded_normal_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_',
            'gamma_ss_',
-           'gaussian_',
+           'gaussian_pdf_',
            'half_normal_',
            'integral_check',
            'laplace_',
@@ -49,7 +49,7 @@ def arc_sine_pdf_(x: np.array,
                   amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                   normalize: bool = False) -> np.array:
     r"""
-    Compute the PDF of the ArcSine distribution.
+    Compute PDF of the ArcSine distribution.
 
     Parameters
     ----------
@@ -107,7 +107,7 @@ def arc_sine_cdf_(x: np.array,
                   amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                   normalize: bool = False) -> np.array:
     r"""
-    Compute the CDF of the ArcSine distribution.
+    Compute CDF of the ArcSine distribution.
 
     Parameters
     ----------
@@ -178,7 +178,7 @@ def beta_pdf_(x: np.array,
               amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0, loc: float = 0.0, scale: float = 1.0,
               normalize: bool = False) -> np.array:
     """
-    Compute the Beta probability density function (PDF) for given input values.
+    Compute PDF of the Beta distribution.
 
     Parameters
     ----------
@@ -188,9 +188,9 @@ def beta_pdf_(x: np.array,
         A scaling factor applied to the PDF. Default is 1.0.
         Ignored if **normalize** is `True`.
     alpha : float, optional
-        The alpha (shape) parameter of the Beta distribution. Default is 1.0.
+        The :math:`\alpha` parameter. Default is 1.0.
     beta : float, optional
-        The beta (shape) parameter of the Beta distribution. Default is 1.0.
+        The :math:`\beta` parameter. Default is 1.0.
     loc : float, optional
         The location parameter - shifting. Default is 0.0.
     scale : float, optional
@@ -355,9 +355,10 @@ def chi_square_pdf_(x, amplitude: float = 1., degree_of_freedom: float = 1., nor
     x : np.array
         The input values at which to evaluate the Chi-Squared distribution.
     amplitude : float, optional
-        The amplitude of the distribution. Defaults to 1. Ignored if **normalize** is set to ``True``.
+        The amplitude of the distribution. Defaults to 1.
+        Ignored if **normalize** is set to ``True``.
     degree_of_freedom : float, optional
-        The degrees of freedom of the ChiSquare distribution. Defaults to 1.
+        The degrees of freedom of the distribution. Defaults to 1.
     normalize : bool, optional
         If True, the distribution will be normalized so that the PDF is at most 1. Defaults to ``False``.
 
@@ -449,8 +450,8 @@ def folded_normal_(x: np.ndarray,
     # """
     sigma = np.sqrt(variance)
     mask = x >= 0
-    g1 = gaussian_(x[mask], amplitude=amplitude, mu=mu, sigma=sigma, normalize=normalize)
-    g2 = gaussian_(x[mask], amplitude=amplitude, mu=-mu, sigma=sigma, normalize=normalize)
+    g1 = gaussian_pdf_(x[mask], amplitude=amplitude, mu=mu, sigma=sigma, normalize=normalize)
+    g2 = gaussian_pdf_(x[mask], amplitude=amplitude, mu=-mu, sigma=sigma, normalize=normalize)
     result = np.zeros_like(x)
     result[mask] = g1 + g2
 
@@ -556,33 +557,31 @@ def gamma_ss_(x: np.ndarray,
     return gamma_sr_pdf_(x, amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
 
 
-def gaussian_(x: np.ndarray,
-              amplitude: float = 1., mu: float = 0., sigma: float = 1.,
-              normalize: bool = False) -> np.ndarray:
-    """
-    Compute the Gaussian (Normal) distribution probability density function (PDF).
-
-    The Gaussian PDF is given by:
-    f(x) = (1 / (sigma * sqrt(2 * pi))) * exp(- (x - mu)**2 / (2 * sigma**2))
+def gaussian_pdf_(x: np.ndarray,
+                  amplitude: float = 1., mu: float = 0., sigma: float = 1.,
+                  normalize: bool = False) -> np.ndarray:
+    r"""
+    Compute PDF for the :mod:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
     Parameters
     ----------
-    x : np.ndarray
-        The input values at which to evaluate the Gaussian PDF.
-    amplitude: float
-        The amplitude of the Gaussian distribution. Defaults to 1.
+    x : np.array
+        Input array of values where the PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     mu : float
-        The mean of the Gaussian distribution. Defaults to 0.
+        The mean parameter, :math:`\mu`. Defaults to 0.
     sigma : float
-        The standard deviation of the Gaussian distribution. Defaults to 1.
-    normalize : bool
-        If True, the function returns the normalized value of the PDF else the PDF is not normalized. Default is True.
-
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.
+    normalize : bool, optional
+        If True, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Returns
     -------
-    np.ndarray
-        The probability density function values for the input values.
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----

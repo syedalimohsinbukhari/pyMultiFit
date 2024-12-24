@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import gaussian_
+from .utilities import gaussian_pdf_
 
 
 class GaussianDistribution(BaseDistribution):
@@ -24,7 +24,7 @@ class GaussianDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return gaussian_(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
+        return gaussian_pdf_(x, amplitude=self.amplitude, mu=self.mean, sigma=self.std_, normalize=self.norm)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return self._pdf(x)
