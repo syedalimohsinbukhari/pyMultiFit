@@ -63,7 +63,7 @@ pymultifit.fitters.laplace\_f module
 pymultifit.fitters.logNorm\_f module
 ------------------------------------
 
-.. automodule:: pymultifit.fitters.logNorm_f
+.. automodule:: pymultifit.fitters.logNormal_f
    :members:
    :undoc-members:
    :show-inheritance:
@@ -95,7 +95,7 @@ pymultifit.fitters.powerLaw\_f module
 pymultifit.fitters.skewNorm\_f module
 -------------------------------------
 
-.. automodule:: pymultifit.fitters.skewNorm_f
+.. automodule:: pymultifit.fitters.skewNormal_f
    :members:
    :undoc-members:
    :show-inheritance:

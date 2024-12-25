@@ -1,8 +1,6 @@
 Gamma Distribution (SR)
 =======================
 
-The parent module for this distribution is :mod:`~pymultifit.distributions.gamma_d`.
-
 .. autoclass:: pymultifit.distributions.gamma_d.GammaDistributionSR
    :no-members:
 
@@ -16,7 +14,12 @@ The parent module for this distribution is :mod:`~pymultifit.distributions.gamma
         - :math:`\lambda_\text{gammaSR} = \lambda_\text{expon}`.
 
    #. :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS`:
+        - :math:`\alpha_\text{gammaSR} = \alpha_\text{gammaSS}`
         - :math:`\lambda = \theta^{-1}`.
+
+   #. :class:`~pymultifit.distributions.uniform_d.UniformDistribution`:
+       - :math:`\alpha = 1`, and
+       - :math:`\lambda = 1`.
 
 
 This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:

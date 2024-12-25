@@ -12,7 +12,7 @@ class TestGaussianDistribution:
 
     @staticmethod
     def test_initialization():
-        dist = GaussianDistribution(amplitude=2.0, mean=1.0, standard_deviation=0.5, normalize=False)
+        dist = GaussianDistribution(amplitude=2.0, mean=1.0, std=0.5, normalize=False)
         assert dist.amplitude == 2.0
         assert dist.mean == 1.0
         assert dist.std_ == 0.5
@@ -31,7 +31,7 @@ class TestGaussianDistribution:
         assert distribution.amplitude == 1.0
 
         with pytest.raises(erH.NegativeStandardDeviationError, match=f"Standard deviation {erH.neg_message}"):
-            GaussianDistribution(standard_deviation=-3.0)
+            GaussianDistribution(std=-3.0)
 
     @staticmethod
     def test_edge_case():
@@ -42,7 +42,7 @@ class TestGaussianDistribution:
 
     @staticmethod
     def test_stats():
-        distribution = GaussianDistribution(amplitude=1.0, mean=2.0, standard_deviation=3.0)
+        distribution = GaussianDistribution(amplitude=1.0, mean=2.0, std=3.0)
         d_stats = distribution.stats()
         assert d_stats["mean"] == distribution.mean
         assert d_stats["median"] == distribution.mean
@@ -62,7 +62,7 @@ class TestGaussianDistribution:
                 loc_ = np.random.uniform(low=-10, high=10)
                 scale_ = np.random.uniform(low=0.1, high=5)
                 x = np.linspace(start=loc_ - 10, stop=loc_ + 10, num=50)
-                distribution = GaussianDistribution(mean=loc_, standard_deviation=scale_, normalize=True)
+                distribution = GaussianDistribution(mean=loc_, std=scale_, normalize=True)
                 expected = _cdf_pdf_scipy(x_=x, loc=loc_, scale=scale_, what=i)
                 np.testing.assert_allclose(actual=_cdf_pdf_custom(x_=x, dist_=distribution, what=i),
                                            desired=expected, rtol=1e-5, atol=1e-8)
@@ -93,7 +93,7 @@ class TestGaussianDistribution:
         test_cases = edge_cases + extreme_cases
 
         for mean_, std_ in test_cases:
-            dist_ = GaussianDistribution(amplitude=1.0, mean=mean_, standard_deviation=std_, normalize=True)
+            dist_ = GaussianDistribution(amplitude=1.0, mean=mean_, std=std_, normalize=True)
 
             # SciPy Gaussian distribution for comparison
             scipy_pdf = norm(loc=mean_, scale=std_).pdf(x_)

@@ -36,8 +36,6 @@ def generate_distribution_rst_simple(distribution_name):
     template = f"""{distribution_name} Distribution
 ====================
 
-The parent module for this distribution is: :mod:`{parent_module}`.
-
 .. autoclass:: {parent_class}
    :no-members:
 

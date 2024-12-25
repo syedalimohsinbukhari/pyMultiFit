@@ -1,8 +1,6 @@
 Gaussian Distribution
 =====================
 
-The parent module for this distribution is: :mod:`pymultifit.distributions.gaussian_d`.
-
 .. autoclass:: pymultifit.distributions.gaussian_d.GaussianDistribution
    :no-members:
 

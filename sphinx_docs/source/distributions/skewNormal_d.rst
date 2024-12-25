@@ -1,8 +1,6 @@
 SkewNormal Distribution
 =======================
 
-The parent module for this distribution is: :mod:`pymultifit.distributions.skewNormal_d`.
-
 .. autoclass:: pymultifit.distributions.skewNormal_d.SkewNormalDistribution
    :no-members:
 

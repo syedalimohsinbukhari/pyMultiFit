@@ -1,9 +1,8 @@
 """Created on Jul 18 13:54:03 2024"""
 
-from scipy.stats import skewnorm
-
 from .backend import BaseFitter
 from .utilities import sanity_check
+from ..distributions.utilities import skew_normal_pdf_
 
 
 class SkewNormalFitter(BaseFitter):
@@ -16,4 +15,4 @@ class SkewNormalFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return params[0] * skewnorm.pdf(x, params[1], loc=params[2], scale=params[3]) * (2 / params[1])
+        return skew_normal_pdf_(x, *params, normalize=False)

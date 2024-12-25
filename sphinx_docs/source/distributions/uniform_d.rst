@@ -1,8 +1,6 @@
 Uniform Distribution
 ====================
 
-The parent module for this distribution is: :mod:`pymultifit.distributions.uniform_d`.
-
 .. autoclass:: pymultifit.distributions.uniform_d.UniformDistribution
    :no-members:
 

@@ -3,9 +3,9 @@
 from typing import Dict
 
 import numpy as np
-from scipy.stats import skewnorm
 
 from .backend import BaseDistribution
+from .utilities import skew_normal_cdf_, skew_normal_pdf_
 
 
 # TODO:
@@ -23,13 +23,10 @@ class SkewNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return skewnorm(self.shape, loc=self.location, scale=self.scale).pdf(x) * (self.amplitude * (2 / self.scale))
+        return skew_normal_pdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
-
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return skewnorm(self.shape, loc=self.location, scale=self.scale).cdf(x)
+    def _cdf(self, x: np.array) -> np.array:
+        return skew_normal_cdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location

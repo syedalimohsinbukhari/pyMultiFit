@@ -1,8 +1,6 @@
 Laplace Distribution
 ====================
 
-The parent module for this distribution is: :mod:`pymultifit.distributions.laplace_d`.
-
 .. autoclass:: pymultifit.distributions.laplace_d.LaplaceDistribution
    :no-members:
 

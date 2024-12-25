@@ -1,8 +1,6 @@
 HalfNormal Distribution
 =======================
 
-The parent module for this distribution is: :mod:`pymultifit.distributions.halfNormal_d`.
-
 .. autoclass:: pymultifit.distributions.halfNormal_d.HalfNormalDistribution
    :no-members:
 

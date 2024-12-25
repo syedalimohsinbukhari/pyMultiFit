@@ -1,8 +1,6 @@
 Gamma Distribution (SS)
 =======================
 
-The parent module for this distribution is :mod:`~pymultifit.distributions.gamma_d`.
-
 .. autoclass:: pymultifit.distributions.gamma_d.GammaDistributionSS
    :no-members:
 

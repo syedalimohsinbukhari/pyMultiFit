@@ -1,8 +1,6 @@
 ChiSquare Distribution
 ======================
 
-The parent module for this distribution is: :mod:`~pymultifit.distributions.chiSquare_d`.
-
 .. autoclass:: pymultifit.distributions.chiSquare_d.ChiSquareDistribution
    :show-inheritance:
 

@@ -36,7 +36,7 @@ Derived Fitters
      - Half-Normal fitter.
    * - :class:`LaplaceFitter <pymultifit.fitters.laplace_f.LaplaceFitter>`
      - Laplace fitter.
-   * - :class:`LogNormalFitter <pymultifit.fitters.logNorm_f.LogNormalFitter>`
+   * - :class:`LogNormalFitter <pymultifit.fitters.logNormal_f.LogNormalFitter>`
      - Log-Normal fitter.
-   * - :class:`SkewNormalFitter <pymultifit.fitters.skewNorm_f.SkewNormalFitter>`
+   * - :class:`SkewNormalFitter <pymultifit.fitters.skewNormal_f.SkewNormalFitter>`
      - Skew-Normal fitter.

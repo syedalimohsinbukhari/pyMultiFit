@@ -15,4 +15,4 @@ class GaussianFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return gaussian_pdf_(x, normalize=False)
+        return gaussian_pdf_(x, *params, normalize=False)
