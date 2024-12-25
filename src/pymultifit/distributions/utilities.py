@@ -11,11 +11,11 @@ __all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_',
            'half_normal_',
            'integral_check',
            'laplace_pdf_', 'laplace_cdf_',
-           'log_normal_',
+           'log_normal_pdf_', 'log_normal_cdf_',
            'norris2005',
            'norris2011',
            'power_law_',
-           'uniform_']
+           'uniform_pdf_', 'uniform_cdf_']
 
 import numpy as np
 from custom_inherit import doc_inherit
@@ -435,7 +435,7 @@ def gamma_sr_pdf_(x: np.array,
                   amplitude: float = 1.0, shape: float = 1.0, rate: float = 1.0,
                   loc: float = 0.0, normalize: bool = False) -> np.array:
     r"""
-    Compute the PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` with :math:`\alpha` (shape) and :math:`\lambda` (rate) parameters.
+    Compute PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` with :math:`\alpha` (shape) and :math:`\lambda` (rate) parameters.
 
     Parameters
     ----------
@@ -534,7 +534,7 @@ def gamma_ss_(x: np.array,
               amplitude: float = 1., shape: float = 1., scale: float = 1.,
               normalize: bool = False) -> np.array:
     r"""
-    Compute the PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape) and :math:`\theta` (scale) parameters.
+    Compute PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape) and :math:`\theta` (scale) parameters.
 
     Parameters
     ----------
@@ -588,7 +588,7 @@ def gaussian_pdf_(x: np.array,
     mu : float
         The mean parameter, :math:`\mu`. Defaults to 0.
     sigma : float
-        The standard deviation parameter, :math:`\sigma`. Defaults to 1.
+        The standard deviation parameter, :math:`\std_`. Defaults to 1.
     normalize : bool, optional
         If True, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -603,8 +603,8 @@ def gaussian_pdf_(x: np.array,
     The Gaussian PDF is defined as:
 
     .. math::
-        f(x; \mu, \sigma) = \phi\left(\dfrac{x-\mu}{\sigma}\right) =
-        \dfrac{1}{\sqrt{2\pi\sigma}}\exp\left[-\dfrac{1}{2}\left(\dfrac{x-\mu}{\sigma}\right)^2\right]
+        f(x; \mu, \std_) = \phi\left(\dfrac{x-\mu}{\std_}\right) =
+        \dfrac{1}{\sqrt{2\pi\std_}}\exp\left[-\dfrac{1}{2}\left(\dfrac{x-\mu}{\std_}\right)^2\right]
 
     The final PDF is expressed as :math:`f(x)`.
     """
@@ -666,7 +666,7 @@ def half_normal_(x: np.array,
     amplitude : float, optional
         The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
     scale : float, optional
-        The scale parameter (`sigma`) of the distribution, corresponding to the standard deviation of the original normal distribution.
+        The scale parameter (`std`) of the distribution, corresponding to the standard deviation of the original normal distribution.
         Defaults to 1.0.
     normalize : bool, optional
         If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
@@ -682,9 +682,9 @@ def half_normal_(x: np.array,
     The probability density function (PDF) is:
 
     .. math::
-        f(x; \\sigma) = \\sqrt{2/\\pi} \\frac{1}{\\sigma} e^{-x^2 / (2\\sigma^2)}
+        f(x; \\std) = \\sqrt{2/\\pi} \\frac{1}{\\std} e^{-x^2 / (2\\std^2)}
 
-    where `x >= 0` and `\\sigma` is the scale parameter.
+    where `x >= 0` and `\\std` is the scale parameter.
 
     The half-normal distribution is a special case of the folded half-normal distribution with `mu = 0`.
     """
@@ -782,56 +782,94 @@ def laplace_cdf_(x: np.array,
     return result
 
 
-def log_normal_(x: np.array,
-                amplitude: float = 1., mean: float = 0., standard_deviation: float = 1.,
-                normalize: bool = False) -> np.array:
-    """
-    Compute the Log-Normal distribution probability density function (PDF).
-
-    The Log-Normal PDF is given by:
-
-    f(x) = (1 / (x * sigma * sqrt(2 * pi))) * exp(- (log(x) - mu)**2 / (2 * sigma**2))
+def log_normal_pdf_(x: np.array,
+                    amplitude: float = 1., mean: float = 0., std: float = 1.,
+                    loc: float = 0., normalize: bool = False) -> np.array:
+    r"""
+    Compute PDF for :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
     Parameters
     ----------
     x : np.array
-        The input values at which to evaluate the Log-Normal PDF. Must be positive.
-    amplitude : float
-        The amplitude (scale) of the distribution. Defaults to 1.
-    mean : float
-        The mean of the logarithm of the distribution (i.e., mu of the normal distribution in log-space). Defaults to 0.
-    standard_deviation : float
-        The standard deviation of the logarithm of the distribution (i.e., sigma of the normal distribution in
-        log-space). Defaults to 1.
-    normalize : bool
-        If True, the function returns the normalized value of the PDF. Defaults to True.
+        Input array of values where the PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    mean : float, optional
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    std : float, optional
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    loc : float, optional
+        The location parameter, :math:`-` shifting. Defaults to 0.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Returns
     -------
     np.array
-        The probability density function values for the input values.
-
-    Raises
-    ------
-    ValueError
-        If any value in `x` is less than or equal to zero.
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----
-    The input `x` must be positive because the logarithm of zero or negative numbers is undefined.
-    """
-    if np.any(x <= 0):
-        raise ValueError("x must be positive for the log-normal distribution.")
+    The LogNormal PDF is defined as:
 
-    exponent_factor = (np.log(x) - mean)**2 / (2 * standard_deviation**2)
+    .. math::
+        f(y\ |\ \mu, \sigma) = \dfrac{1}{\sigma y\sqrt{2\pi}}\exp\left(-\dfrac{(\ln y - \mu)^2}{2\sigma^2}\right)
+
+    where, :math:`y` is a transformed value of :math:`x`, defined as:
+
+    .. math::
+        y = x - \text{loc}
+
+    The final PDF is expressed as :math:`f(y)`.
+    """
+    y = x - loc
+
+    exponent_factor = (np.log(y) - mean)**2 / (2 * std**2)
 
     if normalize:
-        normalization_factor = standard_deviation * x * np.sqrt(2 * np.pi)
+        normalization_factor = std * y * np.sqrt(2 * np.pi)
         amplitude = 1
     else:
         normalization_factor = 1
 
-    return amplitude * np.exp(-exponent_factor) / normalization_factor
+    pdf_ = amplitude * np.exp(-exponent_factor) / normalization_factor
+
+    return np.nan_to_num(pdf_, False, 0, posinf=np.inf, neginf=-np.inf)
+
+
+@doc_inherit(parent=log_normal_pdf_, style=doc_style)
+def log_normal_cdf_(x: np.array,
+                    amplitude: float = 1.0, mean: float = 0.0, std=1.0,
+                    loc: float = 0.0, normalize: bool = False) -> np.array:
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: bool, optional
+        For API consistency only
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The LogNormal CDF is defined as:
+
+    .. math::
+        F(x) = \Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)
+    """
+    y = x - loc
+    num_ = np.log(y) - mean
+    den_ = std * np.sqrt(2)
+    pdf_ = 0.5 * (1 + erf(num_ / den_))
+    return np.nan_to_num(pdf_, False, 0, np.inf, -np.inf)
 
 
 def norris2005(x: np.array,
@@ -944,47 +982,75 @@ def power_law_(x: np.array, amplitude: float = 1, alpha: float = -1, normalize: 
     return amplitude * x**-alpha
 
 
-def uniform_(x: np.array,
-             amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
-             normalize: bool = False) -> np.array:
-    # """
-    # Compute the Uniform distribution probability density function (PDF).
-    #
-    # The Uniform PDF is given by:
-    # f(x) = amplitude / (high - low) for x ∈ [low, high]
-    #        0 otherwise
-    #
-    # Parameters
-    # ----------
-    # x : np.array
-    #     The input values at which to evaluate the Uniform PDF.
-    # low : float
-    #     The lower bound of the Uniform distribution. Defaults to 0.
-    # high : float
-    #     The upper bound of the Uniform distribution. Defaults to 1.
-    # amplitude : float
-    #     The amplitude of the Uniform distribution. Defaults to 1.
-    # normalize : bool
-    #     If True, the function returns the normalized PDF (amplitude = 1 / (high - low)).
-    #     Defaults to False.
-    #
-    # Returns
-    # -------
-    # np.array
-    #     The probability density function values for the input values.
-    #
-    # Notes
-    # -----
-    # - The input `x` should be a NumPy array. If `x` is a scalar, it will be treated as a single-element array.
-    # - If `normalize=True`, the amplitude is overridden to ensure the PDF integrates to 1.
-    # """
-    if low >= high:
-        raise ValueError("`low` must be less than `high`.")
+def uniform_pdf_(x: np.array,
+                 amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
+                 normalize: bool = False) -> np.array:
+    r"""
+    Compute PDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
+
+    Parameters
+    ----------
+    x : np.array
+        Input array of values where the PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    low : float, optional
+        The lower bound, :math:`a`. Defaults to 0.0.
+    high : float, optional
+        The upper bound, :math:`b`. Defaults to 1.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Uniform PDF is defined as:
+
+    .. math:: f(x\ |\ a, b) = \dfrac{1}{b-a}
+
+    """
+    high = high + low
 
     if normalize:
         amplitude = 1.0
 
-    # Compute the PDF values
     pdf_values = np.where((x >= low) & (x <= high), amplitude / (high - low), 0.0)
 
     return pdf_values
+
+
+@doc_inherit(parent=uniform_pdf_, style=doc_style)
+def uniform_cdf_(x: np.array,
+                 amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
+                 normalize: bool = False) -> np.array:
+    r"""
+    Compute CDF of :class:`pymultifit.distributions.uniform_d.UniformDistribution`.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: bool, optional
+        For API consistency only.
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Uniform CDF is defined as:
+
+    .. math:: F(x) = \begin{cases}
+                        0 &, x < a\\
+                        \dfrac{x-a}{b-a} &, x \in [a, b]\\
+                        1 &, x > b
+                        \end{cases}
+    """

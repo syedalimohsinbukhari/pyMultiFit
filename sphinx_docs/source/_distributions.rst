@@ -53,10 +53,10 @@ Derived Distributions
    * - :class:`LaplaceDistribution <pymultifit.distributions.laplace_d.LaplaceDistribution>`
      - Laplace distribution.
      - :math:`\dfrac{1}{2b}\exp\left[-\dfrac{|x-\mu|}{b}\right]`
-   * - :class:`LogNormalDistribution <pymultifit.distributions.logNorm_.LogNormalDistribution>`
+   * - :class:`LogNormalDistribution <pymultifit.distributions.logNormal_d.LogNormalDistribution>`
      - Log-Normal distribution.
      - :math:`\dfrac{1}{x\sigma\sqrt{2\pi}}\exp\left[-\dfrac{(\ln x-\mu)^2}{2\sigma^2}\right]`
-   * - :class:`SkewNormalDistribution <pymultifit.distributions.skewNorm_d.SkewNormalDistribution>`
+   * - :class:`SkewNormalDistribution <pymultifit.distributions.skewNormal_d.SkewNormalDistribution>`
      - Skew-Normal distribution.
      - :math:`\dfrac{2}{\sigma}\phi\left[\dfrac{x-\mu}{\sigma}\right]\Phi\left[\alpha\left(\dfrac{x-\mu}{\sigma}\right)\right]`
    * - :class:`UniformDistribution <pymultifit.distributions.uniform_d.UniformDistribution>`
@@ -73,6 +73,7 @@ Derived Distributions
    ExponentialDistribution  <distributions/exponential_d>
    FoldedNormalDistribution <distributions/foldedNormal_d>
    GammaDistributionSR      <distributions/gamma_sr_d>
+   GammaDistributionSS      <distributions/gamma_ss_d>
    GammaDistributionSS      <distributions/gamma_ss_d>
    GaussianDistribution     <distributions/gaussian_d>
    HalfNormalDistribution   <distributions/halfNormal_d>

@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import uniform_
+from .utilities import uniform_pdf_
 
 
 class UniformDistribution(BaseDistribution):
@@ -14,8 +14,6 @@ class UniformDistribution(BaseDistribution):
     def __init__(self, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif high < low:
-            raise erH.InvalidUniformParameters()
         self.amplitude = 1 if normalize else amplitude
         self.low = low
         self.high = high
@@ -23,9 +21,10 @@ class UniformDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        return uniform_pdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
+        self.high = self.high + self.low
         cdf_values = np.zeros_like(x, dtype=float)
         within_bounds = (x >= self.low) & (x <= self.high)
         cdf_values[within_bounds] = (x[within_bounds] - self.low) / (self.high - self.low)  # Compute CDF for bounds

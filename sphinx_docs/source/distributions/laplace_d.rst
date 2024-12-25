@@ -8,15 +8,8 @@ The parent module for this distribution is: :mod:`pymultifit.distributions.lapla
 
 This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
 
-* :mod:`~pymultifit.distributions.utilities.laplace_pdf_`
-* :mod:`~pymultifit.distributions.utilities.laplace_cdf_`
-
-Full Import
------------
-
-.. code-block:: python
-
-   from pymultifit.distributions.laplace_d import LaplaceDistribution
+* :func:`~pymultifit.distributions.utilities.laplace_pdf_`
+* :func:`~pymultifit.distributions.utilities.laplace_cdf_`
 
 Recommended Import
 ------------------
@@ -24,3 +17,10 @@ Recommended Import
 .. code-block:: python
 
    from pymultifit.distributions import LaplaceDistribution
+
+Full Import
+-----------
+
+.. code-block:: python
+
+   from pymultifit.distributions.laplace_d import LaplaceDistribution

@@ -9,3 +9,7 @@ pre, code {
     white-space: pre-wrap;  /* Wrap long lines */
     word-wrap: break-word;  /* Break long words */
 }
+
+.centered-table td, .centered-table th {
+    text-align: center;
+}

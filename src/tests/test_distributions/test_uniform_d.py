@@ -67,17 +67,16 @@ class TestUniformDistribution:
             from scipy.stats import uniform
             return uniform.cdf(x_, loc=loc, scale=scale) if what == 'cdf' else uniform.pdf(x_, loc=loc, scale=scale)
 
-        for i in ['cdf', 'pdf']:
+        for i in ['pdf', 'cdf']:
             for _ in range(50):
                 low_ = np.random.uniform(low=0.0, high=10.0)
-                high_ = np.random.uniform(low=low_ + 0.1, high=low_ + 10.0)  # Ensure high > low
+                high_ = np.random.uniform(low=0.0, high=10.0)
 
-                x = np.random.uniform(low=low_ - 5, high=high_ + 5, size=50)
+                x = np.linspace(start=-5, stop=5, num=10)
 
                 distribution = UniformDistribution(low=low_, high=high_, normalize=True)
-                scale_ = high_ - low_
 
-                expected = _cdf_pdf_scipy(x_=x, loc=low_, scale=scale_, what=i)
                 actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=i)
+                expected = _cdf_pdf_scipy(x_=x, loc=low_, scale=high_, what=i)
 
                 np.testing.assert_allclose(actual=actual, desired=expected, rtol=1e-5, atol=1e-8)

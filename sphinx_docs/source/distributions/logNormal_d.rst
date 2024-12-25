@@ -11,16 +11,16 @@ This class internally utilizes the following functions from the :mod:`~pymultifi
 * :mod:`~pymultifit.distributions.utilities.log_normal_pdf_`
 * :mod:`~pymultifit.distributions.utilities.log_normal_cdf_`
 
-Full Import
------------
-
-.. code-block:: python
-
-   from pymultifit.distributions.logNormal_d import LogNormalDistribution
-
 Recommended Import
 ------------------
 
 .. code-block:: python
 
    from pymultifit.distributions import LogNormalDistribution
+
+Full Import
+-----------
+
+.. code-block:: python
+
+   from pymultifit.distributions.logNormal_d import LogNormalDistribution

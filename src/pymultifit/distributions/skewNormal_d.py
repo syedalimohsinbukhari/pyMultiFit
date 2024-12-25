@@ -51,7 +51,7 @@ class SkewNormalDistribution(BaseDistribution):
 #     Compute the Skew-Normal distribution probability density function (PDF).
 #
 #     The Skew-Normal PDF is given by:
-#     f(x) = (2 / sigma * sqrt(2 * pi)) * phi((x - mu) / sigma) * Phi(alpha * (x - mu) / sigma)
+#     f(x) = (2 / std * sqrt(2 * pi)) * phi((x - mu) / std) * Phi(alpha * (x - mu) / std)
 #     where:
 #     - phi is the standard normal PDF.
 #     - Phi is the standard normal cumulative distribution function (CDF).

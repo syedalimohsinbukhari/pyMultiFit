@@ -2,7 +2,7 @@
 
 from .backend import BaseFitter
 from .utilities import sanity_check
-from ..distributions.utilities import log_normal_
+from ..distributions.utilities import log_normal_pdf_
 
 
 # TODO:
@@ -22,4 +22,4 @@ class LogNormalFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return log_normal_(x, *params, normalize=False)
+        return log_normal_pdf_(x, normalize=False)

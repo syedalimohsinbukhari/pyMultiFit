@@ -3,42 +3,53 @@
 from typing import Dict
 
 import numpy as np
-from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import log_normal_
+from .utilities import log_normal_cdf_, log_normal_pdf_
 
 
 class LogNormalDistribution(BaseDistribution):
-    """Class for LogNormal distribution."""
+    r"""
+    Class for LogNormal distribution.
 
-    def __init__(self, amplitude: float = 1., mean: float = 0., standard_deviation: float = 1., normalize: bool = False):
+    .. note::
+        .. list-table::
+           :header-rows: 1
+           :class: centered-table
+
+           * - :obj:`scipy.stats.lognorm`
+             - :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`
+           * - **shape**
+             - **std**
+           * - **loc**
+             - **loc**
+           * - **scale**
+             - **mean**
+    """
+
+    def __init__(self, amplitude: float = 1., mean: float = 0.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif standard_deviation <= 0:
+        elif std <= 0:
             raise erH.NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
-        self.mean = mean
-        self.std_ = standard_deviation
+        self.mean = np.log(mean)
+        self.std = std
+        self.loc = loc
 
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return log_normal_(x, amplitude=self.amplitude, mean=self.mean, standard_deviation=self.std_, normalize=self.norm)
+        return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mean, std=self.std, loc=self.loc, normalize=self.norm)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
-
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        num_ = np.log(x) - self.mean
-        den_ = self.std_ * np.sqrt(2)
-        return 0.5 * (1 + erf(num_ / den_))
+    def _cdf(self, x: np.array) -> np.array:
+        return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mean, std=self.std, loc=self.loc, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
-        mean_ = np.exp(self.mean + (self.std_**2 / 2))
+        mean_ = np.exp(self.mean + (self.std**2 / 2))
         median_ = np.exp(self.mean)
-        mode_ = np.exp(self.mean - self.std_**2)
-        variance_ = (np.exp(self.std_**2) - 1) * np.exp(2 * self.mean + self.std_**2)
+        mode_ = np.exp(self.mean - self.std**2)
+        variance_ = (np.exp(self.std**2) - 1) * np.exp(2 * self.mean + self.std**2)
 
         return {'mean': mean_,
                 'median': median_,

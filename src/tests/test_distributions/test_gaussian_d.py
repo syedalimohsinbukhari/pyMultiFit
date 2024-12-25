@@ -97,7 +97,7 @@ class TestGaussianDistribution:
 
             # SciPy Gaussian distribution for comparison
             scipy_pdf = norm(loc=mean_, scale=std_).pdf(x_)
-            # scipy_logpdf = norm(loc=mean_, scale=std_).logpdf(x_)
+            # scipy_logpdf = norm(loc=mean_, scale=std).logpdf(x_)
             scipy_cdf = norm(loc=mean_, scale=std_).cdf(x_)
 
             # Assert PDF, logPDF, and CDF are close to SciPy's implementation

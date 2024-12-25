@@ -11,16 +11,16 @@ This class internally utilizes the following functions from the :mod:`~pymultifi
 * :mod:`~pymultifit.distributions.utilities.uniform_pdf_`
 * :mod:`~pymultifit.distributions.utilities.uniform_cdf_`
 
-Full Import
------------
-
-.. code-block:: python
-
-   from pymultifit.distributions.uniform_d import UniformDistribution
-
 Recommended Import
 ------------------
 
 .. code-block:: python
 
    from pymultifit.distributions import UniformDistribution
+
+Full Import
+-----------
+
+.. code-block:: python
+
+   from pymultifit.distributions.uniform_d import UniformDistribution

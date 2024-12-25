@@ -18,11 +18,11 @@ Key Features
 1. **Traditional Multi-Fitters**
    Built-in support for common fitting models such as:
 
-   - ``GaussianFitter``
-   - ``LaplaceFitter``
+   - :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
+   - :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`
 
 2. **User-Defined Fitters**
-   A ``BaseFitter`` class serves as an anchor for users to create custom fitters with minimal boilerplate code.
+   A :class:`~pymultifit.fitters.backend.baseFitter` class serves as an anchor for users to create custom fitters with minimal boilerplate code.
 
 3. **N-Modal Data Generation**
    Generate synthetic datasets with **N Gaussian components** or other statistical distributions, perfect for:
