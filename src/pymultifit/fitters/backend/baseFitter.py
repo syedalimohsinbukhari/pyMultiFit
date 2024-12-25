@@ -15,7 +15,7 @@ from ..utilities import parameter_logic
 # safe keeping class names for spelling mistakes
 _gaussian = 'GaussianFitter'
 _lNormal = 'LogNormalFitter'
-_skNormal = 'SkewedNormalFitter'
+_skNormal = 'SkewNormalFitter'
 _laplace = 'Laplace Fitter'
 
 

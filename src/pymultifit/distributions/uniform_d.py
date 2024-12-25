@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import uniform_pdf_
+from .utilities import uniform_cdf_, uniform_pdf_
 
 
 class UniformDistribution(BaseDistribution):
@@ -23,18 +23,20 @@ class UniformDistribution(BaseDistribution):
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return uniform_pdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        self.high = self.high + self.low
-        cdf_values = np.zeros_like(x, dtype=float)
-        within_bounds = (x >= self.low) & (x <= self.high)
-        cdf_values[within_bounds] = (x[within_bounds] - self.low) / (self.high - self.low)  # Compute CDF for bounds
-        cdf_values[x > self.high] = 1
-        return cdf_values
+    def _cdf(self, x: np.array) -> np.array:
+        return uniform_cdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
-        mean_ = 0.5 * (self.low + self.high)
+        low, high = self.low, self.low + self.high
+
+        if low == high:
+            return {'mean': np.nan,
+                    'median': np.nan,
+                    'variance': np.nan}
+
+        mean_ = 0.5 * (low + high)
         median_ = mean_
-        variance_ = (1 / 12.) * (self.high - self.low)**2
+        variance_ = (1 / 12.) * (high - low)**2
 
         return {'mean': mean_,
                 'median': median_,

@@ -186,7 +186,7 @@ def multi_skewed_normal(x: np.ndarray, params: listOfTuplesOrArray,
     """
     y = np.zeros_like(x, dtype=float)
     for amp, shape, location, scale in params:
-        y += dist.SkewNormalDistribution(shape=shape, location=location, scale=scale).pdf(x)
+        y += dist.SkewNormalDistribution(amplitude=amp, shape=shape, location=location, scale=scale, normalize=False).pdf(x)
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
     return y

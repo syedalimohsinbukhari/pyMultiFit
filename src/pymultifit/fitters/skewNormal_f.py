@@ -6,7 +6,7 @@ from .backend import BaseFitter
 from .utilities import sanity_check
 
 
-class SkewedNormalFitter(BaseFitter):
+class SkewNormalFitter(BaseFitter):
     """A class for fitting multiple Skewed Normal functions to the given data."""
 
     def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
@@ -16,4 +16,4 @@ class SkewedNormalFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return params[0] * skewnorm.pdf(x, params[1], loc=params[2], scale=params[3])
+        return params[0] * skewnorm.pdf(x, params[1], loc=params[2], scale=params[3]) * (2 / params[1])

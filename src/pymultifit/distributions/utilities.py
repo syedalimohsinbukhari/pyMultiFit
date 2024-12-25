@@ -6,7 +6,7 @@ __all__ = ['arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_logpdf_',
            'exponential_pdf_',
            'folded_normal_pdf_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_',
-           'gamma_ss_',
+           'gamma_ss_pdf_',
            'gaussian_pdf_', 'gaussian_cdf_',
            'half_normal_',
            'integral_check',
@@ -515,24 +515,19 @@ def gamma_sr_cdf_(x: np.array,
 
     Notes
     -----
-        The Gamma CDF is defined as:
+    The Gamma CDF is defined as:
 
-        .. math::
-            F(y; \alpha, \lambda) = \dfrac{1}{\Gamma(\alpha)}\gamma(\alpha, \lambda y)
+    .. math::
+        F(y; \alpha, \lambda) = \dfrac{1}{\Gamma(\alpha)}\gamma(\alpha, \lambda y)
 
-        where, :math:`y` is a transformed value of :math:`x`, defined as:
-
-        .. math:: y = \frac{x - \text{loc}}{\text{scale}}
-
-        and, :math:`\gamma(\alpha, \lambda y)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
-
+    where, :math:`\gamma(\alpha, \lambda y)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
     """
     return np.nan_to_num(x=gammainc(shape, rate * x), copy=False, nan=0)
 
 
-def gamma_ss_(x: np.array,
-              amplitude: float = 1., shape: float = 1., scale: float = 1.,
-              normalize: bool = False) -> np.array:
+def gamma_ss_pdf_(x: np.array,
+                  amplitude: float = 1., alpha: float = 1., theta: float = 1.,
+                  normalize: bool = False) -> np.array:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape) and :math:`\theta` (scale) parameters.
 
@@ -542,9 +537,9 @@ def gamma_ss_(x: np.array,
         The input values at which to evaluate the Gamma distribution.
     amplitude : float, optional
         The amplitude of the distribution. Defaults to 1. Ignored if `normalize` is set to True.
-    shape : float, optional
+    alpha : float, optional
         The shape parameter (`k`) of the Gamma distribution. Defaults to 1.
-    scale : float, optional
+    theta : float, optional
         The scale parameter (`\theta`) of the Gamma distribution. Defaults to 1. The rate parameter is computed as `1 / scale`.
     normalize : bool, optional
         If True, the distribution will be normalized so that the PDF is at most 1. Defaults to False.
@@ -552,7 +547,7 @@ def gamma_ss_(x: np.array,
     Returns
     -------
     np.array
-        The computed Gamma distribution values for the input `x`.
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----
@@ -569,7 +564,32 @@ def gamma_ss_(x: np.array,
     .. math::
         \beta = \frac{1}{\theta}.
     """
-    return gamma_sr_pdf_(x, amplitude=amplitude, shape=shape, rate=1 / scale, normalize=normalize)
+    return gamma_sr_pdf_(x, amplitude=amplitude, shape=alpha, rate=1 / theta, normalize=normalize)
+
+
+@doc_inherit(parent=gamma_ss_pdf_, style=doc_style)
+def gamma_ss_cdf_(x: np.array,
+                  amplitude: float = 1., alpha: float = 1.0, theta: float = 1.0,
+                  normalize: bool = False) -> np.array:
+    r"""
+    Compute CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape) and :math:`\theta` (scale) parmaeters.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The Gamma CDF is defined as:
+
+    .. math:: F(y) = \dfrac{1}{\Gamma(\alpha)}\gamma\left(\alpha, \dfrac{y}{\theta}\right)
+
+    where, :math:`\gamma(\alpha, \lambda y)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
+
+    """
 
 
 def gaussian_pdf_(x: np.array,
@@ -1015,14 +1035,17 @@ def uniform_pdf_(x: np.array,
     .. math:: f(x\ |\ a, b) = \dfrac{1}{b-a}
 
     """
-    high = high + low
+    high_ = high + low
+    pdf_values = np.zeros_like(a=x, dtype=float)
 
-    if normalize:
-        amplitude = 1.0
+    if high_ == low:
+        return np.full(x.size, np.nan)
 
-    pdf_values = np.where((x >= low) & (x <= high), amplitude / (high - low), 0.0)
+    amplitude = 1.0 if normalize else amplitude
+    mask_ = np.logical_and(x >= low, x <= high_)
+    pdf_values[mask_] = amplitude / (high_ - low)
 
-    return pdf_values
+    return np.nan_to_num(x=pdf_values, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
 
 
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
@@ -1054,3 +1077,14 @@ def uniform_cdf_(x: np.array,
                         1 &, x > b
                         \end{cases}
     """
+    high = high + low
+
+    if low == high == 0:
+        return np.full(shape=x.size, fill_value=np.nan)
+
+    cdf_values = np.zeros_like(a=x, dtype=float)
+    within_bounds = (x >= low) & (x <= high)
+    cdf_values[within_bounds] = (x[within_bounds] - low) / (high - low)
+    cdf_values[x > high] = 1
+
+    return cdf_values
