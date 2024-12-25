@@ -13,10 +13,10 @@ class TestFoldedNormalDistribution:
 
     @staticmethod
     def test_initialization():
-        dist = FoldedNormalDistribution(amplitude=2.0, mean=1.0, variance=0.5, normalize=False)
+        dist = FoldedNormalDistribution(amplitude=2.0, mean=1.0, sigma=0.5, normalize=False)
         assert dist.amplitude == 2.0
         assert dist.mean == 1.0
-        assert dist.var_ == 0.5
+        assert dist.sigma == 0.5
         assert not dist.norm
 
         dist_normalized = FoldedNormalDistribution(amplitude=2.0, normalize=True)
@@ -32,7 +32,7 @@ class TestFoldedNormalDistribution:
         assert distribution.amplitude == 1.0
 
         with pytest.raises(erH.NegativeStandardDeviationError, match=f"Standard deviation {erH.neg_message}"):
-            FoldedNormalDistribution(variance=-3.0)
+            FoldedNormalDistribution(sigma=-3.0)
 
     @staticmethod
     def test_edge_case():

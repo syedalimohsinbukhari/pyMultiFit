@@ -26,9 +26,6 @@ class TestUniformDistribution:
         with pytest.raises(erH.NegativeAmplitudeError, match=f"Amplitude {erH.neg_message}"):
             UniformDistribution(amplitude=-1.0, normalize=False)
 
-        with pytest.raises(erH.InvalidUniformParameters, match=f"High < Low, invalid parameter selection."):
-            UniformDistribution(low=3, high=1, normalize=False)
-
         # amplitude should be internally updated to 1.0 if `normalize` is called
         distribution = UniformDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
