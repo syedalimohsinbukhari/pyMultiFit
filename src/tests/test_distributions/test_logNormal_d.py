@@ -15,7 +15,7 @@ class TestLogNormalDistribution:
     def test_initialization():
         dist = LogNormalDistribution(amplitude=2.0, mean=1.0, std=0.5, normalize=False)
         assert dist.amplitude == 2.0
-        assert dist.mean == 1.0
+        assert dist.mean == np.log(1.0)
         assert dist.std == 0.5
         assert not dist.norm
 
