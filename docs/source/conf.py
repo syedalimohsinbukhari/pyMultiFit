@@ -114,7 +114,7 @@ html_context = {
     ],
     # Custom variables to enable "Improve this page"" and "Download notebook"
     # links
-    "doc_path": "sphinx_docs/source",
+    "doc_path": "docs/source",
     # "galleries": sphinx_gallery_conf["gallery_dirs"],
     # "gallery_dir": dict(
     #     zip(sphinx_gallery_conf["gallery_dirs"], sphinx_gallery_conf["examples_dirs"])
