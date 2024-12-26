@@ -13,7 +13,7 @@ x = np.linspace(-30, 15, 10_000)
 noise_level = 0.1
 y = multi_skew_normal(x, params=params, noise_level=noise_level)
 
-fitter = SkewNormalFitter(n_fits=3, x_values=x, y_values=y)
+fitter = SkewNormalFitter(x_values=x, y_values=y)
 
 guess = [(2, 1, -6, 0.5), (3, -2, -2, 5), (4, 1, 7, 1.5)]
 

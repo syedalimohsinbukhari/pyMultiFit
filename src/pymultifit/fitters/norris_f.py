@@ -8,9 +8,9 @@ from ..distributions.utilities import norris2005, norris2011
 class Norris2005Fitter(BaseFitter):
     """A class for fitting multiple Norris 2005 models to the given data."""
 
-    def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
+    def __init__(self, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        super().__init__(n_fits=n_fits, x_values=x_values, y_values=y_values, max_iterations=max_iterations)
+        super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
 
     @staticmethod
@@ -21,9 +21,9 @@ class Norris2005Fitter(BaseFitter):
 class Norris2011Fitter(BaseFitter):
     """A class for fitting multiple Norris 2011 models to the given data."""
 
-    def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
+    def __init__(self, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        super().__init__(n_fits=n_fits, x_values=x_values, y_values=y_values, max_iterations=max_iterations)
+        super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
 
     @staticmethod

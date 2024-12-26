@@ -12,7 +12,7 @@ Base Class
      - Description
    * - :class:`BaseFitter <pymultifit.fitters.backend.baseFitter.BaseFitter>`
      - The base class for multi-fitting functionality.
-   * - :class:`MixedFitter <pymultifit.fitters.mixed_f.MixedFitter>`
+   * - :class:`MixedFitter <pymultifit.fitters.mixed_f.MixedDataFitter>`
      - Mixed model fitting class.
 
 Derived Fitters
@@ -40,3 +40,20 @@ Derived Fitters
      - Log-Normal fitter.
    * - :class:`SkewNormalFitter <pymultifit.fitters.skewNormal_f.SkewNormalFitter>`
      - Skew-Normal fitter.
+
+.. toctree::
+   :hidden:
+
+   ArcSineFitter      <fitters/arcSine_f>
+   BetaFitter         <fitters/beta_f>
+   ChiSquareFitter    <fitters/chiSquare_f>
+   ExponentialFitter  <fitters/exponential_f>
+   FoldedNormalFitter <fitters/foldedNormal_f>
+   GammaFitterSR      <fitters/gamma_sr_f>
+   GammaFitterSS      <fitters/gamma_ss_f>
+   GaussianFitter     <fitters/gaussian_f>
+   HalfNormalFitter   <fitters/halfNormal_f>
+   LaplaceFitter      <fitters/laplace_f>
+   LogNormalFitter    <fitters/logNormal_f>
+   SkewNormalFitter   <fitters/skewNormal_f>
+   UniformFitter      <fitters/uniform_f>

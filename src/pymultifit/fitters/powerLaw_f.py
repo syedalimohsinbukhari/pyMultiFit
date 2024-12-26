@@ -8,9 +8,9 @@ from ..distributions.utilities import power_law_
 class PowerLawFitter(BaseFitter):
     """A class for fitting multiple PowerLaw functions to the given data."""
 
-    def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
+    def __init__(self, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        super().__init__(n_fits=n_fits, x_values=x_values, y_values=y_values, max_iterations=max_iterations)
+        super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 2
 
     @staticmethod
