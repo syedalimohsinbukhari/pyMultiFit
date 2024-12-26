@@ -12,62 +12,6 @@ Subpackages
 Submodules
 ----------
 
-pymultifit.fitters.chiSquare\_f module
---------------------------------------
-
-.. automodule:: pymultifit.fitters.chiSquare_f
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pymultifit.fitters.exponential\_f module
-----------------------------------------
-
-.. automodule:: pymultifit.fitters.exponential_f
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pymultifit.fitters.foldedNormal\_f module
------------------------------------------
-
-.. automodule:: pymultifit.fitters.foldedNormal_f
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pymultifit.fitters.gaussian\_f module
--------------------------------------
-
-.. automodule:: pymultifit.fitters.gaussian_f
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pymultifit.fitters.halfNormal\_f module
----------------------------------------
-
-.. automodule:: pymultifit.fitters.halfNormal_f
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pymultifit.fitters.laplace\_f module
-------------------------------------
-
-.. automodule:: pymultifit.fitters.laplace_f
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pymultifit.fitters.logNorm\_f module
-------------------------------------
-
-.. automodule:: pymultifit.fitters.logNormal_f
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pymultifit.fitters.mixed\_f module
 ----------------------------------
 
@@ -103,7 +47,7 @@ pymultifit.fitters.skewNorm\_f module
 pymultifit.fitters.utilities module
 -----------------------------------
 
-.. automodule:: pymultifit.fitters.utilities
+.. automodule:: pymultifit.fitters.utilities_f
    :members:
    :undoc-members:
    :show-inheritance:

@@ -39,7 +39,7 @@ pymultifit.distributions.powerLaw\_d module
 pymultifit.distributions.utilities module
 -----------------------------------------
 
-.. automodule:: pymultifit.distributions.utilities
+.. automodule:: pymultifit.distributions.utilities_d
    :members:
    :undoc-members:
    :show-inheritance:

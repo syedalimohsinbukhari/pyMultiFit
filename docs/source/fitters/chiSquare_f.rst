@@ -1,30 +1,23 @@
-ChiSquare Distribution
-======================
+ChiSquare Fitter
+================
 
-.. autoclass:: pymultifit.distributions.chiSquare_d.ChiSquareDistribution
+.. autoclass:: pymultifit.fitters.chiSquare_f.ChiSquareFitter
    :show-inheritance:
 
-.. note::
-    The :class:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR`,
+This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities_f` module:
 
-    * :math:`\alpha_\text{gammaSR} = \text{dof} / 2`,
-    * :math:`\lambda_\text{gammaSR} = 0.5`.
-
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
-
-* :func:`~pymultifit.distributions.utilities.gamma_sr_pdf_`
-* :func:`~pymultifit.distributions.utilities.gamma_sr_cdf_`
+* :func:`~pymultifit.distributions.utilities_d.chi_square_pdf_`
 
 Recommended Import
 ^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
-   from pymultifit.distributions import ChiSquareDistribution
+   from pymultifit.fitters import ChiSquareFitter
 
 Full Import
 ^^^^^^^^^^^
 
 .. code-block:: python
 
-   from pymultifit.distributions.chiSquare_d import ChiSquareDistribution
+   from pymultifit.fitters.chiSquare_f import ChiSquareFitter

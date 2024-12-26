@@ -44,8 +44,6 @@ Derived Fitters
 .. toctree::
    :hidden:
 
-   ArcSineFitter      <fitters/arcSine_f>
-   BetaFitter         <fitters/beta_f>
    ChiSquareFitter    <fitters/chiSquare_f>
    ExponentialFitter  <fitters/exponential_f>
    FoldedNormalFitter <fitters/foldedNormal_f>
@@ -56,4 +54,3 @@ Derived Fitters
    LaplaceFitter      <fitters/laplace_f>
    LogNormalFitter    <fitters/logNormal_f>
    SkewNormalFitter   <fitters/skewNormal_f>
-   UniformFitter      <fitters/uniform_f>
