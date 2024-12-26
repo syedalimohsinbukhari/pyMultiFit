@@ -1,8 +1,8 @@
 """Created on Dec 04 23:24:55 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import folded_normal_pdf_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import folded_normal_pdf_
 
 
 class FoldedNormalFitter(BaseFitter):

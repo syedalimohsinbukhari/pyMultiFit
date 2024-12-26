@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import gamma_sr_cdf_, gamma_sr_pdf_
+from .utilities_d import gamma_sr_cdf_, gamma_sr_pdf_
 
 
 class GammaDistributionSR(BaseDistribution):

@@ -1,8 +1,8 @@
 """Created on Jul 20 16:59:14 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import laplace_pdf_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import laplace_pdf_
 
 
 class LaplaceFitter(BaseFitter):

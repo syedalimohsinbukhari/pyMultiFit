@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import uniform_cdf_, uniform_pdf_
+from .utilities_d import uniform_cdf_, uniform_pdf_
 
 
 class UniformDistribution(BaseDistribution):

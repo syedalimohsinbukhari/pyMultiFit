@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import log_normal_cdf_, log_normal_pdf_
+from .utilities_d import log_normal_cdf_, log_normal_pdf_
 
 
 class LogNormalDistribution(BaseDistribution):

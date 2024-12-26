@@ -1,8 +1,8 @@
 """Created on Jul 18 19:01:45 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import log_normal_pdf_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import log_normal_pdf_
 
 
 # TODO:

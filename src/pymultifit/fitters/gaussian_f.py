@@ -1,8 +1,8 @@
 """Created on Jul 18 00:25:57 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import gaussian_pdf_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import gaussian_pdf_
 
 
 class GaussianFitter(BaseFitter):

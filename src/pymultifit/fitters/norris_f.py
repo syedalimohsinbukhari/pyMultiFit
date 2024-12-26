@@ -1,8 +1,8 @@
 """Created on Nov 30 05:33:38 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import norris2005, norris2011
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import norris2005, norris2011
 
 
 class Norris2005Fitter(BaseFitter):

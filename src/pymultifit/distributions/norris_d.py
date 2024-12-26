@@ -5,7 +5,7 @@ from typing import Any, Dict
 import numpy as np
 
 from .backend import BaseDistribution
-from .utilities import norris2011
+from .utilities_d import norris2011
 
 
 class Norris2011Distribution(BaseDistribution):

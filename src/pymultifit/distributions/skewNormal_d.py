@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution
-from .utilities import skew_normal_cdf_, skew_normal_pdf_
+from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
 
 
 class SkewNormalDistribution(BaseDistribution):

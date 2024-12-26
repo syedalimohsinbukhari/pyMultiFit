@@ -1,8 +1,8 @@
 """Created on Dec 04 03:21:09 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import chi_square_pdf_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import chi_square_pdf_
 
 
 class ChiSquareFitter(BaseFitter):

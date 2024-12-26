@@ -5,7 +5,7 @@ from typing import Any, Dict
 import numpy as np
 
 from .backend import BaseDistribution
-from .utilities import power_law_
+from .utilities_d import power_law_
 
 
 class PowerLawDistribution(BaseDistribution):

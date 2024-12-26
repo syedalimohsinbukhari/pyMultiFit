@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import folded_normal_cdf_, folded_normal_pdf_
+from .utilities_d import folded_normal_cdf_, folded_normal_pdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):

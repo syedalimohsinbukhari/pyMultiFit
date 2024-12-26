@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import gaussian_cdf_, gaussian_pdf_
+from .utilities_d import gaussian_cdf_, gaussian_pdf_
 
 
 class GaussianDistribution(BaseDistribution):

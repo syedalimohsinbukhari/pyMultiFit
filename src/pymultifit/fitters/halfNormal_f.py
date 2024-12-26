@@ -1,8 +1,8 @@
 """Created on Dec 04 23:29:32 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import half_normal_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import half_normal_
 
 
 class HalfNormalFitter(BaseFitter):

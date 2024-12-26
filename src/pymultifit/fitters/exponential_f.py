@@ -1,8 +1,8 @@
 """Created on Nov 30 11:30:45 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import exponential_pdf_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import exponential_pdf_
 
 
 class ExponentialFitter(BaseFitter):

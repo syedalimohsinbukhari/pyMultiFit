@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import beta_cdf_, beta_logpdf_, beta_pdf_
+from .utilities_d import beta_cdf_, beta_logpdf_, beta_pdf_
 
 
 class BetaDistribution(BaseDistribution):

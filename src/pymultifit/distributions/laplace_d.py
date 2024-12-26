@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import laplace_cdf_, laplace_pdf_
+from .utilities_d import laplace_cdf_, laplace_pdf_
 
 
 class LaplaceDistribution(BaseDistribution):

@@ -1,8 +1,8 @@
 """Created on Nov 10 00:17:16 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import power_law_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import power_law_
 
 
 class PowerLawFitter(BaseFitter):

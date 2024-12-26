@@ -1,8 +1,8 @@
 """Created on Jul 18 13:54:03 2024"""
 
 from .backend import BaseFitter
-from .utilities import sanity_check
-from ..distributions.utilities import skew_normal_pdf_
+from .utilities_f import sanity_check
+from ..distributions.utilities_d import skew_normal_pdf_
 
 
 class SkewNormalFitter(BaseFitter):
