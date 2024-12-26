@@ -10,7 +10,8 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import Bounds, curve_fit
 
-from ..utilities_f import parameter_logic
+from ..utilities_f import DistributionBounds, parameter_logic
+from ... import LOG_NORMAL
 
 # safe keeping class names for spelling mistakes
 _gaussian = 'GaussianFitter'
@@ -26,7 +27,10 @@ class BaseFitter:
         self.x_values = x_values
         self.y_values = y_values
         self.max_iterations = max_iterations
+
         self.n_par = None
+        self.pn_par = None
+        self.sn_par = None
 
         self.n_fits = None
         self.params = None
@@ -85,7 +89,9 @@ class BaseFitter:
         """
         class_name = self.__class__.__name__
 
-        if class_name in [_gaussian, _lNormal, _laplace]:
+        if class_name == _lNormal:
+            return DistributionBounds(self.n_fits).get_bounds(LOG_NORMAL)
+        elif class_name in [_gaussian, _laplace]:
             return Bounds(lb=[0, -np.inf, 0] * self.n_fits,
                           ub=[np.inf, np.inf, np.inf] * self.n_fits)
         elif class_name == _skNormal:
@@ -93,6 +99,42 @@ class BaseFitter:
                           ub=[np.inf, np.inf, np.inf, np.inf] * self.n_fits)
         else:
             return Bounds()
+
+    def _adjust_parameters(self, p0):
+        """
+        Adjust input parameters to include defaults for secondary parameters if missing.
+
+        Parameters
+        ----------
+        p0: List[List[float]]
+            A list of initial guesses for the parameters.
+
+        Returns
+        -------
+        adjusted_p0: List[List[float]]
+            Adjusted parameter list with default values for missing secondary parameters.
+        """
+        adjusted_p0 = []
+        for params in p0:
+            # Too few parameters
+            if len(params) < self.pn_par:
+                raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
+
+            primary_params = params[:self.pn_par]
+            provided_secondary_params = params[self.pn_par:]
+
+            secondary_params = dict(self.sn_par)
+            for key, value in zip(self.sn_par.keys(), provided_secondary_params):
+                secondary_params[key] = value
+
+            adjusted_params = list(primary_params) + list(secondary_params.values())
+
+            if len(adjusted_params) != self.n_par:
+                raise ValueError(f"Adjusted parameter set must have {self.n_par} total parameters.")
+
+            adjusted_p0.append(adjusted_params)
+
+        return adjusted_p0
 
     def fit(self, p0):
         """
@@ -113,7 +155,8 @@ class BaseFitter:
         total_pars = self.n_par * self.n_fits
 
         if len_guess != total_pars:
-            raise ValueError(f"Initial guess length must be {total_pars}.")
+            p0 = self._adjust_parameters(p0)
+
         # flatten idea taken from https://stackoverflow.com/a/73000598/3212945
         self.params, self.covariance, *_ = curve_fit(f=self._n_fitter, xdata=self.x_values, ydata=self.y_values,
                                                      p0=np.array(p0).flatten(), maxfev=self.max_iterations, bounds=self._get_bounds())

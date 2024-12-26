@@ -1,8 +1,10 @@
 """Created on Aug 18 23:52:19 2024"""
-
 from typing import List, Tuple, Union
 
 import numpy as np
+from scipy.optimize import Bounds
+
+from .. import GAUSSIAN, LOG_NORMAL, SKEW_NORMAL
 
 # SAFEGUARD:
 xy_values = Union[List[float], np.ndarray]
@@ -59,3 +61,37 @@ def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexTyp
     """
     indices = np.array(selected_models) - 1 if selected_models is not None else slice(None)
     return par_array.reshape(-1, n_par)[indices]
+
+
+class DistributionBounds:
+    def __init__(self, n_fits):
+        self.n_fits = n_fits
+
+    def get_bounds(self, distribution_name):
+        """
+        Get the bounds for the given distribution type.
+
+        Parameters
+        ----------
+        distribution_name : str
+            Name of the distribution (e.g., "GAUSSIAN", "SKEW_NORMAL").
+
+        Returns
+        -------
+        Bounds
+            Lower and upper bounds for the parameters.
+        """
+        if distribution_name == GAUSSIAN:
+            lb = [0, -np.inf, 0]
+            ub = [np.inf, np.inf, np.inf]
+        elif distribution_name == SKEW_NORMAL:
+            lb = [-np.inf, -np.inf, -np.inf, 0]
+            ub = [np.inf, np.inf, np.inf, np.inf]
+        elif distribution_name == LOG_NORMAL:
+            lb = [0, -np.inf, 0, -np.inf]
+            ub = [np.inf, np.inf, np.inf, np.inf]
+        else:
+            raise ValueError(f"Bounds not defined for distribution '{distribution_name}'")
+
+        # Scale bounds for the number of fits
+        return Bounds(lb=lb * self.n_fits, ub=ub * self.n_fits)

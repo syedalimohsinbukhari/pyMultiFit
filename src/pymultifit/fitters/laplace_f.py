@@ -12,6 +12,8 @@ class LaplaceFitter(BaseFitter):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
+        self.pn_par = 3
+        self.sn_par = {'loc': 0, 'scale': 1}
 
     @staticmethod
     def _fitter(x, params):

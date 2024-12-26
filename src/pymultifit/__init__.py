@@ -15,7 +15,7 @@ SKEW_NORMAL = 'skew_normal'
 LAPLACE = 'laplace'
 GAMMA = 'gamma'
 BETA = 'beta'
-ARCSINE = 'arcSine'
+ARC_SINE = 'arcSine'
 POWERLAW = 'powerlaw'
 
 LINE = 'line'
