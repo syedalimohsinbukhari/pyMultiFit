@@ -13,7 +13,7 @@ x = np.linspace(-35, 35, 1500)
 noise_level = 0.2
 y = multi_gaussian(x, params=params, noise_level=noise_level)
 
-fitter = GaussianFitter(n_fits=5, x_values=x, y_values=y)
+fitter = GaussianFitter(x_values=x, y_values=y)
 
 guess = [(10, -18, 1), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
 

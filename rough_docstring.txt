@@ -1,0 +1,28 @@
+PFD generic docstring
+"""""""""""""""""""""
+
+    r"""
+    Compute PDF for the {DISTRIBUTION} Distribution.
+
+    Parameters
+    ----------
+    x : np.array
+        Input array of values where PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    loc : float, optional
+        The location parameter, :math:`-` shifting.
+        Defaults to 0.0.
+    scale: float, optional
+        The scale parameter, :math:`-` scaling.
+        Defaults to 1.0,
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    np.array
+        Array of the same shape as :math:`x`, containing the evaluated values.
+    """

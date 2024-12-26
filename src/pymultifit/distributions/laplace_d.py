@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import laplace_
+from .utilities import laplace_cdf_, laplace_pdf_
 
 
 class LaplaceDistribution(BaseDistribution):
@@ -23,26 +23,10 @@ class LaplaceDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return laplace_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        return laplace_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
-
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        def _cdf1(x_):
-            return 0.5 * np.exp((x_ - self.mu) / self.b)
-
-        def _cdf2(x_):
-            return 1 - 0.5 * np.exp(-(x_ - self.mu) / self.b)
-
-        # to ensure equality with scipy, had to break down the output with empty array so that sorting is not needed.
-        result = np.empty_like(x, dtype=np.float64)
-
-        mask_leq = x <= self.mu
-        result[mask_leq] = _cdf1(x[mask_leq])
-        result[~mask_leq] = _cdf2(x[~mask_leq])
-
-        return result
+    def _cdf(self, x: np.array) -> np.array:
+        return laplace_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
         mean_, b_ = self.mu, self.b

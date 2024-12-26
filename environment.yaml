@@ -15,6 +15,7 @@ dependencies:
     - memory_profiler
     - sphinx
     - sphinx-rtd-theme
+    - pydata-sphinx-theme
     - sphinx-copybutton
     - sphinxcontrib-napoleon
     - numpydoc

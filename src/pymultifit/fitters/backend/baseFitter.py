@@ -15,20 +15,20 @@ from ..utilities import parameter_logic
 # safe keeping class names for spelling mistakes
 _gaussian = 'GaussianFitter'
 _lNormal = 'LogNormalFitter'
-_skNormal = 'SkewedNormalFitter'
+_skNormal = 'SkewNormalFitter'
 _laplace = 'Laplace Fitter'
 
 
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    def __init__(self, n_fits: int, x_values, y_values, max_iterations: int = 1000):
-        self.n_fits = n_fits
+    def __init__(self, x_values, y_values, max_iterations: int = 1000):
         self.x_values = x_values
         self.y_values = y_values
         self.max_iterations = max_iterations
         self.n_par = None
 
+        self.n_fits = None
         self.params = None
         self.covariance = None
 
@@ -108,6 +108,7 @@ class BaseFitter:
         ValueError
             If the length of initial parameters does not match the expected count.
         """
+        self.n_fits = len(p0)
         len_guess = len(list(chain(*p0)))
         total_pars = self.n_par * self.n_fits
 

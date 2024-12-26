@@ -20,9 +20,6 @@ class Norris2011Distribution(BaseDistribution):
     def _pdf(self, x: np.ndarray) -> np.ndarray:
         return norris2011(x, amplitude=self.amplitude, tau=self.tau, xi=self.xi, normalize=self.norm)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
-
     def cdf(self, x: np.ndarray) -> np.ndarray:
         raise NotImplementedError("The Norris2011 function doesn't has CDF implemented yet.")
 

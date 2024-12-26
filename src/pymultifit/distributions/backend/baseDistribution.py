@@ -13,23 +13,39 @@ class BaseDistribution:
     for probability density function (PDF), cumulative distribution function (CDF), and statistics.
     """
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def _pdf(self, x: np.array) -> np.array:
         """
         Compute the probability density function (PDF) for the distribution.
 
         Parameters
         ----------
-        x : np.ndarray
+        x : np.array
             Input values at which to evaluate the PDF.
 
         Returns
         -------
-        np.ndarray
+        np.array
             The PDF values at the input values.
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def _cdf(self, x: np.array) -> np.array:
+        """
+        Compute the cumulative density function (CDF) for the distribution.
+
+        Parameters
+        ----------
+        x : np.array
+            Input values at which to evaluate the PDF.
+
+        Returns
+        -------
+        np.array
+            The CDF values at the input values.
+        """
+        raise NotImplementedError("Subclasses should implement this method.")
+
+    def pdf(self, x: np.array) -> np.array:
         """
         Compute the probability density function (PDF) for the distribution.
 
@@ -37,31 +53,35 @@ class BaseDistribution:
 
         Parameters
         ----------
-        x : np.ndarray
+        x : np.array
             Input values at which to evaluate the PDF.
 
         Returns
         -------
-        np.ndarray
+        np.array
             The PDF values at the input values.
         """
+        if x.size == 0:
+            return np.array([])
         return self._pdf(x)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: np.array) -> np.array:
         """
         Computes the cumulative distribution function (CDF) for the distribution.
 
         Parameters
         ----------
-        x : np.ndarray
+        x : np.array
             Input values at which to evaluate the CDF.
 
         Returns
         -------
-        np.ndarray
+        np.array
             The CDF values at the input values.
         """
-        raise NotImplementedError("Subclasses should implement this method.")
+        if x.size == 0:
+            return np.array([])
+        return self._cdf(x)
 
     def stats(self) -> Dict[str, Any]:
         """

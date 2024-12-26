@@ -1,0 +1,15 @@
+/* Set a fixed width for the main content area */
+.bd-content {
+    max-width: 1201px;  /* Adjust to match approximately 150 characters */
+    margin: 0 auto;   /* Center the content */
+}
+
+/* Optional: Ensure preformatted code wraps properly */
+pre, code {
+    white-space: pre-wrap;  /* Wrap long lines */
+    word-wrap: break-word;  /* Break long words */
+}
+
+.centered-table td, .centered-table th {
+    text-align: center;
+}

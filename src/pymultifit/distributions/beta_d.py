@@ -3,16 +3,18 @@
 from typing import Dict
 
 import numpy as np
-from scipy.special import betainc, betaincinv
+from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import beta_
+from .utilities import beta_cdf_, beta_logpdf_, beta_pdf_
 
 
 class BetaDistribution(BaseDistribution):
     """Class for Beta distribution."""
 
-    def __init__(self, amplitude: float = 1., alpha: float = 1., beta: float = 1., normalize: bool = False):
+    def __init__(self,
+                 amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
+                 loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif alpha <= 0:
@@ -22,29 +24,25 @@ class BetaDistribution(BaseDistribution):
         self.amplitude = 1. if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
+        self.loc = loc
+        self.scale = scale
 
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return beta_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, normalize=self.norm)
+        if self.scale > 0:
+            return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
+        else:
+            return np.full(shape=x.shape, fill_value=np.nan)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        y = np.zeros_like(x, dtype=float)
-        mask_ = np.logical_and(x > 0, x < 1)
-        y[mask_] = self._pdf(x[mask_])
+    def _cdf(self, x: np.ndarray) -> np.ndarray:
+        if self.scale > 0:
+            return beta_cdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale)
+        else:
+            return np.full(shape=x.shape, fill_value=np.nan)
 
-        # hack to match beta distribution at x = 0 and x = 1
-        y[np.logical_or(x == 0, x == 1)] = np.inf
-        return y
-
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        y = np.zeros_like(x, dtype=float)
-        mask_ = np.logical_and(x > 0, x < 1)
-        y[mask_] = betainc(self.alpha, self.beta, x[mask_])
-
-        # hack to match scipy beta cdf at x >= 1
-        y[x >= 1] = 1
-        return y
+    # def logpdf(self, x: np.array) -> np.array:
+    #     return beta_logpdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
         a, b = self.alpha, self.beta
