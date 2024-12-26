@@ -61,6 +61,8 @@ class BaseDistribution:
         np.array
             The PDF values at the input values.
         """
+        if x.size == 0:
+            return np.array([])
         return self._pdf(x)
 
     def cdf(self, x: np.array) -> np.array:
@@ -77,6 +79,8 @@ class BaseDistribution:
         np.array
             The CDF values at the input values.
         """
+        if x.size == 0:
+            return np.array([])
         return self._cdf(x)
 
     def stats(self) -> Dict[str, Any]:

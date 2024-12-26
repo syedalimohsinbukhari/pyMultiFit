@@ -1,6 +1,7 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['arc_sine_pdf_',
+__all__ = ['_sanity_check',
+           'arc_sine_pdf_',
            'beta_pdf_', 'beta_cdf_', 'beta_logpdf_',
            'chi_square_pdf_',
            'exponential_pdf_',
@@ -139,20 +140,13 @@ def beta_pdf_(x: np.array,
         return np.array([])
 
     y = (x - loc) / scale
-    pdf_ = np.zeros_like(y, dtype=float)
+    pdf_ = np.zeros_like(a=y, dtype=float)
 
     numerator = y**(alpha - 1) * (1 - y)**(beta - 1)
+    normalization_factor = gamma(alpha) * gamma(beta) / gamma(alpha + beta)
 
-    if normalize:
-        normalization_factor = gamma(alpha) * gamma(beta)
-        normalization_factor /= gamma(alpha + beta)
-        amplitude = 1.0
-    else:
-        normalization_factor = 1.0
-
-    mask_ = _beta_masking(alpha=alpha, beta=beta, y=y)
-
-    pdf_[~mask_] = amplitude * (numerator[~mask_] / normalization_factor)
+    mask_ = _beta_masking(y=y, alpha=alpha, beta=beta)
+    pdf_[~mask_] = numerator[~mask_] / normalization_factor
 
     if alpha <= 1:
         pdf_[y == 0] = np.inf
@@ -161,7 +155,16 @@ def beta_pdf_(x: np.array,
 
     # handle the cases where nans can occur with nan_to_num
     # np.inf and -np.inf to not affect the infinite values
-    return np.nan_to_num(x=pdf_ / scale, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
+    pdf_ = _remove_nans(pdf_ / scale)
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
+
+
+def _remove_nans(x: np.array) -> np.array:
+    return np.nan_to_num(x=x, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
@@ -186,10 +189,9 @@ def beta_logpdf_(x: np.array,
         return np.array([])
 
     y = (x - loc) / scale
-    logpdf_ = np.full_like(y, -np.inf, dtype=float)  # Default to -inf for invalid regions
+    mask_ = _beta_masking(y=y, alpha=alpha, beta=beta)
 
-    mask_ = _beta_masking(alpha=alpha, beta=beta, y=y)
-
+    logpdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
     log_numerator = (alpha - 1) * np.log(y) + (beta - 1) * np.log(1 - y)
 
     if normalize:
@@ -208,9 +210,9 @@ def beta_logpdf_(x: np.array,
     return logpdf_ - np.log(scale)
 
 
-def _beta_masking(alpha, beta, y):
+def _beta_masking(y, alpha, beta):
     out_of_range_mask = np.logical_or(y < 0, y > 1)
-    undefined_mask = np.zeros_like(y, dtype=bool)
+    undefined_mask = np.zeros_like(a=y, dtype=bool)
     if alpha <= 1:
         undefined_mask = np.logical_or(undefined_mask, y == 0)
     if beta <= 1:
@@ -249,7 +251,7 @@ def beta_cdf_(x: np.array,
     where :math:`I_x(\alpha, \beta)` is the regularized incomplete Beta function, see :obj:`~scipy.special.betainc`.
     """
     y = (x - loc) / scale
-    cdf_ = np.zeros_like(y, dtype=float)
+    cdf_ = np.zeros_like(a=y, dtype=float)
 
     mask_ = np.logical_and(y > 0, y < 1)
     cdf_[mask_] = betainc(alpha, beta, y[mask_])
@@ -344,6 +346,12 @@ def exponential_pdf_(x: np.array,
     return gamma_sr_pdf_(x, amplitude=amplitude, alpha=1., lambda_=scale, normalize=normalize)
 
 
+def _sanity_check(x: np.array):
+    if x.size == 0:
+        return np.array([])
+    return x
+
+
 def folded_normal_pdf_(x: np.array,
                        amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
                        normalize: bool = False) -> np.array:
@@ -379,13 +387,27 @@ def folded_normal_pdf_(x: np.array,
     where :math:`\phi` is the PDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`.
     """
     sigma = np.sqrt(variance)
-    result = np.zeros_like(a=x, dtype=float)
-    mask = x >= 0
-    g1 = gaussian_pdf_(x[mask], amplitude=amplitude, mean=mu, std=sigma, normalize=normalize)
-    g2 = gaussian_pdf_(x[mask], amplitude=amplitude, mean=-mu, std=sigma, normalize=normalize)
-    result[mask] = g1 + g2
+    pdf_ = np.zeros_like(a=x, dtype=float)
 
-    return result
+    mask = x >= 0
+    g1 = gaussian_pdf_(x=x[mask], mean=mu, std=sigma, normalize=True)
+    g2 = gaussian_pdf_(x=x[mask], mean=-mu, std=sigma, normalize=True)
+    pdf_[mask] = g1 + g2
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
+
+
+def folded_normal_cdf_(x: np.array,
+                       amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
+                       normalize: bool = False) -> np.array:
+    y = np.zeros_like(a=x, dtype=float)
+    mask = x >= 0
+    frac1, frac2 = (x[mask] - mu) / np.sqrt(2 * variance), (x[mask] + mu) / np.sqrt(2 * variance)
+    y[mask] += 0.5 * (erf(frac1) + erf(frac2))
+    return y
 
 
 def gamma_sr_pdf_(x: np.array,
@@ -435,16 +457,13 @@ def gamma_sr_pdf_(x: np.array,
     """
     y = x - loc
     numerator = y**(alpha - 1) * np.exp(-lambda_ * y)
+    normalization_factor = gamma(alpha) / lambda_**alpha
 
-    if normalize:
-        normalization_factor = gamma(alpha)
-        normalization_factor /= lambda_**alpha
-        amplitude = 1
-    else:
-        normalization_factor = 1
-
-    pdf_ = amplitude * (numerator / normalization_factor)
+    pdf_ = numerator / normalization_factor
     pdf_[x < loc] = 0
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
     return pdf_
 
@@ -472,7 +491,7 @@ def gamma_sr_cdf_(x: np.array,
 
     where, :math:`\gamma(\alpha, \lambda y)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
     """
-    return np.nan_to_num(x=gammainc(alpha, lambda_ * x), copy=False, nan=0)
+    return gammainc(alpha, lambda_ * x)
 
 
 def gamma_ss_pdf_(x: np.array,
@@ -508,7 +527,7 @@ def gamma_ss_pdf_(x: np.array,
     .. math::
         f(x; \alpha, \theta) = \frac{x^{\alpha-1} \exp^{-x / \theta}}{\theta^k \Gamma(k)}
     """
-    return gamma_sr_pdf_(x, amplitude=amplitude, alpha=alpha, lambda_=1 / theta, normalize=normalize)
+    return gamma_sr_pdf_(x=x, amplitude=amplitude, alpha=alpha, lambda_=1 / theta, normalize=normalize)
 
 
 @doc_inherit(parent=gamma_ss_pdf_, style=doc_style)
@@ -516,7 +535,7 @@ def gamma_ss_cdf_(x: np.array,
                   amplitude: float = 1., alpha: float = 1.0, theta: float = 1.0,
                   normalize: bool = False) -> np.array:
     r"""
-    Compute CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape) and :math:`\theta` (scale) parmaeters.
+    Compute CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape) and :math:`\theta` (scale) parameters.
 
     Parameters
     ----------
@@ -573,14 +592,16 @@ def gaussian_pdf_(x: np.array,
     The final PDF is expressed as :math:`f(x)`.
     """
     exponent_factor = (x - mean)**2 / (2 * std**2)
+    exponent_factor = np.exp(-exponent_factor)
+    normalization_factor = std * np.sqrt(2 * np.pi)
 
-    if normalize:
-        normalization_factor = std * np.sqrt(2 * np.pi)
-        amplitude = 1
-    else:
-        normalization_factor = 1
+    pdf_ = exponent_factor / normalization_factor
 
-    return amplitude * (np.exp(-exponent_factor) / normalization_factor)
+    if not normalize:
+        pdf_ = pdf_ / np.max(pdf_)
+        pdf_ *= amplitude
+
+    return pdf_
 
 
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
@@ -685,14 +706,19 @@ def laplace_pdf_(x: np.array,
     The final PDF is expressed as :math:`f(x)`.
     """
     exponent_factor = abs(x - mean) / diversity
+    exponent_factor = np.exp(-exponent_factor)
+    normalization_factor = 2 * diversity
 
-    if normalize:
-        normalization_factor = 2 * diversity
-        amplitude = 1
-    else:
-        normalization_factor = 1
+    pdf_ = exponent_factor / normalization_factor
 
-    return amplitude * (np.exp(-exponent_factor) / normalization_factor)
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
+
+
+def _pdf_scaling(pdf_, amplitude):
+    return amplitude * (pdf_ / np.max(pdf_))
 
 
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
@@ -786,16 +812,15 @@ def log_normal_pdf_(x: np.array,
     y = x - loc
 
     exponent_factor = (np.log(y) - mean)**2 / (2 * std**2)
+    exponent_factor = np.exp(-exponent_factor)
+    normalization_factor = std * y * np.sqrt(2 * np.pi)
 
-    if normalize:
-        normalization_factor = std * y * np.sqrt(2 * np.pi)
-        amplitude = 1
-    else:
-        normalization_factor = 1
+    pdf_ = exponent_factor / normalization_factor
 
-    pdf_ = amplitude * np.exp(-exponent_factor) / normalization_factor
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return np.nan_to_num(pdf_, False, 0, posinf=np.inf, neginf=-np.inf)
+    return _remove_nans(pdf_)
 
 
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
@@ -824,11 +849,7 @@ def log_normal_cdf_(x: np.array,
     .. math::
         F(x) = \Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)
     """
-    y = x - loc
-    num_ = np.log(y) - mean
-    den_ = std * np.sqrt(2)
-    pdf_ = 0.5 * (1 + erf(num_ / den_))
-    return np.nan_to_num(pdf_, False, 0, np.inf, -np.inf)
+    return _remove_nans(gaussian_cdf_(x=np.log(x - loc), mean=mean, std=std))
 
 
 def norris2005(x: np.array,
@@ -975,16 +996,18 @@ def uniform_pdf_(x: np.array,
 
     """
     high_ = high + low
-    pdf_values = np.zeros_like(a=x, dtype=float)
+    pdf_ = np.zeros_like(a=x, dtype=float)
 
     if high_ == low:
-        return np.full(x.size, np.nan)
+        return np.full(shape=x.size, fill_value=np.nan)
 
-    amplitude = 1.0 if normalize else amplitude
     mask_ = np.logical_and(x >= low, x <= high_)
-    pdf_values[mask_] = amplitude / (high_ - low)
+    pdf_[mask_] = 1 / (high_ - low)
 
-    return np.nan_to_num(x=pdf_values, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return _remove_nans(pdf_)
 
 
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
@@ -1075,19 +1098,15 @@ def skew_normal_pdf_(x: np.array,
     The final PDF is expressed as :math:`f(y)/\omega`.
     """
     y = (x - loc) / scale
-    g_pdf_ = gaussian_pdf_(x=y, normalize=False)
-    g_cdf_ = gaussian_cdf_(x=shape * y)
+    g_pdf_ = gaussian_pdf_(x=y, normalize=True)
+    g_cdf_ = gaussian_cdf_(x=shape * y, normalize=True)
 
-    if normalize:
-        normalization_factor = 0.5 * np.sqrt(2 * np.pi)
-        amplitude = 1.0
-    else:
-        normalization_factor = 1.0
+    pdf_ = (2 / scale) * g_pdf_ * g_cdf_
 
-    pdf_ = (g_pdf_ * g_cdf_)
-    pdf_ = amplitude * (pdf_ / normalization_factor)
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_ / scale
+    return _remove_nans(pdf_)
 
 
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)

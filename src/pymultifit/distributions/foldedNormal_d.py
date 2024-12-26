@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import folded_normal_pdf_
+from .utilities import folded_normal_cdf_, folded_normal_pdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):
@@ -26,19 +26,10 @@ class FoldedNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_normal_pdf_(x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
+        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        y = np.zeros_like(x, dtype=float)
-        y[x >= 0] += self._pdf(x[x >= 0])
-        return y
-
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        y = np.zeros_like(x, dtype=float)
-        mask = x >= 0
-        frac1, frac2 = (x[mask] - self.mean) / np.sqrt(2 * self.var_), (x[mask] + self.mean) / np.sqrt(2 * self.var_)
-        y[mask] += 0.5 * (erf(frac1) + erf(frac2))
-        return y
+    def _cdf(self, x: np.array) -> np.array:
+        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
 
     def stats(self) -> Dict[str, Any]:
         mean_, std_ = self.mean, np.sqrt(self.var_)

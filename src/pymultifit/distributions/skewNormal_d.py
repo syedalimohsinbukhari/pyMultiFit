@@ -8,9 +8,6 @@ from .backend import BaseDistribution
 from .utilities import skew_normal_cdf_, skew_normal_pdf_
 
 
-# TODO:
-#   See if normalization factor can be used to un-normalize the pdf.
-
 class SkewNormalDistribution(BaseDistribution):
     """Class for SkewNormal distribution."""
 
@@ -44,52 +41,3 @@ class SkewNormalDistribution(BaseDistribution):
         variance = omega**2 * (1 - (2 * delta**2 / np.pi))
 
         return {'mean': mean, 'mode': mode, 'variance': variance}
-
-# def _skew_normal(x: np.ndarray,
-#                  shape: float = 0., location: float = 0., scale: float = 1.) -> np.ndarray:
-#     """
-#     Compute the Skew-Normal distribution probability density function (PDF).
-#
-#     The Skew-Normal PDF is given by:
-#     f(x) = (2 / std * sqrt(2 * pi)) * phi((x - mu) / std) * Phi(alpha * (x - mu) / std)
-#     where:
-#     - phi is the standard normal PDF.
-#     - Phi is the standard normal cumulative distribution function (CDF).
-#
-#     Parameters
-#     ----------
-#     x : np.ndarray
-#         The input values at which to evaluate the Skew-Normal PDF.
-#     location : float
-#         The location parameter (mean) of the Skew-Normal distribution.
-#     scale : float
-#         The scale parameter (standard deviation) of the Skew-Normal distribution.
-#     shape : float
-#         The shape parameter that controls the skewness of the distribution.
-#
-#     Returns
-#     -------
-#     np.ndarray
-#         The probability density function values for the input values.
-#
-#     Raises
-#     ------
-#     ValueError
-#         If `scale` is non-positive.
-#
-#     Notes
-#     -----
-#     - The Skew-Normal distribution is a generalization of the normal distribution that allows for skewness.
-#     - The input `x` can be any real number, but `scale` must be positive.
-#     """
-#     if scale <= 0:
-#         raise ValueError("scale must be positive.")
-#
-#     z = (x - location) / scale
-#     gd = GaussianDistribution()
-#     phi_z = gd.pdf(z)
-#
-#     def _phi(z_value):
-#         return gd.cdf(z_value)
-#
-#     return 2 * scale * phi_z * _phi(shape * z)
