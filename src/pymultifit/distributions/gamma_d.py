@@ -11,8 +11,9 @@ from .utilities_d import gamma_sr_cdf_, gamma_sr_pdf_
 class GammaDistributionSR(BaseDistribution):
     """Class for Gamma distribution with shape and rate parameters."""
 
-    def __init__(self, amplitude: float = 1., shape: float = 1., rate: float = 1., loc: float = 0.0,
-                 normalize: bool = False):
+    def __init__(self,
+                 amplitude: float = 1.0, shape: float = 1.0, rate: float = 1.0,
+                 loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif shape <= 0:

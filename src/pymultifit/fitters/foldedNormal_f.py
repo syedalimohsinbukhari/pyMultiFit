@@ -14,5 +14,5 @@ class FoldedNormalFitter(BaseFitter):
         self.n_par = 3
 
     @staticmethod
-    def _fitter(x, params):
+    def fitter(x, params):
         return folded_normal_pdf_(x, normalize=False)

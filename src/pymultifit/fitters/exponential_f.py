@@ -14,5 +14,5 @@ class ExponentialFitter(BaseFitter):
         self.n_par = 2
 
     @staticmethod
-    def _fitter(x, params):
+    def fitter(x, params):
         return exponential_pdf_(x, normalize=False)

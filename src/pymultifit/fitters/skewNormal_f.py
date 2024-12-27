@@ -1,7 +1,10 @@
 """Created on Jul 18 13:54:03 2024"""
 
+import numpy as np
+
 from .backend import BaseFitter
 from .utilities_f import sanity_check
+from .. import EPSILON
 from ..distributions.utilities_d import skew_normal_pdf_
 
 
@@ -14,5 +17,11 @@ class SkewNormalFitter(BaseFitter):
         self.n_par = 4
 
     @staticmethod
-    def _fitter(x, params):
+    def fit_boundaries():
+        lb = (EPSILON, -np.inf, EPSILON, -np.inf)
+        ub = (np.inf, np.inf, np.inf, np.inf)
+        return lb, ub
+
+    @staticmethod
+    def fitter(x, params):
         return skew_normal_pdf_(x, *params, normalize=False)

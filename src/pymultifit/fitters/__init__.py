@@ -1,5 +1,6 @@
 """Created on Aug 03 20:34:39 2024"""
 
+from .gamma_f import GammaSRFitter, GammaSSFitter
 from .gaussian_f import GaussianFitter
 from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter

@@ -14,5 +14,5 @@ class HalfNormalFitter(BaseFitter):
         self.n_par = 2
 
     @staticmethod
-    def _fitter(x, params):
+    def fitter(x, params):
         return half_normal_pdf_(x, normalize=False)

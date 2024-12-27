@@ -9,14 +9,14 @@ from src.pymultifit.generators import multi_log_normal
 
 params = [(15, 1, 1), (3, 2, 0.2), (20, 4, 0.1)]
 
-x = np.linspace(EPSILON, 100, 2000)
+x = np.linspace(EPSILON, 10, 2000)
 
 noise_level = 0.2
 y = multi_log_normal(x, params=params, noise_level=noise_level)
 
 fitter = LogNormalFitter(x_values=x, y_values=y)
 
-guess = [(10, 1, 1), (3, 2, 0.2), (10, 4, 0.1)]
+guess = [(12, np.log(1), 1), (3, np.log(2), 0.2), (15, np.log(4), 0.1)]
 
 fitter.fit(guess)
 

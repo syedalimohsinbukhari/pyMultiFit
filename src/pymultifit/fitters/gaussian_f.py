@@ -1,7 +1,11 @@
 """Created on Jul 18 00:25:57 2024"""
 
+import numpy as np
+from scipy.optimize import Bounds
+
 from .backend import BaseFitter
 from .utilities_f import sanity_check
+from .. import EPSILON
 from ..distributions.utilities_d import gaussian_pdf_
 
 
@@ -14,5 +18,11 @@ class GaussianFitter(BaseFitter):
         self.n_par = 3
 
     @staticmethod
-    def _fitter(x, params):
+    def fit_boundaries():
+        lb = (EPSILON, -np.inf, EPSILON)
+        ub = (np.inf, np.inf, np.inf)
+        return Bounds(lb=lb, ub=ub)
+
+    @staticmethod
+    def fitter(x, params):
         return gaussian_pdf_(x, *params, normalize=False)

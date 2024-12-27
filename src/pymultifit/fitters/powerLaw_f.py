@@ -14,5 +14,5 @@ class PowerLawFitter(BaseFitter):
         self.n_par = 2
 
     @staticmethod
-    def _fitter(x, params):
+    def fitter(x, params):
         return power_law_(x, *params, normalize=False)

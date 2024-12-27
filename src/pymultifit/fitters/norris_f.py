@@ -14,7 +14,7 @@ class Norris2005Fitter(BaseFitter):
         self.n_par = 3
 
     @staticmethod
-    def _fitter(x, params):
+    def fitter(x, params):
         return norris2005(x, *params, normalize=False)
 
 
@@ -27,5 +27,5 @@ class Norris2011Fitter(BaseFitter):
         self.n_par = 3
 
     @staticmethod
-    def _fitter(x, params):
+    def fitter(x, params):
         return norris2011(x, *params, normalize=False)
