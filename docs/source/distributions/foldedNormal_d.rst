@@ -4,10 +4,10 @@ FoldedNormal Distribution
 .. autoclass:: pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution
    :no-members:
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :mod:`~pymultifit.distributions.utilities.folded_normal_pdf_`
-* :mod:`~pymultifit.distributions.utilities.folded_normal_cdf_`
+* :mod:`~pymultifit.distributions.utilities_d.folded_normal_pdf_`
+* :mod:`~pymultifit.distributions.utilities_d.folded_normal_cdf_`
 
 Full Import
 -----------

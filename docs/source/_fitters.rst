@@ -10,9 +10,9 @@ Base Class
 
    * - Name
      - Description
-   * - :class:`BaseFitter <pymultifit.fitters.backend.baseFitter.BaseFitter>`
+   * - :class:`~pymultifit.fitters.backend.baseFitter.BaseFitter`
      - The base class for multi-fitting functionality.
-   * - :class:`MixedFitter <pymultifit.fitters.mixed_f.MixedDataFitter>`
+   * - :class:`~pymultifit.fitters.mixed_f.MixedDataFitter`
      - Mixed model fitting class.
 
 Derived Fitters
@@ -24,9 +24,9 @@ Derived Fitters
 
    * - Name
      - Description
-   * - :class:`ChiSquaredFitter <pymultifit.fitters.chiSquare_f.ChiSquareFitter>`
+   * - :class:`~pymultifit.fitters.chiSquare_f.ChiSquareFitter`
      - ChiSquare fitter.
-   * - :class:`ExponentialFitter <pymultifit.fitters.exponential_f.ExponentialFitter>`
+   * - :class:`~pymultifit.fitters.exponential_f.ExponentialFitter`
      - Exponential fitter.
    * - :class:`FoldedNormalFitter <pymultifit.fitters.foldedNormal_f.FoldedNormalFitter>`
      - Folded Normal fitter.

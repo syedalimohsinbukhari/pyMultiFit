@@ -4,10 +4,10 @@ LogNormal Distribution
 .. autoclass:: pymultifit.distributions.logNormal_d.LogNormalDistribution
    :no-members:
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :mod:`~pymultifit.distributions.utilities.log_normal_pdf_`
-* :mod:`~pymultifit.distributions.utilities.log_normal_cdf_`
+* :mod:`~pymultifit.distributions.utilities_d.log_normal_pdf_`
+* :mod:`~pymultifit.distributions.utilities_d.log_normal_cdf_`
 
 Recommended Import
 ------------------

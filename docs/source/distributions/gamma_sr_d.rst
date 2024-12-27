@@ -22,10 +22,10 @@ Gamma Distribution (SR)
        - :math:`\lambda = 1`.
 
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :func:`~pymultifit.distributions.utilities.gamma_sr_pdf_`
-* :func:`~pymultifit.distributions.utilities.gamma_sr_cdf_`
+* :func:`~pymultifit.distributions.utilities_d.gamma_sr_pdf_`
+* :func:`~pymultifit.distributions.utilities_d.gamma_sr_cdf_`
 
 Recommended Import
 ^^^^^^^^^^^^^^^^^^

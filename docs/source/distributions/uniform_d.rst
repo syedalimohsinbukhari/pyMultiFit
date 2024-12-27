@@ -4,10 +4,10 @@ Uniform Distribution
 .. autoclass:: pymultifit.distributions.uniform_d.UniformDistribution
    :no-members:
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :mod:`~pymultifit.distributions.utilities.uniform_pdf_`
-* :mod:`~pymultifit.distributions.utilities.uniform_cdf_`
+* :mod:`~pymultifit.distributions.utilities_d.uniform_pdf_`
+* :mod:`~pymultifit.distributions.utilities_d.uniform_cdf_`
 
 Recommended Import
 ------------------

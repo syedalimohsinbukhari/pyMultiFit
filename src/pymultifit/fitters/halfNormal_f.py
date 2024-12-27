@@ -2,7 +2,7 @@
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from ..distributions.utilities_d import half_normal_
+from ..distributions.utilities_d import half_normal_pdf_
 
 
 class HalfNormalFitter(BaseFitter):
@@ -15,4 +15,4 @@ class HalfNormalFitter(BaseFitter):
 
     @staticmethod
     def _fitter(x, params):
-        return half_normal_(x, *params, normalize=False)
+        return half_normal_pdf_(x, normalize=False)
