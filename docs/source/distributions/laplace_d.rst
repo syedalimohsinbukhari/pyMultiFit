@@ -4,7 +4,7 @@ Laplace Distribution
 .. autoclass:: pymultifit.distributions.laplace_d.LaplaceDistribution
    :no-members:
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities_d` module:
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
 * :func:`~pymultifit.distributions.utilities_d.laplace_pdf_`
 * :func:`~pymultifit.distributions.utilities_d.laplace_cdf_`

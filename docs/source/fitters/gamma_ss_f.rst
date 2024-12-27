@@ -7,7 +7,7 @@ Gamma Distribution (SS)
 .. note::
     The :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` with  :math:`\lambda = \theta^{-1}`.
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities` module:
 
 * :func:`~pymultifit.distributions.utilities.gamma_sr_pdf_`
 * :func:`~pymultifit.distributions.utilities.gamma_sr_cdf_`

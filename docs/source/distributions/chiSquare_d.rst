@@ -10,7 +10,7 @@ ChiSquare Distribution
     * :math:`\alpha_\text{gammaSR} = \text{dof} / 2`,
     * :math:`\lambda_\text{gammaSR} = 0.5`.
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities_d` module:
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
 * :func:`~pymultifit.distributions.utilities_d.gamma_sr_pdf_`
 * :func:`~pymultifit.distributions.utilities_d.gamma_sr_cdf_`
