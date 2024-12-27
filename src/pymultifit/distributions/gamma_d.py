@@ -27,10 +27,10 @@ class GammaDistributionSR(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.array) -> np.array:
+    def pdf(self, x: np.array) -> np.array:
         return gamma_sr_pdf_(x, amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc, normalize=self.norm)
 
-    def _cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.array) -> np.array:
         return gamma_sr_cdf_(x, amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:

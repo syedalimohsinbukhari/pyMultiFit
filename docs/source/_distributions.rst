@@ -10,7 +10,7 @@ Base Class
 
    * - Name
      - Description
-   * - :class:`BaseDistribution <pymultifit.distributions.backend.baseDistribution.BaseDistribution>`
+   * - :class:`~pymultifit.distributions.backend.baseDistribution.BaseDistribution`
      - Bare-bones class for statistical distributions to provide consistent methods.
 
 Derived Distributions
@@ -67,6 +67,7 @@ Derived Distributions
 .. toctree::
    :hidden:
 
+   BaseDistribution         <distributions/baseDistribution>
    ArcSineDistribution      <distributions/arcSine_d>
    BetaDistribution         <distributions/beta_d>
    ChiSquareDistribution    <distributions/chiSquare_d>

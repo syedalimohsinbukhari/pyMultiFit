@@ -20,7 +20,7 @@ class GaussianFitter(BaseFitter):
     def fit_boundaries():
         lb = (0, -np.inf, 0)
         ub = (np.inf, np.inf, np.inf)
-        return Bounds(lb=lb, ub=ub)
+        return lb, ub
 
     @staticmethod
     def fitter(x, params):

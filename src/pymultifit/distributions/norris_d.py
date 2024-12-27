@@ -17,7 +17,7 @@ class Norris2011Distribution(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return norris2011(x, amplitude=self.amplitude, tau=self.tau, xi=self.xi, normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:

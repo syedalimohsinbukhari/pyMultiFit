@@ -112,6 +112,10 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return np.sqrt(np.diag(self.covariance))
 
+    def dry_run(self):
+        """Plot the x and y data for a quick visual inspection of their shape."""
+        plot_xy(x_data=self.x_values, y_data=self.y_values)
+
     def fit(self, p0):
         """
         Fit the data.
@@ -239,26 +243,26 @@ class BaseFitter:
                  x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None, data_label: Optional[str] = None,
                  axis: Optional[Axes] = None) -> plt:
         """
-        Plot the fitted Skewed Normal functions on the data.
+        Plot the fitted models.
 
         Parameters
         ----------
-        show_individual: bool
-            Whether to show individually fitted Skewed Normal functions.
-        x_label: str
+        show_individual: bool, optional
+            Whether to show individually fitted models or not.
+        x_label: str, optional
             The label for the x-axis.
-        y_label: str
+        y_label: str, optional
             The label for the y-axis.
-        title: str
+        title: str, optional
             The title for the plot.
-        data_label: str
+        data_label: str, optional
             The label for the data.
         axis: Axes, optional
             Axes to plot instead of the entire figure. Defaults to None.
 
         Returns
         -------
-        plt
+        plotter
             The plotter handle for the drawn plot.
         """
         if self.params is None:

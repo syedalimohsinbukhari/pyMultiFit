@@ -20,10 +20,10 @@ class UniformDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return uniform_pdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def _cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.array) -> np.array:
         return uniform_cdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:

@@ -22,10 +22,10 @@ class LaplaceDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return laplace_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def _cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.array) -> np.array:
         return laplace_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:

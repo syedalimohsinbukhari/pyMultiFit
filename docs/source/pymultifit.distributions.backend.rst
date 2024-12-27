@@ -4,14 +4,6 @@ pymultifit.distributions.backend package
 Submodules
 ----------
 
-pymultifit.distributions.backend.baseDistribution module
---------------------------------------------------------
-
-.. automodule:: pymultifit.distributions.backend.baseDistribution
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pymultifit.distributions.backend.errorHandling module
 -----------------------------------------------------
 

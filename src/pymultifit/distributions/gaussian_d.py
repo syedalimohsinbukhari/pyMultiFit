@@ -22,10 +22,10 @@ class GaussianDistribution(BaseDistribution):
         self.std_ = std
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return gaussian_pdf_(x, amplitude=self.amplitude, mean=self.mean, std=self.std_, normalize=self.norm)
 
-    def _cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.array) -> np.array:
         return gaussian_cdf_(x, amplitude=self.amplitude, mean=self.mean, std=self.std_, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:

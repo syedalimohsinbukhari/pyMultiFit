@@ -29,13 +29,13 @@ class BetaDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         if self.scale > 0:
             return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
         else:
             return np.full(shape=x.shape, fill_value=np.nan)
 
-    def _cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         if self.scale > 0:
             return beta_cdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale)
         else:

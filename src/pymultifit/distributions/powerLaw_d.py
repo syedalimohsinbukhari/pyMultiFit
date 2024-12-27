@@ -16,7 +16,7 @@ class PowerLawDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray):
+    def pdf(self, x: np.ndarray):
         return power_law_(x, amplitude=self.amplitude, alpha=self.alpha, normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
