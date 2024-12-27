@@ -39,5 +39,9 @@ class GammaSSFitter(BaseFitter):
         self.sn_par = {'loc': 0.0}
 
     @staticmethod
+    def fit_boundaries():
+        return GammaSRFitter.fit_boundaries()
+
+    @staticmethod
     def fitter(x, params):
         return gamma_ss_pdf_(x, *params, normalize=False)

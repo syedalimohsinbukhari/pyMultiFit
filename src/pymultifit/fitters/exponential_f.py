@@ -15,4 +15,4 @@ class ExponentialFitter(BaseFitter):
 
     @staticmethod
     def fitter(x, params):
-        return exponential_pdf_(x, normalize=False)
+        return exponential_pdf_(x, *params, normalize=False)

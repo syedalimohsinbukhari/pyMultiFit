@@ -4,7 +4,7 @@ __all__ = ['_sanity_check',
            'arc_sine_pdf_',
            'beta_pdf_', 'beta_cdf_', 'beta_logpdf_',
            'chi_square_pdf_',
-           'exponential_pdf_',
+           'exponential_pdf_', 'exponential_cdf_',
            'folded_normal_pdf_', 'folded_normal_cdf_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_',
            'gamma_ss_pdf_',
@@ -297,16 +297,20 @@ def chi_square_pdf_(x: np.array,
 
     .. math:: y = x - \text{loc}
 
-    The final PDF is expressed as :math:`f(y)`
+    The final PDF is expressed as :math:`f(y)`.
     """
     return gamma_sr_pdf_(x=x, amplitude=amplitude, alpha=degree_of_freedom / 2., lambda_=0.5, loc=loc, normalize=normalize)
 
 
 def exponential_pdf_(x: np.array,
-                     amplitude: float = 1., scale: float = 1.,
+                     amplitude: float = 1., scale: float = 1., loc: float = 0.0,
                      normalize: bool = False) -> np.array:
     r"""
-    Compute PDF of :mod:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
+    Compute PDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
+
+    .. note::
+        This function uses :func:`~pymultifit.distributions.utilities_d.gamma_sr_pdf_` to calculate the PDF with
+        :math:`\alpha = 1` and :math:`\lambda_\text{gammaSR} = \lambda_\text{expon}`.
 
     Parameters
     ----------
@@ -315,7 +319,7 @@ def exponential_pdf_(x: np.array,
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
         Ignored if **normalize** is ``True``.
-    scale : float
+    scale : float, optional
         The scale parameter, :math:`\lambda`. Defaults to 1.0.
     normalize : bool, optional
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
@@ -333,17 +337,48 @@ def exponential_pdf_(x: np.array,
     .. math::
         f(y, \lambda) =
         \begin{cases}
-        \lambda \exp\left[-\lambda y\right] &; x \geq 0, \\
+        \lambda \exp\left[-\lambda y\right] &; y \geq 0, \\
         0 &; y < 0.
         \end{cases}
 
     where, :math:`y` is a transformed value of :math:`x`, defined as:
 
-    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+    .. math:: y = x - \text{loc}
 
-    The final PDF is expressed as :math:`f(y)/\text{scale}`
+    The final PDF is expressed as :math:`f(y)`.
     """
-    return gamma_sr_pdf_(x, amplitude=amplitude, alpha=1., lambda_=scale, normalize=normalize)
+    return gamma_sr_pdf_(x, amplitude=amplitude, alpha=1., lambda_=scale, loc=loc, normalize=normalize)
+
+
+@doc_inherit(parent=exponential_pdf_, style=doc_style)
+def exponential_cdf_(x: np.array,
+                     amplitude: float = 1., scale: float = 1., loc: float = 0.0,
+                     normalize: bool = False) -> np.array:
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
+
+    .. note::
+        This function uses :func:`~pymultifit.distributions.utilities_d.gamma_sr_cdf_` to calculate the CDF with
+        :math:`\alpha = 1` and :math:`\lambda_\text{gammaSR} = \lambda_\text{expon}`.
+
+    Parameters
+    ----------
+    amplitude : float, optional
+        For API consistency only.
+    normalize : bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The Exponential CDF is defined as:
+
+    .. math:: F(x) = 1 - \exp\left[-\lambda x\right].
+    """
+    y = x - loc
+    pdf_ = np.zeros_like(a=y, dtype=float)
+    mask_ = y > 0
+    pdf_[mask_] = 1 - np.exp(-scale * y[mask_])
+    return pdf_
 
 
 def _sanity_check(x: np.array):
@@ -456,7 +491,7 @@ def gamma_sr_pdf_(x: np.array,
     .. math::
         f(y; \alpha, \lambda) =
         \begin{cases}
-        \dfrac{\lambda^\alpha}{\Gamma(\alpha)} y^{\alpha - 1} e^{-\lambda y}, & y > \text{loc}, \\
+        \dfrac{\lambda^\alpha}{\Gamma(\alpha)} y^{\alpha - 1} \exp\left[-\lambda y\right], & y > \text{loc}, \\
         0, & y \leq \text{loc}.
         \end{cases}
 

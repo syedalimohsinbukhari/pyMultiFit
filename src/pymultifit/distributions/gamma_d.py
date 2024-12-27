@@ -28,8 +28,6 @@ class GammaDistributionSR(BaseDistribution):
         self.norm = normalize
 
     def _pdf(self, x: np.array) -> np.array:
-        if np.any(x < 0):
-            raise erH.XOutOfRange()
         return gamma_sr_pdf_(x, amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc, normalize=self.norm)
 
     def _cdf(self, x: np.array) -> np.array:
@@ -50,7 +48,7 @@ class GammaDistributionSR(BaseDistribution):
 class GammaDistributionSS(GammaDistributionSR):
     """Class for Gamma distribution with shape and scale parameters."""
 
-    def __init__(self, amplitude: float = 1., shape: float = 1., scale: float = 1., normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, shape: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
         self.scale = scale
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
@@ -58,4 +56,4 @@ class GammaDistributionSS(GammaDistributionSR):
             raise erH.NegativeShapeError()
         elif scale <= 0:
             raise erH.NegativeScaleError()
-        super().__init__(amplitude=amplitude, shape=shape, rate=1 / self.scale, normalize=normalize)
+        super().__init__(amplitude=amplitude, shape=shape, rate=1 / self.scale, loc=loc, normalize=normalize)

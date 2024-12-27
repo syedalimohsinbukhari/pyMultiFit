@@ -4,7 +4,6 @@ import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import EPSILON
 from ..distributions.utilities_d import laplace_pdf_
 
 
@@ -18,7 +17,7 @@ class LaplaceFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (EPSILON, -np.inf, EPSILON)
+        lb = (0, -np.inf, 0)
         ub = (np.inf, np.inf, np.inf)
         return lb, ub
 
