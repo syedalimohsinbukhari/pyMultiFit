@@ -1,7 +1,6 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['_sanity_check',
-           'arc_sine_pdf_',
+__all__ = ['arc_sine_pdf_',
            'beta_pdf_', 'beta_cdf_', 'beta_logpdf_',
            'chi_square_pdf_',
            'exponential_pdf_', 'exponential_cdf_',
@@ -250,6 +249,9 @@ def beta_cdf_(x: np.array,
 
     where :math:`I_x(\alpha, \beta)` is the regularized incomplete Beta function, see :obj:`~scipy.special.betainc`.
     """
+    if x.size == 0:
+        return np.array([])
+
     y = (x - loc) / scale
     cdf_ = np.zeros_like(a=y, dtype=float)
 
@@ -381,12 +383,6 @@ def exponential_cdf_(x: np.array,
     return pdf_
 
 
-def _sanity_check(x: np.array):
-    if x.size == 0:
-        return np.array([])
-    return x
-
-
 def folded_normal_pdf_(x: np.array,
                        amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
                        normalize: bool = False) -> np.array:
@@ -421,6 +417,9 @@ def folded_normal_pdf_(x: np.array,
 
     where :math:`\phi` is the PDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`.
     """
+    if x.size == 0:
+        return np.array([])
+
     sigma = np.sqrt(variance)
     pdf_ = np.zeros_like(a=x, dtype=float)
 
@@ -449,6 +448,9 @@ def folded_normal_cdf_(x: np.array,
     normalize: bool, optional
         For API consistency only.
     """
+    if x.size == 0:
+        return np.array([])
+
     y = np.zeros_like(a=x, dtype=float)
     mask = x >= 0
     frac1, frac2 = (x[mask] - mu) / np.sqrt(2 * variance), (x[mask] + mu) / np.sqrt(2 * variance)
@@ -501,6 +503,9 @@ def gamma_sr_pdf_(x: np.array,
 
     The final PDF is expressed as :math:`f(y)`.
     """
+    if x.size == 0:
+        return np.array([])
+
     y = x - loc
     numerator = y**(alpha - 1) * np.exp(-lambda_ * y)
     normalization_factor = gamma(alpha) / lambda_**alpha
@@ -537,6 +542,9 @@ def gamma_sr_cdf_(x: np.array,
 
     where, :math:`\gamma(\alpha, \lambda y)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
     """
+    if x.size == 0:
+        return np.array([])
+
     return gammainc(alpha, lambda_ * x)
 
 
@@ -637,6 +645,9 @@ def gaussian_pdf_(x: np.array,
 
     The final PDF is expressed as :math:`f(x)`.
     """
+    if x.size == 0:
+        return np.array([])
+
     exponent_factor = (x - mean)**2 / (2 * std**2)
     exponent_factor = np.exp(-exponent_factor)
     normalization_factor = std * np.sqrt(2 * np.pi)
@@ -672,6 +683,9 @@ def gaussian_cdf_(x: np.array,
         F(x) = \Phi\left(\dfrac{x-\mu}{\sigma}\right) =
         \dfrac{1}{2} \left[1 + \text{erf}\left(\dfrac{x - \mu}{\sigma\sqrt{2}}\right)\right]
     """
+    if x.size == 0:
+        return np.array([])
+
     num_ = x - mean
     den_ = std * np.sqrt(2)
     return 0.5 * (1 + erf(num_ / den_))
@@ -756,6 +770,9 @@ def laplace_pdf_(x: np.array,
 
     The final PDF is expressed as :math:`f(x)`.
     """
+    if x.size == 0:
+        return np.array([])
+
     exponent_factor = abs(x - mean) / diversity
     exponent_factor = np.exp(-exponent_factor)
     normalization_factor = 2 * diversity
@@ -801,6 +818,8 @@ def laplace_cdf_(x: np.array,
         1 - \dfrac{1}{2}\exp\left(-\dfrac{x-\mu}{b}\right) &,&x\geq\mu
         \end{cases}
     """
+    if x.size == 0:
+        return np.array([])
 
     def _cdf1(x_):
         return 0.5 * np.exp((x_ - mean) / diversity)
@@ -860,6 +879,9 @@ def log_normal_pdf_(x: np.array,
 
     The final PDF is expressed as :math:`f(y)`.
     """
+    if x.size == 0:
+        return np.array([])
+
     y = x - loc
 
     exponent_factor = (np.log(y) - mean)**2 / (2 * std**2)
@@ -1055,6 +1077,9 @@ def uniform_pdf_(x: np.array,
 
     .. math:: f(x\ |\ a, b) = \dfrac{1}{b-a}
     """
+    if x.size == 0:
+        return np.array([])
+
     high_ = high + low
     pdf_ = np.zeros_like(a=x, dtype=float)
 
@@ -1094,6 +1119,9 @@ def uniform_cdf_(x: np.array,
                         1 &, x > b
                         \end{cases}
     """
+    if x.size == 0:
+        return np.array([])
+
     high = high + low
 
     if low == high == 0:
@@ -1152,6 +1180,9 @@ def skew_normal_pdf_(x: np.array,
 
     The final PDF is expressed as :math:`f(y)/\omega`.
     """
+    if x.size == 0:
+        return np.array([])
+
     y = (x - loc) / scale
     g_pdf_ = gaussian_pdf_(x=y, normalize=True)
     g_cdf_ = gaussian_cdf_(x=shape * y, normalize=True)
@@ -1187,5 +1218,8 @@ def skew_normal_cdf_(x: np.array,
     where, :math:`T` is the Owen's T function, see :obj:`scipy.specials.owens_t`, and
     :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function.
     """
+    if x.size == 0:
+        return np.array([])
+
     y = (x - loc) / scale
     return gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
