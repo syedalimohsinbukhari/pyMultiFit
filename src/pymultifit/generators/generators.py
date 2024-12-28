@@ -1,11 +1,12 @@
 """Created on Jul 18 00:35:26 2024"""
 
-from typing import Callable, List, Tuple, Union
+from typing import List, Tuple, Type, Union
 
 import numpy as np
 from custom_inherit import doc_inherit
 
 from .. import distributions as dist, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, POWERLAW, SKEW_NORMAL
+from ..distributions.backend import BaseDistribution
 
 listOfTuples = List[Tuple[float, ...]]
 listOfTuplesOrArray = Union[listOfTuples, np.array]
@@ -13,7 +14,7 @@ listOfTuplesOrArray = Union[listOfTuples, np.array]
 doc_style = 'numpy_napoleon_with_merge'
 
 
-def multi_base(x: np.array, distribution_func: Callable, params: listOfTuplesOrArray,
+def multi_base(x: np.array, distribution_func: Type[BaseDistribution], params: listOfTuplesOrArray,
                noise_level: float = 0.0, normalize: bool = False) -> np.array:
     """Generate data based on a combination of distributions with optional noise.
 
@@ -21,7 +22,7 @@ def multi_base(x: np.array, distribution_func: Callable, params: listOfTuplesOrA
     ----------
     x : np.array
         Input array of values where PDF is evaluated.
-    distribution_func: Callable
+    distribution_func: Type[BaseDistribution]
         The distribution function to be used to generate data.
     params : listOfTuplesOrArray
         List of tuples containing the parameters for the required distribution.
@@ -40,6 +41,8 @@ def multi_base(x: np.array, distribution_func: Callable, params: listOfTuplesOrA
     y = np.zeros_like(x, dtype=float)
 
     for param_set in params:
+        if isinstance(param_set, float):
+            param_set = [param_set]
         y += distribution_func(*param_set, normalize=normalize).pdf(x)
 
     if noise_level > 0:
