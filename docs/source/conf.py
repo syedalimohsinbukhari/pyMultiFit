@@ -51,7 +51,6 @@ autodoc_typehints = "none"
 add_module_names = False
 html_show_sourcelink = False
 
-
 numpydoc_show_class_members = True
 numpydoc_show_inherited_class_members = True
 numpydoc_class_members_toctree = False
@@ -93,16 +92,17 @@ html_last_updated_fmt = "%b %d, %Y"
 html_title = "pyMultiFit"
 html_short_title = "pyMultiFit"
 html_extra_path = []
-pygments_style = "default"
+pygments_style = "colorful"
 add_function_parentheses = True
 html_show_sphinx = True
 html_show_copyright = True
 
 # Theme config
 html_theme = "pydata_sphinx_theme"
-# html_theme_options = {
-#     "github_url": "https://github.com/syedalimohsinbukhari/pyMultiFit",
-# }
+html_theme_options = {
+    "show_toc_level": 3,
+    "github_url": "https://github.com/syedalimohsinbukhari/pyMultiFit",
+}
 
 html_context = {
     "menu_links_name": "Repository",

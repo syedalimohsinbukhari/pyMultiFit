@@ -8,10 +8,19 @@ pre, code {
     text-align: center;
 }
 
-.bd-main .bd-content .bd-article-container {
-  max-width: 100%;  /* default is 60em */
+.bd-page-width {
+  max-width: 100%;  /* default is 88rem */
+/* Set the parent container to use Flexbox */
+
+.bd-sidebar-primary {
+    width: 20%
 }
 
-.bd-page-width {
-  max-width: 90%;  /* default is 88rem */
+.bd-main .bd-content .bd-article-container {
+    max-width: 100em;
+    padding: 2em;
+}
+
+.bd-sidebar-secondary {
+    width: 25em;
 }

@@ -1,7 +1,6 @@
 """Created on Jul 18 00:25:57 2024"""
 
 import numpy as np
-from scipy.optimize import Bounds
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check

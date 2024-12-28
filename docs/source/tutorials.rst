@@ -4,8 +4,8 @@ Tutorials
 .. toctree::
    :maxdepth: 1
 
-   basics1
-   basics2
+   tutorials/GALLERY_HEADER
+   basics
    generating_data
    generating_n_model_data
    generating_mixture_model_data
