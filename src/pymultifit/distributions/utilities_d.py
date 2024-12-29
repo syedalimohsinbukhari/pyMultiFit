@@ -12,9 +12,6 @@ __all__ = ['arc_sine_pdf_',
            'integral_check',
            'laplace_pdf_', 'laplace_cdf_',
            'log_normal_pdf_', 'log_normal_cdf_',
-           'norris2005',
-           'norris2011',
-           'power_law_',
            'skew_normal_pdf_', 'skew_normal_cdf_',
            'uniform_pdf_', 'uniform_cdf_']
 
@@ -381,7 +378,7 @@ def exponential_cdf_(x: np.array,
 
 def folded_normal_pdf_(x: np.array,
                        amplitude: float = 1., mean: float = 0.0, variance: float = 1.0,
-                       normalize: bool = False) -> np.array:
+                       loc: float = 0.0, normalize: bool = False) -> np.array:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -757,7 +754,7 @@ def half_normal_pdf_(x: np.array,
 
     where :math:`x >= 0`.
     """
-    return folded_normal_pdf_(x, amplitude=amplitude, mean=0, variance=sigma, normalize=normalize)
+    return folded_normal_pdf_(x, amplitude=amplitude, mean=0, variance=sigma, loc=loc, normalize=normalize)
 
 
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
@@ -977,134 +974,6 @@ def log_normal_cdf_(x: np.array,
         F(x) = \Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)
     """
     return _remove_nans(gaussian_cdf_(x=np.log(x - loc), mean=mean, std=std))
-
-
-def norris2005(x: np.array,
-               amplitude: float = 1., rise_time: float = 1., decay_time: float = 1.,
-               normalize: bool = False) -> np.array:
-    # """
-    # Computes the Norris 2005 light curve model.
-    #
-    # The Norris 2005 model describes a light curve with an asymmetric shape characterized by exponential rise and decay times.
-    #
-    # Parameters
-    # ----------
-    # x : np.array
-    #     The input time array at which to evaluate the light curve model.
-    # amplitude : float, optional
-    #     The amplitude of the light curve peak.
-    #     Default is 1.0.
-    # rise_time : float, optional
-    #     The characteristic rise time of the light curve.
-    #     Default is 1.0.
-    # decay_time : float, optional
-    #     The characteristic decay time of the light curve.
-    #     Default is 1.0.
-    # normalize : bool, optional
-    #     Included for consistency with other distributions in the library.
-    #     This parameter does not affect the output since normalization is not required for the Norris 2005 model.
-    #     Default is False.
-    #
-    # Returns
-    # -------
-    # np.array
-    #     The evaluated Norris 2005 model at the input times `x`.
-    #
-    # References
-    # ----------
-    #     Norris, J. P. (2005). ApJ, 627, 324–345.
-    #     Robert, J. N. (2011). MNRAS, 419, 2, 1650-1659.
-    # """
-    tau = np.sqrt(rise_time * decay_time)
-    xi = np.sqrt(rise_time / decay_time)
-
-    return norris2011(x, amplitude=amplitude, tau=tau, xi=xi)
-
-
-def norris2011(x: np.array,
-               amplitude: float = 1., tau: float = 1., xi: float = 1.,
-               normalize: bool = False) -> np.array:
-    # """
-    # Computes the Norris 2011 light curve model.
-    #
-    # The Norris 2011 model is a reformulation of the original Norris 2005 model, expressed in terms of different parameters to facilitate better
-    # scaling across various energy bands in gamma-ray burst (GRB) light curves. The light curve is modeled as:
-    #
-    #     P(t) = A * exp(-ξ * (t / τ + τ / t))
-    #
-    # where τ and ξ are derived from the rise and decay times of the pulse.
-    #
-    # Parameters
-    # ----------
-    # x : np.array
-    #     The input time array at which to evaluate the light curve model.
-    # amplitude : float, optional
-    #     The amplitude of the light curve peak (A in the formula).
-    #     Default is 1.0.
-    # tau : float, optional
-    #     The pulse timescale parameter (τ in the formula).
-    #     Default is 1.0.
-    # xi : float, optional
-    #     The asymmetry parameter (ξ in the formula).
-    #     Default is 1.0.
-    # normalize : bool, optional
-    #     Included for consistency with other distributions in the library.
-    #     This parameter does not affect the output since normalization is not required for the Norris 2011 model.
-    #     Default is False.
-    #
-    # Returns
-    # -------
-    # np.array
-    #     The evaluated Norris 2011 model at the input times `x`.
-    #
-    # Notes
-    # -----
-    # - In this parameterization, the pulse peak occurs at t_peak = τ.
-    #
-    # References
-    # ----------
-    #     Norris, J. P. (2005). ApJ, 627, 324–345.
-    #     Norris, J. P. (2011). MNRAS, 419, 2, 1650–1659.
-    # """
-    fraction1 = x / tau
-    fraction2 = tau / x
-    return amplitude * np.exp(-xi * (fraction1 + fraction2))
-
-
-def power_law_(x: np.array,
-               amplitude: float = 1.0, alpha: float = -1.0,
-               normalize: bool = False) -> np.array:
-    r"""
-    Compute power-law function.
-
-    Parameters
-    ----------
-    x : np.array
-        Input array of values.
-    amplitude : float, optional
-        The amplitude or scaling factor of the power law.
-        Defaults to 1.0.
-    alpha : float, optional
-        The exponent factor, :math:`\alpha`.
-        Defaults to -1.0.
-    normalize : bool, optional
-        For API consistency only.
-
-    Returns
-    -------
-    np.array
-        Array of the same shape as :math:`x`, containing the evaluated values.
-
-    Notes
-    -----
-    The power-law function is defined as:
-
-    .. math:: f(E\ |\ A, \alpha) = A\left(\dfrac{E}{E_\text{piv}}\right)^{-\alpha}
-
-    where :math:`E_\text{piv}` is the pivot energy, fixed at :math:`100\,\text{keV}`.
-    """
-    e_pivot = 100.
-    return amplitude * (x / e_pivot) ** -alpha
 
 
 def uniform_pdf_(x: np.array,

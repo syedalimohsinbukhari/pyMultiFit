@@ -15,7 +15,7 @@ class ExponentialFitter(BaseFitter):
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
         self.pn_par = 2
-        self.sn_par = {'loc': 0}
+        self.sn_par = {'loc': 0.0}
 
     @staticmethod
     def fit_boundaries():

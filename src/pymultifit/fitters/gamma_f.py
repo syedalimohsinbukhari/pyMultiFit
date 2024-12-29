@@ -40,7 +40,9 @@ class GammaFitterSS(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        return GammaFitterSR.fit_boundaries()
+        lb = (0, 0, 0, -np.inf)
+        ub = (np.inf, np.inf, np.inf, np.inf)
+        return lb, ub
 
     @staticmethod
     def fitter(x, params):

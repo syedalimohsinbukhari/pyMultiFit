@@ -17,7 +17,7 @@ class SkewNormalFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, -np.inf, -np.inf, -np.inf)
+        lb = (0, -np.inf, -np.inf, 0)
         ub = (np.inf, np.inf, np.inf, np.inf)
         return lb, ub
 

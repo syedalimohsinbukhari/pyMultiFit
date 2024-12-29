@@ -12,30 +12,6 @@ Subpackages
 Submodules
 ----------
 
-pymultifit.distributions.norris\_d module
------------------------------------------
-
-.. automodule:: pymultifit.distributions.norris_d
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pymultifit.distributions.others module
---------------------------------------
-
-.. automodule:: pymultifit.distributions.others
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pymultifit.distributions.powerLaw\_d module
--------------------------------------------
-
-.. automodule:: pymultifit.distributions.powerLaw_d
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pymultifit.distributions.utilities module
 -----------------------------------------
 

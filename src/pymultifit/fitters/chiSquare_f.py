@@ -14,13 +14,13 @@ class ChiSquareFitter(BaseFitter):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
-        self.pn_par = 4
+        self.pn_par = 2
         self.sn_par = {'loc': 0.0}
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, 0, -np.inf, -np.inf)
-        ub = (np.inf, np.inf, np.inf, np.inf)
+        lb = (0, 0, -np.inf)
+        ub = (np.inf, np.inf, np.inf)
         return lb, ub
 
     @staticmethod

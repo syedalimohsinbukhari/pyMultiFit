@@ -1,5 +1,7 @@
 """Created on Jul 18 19:01:45 2024"""
 
+import numpy as np
+
 from .backend import BaseFitter
 from .utilities_f import sanity_check
 from ..distributions.utilities_d import log_normal_pdf_
@@ -19,6 +21,12 @@ class LogNormalFitter(BaseFitter):
         self.n_par = 4
         self.pn_par = 3
         self.sn_par = {'loc': 0}
+
+    @staticmethod
+    def fit_boundaries():
+        lb = (0, -np.inf, 0, -np.inf)
+        ub = (np.inf, np.inf, np.inf, np.inf)
+        return lb, ub
 
     @staticmethod
     def fitter(x, params):
