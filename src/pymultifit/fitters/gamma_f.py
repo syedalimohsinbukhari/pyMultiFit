@@ -7,7 +7,7 @@ from .utilities_f import sanity_check
 from ..distributions.utilities_d import gamma_sr_pdf_, gamma_ss_pdf_
 
 
-class GammaSRFitter(BaseFitter):
+class GammaFitterSR(BaseFitter):
     """A class for fitting multiple Gamma SR functions to the given data."""
 
     def __init__(self, x_values, y_values, max_iterations: int = 1000):
@@ -28,7 +28,7 @@ class GammaSRFitter(BaseFitter):
         return gamma_sr_pdf_(x, *params, normalize=False)
 
 
-class GammaSSFitter(BaseFitter):
+class GammaFitterSS(BaseFitter):
     """A class for fitting multiple Gamma SS functions to the given data."""
 
     def __init__(self, x_values, y_values, max_iterations: int = 1000):
@@ -40,7 +40,7 @@ class GammaSSFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        return GammaSRFitter.fit_boundaries()
+        return GammaFitterSR.fit_boundaries()
 
     @staticmethod
     def fitter(x, params):

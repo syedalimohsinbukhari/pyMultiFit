@@ -1,24 +1,24 @@
-Laplace Distribution
+Laplace Fitter
 ====================
 
-.. autoclass:: pymultifit.distributions.laplace_d.LaplaceDistribution
+.. autoclass:: pymultifit.fitters.laplace_f.LaplaceFitter
    :no-members:
+   :show-inheritance:
 
-This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :func:`~pymultifit.distributions.utilities.laplace_pdf_`
-* :func:`~pymultifit.distributions.utilities.laplace_cdf_`
+* :func:`~pymultifit.distributions.utilities_d.laplace_pdf_`
 
 Recommended Import
 ------------------
 
 .. code-block:: python
 
-   from pymultifit.distributions import LaplaceDistribution
+   from pymultifit.fitters import LaplaceFitter
 
 Full Import
 -----------
 
 .. code-block:: python
 
-   from pymultifit.distributions.laplace_d import LaplaceDistribution
+   from pymultifit.fitters.laplace_f import LaplaceFitter
