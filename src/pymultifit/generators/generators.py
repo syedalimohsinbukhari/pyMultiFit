@@ -80,7 +80,7 @@ def multi_chi_squared(x: np.array, params: listOfTuplesOrArray,
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_gamma_sr(x: np.array, params: listOfTuplesOrArray,
                    noise_level: float = 0.0, normalize: bool = False) -> np.array:
-    r"""Generate multi-:clas:`~pymultifit.distributions.gamma_d.GammaDistributionSR` data with optional noise."""
+    r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` data with optional noise."""
     return multi_base(x=x, distribution_func=dist.GammaDistributionSR, params=params, noise_level=noise_level, normalize=normalize)
 
 

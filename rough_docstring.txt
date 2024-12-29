@@ -26,3 +26,7 @@ PFD generic docstring
     np.array
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
+
+
+# saving images
+plt.savefig('./../../images/{DISTRIBUTION.LOWER()}_example.png')

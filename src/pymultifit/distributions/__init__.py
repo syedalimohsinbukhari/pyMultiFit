@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from .arcSine_d import ArcSineDistribution
 from .beta_d import BetaDistribution
 from .chiSquare_d import ChiSquareDistribution
 from .exponential_d import ExponentialDistribution
