@@ -1,14 +1,6 @@
 pymultifit.distributions package
 ================================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   pymultifit.distributions.backend
-
 Submodules
 ----------
 

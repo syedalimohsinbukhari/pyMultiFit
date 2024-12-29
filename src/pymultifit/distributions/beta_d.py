@@ -81,6 +81,15 @@ class BetaDistribution(BaseDistribution):
     .. image:: ../../../images/beta_example2.png
        :alt: Beta distribution (shifted and translated)
        :align: center
+
+    Raises
+    ------
+    NegativeAmplitudeError:
+        If the provided value of amplitude is negative.
+    NegativeAlphaError:
+        If the provided value of :math:`\alpha` is negative.
+    NegativeBetaError:
+        If the provided value of :math:`\beta` is negative.
     """
 
     def __init__(self,
