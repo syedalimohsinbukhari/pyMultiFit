@@ -4,9 +4,8 @@ import numpy as np
 import pytest
 from scipy.stats import gamma
 
-from pymultifit.distributions import GammaDistributionSS
 from ...pymultifit import EPSILON
-from ...pymultifit.distributions import GammaDistributionSR
+from ...pymultifit.distributions import GammaDistributionSR, GammaDistributionSS
 from ...pymultifit.distributions.backend import errorHandling as erH
 
 
