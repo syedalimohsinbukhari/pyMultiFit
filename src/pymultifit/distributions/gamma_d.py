@@ -28,17 +28,21 @@ class GammaDistributionSR(BaseDistribution):
         self.norm = normalize
 
     def pdf(self, x: np.array) -> np.array:
-        return gamma_sr_pdf_(x, amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc, normalize=self.norm)
+        return gamma_sr_pdf_(x,
+                             amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
+                             normalize=self.norm)
 
     def cdf(self, x: np.array) -> np.array:
-        return gamma_sr_cdf_(x, amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, normalize=self.norm)
+        return gamma_sr_cdf_(x,
+                             amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
+                             normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
-        a, b = self.shape, self.rate
+        a, b, loc = self.shape, self.rate, self.loc
 
-        mean_ = a / b
-        mode_ = (a - 1) / b if a >= 1 else 0
-        variance_ = a / b**2
+        mean_ = (a / b) + loc
+        mode_ = (a - 1) / b + loc if a >= 1 else 0
+        variance_ = a / b ** 2
 
         return {'mean': mean_,
                 'mode': mode_,
@@ -48,7 +52,8 @@ class GammaDistributionSR(BaseDistribution):
 class GammaDistributionSS(GammaDistributionSR):
     """Class for Gamma distribution with shape and scale parameters."""
 
-    def __init__(self, amplitude: float = 1.0, shape: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, shape: float = 1.0, scale: float = 1.0, loc: float = 0.0,
+                 normalize: bool = False):
         self.scale = scale
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()

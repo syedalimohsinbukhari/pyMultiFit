@@ -23,7 +23,7 @@ class ExponentialDistribution(BaseDistribution):
         self.norm = normalize
 
     def pdf(self, x: np.array) -> np.array:
-        return exponential_pdf_(x=x, amplitude=self.amplitude, scale=self.scale, loc=self.loc, normalize=self.norm)
+        return exponential_pdf_(x=x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
     def cdf(self, x: np.array) -> np.array:
         return exponential_cdf_(x=x, amplitude=self.amplitude, scale=self.scale, loc=self.loc, normalize=self.norm)
