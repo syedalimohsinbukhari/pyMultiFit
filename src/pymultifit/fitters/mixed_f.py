@@ -11,7 +11,8 @@ from scipy.optimize import curve_fit
 
 from .utilities_f import sanity_check
 from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
-from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, SkewNormalDistribution
+from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, \
+    SkewNormalDistribution
 
 
 class _Line:
@@ -176,12 +177,12 @@ class MixedDataFitter:
                 lower_bounds.extend([-np.inf, -np.inf])
                 upper_bounds.extend([np.inf, np.inf])
             elif model == SKEW_NORMAL:
-                lower_bounds.extend([-np.inf, -np.inf, -np.inf, 0])
+                lower_bounds.extend([0, -np.inf, -np.inf, 0])
                 upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
 
         return lower_bounds, upper_bounds
 
-    def _parameter_extractor(self):
+    def _parameter_extractor(self, values):
         """
         Extracts the parameters for each model in the model list.
 
@@ -190,7 +191,6 @@ class MixedDataFitter:
         dict
             A dictionary where the keys are model names and the values are lists of parameters.
         """
-        all_ = self.params
         p_index = 0
         param_dict = {}
 
@@ -199,7 +199,7 @@ class MixedDataFitter:
                 param_dict[model] = []
 
             _, n_pars = model_dict[model]
-            param_dict[model].extend([all_[p_index:p_index + n_pars]])
+            param_dict[model].extend([values[p_index:p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
@@ -249,7 +249,8 @@ class MixedDataFitter:
         """
         p0 = list(itertools.chain.from_iterable(p0))
         if len(p0) != self._expected_param_count():
-            raise ValueError(f"Initial parameters length {len(p0)} does not match expected count {self._expected_param_count()}.")
+            raise ValueError(
+                f"Initial parameters length {len(p0)} does not match expected count {self._expected_param_count()}.")
 
         self.params, self.covariance, *_ = curve_fit(f=self.model_function, xdata=self.x_values, ydata=self.y_values,
                                                      p0=p0, maxfev=self.max_iterations, bounds=self._get_bounds())
@@ -260,7 +261,8 @@ class MixedDataFitter:
         return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
 
     def plot_fit(self, show_individuals=False,
-                 x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None, data_label: Optional[str] = None,
+                 x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
+                 data_label: Optional[str] = None,
                  figure_size: tuple = (12, 6)) -> tuple:
         """
         Plots the original data, fitted model, and optionally individual components.
@@ -323,34 +325,47 @@ class MixedDataFitter:
 
         return self.model_function(self.x_values, *self.params)
 
-    def get_parameters(self, model=None, return_individual_values=True):
+    def get_parameters(self, model=None, get_errors: bool = False):
         """
         Extracts parameters for a specific model, or for all models if no model is specified.
 
         Parameters
         ----------
+        get_errors : bool, optional
+            If True, includes errors in the returned output. Defaults to False.
         model : str, optional
             The model name to extract parameters for. If None, extracts parameters for all models. Defaults to None.
-        return_individual_values : bool, optional
-            If True, returns the parameters in a more detailed format.
-            This is automatically set to False if no model is specified. Defaults to True.
 
         Returns
         -------
-        dict, list, or tuple
-            If `model` is None, returns a dictionary with model names as keys and lists of parameter sets as values.
-            If a specific model is specified, returns the extracted parameters for that model.
+        dict
+            A dictionary containing:
+            - "parameters": Nested dictionary of parameter values for each model if `get_errors` is True.
+            - "errors": Nested dictionary of errors for each model (if `get_errors=True`).
+            Otherwise, returns just the parameters directly.
         """
-        dict_ = self._parameter_extractor()
+        # Extract parameters and errors if requested
+        if not get_errors:
+            parameters = self._parameter_extractor(self.params)
+            # Return parameters directly if errors are not requested
+            return parameters if model is None else parameters.get(model, [])
+
+        # If get_errors is True, extract parameters and errors
+        parameters = self._parameter_extractor(self.params)
+        errors = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
 
         if model is None:
-            return dict_
+            # Return combined dictionary for all models
+            return {"parameters": parameters, "errors": errors}
 
-        par_dict = dict_.get(model, [])
-        if not return_individual_values:
-            return par_dict
+        # Prepare output for a specific model
+        output = {"parameters": {}, "errors": {}}
 
-        _, n_par = model_dict[model]
-        flattened_list = list(itertools.chain.from_iterable(par_dict))
+        keys = ["parameters", "errors"]
+        for temp_, key in zip([parameters, errors], keys):
+            par_dict = temp_.get(model, [])
+            _, n_par = model_dict[model]
+            flattened_list = [item for sublist in par_dict for item in sublist.tolist()]
+            output[key] = tuple(flattened_list[i::n_par] for i in range(n_par))
 
-        return tuple(flattened_list[i::n_par] for i in range(n_par))
+        return output

@@ -22,7 +22,7 @@ Derived Distributions
 
    * - Name
      - Description
-     - Parameters
+     - PDF function
    * - :class:`ArcSineDistribution <pymultifit.distributions.arcSine_d.ArcSineDistribution>`
      - ArcSine distribution.
      - :math:`\dfrac{1}{\pi\sqrt{x(1-x)}}`

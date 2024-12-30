@@ -24,3 +24,7 @@ pre, code {
 .bd-sidebar-secondary {
     width: 25em;
 }
+
+.table {
+    vertical-align: middle;
+}

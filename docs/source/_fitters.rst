@@ -71,3 +71,4 @@ Derived Fitters
    LogNormalFitter    <fitters/logNormal_f>
    MixedDataFitter    <fitters/mixed_f>
    SkewNormalFitter   <fitters/skewNormal_f>
+   FitterUtilities    <fitters/utilities_f>

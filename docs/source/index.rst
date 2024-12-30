@@ -7,7 +7,7 @@ Why pyMultiFit?
 ---------------
 
 Data fitting is the backbone of scientific analysis, serving as the bread-and-butter for any researcher dealing with experimental or simulated data.
-While popular libraries like **NumPy** and **SciPy** offer functions such as ``polyfit`` and ``curve_fit`` for polynomial and generic curve fittings, extending these tools for **multi-model fitting** is often cumbersome and repetitive.
+While popular libraries like **NumPy** and **SciPy** offer functions such as :obj:`~numpy.polyfit` and :obj:`~scipy.optimize.curve_fit` for polynomial and generic curve fittings, extending these tools for **multi-model fitting** is often cumbersome and repetitive.
 
 This is where **pyMultiFit** steps in.
 It provides out-of-the-box support for common multi-fitters and allows seamless integration of **user-defined fitters** with minimal effort.
@@ -22,7 +22,7 @@ Key Features
    - :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`
 
 2. **User-Defined Fitters**
-   A :class:`~pymultifit.fitters.backend.baseFitter` class serves as an anchor for users to create custom fitters with minimal boilerplate code.
+   A :class:`~pymultifit.fitters.backend.baseFitter.BaseFitter` class serves as an anchor for users to create custom fitters with minimal boilerplate code.
 
 3. **N-Modal Data Generation**
    Generate synthetic datasets with **N Gaussian components** or other statistical distributions, perfect for:
@@ -37,7 +37,7 @@ Benefits
 --------
 
 - **Ease of Use**: Simplifies the process of fitting multiple models without requiring extensive redefinitions.
-- **Customizable**: Offers flexibility through the ``BaseFitter`` class for domain-specific models.
+- **Customizable**: Offers flexibility through the :class:`~pymultifit.fitters.backend.baseFitter.BaseFitter` class for domain-specific models.
 - **Synthetic Data Support**: Makes it easy to generate complex, multi-modal datasets for testing and validation.
 - **Research Focused**: Tailored to meet the needs of researchers dealing with signals, spectra, and experimental data.
 

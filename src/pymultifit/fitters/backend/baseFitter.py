@@ -307,11 +307,11 @@ class BaseFitter:
 
         Retrieve parameter values for sub-models 1 and 3 only:
 
-        >>> parameters = fitter.get_parameters(select=[1, 3])
+        >>> parameters = fitter.get_parameters()
 
         Retrieve parameter values and standard errors for sub-models 2 and 4:
 
-        >>> mean, errors = fitter.get_parameters(select=[2, 4], errors=True)
+        >>> mean, errors = fitter.get_parameters()
         """
         parameter_mean = self.get_value_error_pair(mean_values=True, std_values=errors)
 

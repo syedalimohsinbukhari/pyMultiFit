@@ -1,5 +1,5 @@
-Error Handling
-==============
+``errorHandling``
+=================
 
 .. py:currentmodule:: pymultifit.distributions.backend.errorHandling
 

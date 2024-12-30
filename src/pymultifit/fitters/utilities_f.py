@@ -39,12 +39,12 @@ def sanity_check(x_values: xy_values, y_values: xy_values) -> xy_tuple:
 
 def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexType) -> np.ndarray:
     """
-    Extracts specific parameter values from a given function based on the number of parameters per fit and selected indices.
+    Extract parameter values from a given function based on the number of parameters per fit and selected indices.
 
     Parameters
     ----------
     par_array : np.ndarray
-        A 2D array where the first column contains the parameter values.
+        A 2D array where the first column contains the parameter values and the second contains its standard errors.
     n_par : int
         The number of parameters per fit (e.g., amplitude, mu, sigma, etc.).
     selected_models : int, list of int, or None
@@ -55,7 +55,7 @@ def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexTyp
     Returns
     -------
     np.ndarray
-        A 2D array containing the selected parameter values for the specified Gaussian components.
+        A 2D array containing the selected parameter values for the specified mean and error values for the fit.
     """
     indices = np.array(selected_models) - 1 if selected_models is not None else slice(None)
     return par_array.reshape(-1, n_par)[indices]

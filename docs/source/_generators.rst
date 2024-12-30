@@ -13,6 +13,18 @@ Template function
    * - :meth:`~pymultifit.generators.generators.multi_base`
      - The template function for the generator functions.
 
+Standalone generators
+---------------------
+
+.. list-table::
+   :align: center
+   :header-rows: 1
+
+   * - Name
+     - Description
+   * - :meth:`~pymultifit.generators.generators.multiple_models`
+     - Generator for data based on a combination of different models.
+
 Derived generators
 ------------------
 
@@ -38,5 +50,8 @@ Derived generators
      - Log-Normal distribution generator.
    * - :meth:`~pymultifit.generators.generators.multi_skew_normal`
      - Skewed Normal distribution generator.
-   * - :meth:`~pymultifit.generators.generators.multiple_models`
-     - Generator for data based on a combination of different models.
+
+.. toctree::
+   :hidden:
+
+   GeneratorFunctions         <generators/generators>
