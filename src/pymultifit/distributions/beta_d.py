@@ -25,10 +25,10 @@ class BetaDistribution(BaseDistribution):
         The :math:`\beta` parameter.
         Default is 1.0.
     loc : float, optional
-        The location parameter, :math:`-` shifting.
+        The location parameter, for shifting.
         Defaults to 0.0.
     scale: float, optional
-        The scale parameter, :math:`-` scaling.
+        The scale parameter, for scaling.
         Defaults to 1.0,
     normalize : bool, optional
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
@@ -84,11 +84,11 @@ class BetaDistribution(BaseDistribution):
 
     Raises
     ------
-    NegativeAmplitudeError:
+    :class:`~pymultifit.distributions.backend.errorHandling.NegativeAmplitudeError`
         If the provided value of amplitude is negative.
-    NegativeAlphaError:
+    :class:`~pymultifit.distributions.backend.errorHandling.NegativeAlphaError`
         If the provided value of :math:`\alpha` is negative.
-    NegativeBetaError:
+    :class:`~pymultifit.distributions.backend.errorHandling.NegativeBetaError`
         If the provided value of :math:`\beta` is negative.
     """
 
