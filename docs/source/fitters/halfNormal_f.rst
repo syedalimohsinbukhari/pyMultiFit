@@ -1,24 +1,23 @@
-HalfNormal Distribution
-=======================
+HalfNormal Fitter
+=================
 
-.. autoclass:: pymultifit.distributions.halfNormal_d.HalfNormalDistribution
+.. autoclass:: pymultifit.fitters.halfNormal_f.HalfNormalFitter
    :no-members:
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :mod:`~pymultifit.distributions.utilities.half_normal_pdf_`
-* :mod:`~pymultifit.distributions.utilities.half_normal_cdf_`
-
-Full Import
------------
-
-.. code-block:: python
-
-   from pymultifit.distributions.halfNormal_d import HalfNormalDistribution
+* :func:`~pymultifit.distributions.utilities_d.half_normal_pdf_`
 
 Recommended Import
 ------------------
 
 .. code-block:: python
 
-   from pymultifit.distributions import HalfNormalDistribution
+   from pymultifit.fitters import HalfNormalFitter
+
+Full Import
+-----------
+
+.. code-block:: python
+
+   from pymultifit.fitters.halfNormal_f import HalfNormalFitter

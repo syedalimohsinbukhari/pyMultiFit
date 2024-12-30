@@ -16,6 +16,7 @@ The documentation first goes through a birdseye view for these three modules, fo
    _distributions
    _fitters
    _generators
+   _error_handling
    pymultifit
    pymultifit.distributions
    pymultifit.fitters

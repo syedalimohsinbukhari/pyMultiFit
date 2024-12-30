@@ -11,7 +11,7 @@ from ....pymultifit.distributions.backend import BaseDistribution
 class MockDistribution(BaseDistribution):
     """A mock distribution for testing purposes. Implements a simple uniform distribution in the range [0, 1]."""
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return np.where((x >= 0) & (x <= 1), 1.0, 0.0)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:

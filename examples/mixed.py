@@ -14,7 +14,7 @@ params = [(-0.1, 5), (20, -20, 2), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 
 y = multiple_models(x=x, params=params, model_list=['line', 'gaussian', 'gaussian', 'laplace', 'laplace', 'gaussian'], noise_level=noise_level)
 
 fitter = MixedDataFitter(x_values=x, y_values=y, model_list=['line'] + ['gaussian'] * 2 + ['laplace'] * 2 + ['gaussian'])
-guess = [(0, 0), (1, -20, 1), (1, -5, 5), (1, -1, 0.5), (1, 2, 1), (1, 15, 2)]
+guess = [(0, 0), (1, -20, 1), (1, -5, 5), (1, -1, 0.5), (5, 2, 1), (1, 15, 2)]
 
 fitter.fit(guess)
 

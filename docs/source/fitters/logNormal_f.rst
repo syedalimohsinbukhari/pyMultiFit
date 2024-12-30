@@ -1,24 +1,24 @@
-LogNormal Distribution
-======================
+LogNormal Fitter
+================
 
-.. autoclass:: pymultifit.distributions.logNormal_d.LogNormalDistribution
+.. autoclass:: pymultifit.fitters.logNormal_f.LogNormalFitter
    :no-members:
+   :show-inheritance:
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :mod:`~pymultifit.distributions.utilities.log_normal_pdf_`
-* :mod:`~pymultifit.distributions.utilities.log_normal_cdf_`
+* :func:`~pymultifit.distributions.utilities_d.log_normal_pdf_`
 
 Recommended Import
 ------------------
 
 .. code-block:: python
 
-   from pymultifit.distributions import LogNormalDistribution
+   from pymultifit.fitters import LogNormalFitter
 
 Full Import
 -----------
 
 .. code-block:: python
 
-   from pymultifit.distributions.logNormal_d import LogNormalDistribution
+   from pymultifit.fitters.logNormal_f import LogNormalFitter

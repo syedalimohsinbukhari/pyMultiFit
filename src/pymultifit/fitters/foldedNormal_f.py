@@ -1,5 +1,7 @@
 """Created on Dec 04 23:24:55 2024"""
 
+import numpy as np
+
 from .backend import BaseFitter
 from .utilities_f import sanity_check
 from ..distributions.utilities_d import folded_normal_pdf_
@@ -14,5 +16,11 @@ class FoldedNormalFitter(BaseFitter):
         self.n_par = 3
 
     @staticmethod
-    def _fitter(x, params):
-        return folded_normal_pdf_(x, normalize=False)
+    def fit_boundaries():
+        lb = (0, -np.inf, 0)
+        ub = (np.inf, np.inf, np.inf)
+        return lb, ub
+
+    @staticmethod
+    def fitter(x, params):
+        return folded_normal_pdf_(x, *params, normalize=False)

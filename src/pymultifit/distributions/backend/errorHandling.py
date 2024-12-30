@@ -11,43 +11,43 @@ class BaseDistributionError(Exception):
 class DegreeOfFreedomError(BaseDistributionError):
     """Raised when the degree of freedom is a float instead of int."""
 
-    def __init__(self, message=r"DOF can only be integer, N+"):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__(r"DOF can only be integer, N+")
 
 
 class InvalidUniformParameters(BaseDistributionError):
     """Raised when the parameters of uniform distributions are not valid."""
 
-    def __init__(self, message="High < Low, invalid parameter selection."):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__("High < Low, invalid parameter selection.")
 
 
 class NegativeAlphaError(BaseDistributionError):
     """Raised when the alpha parameter value is negative."""
 
-    def __init__(self, message=fr"Alpha {neg_message}."):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__(f"Alpha {neg_message}.")
 
 
 class NegativeAmplitudeError(BaseDistributionError):
     """Raised when the amplitude is negative."""
 
-    def __init__(self, message=f"Amplitude {neg_message}"):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__(f"Amplitude {neg_message}")
 
 
 class NegativeBetaError(BaseDistributionError):
     """Raised when the beta parameter value is negative."""
 
-    def __init__(self, message=fr"Beta {neg_message}"):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__(f"Beta {neg_message}")
 
 
 class NegativeRateError(BaseDistributionError):
     """Raised when the value of rate parameter is negative."""
 
-    def __init__(self, message=f"Rate {neg_message}"):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__(f"Rate {neg_message}")
 
 
 class NegativeScaleError(BaseDistributionError):
@@ -60,26 +60,26 @@ class NegativeScaleError(BaseDistributionError):
 class NegativeShapeError(BaseDistributionError):
     """Raised when the value of shape parameter is negative."""
 
-    def __init__(self, message=f"Shape {neg_message}"):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__(f"Shape {neg_message}")
 
 
 class NegativeStandardDeviationError(BaseDistributionError):
     """Raised when the standard deviation is negative."""
 
-    def __init__(self, message=f"Standard deviation {neg_message}"):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__(f"Standard deviation {neg_message}")
 
 
 class NegativeVarianceError(BaseDistributionError):
     """Raised when the variance value is negative."""
 
-    def __init__(self, message="Variance cannot be negative."):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__("Variance cannot be negative.")
 
 
 class XOutOfRange(BaseDistributionError):
     """Raised when the x value is out of range for the distribution."""
 
-    def __init__(self, message="X out of range."):
-        super().__init__(message)
+    def __init__(self):
+        super().__init__("X out of range.")

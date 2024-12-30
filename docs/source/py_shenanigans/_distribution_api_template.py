@@ -39,7 +39,7 @@ def generate_distribution_rst_simple(distribution_name):
 .. autoclass:: {parent_class}
    :no-members:
 
-This class internally utilizes the following functions from the :mod:`~{utilities_module}` module:
+This class internally utilizes the following functions from :mod:`~{utilities_module}` module:
 
 * :mod:`~{utilities_module}.{pdf_function}`
 * :mod:`~{utilities_module}.{cdf_function}`

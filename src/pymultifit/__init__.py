@@ -13,9 +13,10 @@ NORMAL = GAUSSIAN
 LOG_NORMAL = 'log_normal'
 SKEW_NORMAL = 'skew_normal'
 LAPLACE = 'laplace'
-GAMMA = 'gamma'
+GAMMA_SR = 'gamma_sr'
+GAMMA_SS = 'gamma_ss'
 BETA = 'beta'
-ARCSINE = 'arcSine'
+ARC_SINE = 'arcSine'
 POWERLAW = 'powerlaw'
 
 LINE = 'line'

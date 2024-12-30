@@ -6,11 +6,91 @@ import numpy as np
 from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import beta_cdf_, beta_logpdf_, beta_pdf_
+from .utilities_d import beta_cdf_, beta_pdf_
 
 
 class BetaDistribution(BaseDistribution):
-    """Class for Beta distribution."""
+    r"""
+    Class for Beta distribution.
+
+    Parameters
+    ----------
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    alpha : float, optional
+        The :math:`\alpha` parameter.
+        Default is 1.0.
+    beta : float, optional
+        The :math:`\beta` parameter.
+        Default is 1.0.
+    loc : float, optional
+        The location parameter, for shifting.
+        Defaults to 0.0.
+    scale: float, optional
+        The scale parameter, for scaling.
+        Defaults to 1.0,
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Examples
+    --------
+    Importing libraries
+
+    .. literalinclude:: ../../../examples/basic/beta1.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
+
+    Generating a standard :math:`\text{Beta}(2, 30)` distribution with ``pyMultiFit`` and ``scipy``.
+
+    .. literalinclude:: ../../../examples/basic/beta1.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**
+
+    .. literalinclude:: ../../../examples/basic/beta1.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/beta_example1.png
+       :alt: Beta distribution (5, 30)
+       :align: center
+
+    Generating a shifted and translated :math:`\text{Beta}(2, 30)` distribution.
+
+    .. literalinclude:: ../../../examples/basic/beta2.py
+       :language: python
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**
+
+    .. literalinclude:: ../../../examples/basic/beta2.py
+       :language: python
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/beta_example2.png
+       :alt: Beta distribution (shifted and translated)
+       :align: center
+
+    Raises
+    ------
+    :class:`~pymultifit.distributions.backend.errorHandling.NegativeAmplitudeError`
+        If the provided value of amplitude is negative.
+    :class:`~pymultifit.distributions.backend.errorHandling.NegativeAlphaError`
+        If the provided value of :math:`\alpha` is negative.
+    :class:`~pymultifit.distributions.backend.errorHandling.NegativeBetaError`
+        If the provided value of :math:`\beta` is negative.
+    """
 
     def __init__(self,
                  amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
@@ -29,13 +109,13 @@ class BetaDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         if self.scale > 0:
             return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
         else:
             return np.full(shape=x.shape, fill_value=np.nan)
 
-    def _cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         if self.scale > 0:
             return beta_cdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale)
         else:

@@ -14,13 +14,13 @@ Beta Distribution
    - :class:`~pymultifit.distributions.uniform_d.UniformDistribution`:
         - :math:`\alpha = \beta = 1`
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :func:`~pymultifit.distributions.utilities.beta_pdf_`
-* :func:`~pymultifit.distributions.utilities.beta_cdf_`
+* :func:`~pymultifit.distributions.utilities_d.beta_pdf_`
+* :func:`~pymultifit.distributions.utilities_d.beta_cdf_`
 
 ..
-    * :func:`~pymultifit.distributions.utilities.beta_logpdf_`
+    * :func:`~pymultifit.distributions.utilities_d.beta_logpdf_`
 
 Recommended Import
 ^^^^^^^^^^^^^^^^^^

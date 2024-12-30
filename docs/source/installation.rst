@@ -10,6 +10,7 @@ Whether you're a user or a developer, follow the steps below to get started quic
 - `numpy < 2.1.0 <http://www.numpy.org/>`_
 - `matplotlib <http://www.matplotlib.org/>`_
 - `scipy <https://www.scipy.org/>`_
+- `custom-inherit <https://github.com/rsokl/custom_inherit>`_
 - `mpyez <https://github.com/syedalimohsinbukhari/mpyez>`_
 
 -------------------------------

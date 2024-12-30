@@ -56,7 +56,7 @@ class TestBetaDistribution:
             assert d_stats["mode"] == (a - 1) / (a + b - 2)
         elif np.logical_or(a < 0, b < 0):
             assert d_stats.get('mode', []) == []
-        assert d_stats["variance"] == (a * b) / ((a + b)**2 * (a + b + 1))
+        assert d_stats["variance"] == (a * b) / ((a + b) ** 2 * (a + b + 1))
 
     @staticmethod
     def test_pdf_cdf_logpdf_scipy():
@@ -84,7 +84,8 @@ class TestBetaDistribution:
                         loc = np.random.uniform(low=-5.0, high=2.0)
                         scale = np.random.uniform(low=-5.0, high=5.0)
 
-                    dist_ = BetaDistribution(amplitude=1.0, alpha=alpha_, beta=beta_, loc=loc, scale=scale, normalize=True)
+                    dist_ = BetaDistribution(amplitude=1.0, alpha=alpha_, beta=beta_, loc=loc, scale=scale,
+                                             normalize=True)
 
                     pymul_ = _multipy(dist=dist_, func_type=func_)(x_)
                     scipy_vals = _scipy(a_=alpha_, b_=beta_, loc_=loc, scale_=scale, func_type=func_)
@@ -121,9 +122,7 @@ class TestBetaDistribution:
             dist_ = BetaDistribution(amplitude=1.0, alpha=a_, beta=b_, loc=loc, scale=scale, normalize=True)
 
             scipy_pdf = beta(a_, b_, loc=loc, scale=scale).pdf(x_)
-            # scipy_logpdf = beta(a_, b_, loc=loc, scale=scale).logpdf(x_)
             scipy_cdf = beta(a_, b_, loc=loc, scale=scale).cdf(x_)
 
             np.testing.assert_allclose(actual=dist_.pdf(x_), desired=scipy_pdf, rtol=1e-5, atol=1e-8)
-            # np.testing.assert_allclose(actual=dist_.logpdf(x_), desired=scipy_logpdf, rtol=1e-5, atol=1e-8)
             np.testing.assert_allclose(actual=dist_.cdf(x_), desired=scipy_cdf, rtol=1e-5, atol=1e-8)

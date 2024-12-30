@@ -25,10 +25,11 @@ class FoldedNormalDistribution(BaseDistribution):
         self.var_ = sigma**2
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mean, variance=self.var_,
+                                  normalize=self.norm)
 
-    def _cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.array) -> np.array:
         return folded_normal_cdf_(x=x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
 
     def stats(self) -> Dict[str, Any]:

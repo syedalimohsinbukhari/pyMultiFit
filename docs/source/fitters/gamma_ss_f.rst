@@ -1,28 +1,25 @@
-Gamma Distribution (SS)
-=======================
+Gamma Fitter (SS)
+=================
 
-.. autoclass:: pymultifit.distributions.gamma_d.GammaDistributionSS
+.. autoclass:: pymultifit.fitters.gamma_f.GammaFitterSS
    :no-members:
+   :show-inheritance:
 
-.. note::
-    The :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` with  :math:`\lambda = \theta^{-1}`.
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
-This class internally utilizes the following functions from the :mod:`~pymultifit.distributions.utilities` module:
-
-* :func:`~pymultifit.distributions.utilities.gamma_sr_pdf_`
-* :func:`~pymultifit.distributions.utilities.gamma_sr_cdf_`
+* :func:`~pymultifit.distributions.utilities_d.gamma_sr_pdf_`
 
 Recommended Import
-^^^^^^^^^^^^^^^^^^
+-------------------
 
 .. code-block:: python
 
-   from pymultifit.distributions import GammaDistributionSS
+   from pymultifit.fitters import GammaFitterSS
 
 
 Full Import
-^^^^^^^^^^^
+-----------
 
 .. code-block:: python
 
-   from pymultifit.distributions.gamma_d import GammaDistributionSS
+   from pymultifit.fitters.gamma_f import GammaFitterSS
