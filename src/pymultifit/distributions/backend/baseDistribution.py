@@ -6,7 +6,7 @@ import numpy as np
 
 
 class BaseDistribution:
-    """
+    r"""
     Bare-bones class for statistical distributions to provide consistent methods.
 
     This class serves as a template for other distribution classes, defining the common interface
@@ -14,18 +14,13 @@ class BaseDistribution:
     """
 
     def pdf(self, x: np.array) -> np.array:
-        """
+        r"""
         Compute the probability density function (PDF) for the distribution.
 
-        Parameters
-        ----------
-        x : np.array
-            Input values at which to evaluate the PDF.
+        :param x: input values at which to evaluate the PDF.
+        :type x: np.array
 
-        Returns
-        -------
-        np.array
-            The PDF values at the input values.
+        :raise NotImplementedError:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
@@ -33,15 +28,10 @@ class BaseDistribution:
         """
         Compute the cumulative density function (CDF) for the distribution.
 
-        Parameters
-        ----------
-        x : np.array
-            Input values at which to evaluate the PDF.
+        :param x: input values at which to evaluate the CDF.
+        :type x: np.array
 
-        Returns
-        -------
-        np.array
-            The CDF values at the input values.
+        :raise NotImplementedError:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
@@ -56,9 +46,9 @@ class BaseDistribution:
 
         If any of the parameter is not computable for a distribution, this method returns None.
 
-        Returns
-        -------
-        Dict[str, Any]
-            A dictionary containing statistical properties such as mean, variance, etc.
+        :returns: A dictionary containing statistical properties such as mean, variance, etc.
+        :rtype: Dict[str, Any]
+
+        :raise BaseDistributionError: If the statistical properties are not computed.
         """
         raise NotImplementedError("Subclasses should implement this method.")

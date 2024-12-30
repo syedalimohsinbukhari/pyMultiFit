@@ -1,7 +1,8 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['arc_sine_pdf_',
-           'beta_pdf_', 'beta_cdf_', 'beta_logpdf_',
+__all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
+           'arc_sine_pdf_',
+           'beta_pdf_', 'beta_cdf_',
            'chi_square_pdf_',
            'exponential_pdf_', 'exponential_cdf_',
            'folded_normal_pdf_', 'folded_normal_cdf_',
@@ -9,7 +10,6 @@ __all__ = ['arc_sine_pdf_',
            'gamma_ss_pdf_',
            'gaussian_pdf_', 'gaussian_cdf_',
            'half_normal_pdf_', 'half_normal_cdf_',
-           'integral_check',
            'laplace_pdf_', 'laplace_cdf_',
            'log_normal_pdf_', 'log_normal_cdf_',
            'skew_normal_pdf_', 'skew_normal_cdf_',
@@ -17,30 +17,9 @@ __all__ = ['arc_sine_pdf_',
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t
+from scipy.special import betainc, erf, gammainc, gammaln, owens_t
 
 doc_style = 'numpy_napoleon_with_merge'
-
-
-def integral_check(pdf_function, x_range: tuple) -> float:
-    """
-    Compute the integral of a given PDF function over a specified range.
-
-    Parameters
-    ----------
-    pdf_function : function
-        The PDF function to integrate.
-    x_range : tuple
-        The range (a, b) over which to integrate the PDF.
-
-    Returns
-    -------
-    float
-        The integral result of the PDF function over the specified range.
-    """
-    from scipy.integrate import quad
-    integral = quad(lambda x: pdf_function(x), x_range[0], x_range[1])[0]
-    return integral
 
 
 def arc_sine_pdf_(x: np.array,
@@ -138,7 +117,7 @@ def beta_pdf_(x: np.array,
     y = (x - loc) / scale
     pdf_ = np.zeros_like(a=y, dtype=float)
 
-    numerator = y ** (alpha - 1) * (1 - y) ** (beta - 1)
+    numerator = y**(alpha - 1) * (1 - y)**(beta - 1)
     normalization_factor = gamma(alpha) * gamma(beta) / gamma(alpha + beta)
 
     mask_ = _beta_masking(y=y, alpha=alpha, beta=beta)
@@ -159,22 +138,11 @@ def beta_pdf_(x: np.array,
     return pdf_
 
 
-def _remove_nans(x: np.array) -> np.array:
-    return np.nan_to_num(x=x, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
-
-
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_logpdf_(x: np.array,
                  amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
                  loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
-    r"""
-    Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
-
-    Parameters
-    ----------
-    x : np.array
-        Input array of values where logPDF is evaluated.
-    """
+    r"""Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`."""
     if x.size == 0:
         return np.array([])
 
@@ -198,17 +166,6 @@ def beta_logpdf_(x: np.array,
         logpdf_[y == 1] = np.inf
 
     return logpdf_ - np.log(scale)
-
-
-def _beta_masking(y, alpha, beta):
-    out_of_range_mask = np.logical_or(y < 0, y > 1)
-    undefined_mask = np.zeros_like(a=y, dtype=bool)
-    if alpha <= 1:
-        undefined_mask = np.logical_or(undefined_mask, y == 0)
-    if beta <= 1:
-        undefined_mask = np.logical_or(undefined_mask, y == 1)
-    mask_ = np.logical_or(out_of_range_mask, undefined_mask)
-    return mask_
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
@@ -415,24 +372,18 @@ def folded_normal_pdf_(x: np.array,
     if x.size == 0:
         return np.array([])
 
-    sigma = np.sqrt(variance)
-    pdf_ = np.zeros_like(a=x, dtype=float)
+    c = np.abs(mean) / variance
 
-    mask = x >= 0
-    g1 = gaussian_pdf_(x=x[mask], mean=mean, std=sigma, normalize=True)
-    g2 = gaussian_pdf_(x=x[mask], mean=-mean, std=sigma, normalize=True)
-    pdf_[mask] = g1 + g2
+    y = (x - loc) / np.sqrt(variance)
 
-    if not normalize:
-        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
-
-    return pdf_
+    pdf_ = np.sqrt(2 / np.pi) * np.cosh(c * y) * np.exp(-(y**2 + c**2) / 2)
+    return pdf_ / np.sqrt(variance)
 
 
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_cdf_(x: np.array,
                        amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
-                       normalize: bool = False) -> np.array:
+                       loc: float = 0.0, normalize: bool = False) -> np.array:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -454,11 +405,13 @@ def folded_normal_cdf_(x: np.array,
     if x.size == 0:
         return np.array([])
 
-    y = np.zeros_like(a=x, dtype=float)
-    mask = x >= 0
-    frac1, frac2 = (x[mask] - mu) / np.sqrt(2 * variance), (x[mask] + mu) / np.sqrt(2 * variance)
-    y[mask] += 0.5 * (erf(frac1) + erf(frac2))
-    return y
+    y = (x - loc) / np.sqrt(variance)
+
+    cdf_ = np.zeros_like(a=y, dtype=float)
+    mask = y >= 0
+    frac1, frac2 = (y[mask] - mu) / np.sqrt(2 * variance), (y[mask] + mu) / np.sqrt(2 * variance)
+    cdf_[mask] += 0.5 * (erf(frac1) + erf(frac2))
+    return cdf_ / np.sqrt(variance)
 
 
 def gamma_sr_pdf_(x: np.array,
@@ -514,8 +467,8 @@ def gamma_sr_pdf_(x: np.array,
         return np.array([])
 
     y = x - loc
-    numerator = y ** (alpha - 1) * np.exp(-lambda_ * y)
-    normalization_factor = gamma(alpha) / lambda_ ** alpha
+    numerator = y**(alpha - 1) * np.exp(-lambda_ * y)
+    normalization_factor = gamma(alpha) / lambda_**alpha
 
     pdf_ = numerator / normalization_factor
     pdf_[x < loc] = 0
@@ -670,7 +623,7 @@ def gaussian_pdf_(x: np.array,
     if x.size == 0:
         return np.array([])
 
-    exponent_factor = (x - mean) ** 2 / (2 * std ** 2)
+    exponent_factor = (x - mean)**2 / (2 * std**2)
     exponent_factor = np.exp(-exponent_factor)
     normalization_factor = std * np.sqrt(2 * np.pi)
 
@@ -832,10 +785,6 @@ def laplace_pdf_(x: np.array,
     return pdf_
 
 
-def _pdf_scaling(pdf_, amplitude):
-    return amplitude * (pdf_ / np.max(pdf_))
-
-
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_cdf_(x: np.array,
                  amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
@@ -935,7 +884,7 @@ def log_normal_pdf_(x: np.array,
 
     y = x - loc
 
-    exponent_factor = (np.log(y) - mean) ** 2 / (2 * std ** 2)
+    exponent_factor = (np.log(y) - mean)**2 / (2 * std**2)
     exponent_factor = np.exp(-exponent_factor)
     normalization_factor = std * y * np.sqrt(2 * np.pi)
 
@@ -1034,7 +983,7 @@ def uniform_cdf_(x: np.array,
                  amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
                  normalize: bool = False) -> np.array:
     r"""
-    Compute CDF of :class:`pymultifit.distributions.uniform_d.UniformDistribution`.
+    Compute CDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
     Parameters
     ----------
@@ -1108,7 +1057,7 @@ def skew_normal_pdf_(x: np.array,
     .. math:: f(y\ |\ \alpha, \xi, \omega) =
              2\phi(y)\Phi(\alpha y)
 
-    where, :math:`\phi(y)` and :math:`\Phi(\alpha y)` are the :class:`~pymultifit.distributions.GaussianDistribution`
+    where, :math:`\phi(y)` and :math:`\Phi(\alpha y)` are the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
     PDF and CDF defined at :math:`y` and :math:`\alpha y` respectively. Additionally, :math:`y` is a transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \xi}{\omega}
@@ -1135,7 +1084,7 @@ def skew_normal_cdf_(x: np.array,
                      amplitude: float = 1.0, shape: float = 0.0, loc: float = 0.0, scale: float = 1.0,
                      normalize: bool = False):
     r"""
-    Compute CDF of :class:`~pymultifit.distributions.SkewNormalDistribution`.
+    Compute CDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
 
     Parameters
     ----------
@@ -1150,7 +1099,7 @@ def skew_normal_cdf_(x: np.array,
 
     .. math:: F(x) = \Phi\left(\dfrac{x - \xi}{\omega}\right) - 2T\left(\dfrac{x - \xi}{\omega}, \alpha\right)
 
-    where, :math:`T` is the Owen's T function, see :obj:`scipy.specials.owens_t`, and
+    where, :math:`T` is the Owen's T function, see :obj:`scipy.special.owens_t`, and
     :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function.
     """
     if x.size == 0:
@@ -1158,3 +1107,67 @@ def skew_normal_cdf_(x: np.array,
 
     y = (x - loc) / scale
     return gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
+
+
+def _beta_masking(y: np.array, alpha: float, beta: float) -> np.array:
+    """
+    Creates a mask for beta distributions to identify out-of-range or undefined values.
+
+    Parameters
+    ----------
+    y : np.array
+        Array of values to check, typically in the range [0, 1].
+    alpha : float
+        Alpha parameter of the beta distribution. Determines the shape of the distribution.
+    beta : float
+        Beta parameter of the beta distribution. Determines the shape of the distribution.
+
+    Returns
+    -------
+    np.array
+        A boolean mask array where `True` indicates out-of-range or undefined values.
+    """
+    out_of_range_mask = np.logical_or(y < 0, y > 1)
+    undefined_mask = np.zeros_like(a=y, dtype=bool)
+    if alpha <= 1:
+        undefined_mask = np.logical_or(undefined_mask, y == 0)
+    if beta <= 1:
+        undefined_mask = np.logical_or(undefined_mask, y == 1)
+    mask_ = np.logical_or(out_of_range_mask, undefined_mask)
+    return mask_
+
+
+def _pdf_scaling(pdf_: np.array, amplitude: float) -> np.array:
+    """
+    Scales a probability density function (PDF) by a given amplitude.
+
+    Parameters
+    ----------
+    pdf_ : np.array
+        The input PDF array to be scaled.
+    amplitude : float
+        The amplitude to scale the PDF.
+
+    Returns
+    -------
+    np.array
+        The scaled PDF array.
+    """
+    return amplitude * (pdf_ / np.max(pdf_))
+
+
+def _remove_nans(x: np.array) -> np.array:
+    """
+    Replaces NaN, positive infinity, and negative infinity values in an array.
+
+    Parameters
+    ----------
+    x : np.array
+        Input array that may contain NaN, positive infinity, or negative infinity values.
+
+    Returns
+    -------
+    np.array
+        Array with NaN replaced by 0, positive infinity replaced by `np.inf`, and negative infinity replaced by `-np.inf`.
+    """
+    return np.nan_to_num(x=x, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)

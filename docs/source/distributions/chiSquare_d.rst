@@ -4,12 +4,6 @@ ChiSquare Distribution
 .. autoclass:: pymultifit.distributions.chiSquare_d.ChiSquareDistribution
    :show-inheritance:
 
-.. note::
-    The :class:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR`,
-
-    * :math:`\alpha_\text{gammaSR} = \text{dof} / 2`,
-    * :math:`\lambda_\text{gammaSR} = 0.5`.
-
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
 * :func:`~pymultifit.distributions.utilities_d.gamma_sr_pdf_`

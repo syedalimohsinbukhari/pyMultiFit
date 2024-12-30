@@ -81,3 +81,4 @@ Derived Distributions
    LogNormalDistribution    <distributions/logNormal_d>
    SkewNormalDistribution   <distributions/skewNormal_d>
    UniformDistribution      <distributions/uniform_d>
+   DistributionUtilities    <distributions/utilities_d>

@@ -10,7 +10,24 @@ from .utilities_d import folded_normal_cdf_, folded_normal_pdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):
-    """Class for FoldedNormal distribution."""
+    r"""
+    Class for FoldedNormal distribution.
+
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :type amplitude: float, optional
+
+    :param mean: The mean parameter, :math:`\mu`. Defaults to 0.0.
+    :type mean: float, optional
+
+    :param sigma: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    :type sigma: float, optional
+
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    :type normalize: bool, optional
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+    """
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., normalize: bool = False):
         if not normalize and amplitude <= 0:

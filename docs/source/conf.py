@@ -10,8 +10,11 @@ import sys
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+# General information about the project
+year = datetime.date.today().year
+
 project = 'pymultifit'
-copyright = '2024, Syed Ali Mohsin Bukhari'
+copyright = f'2024-{year}, Syed Ali Mohsin Bukhari'
 author = 'Syed Ali Mohsin Bukhari'
 release = 'v0.2.2'
 
@@ -41,13 +44,15 @@ source_suffix = {'.rst': 'restructuredtext', '.md': 'restructuredtext'}
 suppress_warnings = ["config.cache"]
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
+                       "numpy": ('https://numpy.org/devdocs', None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
                        "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
-                       "matplotlib": ("https://matplotlib.org/stable/", None)}
+                       "matplotlib": ("https://matplotlib.org/stable/", None),
+                       "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None),}
 
 autosummary_generate = True
 autodoc_default_flags = ["members"]
-autodoc_typehints = "none"
+autodoc_typehints = "signature"
 add_module_names = False
 html_show_sourcelink = False
 
@@ -79,9 +84,6 @@ plot_formats = ["png"]
 templates_path = ['_templates']
 exclude_patterns = ["_build", "**.ipynb_checkpoints", "**.ipynb", "**.md5"]
 
-# General information about the project
-year = datetime.date.today().year
-
 # These enable substitutions using |variable| in the rst files
 rst_epilog = """
 .. |year| replace:: {year}
@@ -102,6 +104,11 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "show_toc_level": 3,
     "github_url": "https://github.com/syedalimohsinbukhari/pyMultiFit",
+    "navbar_end": [
+        "search-button",
+        "theme-switcher",
+        "navbar-icon-links"
+    ],
 }
 
 html_context = {

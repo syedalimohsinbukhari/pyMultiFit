@@ -8,23 +8,30 @@ class ArcSineDistribution(BetaDistribution):
     r"""
     Class for ArcSine distribution.
 
-    Parameters
-    ----------
-    amplitude : float, optional
-        The amplitude of the PDF. Defaults to 1.0.
-        Ignored if **normalize** is ``True``.
-    loc : float, optional
-        The location parameter, :math:`-` shifting.
-        Defaults to 0.0.
-    scale: float, optional
-        The scale parameter, :math:`-` scaling.
-        Defaults to 1.0,
-    normalize : bool, optional
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-        Defaults to ``False``.
+    .. note::
+        The :class:`ArcSineDistribution` is a special case of the :class:`~pymultifit.distributions.beta_d.BetaDistribution`,
 
-    Examples
-    --------
+        * :math:`\alpha_\text{beta} = 0.5`,
+        * :math:`\lambda_\text{beta} = 0.5`.
+
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :type amplitude: float, optional
+
+    :param loc: The location parameter, :math:`-` shifting. Defaults to 0.0.
+    :type loc: float, optional
+
+    :param scale: The scale parameter, for shifting. Defaults to 1.0.
+    :type scale: float, optional
+
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    :type normalize: bool, optional
+
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise NegativeScaleError: If the provided value of scale is negative.
+
+    :example:
+
     Importing libraries
 
     .. literalinclude:: ../../../examples/basic/arcSine.py
@@ -52,13 +59,6 @@ class ArcSineDistribution(BetaDistribution):
     .. image:: ../../../images/arcsine_example.png
        :alt: ArcSine distribution
        :align: center
-
-    Raises
-    ------
-    :class:`~pymultifit.distributions.backend.errorHandling.NegativeAmplitudeError`
-        If the provided value of amplitude is negative.
-    :class:`~pymultifit.distributions.backend.errorHandling.NegativeScaleError`
-        If the provided value of scale is negative.
     """
 
     def __init__(self, amplitude: float = 1., loc: float = 0.0, scale: float = 1.0, normalize: bool = False):

@@ -7,25 +7,31 @@ from .gamma_d import GammaDistributionSR
 
 
 class ChiSquareDistribution(GammaDistributionSR):
-    r"""Class for ChiSquare distribution.
+    r"""Class for :class:`ChiSquareDistribution` distribution.
 
-    Parameters
-    ----------
-    amplitude : float, optional
-        The amplitude of the PDF. Defaults to 1.0.
-        Ignored if **normalize** is ``True``.
-    degree_of_freedom : int, optional
-        The degree of freedom for the chi-square distribution.
-        Default is 1.0.
-    loc : float, optional
-        The location parameter, for shifting.
-        Defaults to 0.0.
-    normalize : bool, optional
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-        Defaults to ``False``.
+    .. note::
+        The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR`,
 
-    Examples
-    --------
+        * :math:`\alpha_\text{gammaSR} = \text{dof} / 2`,
+        * :math:`\lambda_\text{gammaSR} = 0.5`.
+
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :type amplitude: float, optional
+
+    :param degree_of_freedom: The degree of freedom for the chi-square distribution. Default is 1.0.
+    :type degree_of_freedom: int, optional
+
+    :param loc: The location parameter, for shifting. Defaults to 0.0.
+    :type loc: float, optional
+
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    :type normalize: bool, optional
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise DegreeOfFreedomError: If the provided value of degree of freedom is either less than or equal to 0 or not an integer.
+
+    :examples:
+
     Importing libraries
 
     .. literalinclude:: ../../../examples/basic/chisquare.py
@@ -71,13 +77,6 @@ class ChiSquareDistribution(GammaDistributionSR):
     .. image:: ../../../images/chi2_example2.png
        :alt: Beta distribution (shifted and translated)
        :align: center
-
-    Raises
-    ------
-    :class:`~pymultifit.distributions.backend.errorHandling.NegativeAmplitudeError`
-        If the provided value of amplitude is negative.
-    :class:`~pymultifit.distributions.backend.errorHandling.DegreeOfFreedomError`
-        If the provided value of degree of freedom is either less than or equal to 0 or not an integer.
     """
 
     def __init__(self,

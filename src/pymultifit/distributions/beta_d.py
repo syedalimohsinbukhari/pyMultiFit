@@ -13,26 +13,27 @@ class BetaDistribution(BaseDistribution):
     r"""
     Class for Beta distribution.
 
-    Parameters
-    ----------
-    amplitude : float, optional
-        The amplitude of the PDF. Defaults to 1.0.
-        Ignored if **normalize** is ``True``.
-    alpha : float, optional
-        The :math:`\alpha` parameter.
-        Default is 1.0.
-    beta : float, optional
-        The :math:`\beta` parameter.
-        Default is 1.0.
-    loc : float, optional
-        The location parameter, for shifting.
-        Defaults to 0.0.
-    scale: float, optional
-        The scale parameter, for scaling.
-        Defaults to 1.0,
-    normalize : bool, optional
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-        Defaults to ``False``.
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    :type amplitude: float, optional
+
+    :param alpha: The :math:`\alpha` parameter. Defaults to 1.0.
+    :type alpha: float, optional
+
+    :param beta: The :math:`\beta` parameter. Defaults to 1.0.
+    :type beta: float, optional
+
+    :param loc: float, optional The location parameter, for shifting. Defaults to 0.0.
+    :type loc: float, optional
+
+    :param scale: float, optional The scale parameter, for scaling. Defaults to 1.0.
+    :type scale: float, optional
+
+    :param normalize: bool, optional If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    :type normalize: bool, optional
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise NegativeAlphaError: If the provided value of :math:`\alpha` is negative.
+    :raise NegativeBetaError: If the provided value of :math:`\beta` is negative.
 
     Examples
     --------
@@ -81,15 +82,6 @@ class BetaDistribution(BaseDistribution):
     .. image:: ../../../images/beta_example2.png
        :alt: Beta distribution (shifted and translated)
        :align: center
-
-    Raises
-    ------
-    :class:`~pymultifit.distributions.backend.errorHandling.NegativeAmplitudeError`
-        If the provided value of amplitude is negative.
-    :class:`~pymultifit.distributions.backend.errorHandling.NegativeAlphaError`
-        If the provided value of :math:`\alpha` is negative.
-    :class:`~pymultifit.distributions.backend.errorHandling.NegativeBetaError`
-        If the provided value of :math:`\beta` is negative.
     """
 
     def __init__(self,

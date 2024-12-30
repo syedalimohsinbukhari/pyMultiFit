@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
    :maxdepth: 2
 
-   pymultifit.distributions
    pymultifit.fitters
    pymultifit.generators
 
