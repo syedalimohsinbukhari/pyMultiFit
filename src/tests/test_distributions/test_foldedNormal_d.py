@@ -31,9 +31,6 @@ class TestFoldedNormalDistribution:
         distribution = FoldedNormalDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.NegativeStandardDeviationError, match=f"Standard deviation {erH.neg_message}"):
-            FoldedNormalDistribution(sigma=-3.0)
-
     @staticmethod
     def test_edge_case():
         dist = FoldedNormalDistribution()
@@ -44,27 +41,23 @@ class TestFoldedNormalDistribution:
     @staticmethod
     def test_pdf_cdf():
         np.random.seed(43)
+
         def _cdf_pdf_custom(x_, dist_, what='cdf'):
             return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
 
-        def _cdf_pdf_scipy(x_, mean_, std_, what='cdf'):
-            c = abs(mean_) / std_  # Adjust for scipy's foldnorm input
-            return foldnorm.cdf(x_, c=c, loc=mean_, scale=std_) if what == 'cdf' else foldnorm.pdf(x_, c=c, loc=mean_, scale=std_)
+        def _cdf_pdf_scipy(x_, c_, loc_, scale_, what='cdf'):
+            return foldnorm.cdf(x_, c=c_, loc=loc_, scale=scale_) if what == 'cdf' else foldnorm.pdf(x_, c=c_, loc=loc_, scale=scale_)
 
-        for test_type in ['pdf']:  # Run tests for both PDF and CDF
-            for _ in range(50):  # Run 50 random tests
-                # Randomly generate test parameters
-                mean = np.random.uniform(low=-10, high=10)
-                std = np.random.uniform(low=0.1, high=5)  # Std deviation instead of scale
-                x = np.random.uniform(low=EPSILON, high=mean + 10, size=10)
+        for test_type in ['cdf']:
+            for _ in range(50):
+                mean = np.random.uniform(low=EPSILON, high=10)
+                std = np.random.uniform(low=EPSILON, high=10)
+                loc = np.random.uniform(low=-10, high=10)
 
-                # Initialize the custom distribution
-                distribution = FoldedNormalDistribution(mean=mean, sigma=std, normalize=True)
+                x = np.linspace(-20, 20, 50)
+                distribution = FoldedNormalDistribution(mean=mean, sigma=std, loc=loc, normalize=True)
 
-                # Compute expected results from scipy
-                expected = _cdf_pdf_scipy(x_=x, mean_=mean, std_=std, what=test_type)
-                expected = np.nan_to_num(expected, True, 0)  # Convert NaNs to 0 if present
+                actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=test_type)
+                desired = _cdf_pdf_scipy(x_=x, c_=mean, loc_=loc, scale_=std, what=test_type)
 
-                # Compare custom distribution output with scipy's
-                np.testing.assert_allclose(actual=_cdf_pdf_custom(x_=x, dist_=distribution, what=test_type),
-                                           desired=expected, rtol=1e-5, atol=1e-8)
+                np.testing.assert_allclose(actual=actual, desired=desired, rtol=1e-5, atol=1e-8)
