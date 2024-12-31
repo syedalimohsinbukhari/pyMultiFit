@@ -1,7 +1,7 @@
 """Created on Aug 10 23:08:38 2024"""
 
 import itertools
-from typing import Optional
+from typing import Optional, Tuple, Union, List, Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -52,40 +52,17 @@ model_dict = {LINE: [_Line, 2],
 
 
 class MixedDataFitter:
-    """
-    A class to fit a mixture of different models to data.
+    r"""
+    Class to fit a mixture of different models to data.
 
-    Attributes
-    ----------
-    x_values : array_like
-        The x-values for the data.
-    y_values : array_like
-        The y-values for the data.
-    model_list : list of str
-        List of models to fit (e.g., ['gaussian', 'gaussian', 'line']).
-    params : array_like, optional
-        The fitted parameters of the model after fitting.
-    covariance : array_like, optional
-        The covariance of the fitted parameters.
-    model_function : callable
-        The composite model function used for fitting.
+    :param x_values: The x-values for the data.
+    :param y_values: The y-values for the data.
+    :param model_list: List of models to fit (e.g., `LINE`, `GAUSSIAN`, `LOG_NORMAL`)
+    :param max_iterations: The maximum number of iterations for fitting procedure.
     """
 
-    def __init__(self, x_values, y_values, model_list, max_iterations: int = 1000):
-        """
-        Initializes the MixedDataFitter with data and a list of models.
-
-        Parameters
-        ----------
-        x_values : array_like
-            The x-values for the data.
-        y_values : array_like
-            The y-values for the data.
-        model_list : list of str
-            List of models to fit (e.g., ['gaussian', 'gaussian', 'line']).
-        max_iterations: int, optional
-            The max number of iterations for fitting procedure.
-        """
+    def __init__(self, x_values: Union[List, np.ndarray], y_values: Union[List, np.ndarray],
+                 model_list: List[str], max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
 
         self.x_values = x_values
@@ -103,30 +80,27 @@ class MixedDataFitter:
         return (f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
                 f"model_list={self.model_list}, max_iterations={self.max_iterations})")
 
-    def _create_model_function(self):
+    def _create_model_function(self) -> Callable:
         """
         Creates a composite model function based on the specified models.
 
-        Returns
-        -------
-        callable
-            A function that can be used for fitting.
+        :return: A composite model for fitting.
         """
 
-        def _composite_model(x, *params):
+        def _composite_model(x: np.ndarray, *params) -> np.ndarray:
             """
             Compute the composite model.
 
             Parameters
             ----------
-            x : array_like
+            x : np.ndarray
                 The x-values where the model is evaluated.
             params : tuple
                 Parameters for the model components.
 
             Returns
             -------
-            y : array_like
+            y : np.ndarray
                 The computed y-values from the composite model.
             """
             y = np.zeros_like(x, dtype=float)
@@ -141,14 +115,11 @@ class MixedDataFitter:
 
         return _composite_model
 
-    def _expected_param_count(self):
+    def _expected_param_count(self) -> int:
         """
         Calculates the expected number of parameters based on the model list.
 
-        Returns
-        -------
-        int
-            The expected number of parameters.
+        :return: The number of parameters.
         """
         count = 0
         for model in self.model_list:
@@ -157,14 +128,11 @@ class MixedDataFitter:
 
         return count
 
-    def _get_bounds(self):
+    def _get_bounds(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Sets the bounds for each parameter based on the model list.
 
-        Returns
-        -------
-        tuple of array_like
-            Lower and upper bounds for the parameters.
+        :returns: Lower and upper bounds for the parameters.
         """
         lower_bounds = []
         upper_bounds = []
@@ -180,16 +148,15 @@ class MixedDataFitter:
                 lower_bounds.extend([0, -np.inf, -np.inf, 0])
                 upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
 
-        return lower_bounds, upper_bounds
+        return np.array(lower_bounds), np.array(upper_bounds)
 
-    def _parameter_extractor(self, values):
+    def _parameter_extractor(self, values: np.ndarray) -> dict:
         """
         Extracts the parameters for each model in the model list.
 
-        Returns
-        -------
-        dict
-            A dictionary where the keys are model names and the values are lists of parameters.
+        :param values: The values from which the model dictionary is to be extracted.
+
+        :return: A dictionary where the keys are model names and the values are lists of parameters/error values.
         """
         p_index = 0
         param_dict = {}
@@ -205,6 +172,11 @@ class MixedDataFitter:
         return param_dict
 
     def _plot_individual_fitter(self, plotter):
+        """
+        Plot the individual fitters function.
+
+        :param plotter: The plotting axis object
+        """
         x = self.x_values
         colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
         param_index = 0
@@ -224,28 +196,19 @@ class MixedDataFitter:
         """
         Validate the models in the model list.
 
-        Raises
-        ------
-        ValueError
-            If any model in the model list is not recognized.
+        :raise ValueError: If any model in the model list is not recognized.
         """
         allowed_models = {GAUSSIAN, LINE, LOG_NORMAL, SKEW_NORMAL, LAPLACE}
         if not all(model in allowed_models for model in self.model_list):
             raise ValueError(f"All models must be one of {allowed_models}.")
 
-    def fit(self, p0):
+    def fit(self, p0: Union[List, np.ndarray]):
         """
         Fit the data.
 
-        Parameters
-        ----------
-        p0 : array_like
-            Initial guess for the fitting parameters.
+        :param p0: Initial guess for the fitted parameters.
 
-        Raises
-        ------
-        ValueError
-            If the length of initial parameters does not match the expected count.
+        :raises ValueError: If the length of the initial guess is not equal to the expected parameter count.
         """
         p0 = list(itertools.chain.from_iterable(p0))
         if len(p0) != self._expected_param_count():
@@ -256,36 +219,34 @@ class MixedDataFitter:
                                                      p0=p0, maxfev=self.max_iterations, bounds=self._get_bounds())
 
     @staticmethod
-    def format_param(value, t_low=0.001, t_high=10_000):
-        """Formats the parameter value based on its magnitude."""
+    def format_param(value: float, t_low: float = 0.001, t_high: float = 10_000) -> str:
+        """
+        Formats the parameter value based on its magnitude.
+
+        :param value: The value of the parameter to be formatted.
+        :param t_low: The lower bound below which the value is to be formatted.
+        :param t_high: The upper bound above which the value is to be formatted.
+
+        :return: The formatted value of the parameter
+        """
         return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
 
-    def plot_fit(self, show_individuals=False,
+    def plot_fit(self, show_individuals: bool = False,
                  x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
-                 data_label: Optional[str] = None,
-                 figure_size: tuple = (12, 6)) -> tuple:
+                 data_label: Optional[str] = None, figure_size: tuple = (12, 6)) -> tuple:
         """
         Plots the original data, fitted model, and optionally individual components.
 
-        Parameters
-        ----------
-        show_individuals : bool, optional
-            Whether to plot individual fitted functions, by default False.
-        x_label: str
-            The label for the x-axis.
-        y_label: str
-            The label for the y-axis.
-        title: str
-            The title for the plot.
-        data_label: str
-            The label for the data.
-        figure_size: tuple, optional
-            The size of the figure, by default (12, 6).
+        :param show_individuals: Whether to plot individual fitted functions, by default False.
+        :param x_label: The label for the x-axis of the plot.
+        :param y_label: The label for the y-axis of the plot.
+        :param title: The title for the plot.
+        :param data_label: The label for the data to be plotted.
+        :param figure_size: The size of the figure. Default is (12,6).
 
-        Returns
-        -------
-        tuple
-            The figure and axes handle for the drawn plot.
+        :return: A tuple of figure and axes object for the drawn plot
+
+        :raises ValueError: Raised if the plotting function is called before the fitting is done.
         """
         if self.y_values is None or self.params is None:
             raise ValueError("Data must be fitted before plotting.")
@@ -306,51 +267,38 @@ class MixedDataFitter:
 
         return fig, plotter
 
-    def get_fit_values(self):
+    def get_fit_values(self) -> np.ndarray:
         """
         Gets the y-values from the fitted model.
 
-        Returns
-        -------
-        array_like
-            The fitted y-values from the model.
+        :return: The y-values from the fitted model
 
-        Raises
-        ------
-        RuntimeError
-            If the model has not been fitted yet.
+        :raises ValueError: If the model has not been fitted yet.
         """
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
 
         return self.model_function(self.x_values, *self.params)
 
-    def get_parameters(self, model=None, get_errors: bool = False):
+    def get_parameters(self, model: Optional[str] = None, get_errors: bool = False):
         """
-        Extracts parameters for a specific model, or for all models if no model is specified.
+        Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
 
-        Parameters
-        ----------
-        get_errors : bool, optional
-            If True, includes errors in the returned output. Defaults to False.
-        model : str, optional
-            The model name to extract parameters for. If None, extracts parameters for all models. Defaults to None.
+        :param model: Model name to extract parameters for. If unspecified, extracts parameters for all models.
+            Defaults to ``None``.
+        :param get_errors: If ``True``, includes the errors in the returned output. Defaults to ``False``.
 
-        Returns
-        -------
-        dict
-            A dictionary containing:
-            - "parameters": Nested dictionary of parameter values for each model if `get_errors` is True.
-            - "errors": Nested dictionary of errors for each model (if `get_errors=True`).
-            Otherwise, returns just the parameters directly.
+        :return: A dictionary containing:
+
+                - "parameters": Nested dictionary of parameter values for each model if `get_errors` is True.
+                - "errors": Nested dictionary of errors for each model (if `get_errors=True`).
+
+                Otherwise, returns just the parameters directly.
         """
-        # Extract parameters and errors if requested
         if not get_errors:
             parameters = self._parameter_extractor(self.params)
-            # Return parameters directly if errors are not requested
             return parameters if model is None else parameters.get(model, [])
 
-        # If get_errors is True, extract parameters and errors
         parameters = self._parameter_extractor(self.params)
         errors = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
 

@@ -53,3 +53,4 @@ With **pyMultiFit**, you can focus more on analyzing your data and less on redef
    installation
    tutorials
    api_index
+   benchmarks

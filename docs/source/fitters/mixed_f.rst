@@ -2,6 +2,7 @@ Mixed Data Fitter
 ==================
 
 .. autoclass:: pymultifit.fitters.mixed_f.MixedDataFitter
+   :members:
    :show-inheritance:
    :private-members:
    :undoc-members:
