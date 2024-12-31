@@ -127,6 +127,8 @@ def beta_pdf_(x: np.array,
         pdf_[y == 0] = np.inf
     if beta <= 1:
         pdf_[y == 1] = np.inf
+    if alpha == 1 and beta == 1:
+        pdf_[y == 1] = 1
 
     # handle the cases where nans can occur with nan_to_num
     # np.inf and -np.inf to not affect the infinite values
@@ -207,7 +209,7 @@ def beta_cdf_(x: np.array,
 
 def chi_square_pdf_(x: np.array,
                     amplitude: float = 1.0, degree_of_freedom: int = 1,
-                    loc: float = 0.0, normalize: bool = False) -> np.array:
+                    loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
     r"""
     Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -246,8 +248,39 @@ def chi_square_pdf_(x: np.array,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    return gamma_sr_pdf_(x=x, amplitude=amplitude, alpha=degree_of_freedom / 2., lambda_=0.5, loc=loc,
-                         normalize=normalize)
+    y = (x - loc) / scale
+    pdf_ = np.zeros_like(x, dtype=float)
+    mask_ = y > 0
+    pdf_[mask_] = gamma_sr_pdf_(y[mask_], amplitude=amplitude, alpha=degree_of_freedom / 2, lambda_=0.5, loc=0, normalize=normalize)
+
+    return pdf_ / scale
+
+
+@doc_inherit(parent=chi_square_pdf_, style=doc_style)
+def chi_square_cdf_(x: np.array,
+                    amplitude: float = 1.0, degree_of_freedom: int = 1,
+                    loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
+    """
+    Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The ChiSquare CDF is defined as:
+
+
+    """
+    y = (x - loc) / scale
+    cdf_ = np.zeros_like(x, dtype=float)
+    mask_ = y >= 0
+    cdf_[mask_] = gammainc(degree_of_freedom / 2, y[mask_] / 2)
+    return cdf_
 
 
 def exponential_pdf_(x: np.array,
