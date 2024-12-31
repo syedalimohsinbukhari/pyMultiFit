@@ -65,32 +65,12 @@ def plot_accuracy(x, results, title_suffix):
 
 
 def evaluate_speed(custom_dist, scipy_dist, n_points_list, compute_cdf=False, repetitions=100):
-    """
-    Evaluate and compare the speed of custom and SciPy distributions for PDF/CDF computations.
-
-    Parameters:
-    - custom_dist: object
-        Custom distribution instance.
-    - scipy_dist: object
-        SciPy distribution instance.
-    - n_points_list: list
-        List of number of points to evaluate (used for scalability testing).
-    - compute_cdf: bool
-        Whether to test the speed of CDF (True) or PDF (False) computations.
-    - repetitions: int
-        Number of repetitions to average the execution times.
-
-    Returns:
-    - avg_times_class: list of average execution times for the custom distribution.
-    - avg_times_scipy: list of average execution times for the SciPy distribution.
-    """
     avg_times_class = []
     avg_times_scipy = []
 
     for n_points in n_points_list:
         x = np.linspace(1e-10, 10, n_points)
 
-        # Timing for custom distribution
         class_times = []
         for _ in range(repetitions):
             start_class = timer()
@@ -99,7 +79,6 @@ def evaluate_speed(custom_dist, scipy_dist, n_points_list, compute_cdf=False, re
             class_times.append(end_class - start_class)
         avg_times_class.append(np.mean(class_times))
 
-        # Timing for SciPy distribution
         scipy_times = []
         for _ in range(repetitions):
             start_scipy = timer()
@@ -122,8 +101,8 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
     plt.figure(figsize=(10, 4))
 
     plt.subplot(1, 2, 1)
-    plt.plot(n_points_list, mean_c, 'o-', label='Custom (Mean)', color='blue')
-    plt.plot(n_points_list, mean_s, 's-', label='SciPy (Mean)', color='orange')
+    plt.plot(n_points_list, mean_c, 'o-', ms=3, label='Custom (Mean)', color='blue')
+    plt.plot(n_points_list, mean_s, 's-', ms=3, label='SciPy (Mean)', color='orange')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel("Number of Points")
@@ -133,7 +112,7 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
     plt.grid(True)
 
     plt.subplot(1, 2, 2)
-    plt.plot(n_points_list, ratio_means, 'x-', label='Ratio (Mean)', color='purple')
+    plt.plot(n_points_list, ratio_means, 'x-', ms=4, label='Ratio (Mean)', color='purple')
     plt.xscale('log')
     plt.xlabel("Number of Points")
     plt.ylabel("Speed Ratio (Custom/SciPy)")
@@ -144,3 +123,13 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
 
     plt.tight_layout()
     plt.savefig(f"plots/{save_as}_{title_suffix}.png")
+
+
+def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = 10):
+    p_times_class, p_times_scipy = evaluate_speed(custom_dist=custom_dist, scipy_dist=scipy_dist,
+                                                  n_points_list=n_points, compute_cdf=False, repetitions=repetitions)
+    plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF Computations", save_as=save_as)
+
+    c_times_class, c_times_scipy = evaluate_speed(custom_dist=custom_dist, scipy_dist=scipy_dist,
+                                                  n_points_list=n_points, compute_cdf=False, repetitions=repetitions)
+    plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF Computations", save_as=save_as)
