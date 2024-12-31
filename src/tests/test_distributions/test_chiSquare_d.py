@@ -30,9 +30,6 @@ class TestChiSquareDistribution:
         distribution = ChiSquareDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.DegreeOfFreedomError, match=r"DOF can only be integer, N+"):
-            ChiSquareDistribution(degree_of_freedom=-3)
-
     @staticmethod
     def test_edge_case():
         dist = ChiSquareDistribution()

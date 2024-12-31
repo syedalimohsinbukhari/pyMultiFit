@@ -94,17 +94,25 @@ class ChiSquareDistribution(BaseDistribution):
         self.norm = normalize
 
     def pdf(self, x: np.array) -> np.array:
-        return chi_square_pdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm)
+        return chi_square_pdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
+                               normalize=self.norm)
 
     def cdf(self, x: np.array) -> np.array:
-        return chi_square_cdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm)
+        return chi_square_cdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
+                               normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
-        stat_ = super().stats()
+        mean_ = self.dof
+        mode_ = max(self.dof - 2, 0)
+        variance_ = 2 * self.dof
+
         f1 = 9 * self.dof
         f1 = 1 - (2 / f1)
-        f1 = self.dof * f1**3
+        f1 = self.dof * f1 ** 3
 
-        stat_['median'] = f1
+        median_ = f1
 
-        return stat_
+        return {'mean': mean_,
+                'median': median_,
+                'mode': mode_,
+                'variance': variance_}
