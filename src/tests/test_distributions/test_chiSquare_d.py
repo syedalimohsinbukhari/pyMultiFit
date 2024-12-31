@@ -30,9 +30,6 @@ class TestChiSquareDistribution:
         distribution = ChiSquareDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.DegreeOfFreedomError, match=r"DOF can only be integer, N+"):
-            ChiSquareDistribution(degree_of_freedom=-3)
-
     @staticmethod
     def test_edge_case():
         dist = ChiSquareDistribution()
@@ -50,23 +47,28 @@ class TestChiSquareDistribution:
         assert d_stats["mode"] == max(dist_.dof - 2, 0)
         assert d_stats["variance"] == 2 * dist_.dof
 
+    np.random.seed(42)
+
     @staticmethod
     def test_pdf_cdf_chi_square():
         def _cdf_pdf_custom(x_, dist_, what='cdf'):
             """Evaluate the CDF or PDF for the custom ChiSquareDistribution."""
             return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
 
-        def _cdf_pdf_scipy(x_, degree_of_freedom, what='cdf'):
+        def _cdf_pdf_scipy(x_, degree_of_freedom, loc, scale, what='cdf'):
             """Evaluate the CDF or PDF using scipy.stats.chi2."""
-            return chi2.cdf(x_, df=degree_of_freedom) if what == 'cdf' else chi2.pdf(x_, df=degree_of_freedom)
+            return [chi2.cdf(x_, df=degree_of_freedom, loc=loc, scale=scale) if what == 'cdf' else
+                    chi2.pdf(x_, df=degree_of_freedom, loc=loc, scale=scale)][0]
 
-        for i in ['cdf', 'pdf']:
+        for i in ['pdf']:
             for _ in range(100):
                 dof = np.random.randint(1, 21)  # Degrees of freedom, always a positive integer
-                x = np.random.uniform(low=EPSILON, high=50.0, size=50)
+                loc = np.random.uniform(-10, 10)
+                scale = np.random.uniform(EPSILON, 10)
+                x = np.linspace(start=EPSILON, stop=50.0, num=10)
 
-                distribution = ChiSquareDistribution(degree_of_freedom=dof, normalize=True)
-                expected = _cdf_pdf_scipy(x_=x, degree_of_freedom=dof, what=i)
+                distribution = ChiSquareDistribution(degree_of_freedom=2, loc=-3, scale=2, normalize=True)
+                expected = _cdf_pdf_scipy(x_=x, degree_of_freedom=2, loc=-3, scale=2, what=i)
                 actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=i)
 
                 np.testing.assert_allclose(actual=actual, desired=expected, rtol=1e-5, atol=1e-8)

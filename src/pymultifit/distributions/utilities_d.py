@@ -17,7 +17,7 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, erf, gammainc, gammaln, owens_t
+from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t
 
 doc_style = 'numpy_napoleon_with_merge'
 
@@ -56,7 +56,7 @@ def arc_sine_pdf_(x: np.array,
 
     .. math:: f(y) = \frac{1}{\pi \sqrt{y(1-y)}}
 
-    where, :math:`y` is a transformed value of :math:`x`, defined as:
+    where, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
 
@@ -105,7 +105,7 @@ def beta_pdf_(x: np.array,
 
     .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 - y)^{\beta - 1}}{B(\alpha, \beta)}
 
-    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`scipy.special.beta`), and :math:`y` is a transformed value of :math:`x` such that:
+    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`scipy.special.beta`), and :math:`y` is the transformed value of :math:`x` such that:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
 
@@ -127,6 +127,8 @@ def beta_pdf_(x: np.array,
         pdf_[y == 0] = np.inf
     if beta <= 1:
         pdf_[y == 1] = np.inf
+    if alpha == 1 and beta == 1:
+        pdf_[y == 1] = 1
 
     # handle the cases where nans can occur with nan_to_num
     # np.inf and -np.inf to not affect the infinite values
@@ -207,7 +209,7 @@ def beta_cdf_(x: np.array,
 
 def chi_square_pdf_(x: np.array,
                     amplitude: float = 1.0, degree_of_freedom: int = 1,
-                    loc: float = 0.0, normalize: bool = False) -> np.array:
+                    loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
     r"""
     Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -240,14 +242,45 @@ def chi_square_pdf_(x: np.array,
     .. math:: f(y\ |\ k) = \dfrac{y^{(k/2) - 1} e^{-y/2}}{2^{k/2} \Gamma(k/2)}
 
     where :math:`\Gamma(k)` is the :obj:`~scipy.special.gamma` function,
-    and :math:`y` is a transformed value of :math:`x`, defined as:
+    and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = x - \text{loc}
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    return gamma_sr_pdf_(x=x, amplitude=amplitude, alpha=degree_of_freedom / 2., lambda_=0.5, loc=loc,
-                         normalize=normalize)
+    y = (x - loc) / scale
+    pdf_ = np.zeros_like(x, dtype=float)
+    mask_ = y > 0
+    pdf_[mask_] = gamma_sr_pdf_(y[mask_], amplitude=amplitude, alpha=degree_of_freedom / 2, lambda_=0.5, loc=0, normalize=normalize)
+
+    return pdf_ / scale
+
+
+@doc_inherit(parent=chi_square_pdf_, style=doc_style)
+def chi_square_cdf_(x: np.array,
+                    amplitude: float = 1.0, degree_of_freedom: int = 1,
+                    loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
+    """
+    Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The ChiSquare CDF is defined as:
+
+
+    """
+    y = (x - loc) / scale
+    cdf_ = np.zeros_like(x, dtype=float)
+    mask_ = y >= 0
+    cdf_[mask_] = gammainc(degree_of_freedom / 2, y[mask_] / 2)
+    return cdf_
 
 
 def exponential_pdf_(x: np.array,
@@ -293,7 +326,7 @@ def exponential_pdf_(x: np.array,
         0 &; y < 0.
         \end{cases}
 
-    where, :math:`y` is a transformed value of :math:`x`, defined as:
+    where, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = x - \text{loc}
 
@@ -334,7 +367,7 @@ def exponential_cdf_(x: np.array,
 
 
 def folded_normal_pdf_(x: np.array,
-                       amplitude: float = 1., mean: float = 0.0, variance: float = 1.0,
+                       amplitude: float = 1., mean: float = 0.0, sigma: float = 1.0,
                        loc: float = 0.0, normalize: bool = False) -> np.array:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
@@ -349,9 +382,12 @@ def folded_normal_pdf_(x: np.array,
     mean : float, optional
         The mean parameter, :math:`\mu`.
         Defaults to 0.0.
-    variance : float, optional
-        The variance parameter, :math:`\sigma^2`.
+    sigma : float, optional
+        The standard deviation parameter, :math:`\sigma`.
         Defaults to 1.0.
+    loc : float, optional
+        The location parameter, for shifting.
+        Defaults to 0.0.
     normalize : bool, optional
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -365,24 +401,44 @@ def folded_normal_pdf_(x: np.array,
     -----
     The FoldedNormal PDF is defined as:
 
-    .. math:: f(x\ |\ \mu, \sigma^2) = \phi(x\ |\ \mu, \sigma) + \phi(x\ |\ -\mu, \sigma),
+    .. math:: f(y\ |\ \mu, \sigma) = \phi(y\ |\ \mu, 1) + \phi(y\ |\ -\mu, 1),
 
-    where :math:`\phi` is the PDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`.
+    where :math:`\phi` is the PDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`,
+    and :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\sigma}
+
+    The final PDF is expressed as :math:`f(y)/\sigma`.
     """
     if x.size == 0:
         return np.array([])
 
-    c = np.abs(mean) / variance
+    _, pdf_ = _folded(x=x, mean=mean, sigma=sigma, loc=loc, g_func=gaussian_pdf_)
 
-    y = (x - loc) / np.sqrt(variance)
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    pdf_ = np.sqrt(2 / np.pi) * np.cosh(c * y) * np.exp(-(y**2 + c**2) / 2)
-    return pdf_ / np.sqrt(variance)
+    return pdf_ / sigma
+
+
+def _folded(x, mean, sigma, loc, g_func):
+    if sigma <= 0 or mean < 0:
+        return np.full(shape=x.size, fill_value=np.nan)
+
+    y = (x - loc) / sigma
+    temp_ = np.zeros_like(a=x, dtype=float)
+
+    mask = y >= 0
+    g1 = g_func(x=y[mask], mean=mean, normalize=True)
+    g2 = g_func(x=y[mask], mean=-mean, normalize=True)
+    temp_[mask] = g1 + g2
+
+    return mask, temp_
 
 
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_cdf_(x: np.array,
-                       amplitude: float = 1., mu: float = 0.0, variance: float = 1.0,
+                       amplitude: float = 1., mean: float = 0.0, sigma: float = 1.0,
                        loc: float = 0.0, normalize: bool = False) -> np.array:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
@@ -399,19 +455,19 @@ def folded_normal_cdf_(x: np.array,
     The FoldedNormal CDF is defined as:
 
     .. math::
-        F(x) = \dfrac{1}{2}\left[\text{erf}\left(\dfrac{x+\mu}{\sigma\sqrt{2}}\right) +
-               \text{erf}\left(\dfrac{x-\mu}{\sigma\sqrt{2}}\right)\right]
+        F(y) = \Phi(y\ | \mu, 1) + \Phi(y\ | -\mu, 1) - 1
+
+    where :math:`\Phi` is the CDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`,
+    and :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\sigma}
     """
     if x.size == 0:
         return np.array([])
 
-    y = (x - loc) / np.sqrt(variance)
-
-    cdf_ = np.zeros_like(a=y, dtype=float)
-    mask = y >= 0
-    frac1, frac2 = (y[mask] - mu) / np.sqrt(2 * variance), (y[mask] + mu) / np.sqrt(2 * variance)
-    cdf_[mask] += 0.5 * (erf(frac1) + erf(frac2))
-    return cdf_ / np.sqrt(variance)
+    mask_, cdf_ = _folded(x=x, mean=mean, sigma=sigma, loc=loc, g_func=gaussian_cdf_)
+    cdf_[mask_] -= 1
+    return cdf_
 
 
 def gamma_sr_pdf_(x: np.array,
@@ -457,7 +513,7 @@ def gamma_sr_pdf_(x: np.array,
         0, & y \leq \text{loc}.
         \end{cases}
 
-    where :math:`y` is a transformed value of :math:`x`, defined as:
+    where :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = x - \text{loc}
 
@@ -547,7 +603,7 @@ def gamma_ss_pdf_(x: np.array,
     .. math::
         f(y\ |\ \alpha, \theta) = \dfrac{1}{\Gamma(\alpha)\theta^\alpha}y^{\alpha-1}\exp\left[-\dfrac{y}{\theta}\right]
 
-    where :math:`y` is a transformed value of :math:`x`, defined as:
+    where :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = x - \text{loc}
 
@@ -707,7 +763,7 @@ def half_normal_pdf_(x: np.array,
 
     where :math:`x >= 0`.
     """
-    return folded_normal_pdf_(x, amplitude=amplitude, mean=0, variance=sigma, loc=loc, normalize=normalize)
+    return folded_normal_pdf_(x, amplitude=amplitude, mean=0, sigma=sigma, loc=loc, normalize=normalize)
 
 
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
@@ -730,7 +786,7 @@ def half_normal_cdf_(x: np.array,
 
     .. math:: F(x) = \text{erf}\left( \frac{x}{\sqrt{2\sigma^2}}\right)
     """
-    return folded_normal_cdf_(x=x, amplitude=amplitude, mean=0, std=scale, normalize=normalize)
+    return folded_normal_cdf_(x=x, amplitude=amplitude, normalize=normalize)
 
 
 def laplace_pdf_(x: np.array,
@@ -872,7 +928,7 @@ def log_normal_pdf_(x: np.array,
     .. math::
         f(y\ |\ \mu, \sigma) = \dfrac{1}{\sigma y\sqrt{2\pi}}\exp\left(-\dfrac{(\ln y - \mu)^2}{2\sigma^2}\right)
 
-    where, :math:`y` is a transformed value of :math:`x`, defined as:
+    where, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math::
         y = x - \text{loc}
@@ -1058,7 +1114,7 @@ def skew_normal_pdf_(x: np.array,
              2\phi(y)\Phi(\alpha y)
 
     where, :math:`\phi(y)` and :math:`\Phi(\alpha y)` are the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
-    PDF and CDF defined at :math:`y` and :math:`\alpha y` respectively. Additionally, :math:`y` is a transformed value of :math:`x`, defined as:
+    PDF and CDF defined at :math:`y` and :math:`\alpha y` respectively. Additionally, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \xi}{\omega}
 

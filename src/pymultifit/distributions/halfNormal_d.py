@@ -7,10 +7,10 @@ from .foldedNormal_d import FoldedNormalDistribution
 class HalfNormalDistribution(FoldedNormalDistribution):
     """A class for HalfNormal distribution."""
 
-    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif scale <= 0:
-            raise erH.NegativeScaleError()
+
         self.scale = scale
-        super().__init__(amplitude=amplitude, mean=0, sigma=scale, normalize=normalize)
+        self.loc = loc
+        super().__init__(amplitude=amplitude, mean=0, sigma=scale, loc=loc, normalize=normalize)

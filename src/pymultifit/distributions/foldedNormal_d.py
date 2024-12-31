@@ -29,28 +29,24 @@ class FoldedNormalDistribution(BaseDistribution):
     :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
     """
 
-    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif sigma <= 0:
-            raise erH.NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
         self.mean = mean
         self.sigma = sigma
+        self.loc = loc
 
-        self.c = abs(mean) / sigma
-        self.var_ = sigma**2
         self.norm = normalize
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mean, variance=self.var_,
-                                  normalize=self.norm)
+        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc, normalize=self.norm)
 
     def cdf(self, x: np.array) -> np.array:
-        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
+        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc, normalize=self.norm)
 
     def stats(self) -> Dict[str, Any]:
-        mean_, std_ = self.mean, np.sqrt(self.var_)
+        mean_, std_ = self.mean, self.sigma
 
         f1 = std_ * np.sqrt(2 / np.pi) * np.exp(-mean_**2 / (2 * std_**2))
         f2 = mean_ * erf(mean_ / (np.sqrt(2 * np.pi)))
@@ -58,5 +54,5 @@ class FoldedNormalDistribution(BaseDistribution):
         mu_y = f1 + f2
         var_y = mean_**2 + std_**2 - mu_y**2
 
-        return {'mean': mu_y,
+        return {'mean': mu_y + self.loc,
                 'variance': var_y}

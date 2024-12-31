@@ -2,11 +2,13 @@
 
 from typing import Dict
 
-from .backend import errorHandling as erH
-from .gamma_d import GammaDistributionSR
+import numpy as np
+
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import chi_square_cdf_, chi_square_pdf_
 
 
-class ChiSquareDistribution(GammaDistributionSR):
+class ChiSquareDistribution(BaseDistribution):
     r"""Class for :class:`ChiSquareDistribution` distribution.
 
     .. note::
@@ -80,22 +82,37 @@ class ChiSquareDistribution(GammaDistributionSR):
     """
 
     def __init__(self,
-                 amplitude: float = 1.0, degree_of_freedom: int = 1, loc: float = 0.0,
-                 normalize: bool = False):
+                 amplitude: float = 1.0, degree_of_freedom: int = 1,
+                 loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif not isinstance(degree_of_freedom, int) or degree_of_freedom <= 0:
-            raise erH.DegreeOfFreedomError()
+        self.amplitude = 1 if normalize else amplitude
         self.dof = degree_of_freedom
         self.loc = loc
-        super().__init__(amplitude=amplitude, shape=degree_of_freedom / 2., rate=0.5, loc=loc, normalize=normalize)
+        self.scale = scale
+
+        self.norm = normalize
+
+    def pdf(self, x: np.array) -> np.array:
+        return chi_square_pdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
+                               normalize=self.norm)
+
+    def cdf(self, x: np.array) -> np.array:
+        return chi_square_cdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
+                               normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
-        stat_ = super().stats()
+        mean_ = self.dof
+        mode_ = max(self.dof - 2, 0)
+        variance_ = 2 * self.dof
+
         f1 = 9 * self.dof
         f1 = 1 - (2 / f1)
-        f1 = self.dof * f1**3
+        f1 = self.dof * f1 ** 3
 
-        stat_['median'] = f1
+        median_ = f1
 
-        return stat_
+        return {'mean': mean_,
+                'median': median_,
+                'mode': mode_,
+                'variance': variance_}
