@@ -64,3 +64,4 @@ At the end of the benchmarks, the following insights will be available:
    :maxdepth: 1
 
    _bm_accuracy
+   _bm_speed
