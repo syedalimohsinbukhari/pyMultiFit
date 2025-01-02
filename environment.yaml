@@ -9,6 +9,7 @@ dependencies:
     - scipy
     - custom-inherit
     - pytest
+    - astropy
     - jupyter
     - notebook
     - build
