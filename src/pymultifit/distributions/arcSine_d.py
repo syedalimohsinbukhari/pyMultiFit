@@ -9,7 +9,8 @@ class ArcSineDistribution(BetaDistribution):
     Class for ArcSine distribution.
 
     .. note::
-        The :class:`ArcSineDistribution` is a special case of the :class:`~pymultifit.distributions.beta_d.BetaDistribution`,
+        The :class:`ArcSineDistribution` is a special case of the
+        :class:`~pymultifit.distributions.beta_d.BetaDistribution`,
 
         * :math:`\alpha_\text{beta} = 0.5`,
         * :math:`\lambda_\text{beta} = 0.5`.
@@ -23,7 +24,8 @@ class ArcSineDistribution(BetaDistribution):
     :param scale: The scale parameter, for shifting. Defaults to 1.0.
     :type scale: float, optional
 
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
     :type normalize: bool, optional
 
 
