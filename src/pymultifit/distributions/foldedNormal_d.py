@@ -22,11 +22,62 @@ class FoldedNormalDistribution(BaseDistribution):
     :param sigma: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
     :type sigma: float, optional
 
+    :param loc: The location parameter, for shifting. Defaults to 0.0.
+    :type loc: float, optional
+
     :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
     :type normalize: bool, optional
 
     :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
     :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+
+    Examples
+    --------
+    Importing libraries:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
+
+    Generating a standard Folded Normal(:math:`\mu=0, \sigma = 1`) distribution with ``pyMultiFit`` and ``scipy``:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/folded_normal_example1.png
+       :alt: Gaussian(0, 1)
+       :align: center
+
+    Generating a translated Gaussian(:math:`\mu=2, \sigma=3`) distribution with :math:`\text{loc}=3`:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :lineno-start: 32
+       :lines: 32
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :lineno-start: 34
+       :lines: 34-49
+
+    .. image:: ../../../images/folded_normal_example2.png
+       :alt: Gaussian(3, 2)
+       :align: center
     """
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., loc: float = 0.0, normalize: bool = False):

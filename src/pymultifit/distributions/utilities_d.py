@@ -3,7 +3,7 @@
 __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'arc_sine_pdf_',
            'beta_pdf_', 'beta_cdf_',
-           'chi_square_pdf_',
+           'chi_square_pdf_', 'chi_square_cdf_',
            'exponential_pdf_', 'exponential_cdf_',
            'folded_normal_pdf_', 'folded_normal_cdf_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_',
@@ -19,7 +19,7 @@ import numpy as np
 from custom_inherit import doc_inherit
 from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t
 
-doc_style = 'numpy_napoleon_with_merge'
+from .. import doc_style
 
 
 def arc_sine_pdf_(x: np.array,

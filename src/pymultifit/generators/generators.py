@@ -5,13 +5,11 @@ from typing import List, Tuple, Type, Union
 import numpy as np
 from custom_inherit import doc_inherit
 
-from .. import distributions as dist, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL
+from .. import distributions as dist, doc_style, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL
 from ..distributions.backend import BaseDistribution
 
 listOfTuples = List[Tuple[float, ...]]
 listOfTuplesOrArray = Union[listOfTuples, np.array]
-
-doc_style = 'numpy_napoleon_with_merge'
 
 
 def multi_base(x: np.array, distribution_func: Type[BaseDistribution], params: listOfTuplesOrArray,

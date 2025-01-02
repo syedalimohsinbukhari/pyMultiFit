@@ -9,8 +9,72 @@ from .utilities_d import laplace_cdf_, laplace_pdf_
 
 
 class LaplaceDistribution(BaseDistribution):
-    """Class for Laplace distribution."""
+    r"""
+    Class for Laplace distribution.
 
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :type amplitude: float, optional
+
+    :param mean: The mean parameter, :math:`\mu`. Defaults to 0.0.
+    :type mean: float, optional
+
+    :param diversity: The diversity parameter, :math:`b`. Defaults to 1.0.
+    :type diversity: float, optional
+
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    :type normalize: bool, optional
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise NegativeScaleError: If the provided value of diversity is negative.
+
+    Examples
+    --------
+    Importing libraries:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
+
+    Generating a standard Laplace(:math:`\mu=0, b = 1`) distribution with ``pyMultiFit`` and ``scipy``:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/laplace_example1.png
+       :alt: Laplace(0, 1)
+       :align: center
+
+    Generating a translated Laplace(:math:`\mu=3, b=2`) distribution:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :lineno-start: 32
+       :lines: 32
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :lineno-start: 34
+       :lines: 34-49
+
+    .. image:: ../../../images/laplace_example2.png
+       :alt: Laplace(3, 2)
+       :align: center
+    """
     def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()

@@ -4,6 +4,8 @@ import numpy as np
 
 from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
 
+doc_style = 'numpy_napoleon_with_merge'
+
 # taken from https://stackoverflow.com/a/19141711
 EPSILON = np.finfo(float).eps
 

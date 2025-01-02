@@ -13,6 +13,17 @@ class BaseDistribution:
     for probability density function (PDF), cumulative distribution function (CDF), and statistics.
     """
 
+    @classmethod
+    def scipy_like(cls) -> 'BaseDistribution':
+        r"""
+        Create an instance of the class in a format similar to scipy's parameterization.
+
+        Notes
+        -----
+        This method mimics the parameterization used in scipy, allowing for compatibility and ease of use with scipy-like interfaces.
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
+
     def pdf(self, x: np.array) -> np.array:
         r"""
         Compute the probability density function (PDF) for the distribution.
