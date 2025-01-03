@@ -29,7 +29,7 @@ for i in ax:
 plt.tight_layout()
 plt.savefig('./../../images/folded_normal_example1.png')
 
-y_multifit = FoldedNormalDistribution(mean=2, sigma=3, loc=3, normalize=True)
+y_multifit = FoldedNormalDistribution(mu=2, sigma=3, loc=3, normalize=True)
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
 

@@ -49,24 +49,21 @@ class TestGammaDistributionSR:
         def check_stats_sr(custom_, scipy_):
             stats = custom_.stats()
 
-            # Check mean
-            scipy_mean = scipy_.mean()
+            scipy_mean = scipy_.mu()
             assert np.isclose(stats['mean'], scipy_mean, rtol=1e-6), f"Mean mismatch: {stats['mean']} vs {scipy_mean}"
 
-            # Check variance
             scipy_variance = scipy_.var()
             assert np.isclose(stats['variance'], scipy_variance,
                               rtol=1e-6), f"Variance mismatch: {stats['variance']} vs {scipy_variance}"
 
             # scipy doesn't provide mode for the distribution so I'm not doing that test
 
-            # Wikipedia doesn't have any analytical form for the median, so i'm skipping this test
             assert stats.get('median', []) == [], "Median check failed (should be empty)."
 
         for _ in range(50):
-            shape_ = np.random.uniform(low=0.1, high=5.0)
-            scale_ = np.random.uniform(low=0.1, high=2.0)
-            loc_ = np.random.uniform(low=-5.0, high=5.0)
+            shape_ = np.random.uniform(low=EPSILON, high=10.0)
+            scale_ = np.random.uniform(low=EPSILON, high=10.0)
+            loc_ = np.random.uniform(low=-10.0, high=10.0)
 
             dist1 = GammaDistributionSR(shape=shape_, rate=scale_, loc=loc_, normalize=True)
             dist2 = GammaDistributionSS(shape=shape_, scale=1 / scale_, loc=loc_, normalize=True)

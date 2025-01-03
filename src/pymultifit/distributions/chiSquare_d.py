@@ -122,18 +122,25 @@ class ChiSquareDistribution(BaseDistribution):
         return chi_square_cdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
                                normalize=self.norm)
 
+    @property
+    def mean(self) -> float:
+        return (self.scale * self.dof) + self.loc
+
+    @property
+    def variance(self) -> float:
+        return 2 * self.dof * self.scale**2
+
+    @property
+    def stddev(self) -> float:
+        return np.sqrt(self.variance)
+
+    @property
+    def mode(self):
+        return max(self.dof - 2, 0)
+
     def stats(self) -> Dict[str, float]:
-        mean_ = self.dof
-        mode_ = max(self.dof - 2, 0)
-        variance_ = 2 * self.dof
-
-        f1 = 9 * self.dof
-        f1 = 1 - (2 / f1)
-        f1 = self.dof * f1**3
-
-        median_ = f1
-
-        return {'mean': mean_,
-                'median': median_,
-                'mode': mode_,
-                'variance': variance_}
+        return {'mean': self.mean,
+                'median': self.median,
+                'mode': self.mode,
+                'variance': self.variance,
+                'std': self.stddev}

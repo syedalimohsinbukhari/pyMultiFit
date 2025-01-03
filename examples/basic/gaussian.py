@@ -29,7 +29,7 @@ for i in ax:
 plt.tight_layout()
 plt.savefig('./../../images/gaussian_example1.png')
 
-y_multifit = GaussianDistribution(mean=3, std=2, normalize=True)
+y_multifit = GaussianDistribution(std=2, normalize=True)
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
 

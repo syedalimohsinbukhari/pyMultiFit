@@ -78,7 +78,7 @@ class HalfNormalDistribution(FoldedNormalDistribution):
 
         self.scale = scale
         self.loc = loc
-        super().__init__(amplitude=amplitude, mean=0, sigma=scale, loc=loc, normalize=normalize)
+        super().__init__(amplitude=amplitude, sigma=scale, loc=loc, normalize=normalize)
 
     @classmethod
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):

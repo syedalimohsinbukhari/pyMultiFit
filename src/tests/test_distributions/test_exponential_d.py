@@ -55,13 +55,13 @@ class TestExponentialDistribution:
             # Scipy calculations
             scipy_mean, scipy_variance = expon.stats(loc=loc, scale=1 / scale_scipy, moments='mv')
             scipy_median = expon.median(loc=loc, scale=1 / scale_scipy)
-            scipy_mode = loc
+            scipy_stddev = np.sqrt(scipy_variance)
 
             # Assertions for mean and variance
             np.testing.assert_allclose(actual=scipy_mean, desired=d_stats['mean'], rtol=1e-5, atol=1e-8)
             np.testing.assert_allclose(actual=scipy_variance, desired=d_stats['variance'], rtol=1e-5, atol=1e-8)
             np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(actual=scipy_mode, desired=d_stats['mode'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
 
     @staticmethod
     def test_pdf_cdf():

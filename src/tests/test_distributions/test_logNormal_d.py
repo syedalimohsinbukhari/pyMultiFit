@@ -13,9 +13,9 @@ class TestLogNormalDistribution:
 
     @staticmethod
     def test_initialization():
-        dist = LogNormalDistribution(amplitude=2.0, mean=1.0, std=0.5, normalize=False)
+        dist = LogNormalDistribution(amplitude=2.0, mu=1.0, std=0.5, normalize=False)
         assert dist.amplitude == 2.0
-        assert dist.mean == np.log(1.0)
+        assert dist.mu == np.log(1.0)
         assert dist.std == 0.5
         assert not dist.norm
 
@@ -43,12 +43,25 @@ class TestLogNormalDistribution:
 
     @staticmethod
     def test_stats():
-        dist_ = LogNormalDistribution(amplitude=1.0, mean=2.0, std=3.0)
-        d_stats = dist_.stats()
-        assert d_stats["mean"] == np.exp(dist_.mean + (dist_.std**2 / 2))
-        assert d_stats["median"] == np.exp(dist_.mean)
-        assert d_stats["mode"] == np.exp(dist_.mean - dist_.std**2)
-        assert d_stats["variance"] == (np.exp(dist_.std**2) - 1) * np.exp(2 * dist_.mean + dist_.std**2)
+        shape_ = np.random.uniform(low=EPSILON, high=10, size=100)
+        loc_ = np.random.uniform(low=-5, high=10, size=100)
+        scale_ = np.random.uniform(low=EPSILON, high=10, size=100)
+        stack_ = np.column_stack([shape_, loc_, scale_])
+
+        for shape, loc, scale in stack_:
+            _distribution = LogNormalDistribution.scipy_like(s=shape, loc=loc, scale=scale)
+            d_stats = _distribution.stats()
+
+            # Scipy calculations
+            scipy_mean, scipy_variance = lognorm.stats(s=shape, loc=loc, scale=scale, moments='mv')
+            scipy_median = lognorm.median(s=shape, loc=loc, scale=scale)
+            scipy_stddev = np.sqrt(scipy_variance)
+
+            # Assertions for mean and variance
+            np.testing.assert_allclose(actual=scipy_mean, desired=d_stats['mean'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_variance, desired=d_stats['variance'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
 
     @staticmethod
     def test_pdf_cdf_log_norm():
@@ -61,12 +74,12 @@ class TestLogNormalDistribution:
 
         for i in ['cdf', 'pdf']:
             for _ in range(50):  # Run 50 random tests
-                shape_ = np.random.uniform(low=0.1, high=2.0)
-                loc_ = np.random.uniform(low=0.1, high=2.0)
-                scale_ = np.random.uniform(low=0.1, high=10.0)
+                shape_ = np.random.uniform(low=EPSILON, high=10)
+                loc_ = np.random.uniform(low=-10, high=10)
+                scale_ = np.random.uniform(low=EPSILON, high=10.0)
 
                 x = np.random.uniform(low=EPSILON, high=200.0, size=50)
-                distribution = LogNormalDistribution(mean=scale_, std=shape_, loc=loc_, normalize=True)
+                distribution = LogNormalDistribution.scipy_like(s=shape_, loc=loc_, scale=scale_)
 
                 expected = _cdf_pdf_scipy(x_=x, s=shape_, loc=loc_, scale=scale_, what=i)
                 actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=i)

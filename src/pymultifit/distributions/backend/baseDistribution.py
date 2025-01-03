@@ -1,6 +1,6 @@
 """Created on Aug 03 22:06:29 2024"""
 
-from typing import Any, Dict
+from typing import Dict
 
 import numpy as np
 
@@ -35,8 +35,8 @@ class BaseDistribution:
 
         #. mean,
         #. median,
-        #. mode, and
-        #. variance
+        #. variance, and
+        #. standard deviation.
 
         :returns: A dictionary containing statistical properties such as mean, variance, etc.
         :rtype: Dict[str, float]
@@ -46,3 +46,28 @@ class BaseDistribution:
         If any of the parameter is not computable for a distribution, this method returns None.
         """
         raise NotImplementedError("Subclasses should implement this method.")
+
+    @property
+    def mean(self):
+        """The mean of the distribution."""
+        return None
+
+    @property
+    def median(self):
+        """The median of the distribution."""
+        return None
+
+    @property
+    def variance(self):
+        """The variance of the distribution."""
+        return None
+
+    @property
+    def stddev(self):
+        """The standard deviation of the distribution."""
+        return None
+
+    @property
+    def mode(self):
+        """The mode of the distribution."""
+        return None

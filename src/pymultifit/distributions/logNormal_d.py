@@ -15,8 +15,8 @@ class LogNormalDistribution(BaseDistribution):
     :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     :type amplitude: float, optional
 
-    :param mean: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type mean: float, optional
+    :param mu: The mean parameter, :math:`\mu`. Defaults to 0.0.
+    :type mu: float, optional
 
     :param std: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
     :type std: float, optional
@@ -76,13 +76,13 @@ class LogNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1., mean: float = 0.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False):
+    def __init__(self, amplitude: float = 1., mu: float = 0.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif std <= 0:
             raise erH.NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
-        self.mean = np.log(mean)
+        self.mu = np.log(mu)
         self.std = std
         self.loc = loc
 
@@ -107,21 +107,37 @@ class LogNormalDistribution(BaseDistribution):
         LogNormalDistribution
             An instance of normalized LogNormalDistribution.
         """
-        return cls(mean=s, loc=loc, std=scale, normalize=True)
+        return cls(std=s, mu=scale, loc=loc, normalize=True)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mean, std=self.std, loc=self.loc, normalize=self.norm)
+        return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mean, std=self.std, loc=self.loc, normalize=self.norm)
+        return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm)
+
+    @property
+    def mean(self) -> float:
+        return self.loc + np.exp(self.mu + (self.std**2 / 2))
+
+    @property
+    def median(self) -> float:
+        return self.loc + np.exp(self.mu)
+
+    @property
+    def variance(self) -> float:
+        return (np.exp(self.std**2) - 1) * np.exp(2 * self.mu + self.std**2)
+
+    @property
+    def stddev(self) -> float:
+        return np.sqrt(self.variance)
+
+    @property
+    def mode(self) -> float:
+        return self.loc + np.exp(self.mu - self.std**2)
 
     def stats(self) -> Dict[str, float]:
-        mean_ = np.exp(self.mean + (self.std**2 / 2))
-        median_ = np.exp(self.mean)
-        mode_ = np.exp(self.mean - self.std**2)
-        variance_ = (np.exp(self.std**2) - 1) * np.exp(2 * self.mean + self.std**2)
-
-        return {'mean': mean_,
-                'median': median_,
-                'mode': mode_,
-                'variance': variance_}
+        return {'mean': self.mean,
+                'median': self.median,
+                'mode': self.mode,
+                'variance': self.variance,
+                'std': self.stddev}

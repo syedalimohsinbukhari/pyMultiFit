@@ -140,18 +140,30 @@ class BetaDistribution(BaseDistribution):
     # def logpdf(self, x: np.array) -> np.array:
     #     return beta_logpdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    @property
+    def mean(self) -> float:
+        mean_ = self.alpha / (self.alpha + self.beta)
+        return (self.scale * mean_) + self.loc
+
+    @property
+    def median(self) -> float:
+        median_ = betaincinv(self.alpha, self.beta, 0.5)
+        return (self.scale * median_) + self.loc
+
+    @property
+    def variance(self) -> float:
         a, b = self.alpha, self.beta
+        num_ = a * b
+        den_ = (a + b)**2 * (a + b + 1)
 
-        mean_ = a / (a + b)
-        median_ = betaincinv(a, b, 0.5)
-        mode_ = []
-        if np.logical_and(a > 1, b > 1):
-            mode_ = (a - 1) / (a + b - 2)
+        return self.scale**2 * (num_ / den_)
 
-        variance_ = (a * b) / ((a + b)**2 * (a + b + 1))
+    @property
+    def stddev(self) -> float:
+        return np.sqrt(self.variance)
 
-        return {'mean': mean_,
-                'median': median_,
-                'mode': mode_,
-                'variance': variance_}
+    def stats(self) -> Dict[str, float]:
+        return {'mean': self.mean,
+                'median': self.median,
+                'variance': self.variance,
+                'std': self.stddev}

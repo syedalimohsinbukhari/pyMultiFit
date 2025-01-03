@@ -16,8 +16,8 @@ class FoldedNormalDistribution(BaseDistribution):
     :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     :type amplitude: float, optional
 
-    :param mean: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type mean: float, optional
+    :param mu: The mean parameter, :math:`\mu`. Defaults to 0.0.
+    :type mu: float, optional
 
     :param sigma: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
     :type sigma: float, optional
@@ -81,12 +81,11 @@ class FoldedNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., loc: float = 0.0,
-                 normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, mu: float = 0.0, sigma: float = 1., loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         self.amplitude = 1. if normalize else amplitude
-        self.mean = mean
+        self.mu = mu
         self.sigma = sigma
         self.loc = loc
 
@@ -111,14 +110,14 @@ class FoldedNormalDistribution(BaseDistribution):
         FoldedNormalDistribution
             An instance of normalized FoldedNormalDistribution.
         """
-        return cls(mean=c, sigma=scale, loc=loc, normalize=True)
+        return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc,
+        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc,
+        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 
     def stats(self) -> Dict[str, Any]:

@@ -127,16 +127,28 @@ class GammaDistributionSR(BaseDistribution):
                              amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
                              normalize=self.norm)
 
+    @property
+    def mean(self) -> float:
+        return (self.shape / self.rate) + self.loc
+
+    @property
+    def variance(self) -> float:
+        return self.shape / self.rate**2
+
+    @property
+    def stddev(self) -> float:
+        return np.sqrt(self.variance)
+
+    @property
+    def mode(self) -> float:
+        return (self.shape - 1) / self.rate + self.loc if self.shape >= 1 else 0
+
     def stats(self) -> Dict[str, float]:
-        a, b, loc = self.shape, self.rate, self.loc
-
-        mean_ = (a / b) + loc
-        mode_ = (a - 1) / b + loc if a >= 1 else 0
-        variance_ = a / b**2
-
-        return {'mean': mean_,
-                'mode': mode_,
-                'variance': variance_}
+        return {'mean': self.mean,
+                'mode': self.mode,
+                'median': [],  # median not available
+                'variance': self.variance,
+                'std': self.stddev}
 
 
 class GammaDistributionSS(GammaDistributionSR):

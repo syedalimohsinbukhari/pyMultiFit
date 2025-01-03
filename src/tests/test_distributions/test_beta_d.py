@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-from scipy.special import betaincinv
 from scipy.stats import beta
 
 from ...pymultifit import EPSILON
@@ -47,16 +46,26 @@ class TestBetaDistribution:
 
     @staticmethod
     def test_stats():
-        dist_ = BetaDistribution(amplitude=1.0, alpha=1.0, beta=2.0, normalize=True)
-        a, b = dist_.alpha, dist_.beta
-        d_stats = dist_.stats()
-        assert d_stats["mean"] == a / (a + b)
-        assert d_stats["median"] == betaincinv(a, b, 0.5)
-        if np.logical_and(a > 1, b > 1):
-            assert d_stats["mode"] == (a - 1) / (a + b - 2)
-        elif np.logical_or(a < 0, b < 0):
-            assert d_stats.get('mode', []) == []
-        assert d_stats["variance"] == (a * b) / ((a + b) ** 2 * (a + b + 1))
+        alpha_ = np.random.uniform(low=EPSILON, high=10, size=10)
+        _beta = np.random.uniform(low=EPSILON, high=10, size=10)
+        loc_ = np.random.uniform(low=-5, high=10, size=10)
+        scale_ = np.random.uniform(low=EPSILON, high=10, size=10)
+        stack_ = np.column_stack([alpha_, _beta, loc_, scale_])
+
+        for a, b, loc, scale in stack_:
+            _distribution = BetaDistribution.scipy_like(a=a, b=b, scale=scale, loc=loc)
+            d_stats = _distribution.stats()
+
+            # Scipy calculations
+            scipy_mean, scipy_variance = beta.stats(a=a, b=b, loc=loc, scale=scale, moments='mv')
+            scipy_median = beta.median(a=a, b=b, loc=loc, scale=scale)
+            scipy_stddev = np.sqrt(scipy_variance)
+
+            # Assertions for mean and variance
+            np.testing.assert_allclose(actual=scipy_mean, desired=d_stats['mean'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_variance, desired=d_stats['variance'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
 
     @staticmethod
     def test_pdf_cdf_logpdf_scipy():

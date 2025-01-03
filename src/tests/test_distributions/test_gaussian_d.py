@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from scipy.stats import norm
 
+from ...pymultifit import EPSILON
 from ...pymultifit.distributions import GaussianDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
@@ -12,9 +13,9 @@ class TestGaussianDistribution:
 
     @staticmethod
     def test_initialization():
-        dist = GaussianDistribution(amplitude=2.0, mean=1.0, std=0.5, normalize=False)
+        dist = GaussianDistribution(amplitude=2.0, mu=1.0, std=0.5, normalize=False)
         assert dist.amplitude == 2.0
-        assert dist.mean == 1.0
+        assert dist.mu == 1.0
         assert dist.std_ == 0.5
         assert not dist.norm
 
@@ -42,12 +43,24 @@ class TestGaussianDistribution:
 
     @staticmethod
     def test_stats():
-        distribution = GaussianDistribution(amplitude=1.0, mean=2.0, std=3.0)
-        d_stats = distribution.stats()
-        assert d_stats["mean"] == distribution.mean
-        assert d_stats["median"] == distribution.mean
-        assert d_stats["mode"] == distribution.mean
-        assert d_stats["variance"] == distribution.std_**2
+        loc_ = np.random.uniform(low=-5, high=10, size=10)
+        scale_ = np.random.uniform(low=EPSILON, high=10, size=10)
+        stack_ = np.column_stack([loc_, scale_])
+
+        for loc, scale in stack_:
+            _distribution = GaussianDistribution.scipy_like(loc=loc, scale=scale)
+            d_stats = _distribution.stats()
+
+            # Scipy calculations
+            scipy_mean, scipy_variance = norm.stats(loc=loc, scale=scale, moments='mv')
+            scipy_median = norm.median(loc=loc, scale=scale)
+            scipy_stddev = np.sqrt(scipy_variance)
+
+            # Assertions for mean and variance
+            np.testing.assert_allclose(actual=scipy_mean, desired=d_stats['mean'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_variance, desired=d_stats['variance'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
 
     @staticmethod
     def test_pdf_cdf():
@@ -62,7 +75,7 @@ class TestGaussianDistribution:
                 loc_ = np.random.uniform(low=-10, high=10)
                 scale_ = np.random.uniform(low=0.1, high=5)
                 x = np.linspace(start=loc_ - 10, stop=loc_ + 10, num=50)
-                distribution = GaussianDistribution(mean=loc_, std=scale_, normalize=True)
+                distribution = GaussianDistribution(mu=loc_, std=scale_, normalize=True)
                 expected = _cdf_pdf_scipy(x_=x, loc=loc_, scale=scale_, what=i)
                 np.testing.assert_allclose(actual=_cdf_pdf_custom(x_=x, dist_=distribution, what=i),
                                            desired=expected, rtol=1e-5, atol=1e-8)
@@ -93,7 +106,7 @@ class TestGaussianDistribution:
         test_cases = edge_cases + extreme_cases
 
         for mean_, std_ in test_cases:
-            dist_ = GaussianDistribution(amplitude=1.0, mean=mean_, std=std_, normalize=True)
+            dist_ = GaussianDistribution(amplitude=1.0, mu=mean_, std=std_, normalize=True)
 
             # SciPy Gaussian distribution for comparison
             scipy_pdf = norm(loc=mean_, scale=std_).pdf(x_)
