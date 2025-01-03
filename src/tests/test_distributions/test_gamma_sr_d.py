@@ -49,7 +49,7 @@ class TestGammaDistributionSR:
         def check_stats_sr(custom_, scipy_):
             stats = custom_.stats()
 
-            scipy_mean = scipy_.mu()
+            scipy_mean = scipy_.mean()
             assert np.isclose(stats['mean'], scipy_mean, rtol=1e-6), f"Mean mismatch: {stats['mean']} vs {scipy_mean}"
 
             scipy_variance = scipy_.var()
