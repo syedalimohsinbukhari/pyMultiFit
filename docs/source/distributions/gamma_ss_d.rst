@@ -5,6 +5,7 @@ Gamma Distribution (SS)
    :members:
    :inherited-members:
    :show-inheritance:
+   :member-order: groupwise
 
 
 .. note::

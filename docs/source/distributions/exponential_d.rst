@@ -5,6 +5,8 @@ Exponential Distribution
    :members:
    :inherited-members:
    :show-inheritance:
+   :member-order: groupwise
+
 
 .. note::
     The :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR`,

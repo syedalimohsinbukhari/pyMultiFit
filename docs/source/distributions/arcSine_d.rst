@@ -7,6 +7,8 @@ ArcSine Distribution
    :members:
    :inherited-members:
    :show-inheritance:
+   :member-order: groupwise
+
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 

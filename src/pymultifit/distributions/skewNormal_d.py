@@ -5,6 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution
+from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError, NegativeShapeError
 from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
 
 
@@ -80,6 +81,13 @@ class SkewNormalDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, shape: float = 1., location: float = 0., scale: float = 1., normalize: bool = False):
+        if not normalize and amplitude < 0.:
+            raise NegativeAmplitudeError()
+        if scale <= 0.:
+            raise NegativeScaleError()
+        if shape <= 0.:
+            raise NegativeShapeError()
+
         self.amplitude = 1 if normalize else amplitude
         self.shape = shape
         self.location = location
@@ -114,11 +122,17 @@ class SkewNormalDistribution(BaseDistribution):
     def cdf(self, x: np.ndarray) -> np.ndarray:
         return skew_normal_cdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    @property
+    def mean(self) -> float:
         alpha, omega, epsilon = self.shape, self.scale, self.location
         delta = alpha / np.sqrt(1 + alpha**2)
 
-        mean = epsilon + omega * delta * np.sqrt(2 / np.pi)
+        return epsilon + omega * delta * np.sqrt(2 / np.pi)
+
+    @property
+    def mode(self) -> float:
+        alpha, omega, epsilon = self.shape, self.scale, self.location
+        delta = alpha / np.sqrt(1 + alpha**2)
 
         def _m0(alpha_):
             m0 = np.sqrt(2 / np.pi) * delta
@@ -126,7 +140,21 @@ class SkewNormalDistribution(BaseDistribution):
             m0 -= (2 * np.pi / abs(alpha_)) * np.exp(-(2 * np.pi / abs(alpha_))) * np.sign(alpha_)
             return m0
 
-        mode = epsilon + omega * _m0(alpha)
-        variance = omega**2 * (1 - (2 * delta**2 / np.pi))
+        return epsilon + omega * _m0(alpha)
 
-        return {'mean': mean, 'mode': mode, 'variance': variance}
+    @property
+    def variance(self) -> float:
+        alpha, omega = self.shape, self.scale
+        delta = alpha / np.sqrt(1 + alpha**2)
+        return omega**2 * (1 - (2 * delta**2 / np.pi))
+
+    @property
+    def stddev(self) -> float:
+        return np.sqrt(self.variance)
+
+    def stats(self) -> Dict[str, float]:
+        return {'mean': self.mean,
+                'mode': self.mode,
+                'median': None,
+                'variance': self.variance,
+                'std': self.stddev}
