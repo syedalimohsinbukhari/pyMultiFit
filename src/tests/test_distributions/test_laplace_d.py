@@ -43,12 +43,24 @@ class TestLaplaceDistribution:
 
     @staticmethod
     def test_stats():
-        distribution = LaplaceDistribution(amplitude=1.0, mean=2.0, diversity=3.0)
-        d_stats = distribution.stats()
-        assert d_stats["mean"] == distribution.mu
-        assert d_stats["median"] == distribution.mu
-        assert d_stats["mode"] == distribution.mu
-        assert d_stats["variance"] == 2 * distribution.b**2
+        loc_ = np.random.uniform(low=-5, high=10, size=10)
+        scale_ = np.random.uniform(low=EPSILON, high=10, size=10)
+        stack_ = np.column_stack([loc_, scale_])
+
+        for loc, scale in stack_:
+            _distribution = LaplaceDistribution.scipy_like(loc=loc, scale=scale)
+            d_stats = _distribution.stats()
+
+            # Scipy calculations
+            scipy_mean, scipy_variance = laplace.stats(loc=loc, scale=scale, moments='mv')
+            scipy_median = laplace.median(loc=loc, scale=scale)
+            scipy_stddev = np.sqrt(scipy_variance)
+
+            # Assertions for mean and variance
+            np.testing.assert_allclose(actual=scipy_mean, desired=d_stats['mean'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_variance, desired=d_stats['variance'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
 
     @staticmethod
     def test_pdf_cdf():

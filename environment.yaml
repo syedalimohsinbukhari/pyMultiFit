@@ -1,14 +1,29 @@
 name: multifit
 channels:
+    - defaults
     - conda-forge
 dependencies:
-    - python==3.9.*
+    - python==3.10.*
     - numpy<2.1.0
     - matplotlib
     - scipy
-    - setuptools
-    - typing-extensions
+    - custom-inherit
     - pytest
+    - astropy
+    - jupyter
+    - notebook
+    - build
+    - memory_profiler
+    - sphinx
+    - sphinx-rtd-theme
+    - pydata-sphinx-theme
+    - sphinx-copybutton
+    - sphinxcontrib-napoleon
+    - numpydoc
+    - nbsphinx
+    - nbsphinx-link
+    - sphinx-gallery
+    - sphinx-autobuild
     - pip
     -   pip:
             - mpyez

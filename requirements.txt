@@ -1,6 +1,5 @@
 numpy<2.1.0
 matplotlib
 scipy
-setuptools
-typing-extensions
 mpyez
+custom-inherit

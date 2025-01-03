@@ -5,11 +5,76 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import laplace_
+from .utilities_d import laplace_cdf_, laplace_pdf_
 
 
 class LaplaceDistribution(BaseDistribution):
-    """Class for Laplace distribution."""
+    r"""
+    Class for Laplace distribution.
+
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :type amplitude: float, optional
+
+    :param mean: The mean parameter, :math:`\mu`. Defaults to 0.0.
+    :type mean: float, optional
+
+    :param diversity: The diversity parameter, :math:`b`. Defaults to 1.0.
+    :type diversity: float, optional
+
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    :type normalize: bool, optional
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise NegativeScaleError: If the provided value of diversity is negative.
+
+    Examples
+    --------
+    Importing libraries:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
+
+    Generating a standard Laplace(:math:`\mu=0, b = 1`) distribution with ``pyMultiFit`` and ``scipy``:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/laplace_example1.png
+       :alt: Laplace(0, 1)
+       :align: center
+
+    Generating a translated Laplace(:math:`\mu=3, b=2`) distribution:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :lineno-start: 32
+       :lines: 32
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/laplace.py
+       :language: python
+       :lineno-start: 34
+       :lines: 34-49
+
+    .. image:: ../../../images/laplace_example2.png
+       :alt: Laplace(3, 2)
+       :align: center
+    """
 
     def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
         if not normalize and amplitude <= 0:
@@ -22,32 +87,54 @@ class LaplaceDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return laplace_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+    @classmethod
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate LaplaceDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        LaplaceDistribution
+            An instance of normalized LaplaceDistribution.
+        """
+        return cls(mean=loc, diversity=scale, normalize=True)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return self._pdf(x)
+        return laplace_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        def _cdf1(x_):
-            return 0.5 * np.exp((x_ - self.mu) / self.b)
+        return laplace_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-        def _cdf2(x_):
-            return 1 - 0.5 * np.exp(-(x_ - self.mu) / self.b)
+    @property
+    def mean(self) -> float:
+        return self.mu
 
-        # to ensure equality with scipy, had to break down the output with empty array so that sorting is not needed.
-        result = np.empty_like(x, dtype=np.float64)
+    @property
+    def median(self) -> float:
+        return self.mu
 
-        mask_leq = x <= self.mu
-        result[mask_leq] = _cdf1(x[mask_leq])
-        result[~mask_leq] = _cdf2(x[~mask_leq])
+    @property
+    def mode(self) -> float:
+        return self.mu
 
-        return result
+    @property
+    def variance(self) -> float:
+        return 2 * self.b**2
+
+    @property
+    def stddev(self) -> float:
+        return np.sqrt(self.variance)
 
     def stats(self) -> Dict[str, float]:
-        mean_, b_ = self.mu, self.b
-
-        return {'mean': mean_,
-                'median': mean_,
-                'mode': mean_,
-                'variance': 2 * b_**2}
+        return {'mean': self.mean,
+                'median': self.median,
+                'mode': self.mode,
+                'variance': self.variance,
+                'std': self.stddev}

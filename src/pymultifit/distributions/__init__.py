@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from .arcSine_d import ArcSineDistribution
 from .beta_d import BetaDistribution
 from .chiSquare_d import ChiSquareDistribution
 from .exponential_d import ExponentialDistribution
@@ -10,11 +11,9 @@ from .gamma_d import GammaDistributionSR, GammaDistributionSS
 from .gaussian_d import GaussianDistribution
 from .halfNormal_d import HalfNormalDistribution
 from .laplace_d import LaplaceDistribution
-from .logNorm_d import LogNormalDistribution
-from .norris_d import Norris2005Distribution, Norris2011Distribution
+from .logNormal_d import LogNormalDistribution
 from .others import cubic, line, linear, nth_polynomial, quadratic
-from .powerLaw_d import PowerLawDistribution
-from .skewNorm_d import SkewedNormalDistribution
+from .skewNormal_d import SkewNormalDistribution
 from .uniform_d import UniformDistribution
 
 oFloat = Optional[float]

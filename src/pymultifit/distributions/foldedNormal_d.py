@@ -6,42 +6,122 @@ import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities import folded_normal_
+from .utilities_d import folded_normal_cdf_, folded_normal_pdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):
-    """Class for folded half-normal distribution."""
+    r"""
+    Class for FoldedNormal distribution.
 
-    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., normalize: bool = False):
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :type amplitude: float, optional
+
+    :param mu: The mean parameter, :math:`\mu`. Defaults to 0.0.
+    :type mu: float, optional
+
+    :param sigma: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    :type sigma: float, optional
+
+    :param loc: The location parameter, for shifting. Defaults to 0.0.
+    :type loc: float, optional
+
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+    :type normalize: bool, optional
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+
+    Examples
+    --------
+    Importing libraries:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
+
+    Generating a standard Folded Normal(:math:`\mu=0, \sigma = 1`) distribution with ``pyMultiFit`` and ``scipy``:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/folded_normal_example1.png
+       :alt: Gaussian(0, 1)
+       :align: center
+
+    Generating a translated Gaussian(:math:`\mu=2, \sigma=3`) distribution with :math:`\text{loc}=3`:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :lineno-start: 32
+       :lines: 32
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/foldednorm.py
+       :language: python
+       :lineno-start: 34
+       :lines: 34-49
+
+    .. image:: ../../../images/folded_normal_example2.png
+       :alt: Gaussian(3, 2)
+       :align: center
+    """
+
+    def __init__(self, amplitude: float = 1.0, mu: float = 0.0, sigma: float = 1., loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif sigma <= 0:
-            raise erH.NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
-        self.mean = mean
+        self.mu = mu
         self.sigma = sigma
+        self.loc = loc
 
-        self.c = abs(mean) / sigma
-        self.var_ = sigma**2
         self.norm = normalize
 
-    def _pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_normal_(x, amplitude=self.amplitude, mu=self.mean, variance=self.var_, normalize=self.norm)
+    @classmethod
+    def scipy_like(cls, c, loc: float = 0.0, scale: float = 1.0):
+        r"""
+        Instantiate FoldedNormalDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        c: float
+            The shape parameter.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        FoldedNormalDistribution
+            An instance of normalized FoldedNormalDistribution.
+        """
+        return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        y = np.zeros_like(x, dtype=float)
-        y[x >= 0] += self._pdf(x[x >= 0])
-        return y
+        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
+                                  normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        y = np.zeros_like(x, dtype=float)
-        mask = x >= 0
-        frac1, frac2 = (x[mask] - self.mean) / np.sqrt(2 * self.var_), (x[mask] + self.mean) / np.sqrt(2 * self.var_)
-        y[mask] += 0.5 * (erf(frac1) + erf(frac2))
-        return y
+        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
+                                  normalize=self.norm)
 
     def stats(self) -> Dict[str, Any]:
-        mean_, std_ = self.mean, np.sqrt(self.var_)
+        mean_, std_ = self.mean, self.sigma
 
         f1 = std_ * np.sqrt(2 / np.pi) * np.exp(-mean_**2 / (2 * std_**2))
         f2 = mean_ * erf(mean_ / (np.sqrt(2 * np.pi)))
@@ -49,5 +129,5 @@ class FoldedNormalDistribution(BaseDistribution):
         mu_y = f1 + f2
         var_y = mean_**2 + std_**2 - mu_y**2
 
-        return {'mean': mu_y,
+        return {'mean': mu_y + self.loc,
                 'variance': var_y}

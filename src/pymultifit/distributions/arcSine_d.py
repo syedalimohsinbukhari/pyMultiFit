@@ -1,34 +1,97 @@
 """Created on Aug 14 02:02:42 2024"""
 
+from .backend import errorHandling as erH
 from .beta_d import BetaDistribution
 
 
 class ArcSineDistribution(BetaDistribution):
+    r"""
+    Class for ArcSine distribution.
+
+    .. note::
+        The :class:`ArcSineDistribution` is a special case of the
+        :class:`~pymultifit.distributions.beta_d.BetaDistribution`,
+
+        * :math:`\alpha_\text{beta} = 0.5`,
+        * :math:`\lambda_\text{beta} = 0.5`.
+
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :type amplitude: float, optional
+
+    :param loc: The location parameter, :math:`-` shifting. Defaults to 0.0.
+    :type loc: float, optional
+
+    :param scale: The scale parameter, for shifting. Defaults to 1.0.
+    :type scale: float, optional
+
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+    :type normalize: bool, optional
+
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise NegativeScaleError: If the provided value of scale is negative.
+
+    :example:
+
+    Importing libraries
+
+    .. literalinclude:: ../../../examples/basic/arcSine.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
+
+    Generating the ArcSine distribution with ``pyMultiFit`` and ``scipy``.
+
+    .. literalinclude:: ../../../examples/basic/arcSine.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**
+
+    .. literalinclude:: ../../../examples/basic/arcSine.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-
+
+    .. image:: ../../../images/arcsine_example.png
+       :alt: ArcSine distribution
+       :align: center
     """
-    Class for the ArcSine distribution, a special case of the Beta distribution with alpha=0.5 and beta=0.5.
 
-    The ArcSine distribution is a Beta distribution where both the shape parameters are fixed at 0.5.
-    The user can still provide an amplitude and normalization flag as options, but the alpha and beta parameters are overridden to always be 0.5.
+    def __init__(self, amplitude: float = 1., loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
+        if not normalize and amplitude <= 0:
+            raise erH.NegativeAmplitudeError()
+        if scale < 0:
+            raise erH.NegativeScaleError()
 
-    Parameters
-    ----------
-    amplitude : float, optional
-        The scaling factor for the distribution. Default is 1.
-    alpha : float, optional
-        The alpha parameter for the Beta distribution. This value will be overridden to 0.5. Default is 0.5.
-    beta : float, optional
-        The beta parameter for the Beta distribution. This value will be overridden to 0.5. Default is 0.5.
-    normalize : bool, optional
-        Whether to normalize the distribution (i.e., set the PDF to integrate to 1). Default is False.
+        self.amplitude = 1 if normalize else amplitude
+        self.loc = loc
+        self.scale = scale
 
-    Notes
-    -----
-    Although the `alpha` and `beta` parameters are accepted as inputs, they will always be set to 0.5 internally,
-    as the ArcSine distribution is a special case of the Beta distribution with these fixed parameters.
-    """
+        self.norm = normalize
+        super().__init__(amplitude=self.amplitude, alpha=0.5, beta=0.5, loc=self.loc, scale=self.scale,
+                         normalize=self.norm)
 
-    def __init__(self, amplitude: float = 1., alpha: float = 0.5, beta: float = 0.5, normalize: bool = False):
-        # respect the user passed values if they're equal to 0.5, otherwise overwrite them.
-        alpha = alpha if alpha == 0.5 else 0.5
-        beta = beta if beta == 0.5 else 0.5
-        super().__init__(amplitude=amplitude, alpha=alpha, beta=beta, normalize=normalize)
+    @classmethod
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate ArcSineDistribution with scipy parameterization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        ArcSineDistribution
+            An instance of normalized ArcSineDistribution.
+        """
+        return cls(loc=loc, scale=scale, normalize=True)
