@@ -1,13 +1,11 @@
 """Created on Aug 03 21:35:28 2024"""
 
-from functools import wraps
 from typing import Dict
 
 import numpy as np
-from custom_inherit import doc_inherit
 
 from .backend import BaseDistribution
-from .utilities_d import doc_style, skew_normal_cdf_, skew_normal_pdf_
+from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -90,32 +88,30 @@ class SkewNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @doc_inherit(parent=BaseDistribution.scipy_like, style=doc_style)
-    def scipy_like(cls, a, loc: float = 0.0, scale: float = 1.0):
+    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0):
         """
+        Instantiate SkewNormalDistribution with scipy parametrization.
 
         Parameters
         ----------
         a : float
-            The shape parameter for the distribution.
-
+            The skewness parameter.
         loc : float, optional
-            The location parameter for the distribution. Defaults to 0.0.
-
+            The location parameter. Defaults to 0.0.
         scale : float, optional
-            The scale parameter for the distribution. Defaults to 1.0.
+            The scale parameter. Defaults to 1.0.
 
         Returns
         --------
-        :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`
-            Normalized SkewNormalDistribution instance.
+        SkewNormalDistribution
+            An instance of normalized SkewNormalDistribution.
         """
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return skew_normal_pdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return skew_normal_cdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:

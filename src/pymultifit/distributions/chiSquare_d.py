@@ -21,7 +21,7 @@ class ChiSquareDistribution(BaseDistribution):
     :type amplitude: float, optional
 
     :param degree_of_freedom: The degree of freedom for the chi-square distribution. Default is 1.0.
-    :type degree_of_freedom: int, optional
+    :type degree_of_freedom: int or float, optional
 
     :param loc: The location parameter, for shifting. Defaults to 0.0.
     :type loc: float, optional
@@ -82,7 +82,7 @@ class ChiSquareDistribution(BaseDistribution):
     """
 
     def __init__(self,
-                 amplitude: float = 1.0, degree_of_freedom: int = 1,
+                 amplitude: float = 1.0, degree_of_freedom: int | float = 1,
                  loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
@@ -93,11 +93,32 @@ class ChiSquareDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: np.array) -> np.array:
+    @classmethod
+    def scipy_like(cls, df: int | float, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate ChiSquareDistribution with scipy parameterization.
+
+        Parameters
+        ----------
+        df: int or float
+            The degree of freedom for the ChiSquare distribution.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0
+
+        Returns
+        -------
+        ChiSquareDistribution
+            An instance of normalized ChiSquareDistribution.
+        """
+        return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return chi_square_pdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
                                normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return chi_square_cdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
                                normalize=self.norm)
 
@@ -108,7 +129,7 @@ class ChiSquareDistribution(BaseDistribution):
 
         f1 = 9 * self.dof
         f1 = 1 - (2 / f1)
-        f1 = self.dof * f1 ** 3
+        f1 = self.dof * f1**3
 
         median_ = f1
 

@@ -2,7 +2,9 @@ Laplace Distribution
 ====================
 
 .. autoclass:: pymultifit.distributions.laplace_d.LaplaceDistribution
-   :no-members:
+   :members:
+   :inherited-members:
+   :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 

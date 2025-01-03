@@ -88,10 +88,29 @@ class ExponentialDistribution(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: np.array) -> np.array:
+    @classmethod
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+        r"""
+        Instantiate ExponentialDistribution with scipy parameterization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The rate parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        ExponentialDistribution
+            A instance of normalized ExponentialDistribution.
+        """
+        return cls(loc=loc, scale=1 / scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return exponential_pdf_(x=x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return exponential_cdf_(x=x, amplitude=self.amplitude, scale=self.scale, loc=self.loc, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:

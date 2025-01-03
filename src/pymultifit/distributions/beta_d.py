@@ -3,12 +3,10 @@
 from typing import Dict
 
 import numpy as np
-from custom_inherit import doc_inherit
 from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import beta_cdf_, beta_pdf_
-from .. import doc_style
 
 
 class BetaDistribution(BaseDistribution):
@@ -104,9 +102,9 @@ class BetaDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @doc_inherit(parent=BaseDistribution.scipy_like, style=doc_style)
-    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> 'BetaDistribution':
+    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0):
         r"""
+        Instantiate BetaDistribution with scipy parameterization.
 
         Parameters
         ----------
@@ -115,20 +113,21 @@ class BetaDistribution(BaseDistribution):
         b: float
             The shape parameter, :math:`\beta`.
         loc: float, optional
-            The location parameter, for shifting. Defaults to 0.0.
+            The location parameter. Defaults to 0.0.
         scale: float, optional
-            The scale parameter, for scaling. Defaults to 1.0.
+            The scale parameter,. Defaults to 1.0.
 
         Returns
         -------
-        "BetaDistribution":
+        BetaDistribution
             An instance of normalized BetaDistribution.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         if self.scale > 0:
-            return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
+            return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc,
+                             scale=self.scale, normalize=self.norm)
         else:
             return np.full(shape=x.shape, fill_value=np.nan)
 

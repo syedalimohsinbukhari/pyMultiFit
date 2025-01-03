@@ -96,6 +96,27 @@ class GammaDistributionSR(BaseDistribution):
 
         self.norm = normalize
 
+    @classmethod
+    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0):
+        r"""
+        Instantiate GammaDistributionSR with scipy parametrization.
+
+        Parameters
+        ----------
+        a: float
+            The shape parameter.
+        loc: float, optional
+            The location parameter, for shifting. Defaults to 0.0.
+        scale: float, optional
+            The scaling parameter, for scaling. Defaults to 1.0.
+
+        Returns
+        -------
+        "GammaDistributionSR"
+            An instance of normalized GammaDistributionSR.
+        """
+        return cls(shape=a, loc=loc, rate=1 / scale, normalize=True)
+
     def pdf(self, x: np.array) -> np.array:
         return gamma_sr_pdf_(x,
                              amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
@@ -200,3 +221,24 @@ class GammaDistributionSS(GammaDistributionSR):
         elif scale <= 0:
             raise erH.NegativeScaleError()
         super().__init__(amplitude=amplitude, shape=shape, rate=1 / self.scale, loc=loc, normalize=normalize)
+
+    @classmethod
+    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0):
+        r"""
+        Instantiate GammaDistributionSS with scipy parametrization.
+
+        Parameters
+        ----------
+        a: float
+            The shape parameter.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scaling parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        GammaDistributionSS
+            An instance of normalized GammaDistributionSS.
+        """
+        return cls(shape=a, loc=loc, scale=scale, normalize=True)

@@ -75,6 +75,7 @@ class LogNormalDistribution(BaseDistribution):
        :alt: Gaussian(3, 2)
        :align: center
     """
+
     def __init__(self, amplitude: float = 1., mean: float = 0.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
@@ -87,10 +88,31 @@ class LogNormalDistribution(BaseDistribution):
 
         self.norm = normalize
 
+    @classmethod
+    def scipy_like(cls, s, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate LogNormalDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        s: float
+            The shape parameter.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        LogNormalDistribution
+            An instance of normalized LogNormalDistribution.
+        """
+        return cls(mean=s, loc=loc, std=scale, normalize=True)
+
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mean, std=self.std, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mean, std=self.std, loc=self.loc, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:

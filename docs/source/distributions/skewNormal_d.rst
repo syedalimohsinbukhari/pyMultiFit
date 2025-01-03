@@ -3,6 +3,8 @@ SkewNormal Distribution
 
 .. autoclass:: pymultifit.distributions.skewNormal_d.SkewNormalDistribution
    :members:
+   :inherited-members:
+   :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 

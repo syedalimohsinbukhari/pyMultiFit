@@ -75,6 +75,7 @@ class LaplaceDistribution(BaseDistribution):
        :alt: Laplace(3, 2)
        :align: center
     """
+
     def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
@@ -86,10 +87,29 @@ class LaplaceDistribution(BaseDistribution):
 
         self.norm = normalize
 
+    @classmethod
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate LaplaceDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        LaplaceDistribution
+            An instance of normalized LaplaceDistribution.
+        """
+        return cls(mean=loc, diversity=scale, normalize=True)
+
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return laplace_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return laplace_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:

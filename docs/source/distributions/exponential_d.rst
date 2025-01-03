@@ -2,7 +2,8 @@ Exponential Distribution
 ========================
 
 .. autoclass:: pymultifit.distributions.exponential_d.ExponentialDistribution
-   :no-members:
+   :members:
+   :inherited-members:
    :show-inheritance:
 
 .. note::
