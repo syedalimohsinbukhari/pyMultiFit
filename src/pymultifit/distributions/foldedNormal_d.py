@@ -95,20 +95,21 @@ class FoldedNormalDistribution(BaseDistribution):
     @classmethod
     def scipy_like(cls, c, loc: float = 0.0, scale: float = 1.0):
         r"""
+        Instantiate FoldedNormalDistribution with scipy parametrization.
 
         Parameters
         ----------
         c: float
-            The shape parameter
+            The shape parameter.
         loc: float, optional
-            The location parameter, for shifting. Defaults to 0.0.
+            The location parameter. Defaults to 0.0.
         scale: float, optional
-            The scale parameter, for scaling. Defaults to 1.0.
+            The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        "FoldedNormalDistribution"
-            A normalized instance of FoldedNormalDistribution.
+        FoldedNormalDistribution
+            An instance of normalized FoldedNormalDistribution.
         """
         return cls(mean=c, sigma=scale, loc=loc, normalize=True)
 
@@ -116,7 +117,7 @@ class FoldedNormalDistribution(BaseDistribution):
         return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 

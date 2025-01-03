@@ -79,3 +79,22 @@ class HalfNormalDistribution(FoldedNormalDistribution):
         self.scale = scale
         self.loc = loc
         super().__init__(amplitude=amplitude, mean=0, sigma=scale, loc=loc, normalize=normalize)
+
+    @classmethod
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate HalfNormalDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        HalfNormalDistribution
+            An instance of normalized HalfNormalDistribution.
+        """
+        return cls(loc=loc, scale=scale, normalize=True)

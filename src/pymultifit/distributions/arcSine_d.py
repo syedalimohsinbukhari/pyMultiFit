@@ -85,13 +85,13 @@ class ArcSineDistribution(BetaDistribution):
         Parameters
         ----------
         loc: float, optional
-            The location parameter, for shifting. Defaults to 0.0.
+            The location parameter. Defaults to 0.0.
         scale: float, optional
-            The scale parameter, for scaling. Defaults to 1.0.
+            The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        cls
+        ArcSineDistribution
             An instance of normalized ArcSineDistribution.
         """
         return cls(loc=loc, scale=scale, normalize=True)

@@ -2,8 +2,9 @@ ChiSquare Distribution
 ======================
 
 .. autoclass:: pymultifit.distributions.chiSquare_d.ChiSquareDistribution
+   :members:
+   :inherited-members:
    :show-inheritance:
-   :members: scipy_like
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 

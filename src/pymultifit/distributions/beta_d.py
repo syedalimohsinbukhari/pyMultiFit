@@ -104,6 +104,7 @@ class BetaDistribution(BaseDistribution):
     @classmethod
     def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0):
         r"""
+        Instantiate BetaDistribution with scipy parameterization.
 
         Parameters
         ----------
@@ -112,13 +113,13 @@ class BetaDistribution(BaseDistribution):
         b: float
             The shape parameter, :math:`\beta`.
         loc: float, optional
-            The location parameter, for shifting. Defaults to 0.0.
+            The location parameter. Defaults to 0.0.
         scale: float, optional
-            The scale parameter, for scaling. Defaults to 1.0.
+            The scale parameter,. Defaults to 1.0.
 
         Returns
         -------
-        "BetaDistribution":
+        BetaDistribution
             An instance of normalized BetaDistribution.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)

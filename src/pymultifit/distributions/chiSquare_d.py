@@ -96,28 +96,29 @@ class ChiSquareDistribution(BaseDistribution):
     @classmethod
     def scipy_like(cls, df: int | float, loc: float = 0.0, scale: float = 1.0):
         """
+        Instantiate ChiSquareDistribution with scipy parameterization.
 
         Parameters
         ----------
         df: int or float
             The degree of freedom for the ChiSquare distribution.
         loc: float, optional
-            The location parameter, for shifting. Defaults to 0.0.
+            The location parameter. Defaults to 0.0.
         scale: float, optional
-            The scale parameter, for scaling. Defaults to 1.0
+            The scale parameter. Defaults to 1.0
 
         Returns
         -------
-        "ChiSquareDistribution"
-            An instance of normalized ChiSquare distribution.
+        ChiSquareDistribution
+            An instance of normalized ChiSquareDistribution.
         """
-        return cls(degree_of_freedom=df, loc=loc, scale=scale)
+        return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.array) -> np.array:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return chi_square_pdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
                                normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return chi_square_cdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
                                normalize=self.norm)
 

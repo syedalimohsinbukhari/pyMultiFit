@@ -2,7 +2,9 @@ Gamma Distribution (SR)
 =======================
 
 .. autoclass:: pymultifit.distributions.gamma_d.GammaDistributionSR
-   :no-members:
+   :members:
+   :inherited-members:
+   :show-inheritance:
 
 
 .. note::

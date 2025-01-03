@@ -2,7 +2,9 @@ Uniform Distribution
 ====================
 
 .. autoclass:: pymultifit.distributions.uniform_d.UniformDistribution
-   :no-members:
+   :members:
+   :inherited-members:
+   :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 

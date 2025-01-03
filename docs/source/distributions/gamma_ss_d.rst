@@ -2,7 +2,10 @@ Gamma Distribution (SS)
 =======================
 
 .. autoclass:: pymultifit.distributions.gamma_d.GammaDistributionSS
-   :no-members:
+   :members:
+   :inherited-members:
+   :show-inheritance:
+
 
 .. note::
     The :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` with  :math:`\lambda = \theta^{-1}`.

@@ -2,7 +2,9 @@ HalfNormal Distribution
 =======================
 
 .. autoclass:: pymultifit.distributions.halfNormal_d.HalfNormalDistribution
-   :no-members:
+   :members:
+   :inherited-members:
+   :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 

@@ -5,6 +5,7 @@ ArcSine Distribution
 
 .. autoclass:: pymultifit.distributions.arcSine_d.ArcSineDistribution
    :members:
+   :inherited-members:
    :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:

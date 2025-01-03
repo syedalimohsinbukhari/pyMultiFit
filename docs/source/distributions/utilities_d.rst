@@ -41,4 +41,3 @@ Internal functions
 .. autofunction:: _beta_masking
 .. autofunction:: _pdf_scaling
 .. autofunction:: _remove_nans
-.. autofunction:: _scipy

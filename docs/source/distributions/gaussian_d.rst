@@ -2,7 +2,9 @@ Gaussian Distribution
 =====================
 
 .. autoclass:: pymultifit.distributions.gaussian_d.GaussianDistribution
-   :no-members:
+   :members:
+   :inherited-members:
+   :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
