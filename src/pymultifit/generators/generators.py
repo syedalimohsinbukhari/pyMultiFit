@@ -9,16 +9,16 @@ from .. import distributions as dist, doc_style, GAUSSIAN, LAPLACE, LINE, LOG_NO
 from ..distributions.backend import BaseDistribution
 
 listOfTuples = List[Tuple[float, ...]]
-listOfTuplesOrArray = Union[listOfTuples, np.array]
+listOfTuplesOrArray = Union[listOfTuples, np.ndarray]
 
 
-def multi_base(x: np.array, distribution_func: Type[BaseDistribution], params: listOfTuplesOrArray,
-               noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_base(x: np.ndarray, distribution_func: Type[BaseDistribution], params: listOfTuplesOrArray,
+               noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     """Generate data based on a combination of distributions with optional noise.
 
     Parameters
     ----------
-    x : np.array
+    x : np.ndarray
         Input array of values.
     distribution_func: Type[BaseDistribution]
         The distribution function to be used to generate data.
@@ -33,7 +33,7 @@ def multi_base(x: np.array, distribution_func: Type[BaseDistribution], params: l
 
     Returns
     -------
-    np.array
+    np.ndarray
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
     y = np.zeros_like(x, dtype=float)
@@ -49,14 +49,14 @@ def multi_base(x: np.array, distribution_func: Type[BaseDistribution], params: l
     return y
 
 
-def multi_chi_squared(x: np.array, params: listOfTuplesOrArray,
-                      noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_chi_squared(x: np.ndarray, params: listOfTuplesOrArray,
+                      noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""
     Generate multi-:class:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution` data with optional noise.
 
     Parameters
     ----------
-    x : np.array
+    x : np.ndarray
         Input array of values.
     params : listOfTuplesOrArray
         List of tuples containing the parameters for the required distribution.
@@ -69,7 +69,7 @@ def multi_chi_squared(x: np.array, params: listOfTuplesOrArray,
 
     Returns
     -------
-    np.array
+    np.ndarray
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return multi_base(x=x,
@@ -78,8 +78,8 @@ def multi_chi_squared(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gamma_sr(x: np.array, params: listOfTuplesOrArray,
-                   noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_gamma_sr(x: np.ndarray, params: listOfTuplesOrArray,
+                   noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.GammaDistributionSR, params=params, noise_level=noise_level,
@@ -87,8 +87,8 @@ def multi_gamma_sr(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gamma_ss(x: np.array, params: listOfTuplesOrArray,
-                   noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_gamma_ss(x: np.ndarray, params: listOfTuplesOrArray,
+                   noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.GammaDistributionSS, params=params, noise_level=noise_level,
@@ -96,8 +96,8 @@ def multi_gamma_ss(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_exponential(x: np.array, params: listOfTuplesOrArray,
-                      noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_exponential(x: np.ndarray, params: listOfTuplesOrArray,
+                      noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.ExponentialDistribution, params=params, noise_level=noise_level,
@@ -105,8 +105,8 @@ def multi_exponential(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_folded_normal(x: np.array, params: listOfTuplesOrArray,
-                        noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_folded_normal(x: np.ndarray, params: listOfTuplesOrArray,
+                        noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.FoldedNormalDistribution, params=params, noise_level=noise_level,
@@ -114,8 +114,8 @@ def multi_folded_normal(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gaussian(x: np.array, params: listOfTuplesOrArray,
-                   noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_gaussian(x: np.ndarray, params: listOfTuplesOrArray,
+                   noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.GaussianDistribution, params=params, noise_level=noise_level,
@@ -123,8 +123,8 @@ def multi_gaussian(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_half_normal(x: np.array, params: listOfTuplesOrArray,
-                      noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_half_normal(x: np.ndarray, params: listOfTuplesOrArray,
+                      noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.HalfNormalDistribution, params=params, noise_level=noise_level,
@@ -132,8 +132,8 @@ def multi_half_normal(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_laplace(x: np.array, params: listOfTuplesOrArray,
-                  noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_laplace(x: np.ndarray, params: listOfTuplesOrArray,
+                  noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.laplace_d.LaplaceDistribution` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.LaplaceDistribution, params=params, noise_level=noise_level,
@@ -141,8 +141,8 @@ def multi_laplace(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_log_normal(x: np.array, params: listOfTuplesOrArray,
-                     noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_log_normal(x: np.ndarray, params: listOfTuplesOrArray,
+                     noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.LogNormalDistribution, params=params, noise_level=noise_level,
@@ -150,22 +150,22 @@ def multi_log_normal(x: np.array, params: listOfTuplesOrArray,
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_skew_normal(x: np.array, params: listOfTuplesOrArray,
-                      noise_level: float = 0.0, normalize: bool = False) -> np.array:
+def multi_skew_normal(x: np.ndarray, params: listOfTuplesOrArray,
+                      noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution` data with optional noise."""
     return multi_base(x=x,
                       distribution_func=dist.SkewNormalDistribution, params=params, noise_level=noise_level,
                       normalize=normalize)
 
 
-def multiple_models(x: np.array, params: listOfTuplesOrArray, model_list,
-                    noise_level=0.0, normalize: bool = False) -> np.array:
+def multiple_models(x: np.ndarray, params: listOfTuplesOrArray, model_list,
+                    noise_level=0.0, normalize: bool = False) -> np.ndarray:
     r"""
     Generate data based on a combination of different models with optional noise.
 
     Parameters
     ----------
-    x : np.array
+    x : np.ndarray
         Input array of values.
     params : listOfTuplesOrArray
         List of tuples containing the parameters for each model.
@@ -179,7 +179,7 @@ def multiple_models(x: np.array, params: listOfTuplesOrArray, model_list,
 
     Returns
     -------
-    np.array
+    np.ndarray
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
 

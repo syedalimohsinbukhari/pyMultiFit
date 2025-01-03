@@ -8,7 +8,7 @@ from ..distributions.utilities_d import chi_square_pdf_
 
 
 class ChiSquareFitter(BaseFitter):
-    """Class for multi-ChiSquare fitting."""
+    """A class for fitting multiple ChiSquare distributions to the given data."""
 
     def __init__(self, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)

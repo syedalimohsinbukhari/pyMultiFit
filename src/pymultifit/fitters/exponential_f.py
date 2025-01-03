@@ -8,7 +8,7 @@ from ..distributions.utilities_d import exponential_pdf_
 
 
 class ExponentialFitter(BaseFitter):
-    """A class for fitting multiple Exponential functions to the given data."""
+    """A class for fitting multiple Exponential distributions to the given data."""
 
     def __init__(self, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)

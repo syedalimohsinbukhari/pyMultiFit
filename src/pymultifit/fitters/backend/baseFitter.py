@@ -1,7 +1,7 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Any, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,7 +25,7 @@ _gammaSS = 'GammaFitterSS'
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    def __init__(self, x_values, y_values, max_iterations: int = 1000):
+    def __init__(self, x_values: list | np.ndarray, y_values: list | np.ndarray, max_iterations: int = 1000):
         self.x_values = x_values
         self.y_values = y_values
         self.max_iterations = max_iterations
@@ -80,7 +80,7 @@ class BaseFitter:
 
         Returns
         -------
-        np.array
+        np.ndarray
             An array containing the covariance matrix of the fitted model.
         """
         if self.covariance is None:
@@ -110,13 +110,13 @@ class BaseFitter:
         """
         return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
 
-    def _n_fitter(self, x: np.array, *params) -> np.array:
+    def _n_fitter(self, x: np.ndarray, *params: Iterable) -> np.ndarray:
         r"""
         Perform N-fitting by summing over multiple parameter sets.
 
         Parameters
         ----------
-        x : np.array
+        x : np.ndarray
             Input array of values for which the composite function is evaluated.
         params : tuple
             A tuple containing all parameters to be fitted. This is reshaped into  an array of size (``self.n_fits``, ``self.n_par``) where:
@@ -125,7 +125,7 @@ class BaseFitter:
 
         Returns
         -------
-        np.array
+        np.ndarray
             An array containing the composite fitted values for the input ``x``.
         """
         y = np.zeros_like(a=x, dtype=float)
@@ -134,13 +134,13 @@ class BaseFitter:
             y += self.fitter(x=x, params=par)
         return y
 
-    def _params(self) -> np.array:
+    def _params(self) -> np.ndarray:
         r"""
         Store the fitted parameters of the fitted model.
 
         Returns
         -------
-        np.array
+        np.ndarray
             The parameters obtained after performing the fit.
 
         Raises
@@ -180,13 +180,13 @@ class BaseFitter:
                                f'{", ".join(self._format_param(i) for i in par)})',
                     plot_dictionary=LinePlot(line_style='--', color=color), axis=plotter, x_label='', y_label='', plot_title='')
 
-    def _standard_errors(self) -> np.array:
+    def _standard_errors(self) -> np.ndarray:
         r"""
         Store the standard errors of the fitted parameters.
 
         Returns
         -------
-        np.array
+        np.ndarray
             An array containing the standard errors of the fitted parameters.
 
         Raises
@@ -202,13 +202,13 @@ class BaseFitter:
         """Plot the x and y data for a quick visual inspection of the data."""
         plot_xy(x_data=self.x_values, y_data=self.y_values)
 
-    def fit(self, p0):
+    def fit(self, p0: listOfTuplesOrArray):
         """
         Fit the data.
 
         Parameters
         ----------
-        p0: List[int | float | ...]
+        p0: listOfTuplesOrArray
             A list of initial guesses for the parameters of the Gaussian model.
         """
         self.n_fits = len(p0)
@@ -236,26 +236,26 @@ class BaseFitter:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     @staticmethod
-    def fitter(x: np.array, params: listOfTuplesOrArray):
+    def fitter(x: np.ndarray, params: List[float]):
         """
         Fitter function for multi-fitting.
 
         Parameters
         ----------
-        x: np.array
+        x: np.ndarray
             The x-array on which the fitting is to be performed.
-        params: listOfTuplesOrArray
+        params: List[float]
             A list of parameters to fit.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def get_fit_values(self) -> np.array:
+    def get_fit_values(self) -> np.ndarray:
         """
         Get the fitted values of the model.
 
         Returns
         -------
-        np.array
+        np.ndarray
             An array of fitted values.
         """
         if self.params is None:
@@ -326,7 +326,7 @@ class BaseFitter:
 
             return mean[:, range(self.n_par)].T, std_[:, range(self.n_par)].T
 
-    def get_value_error_pair(self, mean_values=True, std_values=False) -> np.ndarray:
+    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> np.ndarray:
         r"""
         Retrieve the value/error pairs for the fitted parameters.
 

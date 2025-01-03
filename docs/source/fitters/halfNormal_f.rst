@@ -3,6 +3,7 @@ HalfNormal Fitter
 
 .. autoclass:: pymultifit.fitters.halfNormal_f.HalfNormalFitter
    :no-members:
+   :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 

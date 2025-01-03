@@ -2,6 +2,7 @@ ChiSquare Fitter
 ================
 
 .. autoclass:: pymultifit.fitters.chiSquare_f.ChiSquareFitter
+   :no-members:
    :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:

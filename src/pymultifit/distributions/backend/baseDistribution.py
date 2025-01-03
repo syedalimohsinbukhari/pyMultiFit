@@ -42,7 +42,7 @@ class BaseDistribution:
         :rtype: Dict[str, float]
 
         Notes
-        ------
+        -----
         If any of the parameter is not computable for a distribution, this method returns None.
         """
         raise NotImplementedError("Subclasses should implement this method.")

@@ -102,7 +102,7 @@ class SkewNormalDistribution(BaseDistribution):
             The scale parameter. Defaults to 1.0.
 
         Returns
-        --------
+        -------
         SkewNormalDistribution
             An instance of normalized SkewNormalDistribution.
         """
