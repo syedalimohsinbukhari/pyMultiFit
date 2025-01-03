@@ -208,7 +208,7 @@ def beta_cdf_(x: np.array,
 
 
 def chi_square_pdf_(x: np.array,
-                    amplitude: float = 1.0, degree_of_freedom: int = 1,
+                    amplitude: float = 1.0, degree_of_freedom: int | float = 1,
                     loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
     r"""
     Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
@@ -251,14 +251,15 @@ def chi_square_pdf_(x: np.array,
     y = (x - loc) / scale
     pdf_ = np.zeros_like(x, dtype=float)
     mask_ = y > 0
-    pdf_[mask_] = gamma_sr_pdf_(y[mask_], amplitude=amplitude, alpha=degree_of_freedom / 2, lambda_=0.5, loc=0, normalize=normalize)
+    pdf_[mask_] = gamma_sr_pdf_(y[mask_], amplitude=amplitude, alpha=degree_of_freedom / 2, lambda_=0.5, loc=0,
+                                normalize=normalize)
 
     return pdf_ / scale
 
 
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_cdf_(x: np.array,
-                    amplitude: float = 1.0, degree_of_freedom: int = 1,
+                    amplitude: float = 1.0, degree_of_freedom: int | float = 1,
                     loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.array:
     """
     Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.

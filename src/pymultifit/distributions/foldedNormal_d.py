@@ -25,7 +25,8 @@ class FoldedNormalDistribution(BaseDistribution):
     :param loc: The location parameter, for shifting. Defaults to 0.0.
     :type loc: float, optional
 
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
     :type normalize: bool, optional
 
     :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
@@ -80,7 +81,8 @@ class FoldedNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., loc: float = 0.0, normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1., loc: float = 0.0,
+                 normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         self.amplitude = 1. if normalize else amplitude
@@ -90,11 +92,33 @@ class FoldedNormalDistribution(BaseDistribution):
 
         self.norm = normalize
 
+    @classmethod
+    def scipy_like(cls, c, loc: float = 0.0, scale: float = 1.0):
+        r"""
+
+        Parameters
+        ----------
+        c: float
+            The shape parameter
+        loc: float, optional
+            The location parameter, for shifting. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter, for scaling. Defaults to 1.0.
+
+        Returns
+        -------
+        "FoldedNormalDistribution"
+            A normalized instance of FoldedNormalDistribution.
+        """
+        return cls(mean=c, sigma=scale, loc=loc, normalize=True)
+
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc, normalize=self.norm)
+        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc,
+                                  normalize=self.norm)
 
     def cdf(self, x: np.array) -> np.array:
-        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc, normalize=self.norm)
+        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mean, sigma=self.sigma, loc=self.loc,
+                                  normalize=self.norm)
 
     def stats(self) -> Dict[str, Any]:
         mean_, std_ = self.mean, self.sigma

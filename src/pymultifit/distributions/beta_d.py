@@ -3,12 +3,10 @@
 from typing import Dict
 
 import numpy as np
-from custom_inherit import doc_inherit
 from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import beta_cdf_, beta_pdf_
-from .. import doc_style
 
 
 class BetaDistribution(BaseDistribution):
@@ -104,8 +102,7 @@ class BetaDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @doc_inherit(parent=BaseDistribution.scipy_like, style=doc_style)
-    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> 'BetaDistribution':
+    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0):
         r"""
 
         Parameters
@@ -128,7 +125,8 @@ class BetaDistribution(BaseDistribution):
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         if self.scale > 0:
-            return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
+            return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc,
+                             scale=self.scale, normalize=self.norm)
         else:
             return np.full(shape=x.shape, fill_value=np.nan)
 

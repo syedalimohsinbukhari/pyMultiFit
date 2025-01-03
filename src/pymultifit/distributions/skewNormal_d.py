@@ -1,13 +1,11 @@
 """Created on Aug 03 21:35:28 2024"""
 
-from functools import wraps
 from typing import Dict
 
 import numpy as np
-from custom_inherit import doc_inherit
 
 from .backend import BaseDistribution
-from .utilities_d import doc_style, skew_normal_cdf_, skew_normal_pdf_
+from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -90,7 +88,6 @@ class SkewNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @doc_inherit(parent=BaseDistribution.scipy_like, style=doc_style)
     def scipy_like(cls, a, loc: float = 0.0, scale: float = 1.0):
         """
 

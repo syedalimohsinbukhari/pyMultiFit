@@ -2,7 +2,8 @@ FoldedNormal Distribution
 =========================
 
 .. autoclass:: pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution
-   :no-members:
+   :members: scipy_like
+   :show-inheritance:
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 

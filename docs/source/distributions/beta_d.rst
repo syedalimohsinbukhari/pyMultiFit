@@ -2,7 +2,7 @@ Beta Distribution
 ====================
 
 .. autoclass:: pymultifit.distributions.beta_d.BetaDistribution
-   :members:
+   :members: scipy_like
    :show-inheritance:
 
 .. note::

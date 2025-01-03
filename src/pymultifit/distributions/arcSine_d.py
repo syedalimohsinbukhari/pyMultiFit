@@ -1,10 +1,7 @@
 """Created on Aug 14 02:02:42 2024"""
 
-from custom_inherit import doc_inherit
-
 from .backend import errorHandling as erH
 from .beta_d import BetaDistribution
-from .utilities_d import doc_style
 
 
 class ArcSineDistribution(BetaDistribution):
@@ -81,9 +78,9 @@ class ArcSineDistribution(BetaDistribution):
                          normalize=self.norm)
 
     @classmethod
-    @doc_inherit(parent=BetaDistribution.scipy_like, style=doc_style)
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "ArcSineDistribution":
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
         """
+        Instantiate ArcSineDistribution with scipy parameterization.
 
         Parameters
         ----------
@@ -94,7 +91,7 @@ class ArcSineDistribution(BetaDistribution):
 
         Returns
         -------
-        "ArcSineDistribution"
+        cls
             An instance of normalized ArcSineDistribution.
         """
         return cls(loc=loc, scale=scale, normalize=True)
