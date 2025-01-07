@@ -63,6 +63,28 @@ Derived Distributions
      - Uniform distribution.
      - :math:`\dfrac{1}{b-a}\ \forall\ x\in[a,b]\ \text{else}\ 0`
 
+Other functions
+---------------
+
+.. py:currentmodule:: pymultifit.distributions.others
+
+.. list-table::
+   :align: center
+   :header-rows: 1
+
+   * - Name
+     - Description
+   * - :func:`line`
+     - Line function.
+   * - :func:`linear`
+     - Similar to :func:`line`.
+   * - :func:`quadratic`
+     - Quadratic function
+   * - :func:`cubic`
+     - Cubic function
+   * - :func:`nth_polynomial`
+     - Polynomial function
+
 
 .. toctree::
    :hidden:
@@ -82,3 +104,4 @@ Derived Distributions
    SkewNormalDistribution   <distributions/skewNormal_d>
    UniformDistribution      <distributions/uniform_d>
    DistributionUtilities    <distributions/utilities_d>
+   OtherFunctions           <distributions/others>

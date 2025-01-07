@@ -9,17 +9,14 @@ optFloat = Optional[float]
 __all__ = ['line', 'linear', 'quadratic', 'cubic', 'nth_polynomial']
 
 
-def line(x, slope: optFloat = 1., intercept: optFloat = 0.) -> np.ndarray:
+def line(x: np.ndarray, slope: optFloat = 1., intercept: optFloat = 0.) -> np.ndarray:
     """
     Computes the y-values of a line given x-values, slope, and intercept.
 
-    This function calculates the y-values for a linear equation of the form
-    `y = slope * x + intercept` for the provided x-values.
-
     Parameters
     ----------
-    x : array_like
-        The input x-values for which the y-values are to be computed.
+    x : np.ndarray
+        Input array of values.
     slope : float
         The slope of the line.
     intercept : float
@@ -27,8 +24,8 @@ def line(x, slope: optFloat = 1., intercept: optFloat = 0.) -> np.ndarray:
 
     Returns
     -------
-    array_like
-        The computed y-values of the line corresponding to the given x-values.
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return slope * x + intercept
 
@@ -37,13 +34,10 @@ def linear(x: np.ndarray, a: optFloat = 1., b: optFloat = 1) -> np.ndarray:
     """
     Computes the y-values of a linear function given x-values.
 
-    This function calculates the y-values for a linear equation of the form
-    y = a * x + b.
-
     Parameters
     ----------
-    x : array_like
-        The input x-values for which the y-values are to be computed.
+    x : np.ndarray
+        Input array of values.
     a : float
         The coefficient of the linear term (x).
     b : float
@@ -51,8 +45,8 @@ def linear(x: np.ndarray, a: optFloat = 1., b: optFloat = 1) -> np.ndarray:
 
     Returns
     -------
-    array_like
-        The computed y-values of the quadratic function corresponding to the given x-values.
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return line(x, a, b)
 
@@ -61,13 +55,10 @@ def quadratic(x, a: optFloat = 1., b: optFloat = 1., c: optFloat = 1.) -> np.nda
     """
     Computes the y-values of a quadratic function given x-values.
 
-    This function calculates the y-values for a quadratic equation of the form
-    `y = a * x^2 + b * x + c`.
-
     Parameters
     ----------
-    x : array_like
-        The input x-values for which the y-values are to be computed.
+    x : np.ndarray
+        Input array of values.
     a : float
         The coefficient of the quadratic term (x^2).
     b : float
@@ -77,8 +68,8 @@ def quadratic(x, a: optFloat = 1., b: optFloat = 1., c: optFloat = 1.) -> np.nda
 
     Returns
     -------
-    array_like
-        The computed y-values of the quadratic function corresponding to the given x-values.
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return a * x**2 + b * x + c
 
@@ -87,13 +78,10 @@ def cubic(x: np.ndarray, a: optFloat = 1., b: optFloat = 1., c: optFloat = 1., d
     """
     Computes the y-values of a cubic function given x-values.
 
-    This function calculates the y-values for a quadratic equation of the form
-    `y = a * x^3 + b * x^2 + c * x + d`.
-
     Parameters
     ----------
-    x : array_like
-        The input x-values for which the y-values are to be computed.
+    x : np.ndarray
+        Input array of values.
     a : float
         The coefficient of the cubic term (x^3).
     b : float
@@ -105,8 +93,8 @@ def cubic(x: np.ndarray, a: optFloat = 1., b: optFloat = 1., c: optFloat = 1., d
 
     Returns
     -------
-    array_like
-        The computed y-values of the cubic function corresponding to the given x-values.
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return a * x**3 + b * x**2 + c * x + d
 
@@ -118,7 +106,7 @@ def nth_polynomial(x: np.ndarray, coefficients: list[float]) -> np.ndarray:
     Parameters
     ----------
     x : np.ndarray
-        An array of values at which to evaluate the polynomial.
+        Input array of values.
     coefficients : list of float
         Coefficients of the polynomial in descending order of degree.
         For example, [a, b, c] represents the polynomial ax^2 + bx + c.
@@ -126,6 +114,6 @@ def nth_polynomial(x: np.ndarray, coefficients: list[float]) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        The evaluated polynomial values at each point in `x`.
+        Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return np.polyval(coefficients, x)

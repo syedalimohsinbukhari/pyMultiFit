@@ -63,11 +63,6 @@ This approach not only reduces the likelihood of errors but also improves code r
 
    Specifies the ArcSine distribution type.
 
-.. py:data:: POWERLAW
-   :type: str
-
-   Specifies the PowerLaw distribution type.
-
 .. py:data:: LINE
    :type: str
 

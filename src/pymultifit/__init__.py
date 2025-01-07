@@ -19,7 +19,6 @@ GAMMA_SR = 'gamma_sr'
 GAMMA_SS = 'gamma_ss'
 BETA = 'beta'
 ARC_SINE = 'arcSine'
-POWERLAW = 'powerlaw'
 
 LINE = 'line'
 LINEAR = LINE
