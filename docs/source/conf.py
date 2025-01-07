@@ -16,7 +16,7 @@ year = datetime.date.today().year
 project = 'pymultifit'
 copyright = f'2024-{year}, Syed Ali Mohsin Bukhari'
 author = 'Syed Ali Mohsin Bukhari'
-release = 'v1.0.0'
+release = 'v1.0.1'
 
 sys.path.insert(0, os.path.abspath('./../../'))
 
