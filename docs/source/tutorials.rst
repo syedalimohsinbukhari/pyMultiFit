@@ -18,3 +18,4 @@ After going through these tutorials, you will learn how to,
    basics3
    basics4
    exploration1
+   exploration2
