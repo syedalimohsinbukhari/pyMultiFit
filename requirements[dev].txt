@@ -9,8 +9,7 @@ jupyter
 notebook
 build
 memory_profiler
-sphinx
-sphinx_rtd_theme
+sphinx>8
 pydata_sphinx_theme
 sphinx_copybutton
 sphinx_gallery

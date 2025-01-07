@@ -1,6 +1,6 @@
 """Created on Dec 03 17:37:05 2024"""
 
-from typing import Dict
+from typing import Dict, Union
 
 import numpy as np
 
@@ -82,7 +82,7 @@ class ChiSquareDistribution(BaseDistribution):
     """
 
     def __init__(self,
-                 amplitude: float = 1.0, degree_of_freedom: int | float = 1,
+                 amplitude: float = 1.0, degree_of_freedom: Union[int, float] = 1,
                  loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
@@ -94,7 +94,7 @@ class ChiSquareDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, df: int | float, loc: float = 0.0, scale: float = 1.0):
+    def scipy_like(cls, df: Union[int, float], loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate ChiSquareDistribution with scipy parameterization.
 
