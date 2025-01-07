@@ -16,6 +16,8 @@ Base Class
 Derived Distributions
 ----------------------
 
+.. py:currentmodule:: pymultifit.distributions
+
 .. list-table::
    :align: center
    :header-rows: 1
@@ -23,7 +25,7 @@ Derived Distributions
    * - Name
      - Description
      - PDF function
-   * - :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`
+   * - :class:`~arcSine_d.ArcSineDistribution`
      - ArcSine distribution.
      - :math:`\dfrac{1}{\pi\sqrt{x(1-x)}}`
    * - :class:`BetaDistribution <pymultifit.distributions.beta_d.BetaDistribution>`
