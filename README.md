@@ -3,7 +3,7 @@
 - [`pyMultiFit`](#pymultifit)
   - [What is `pymultifit`](#what-is-pymultifit)
   - [How to install](#how-to-install)
-  - [Modules](#modules)
+  - [Documentation](#documentation)
 
 A python multi-fit library for fitting the data with multiple `X` fitters.
 
@@ -33,10 +33,6 @@ Along with this, the user can also generate probability distribution data using 
 
 Using pip: `pip install pymultifit`
 
-## Modules
+## Documentation
 
-The following modules are currently implemented in `pymultifit` library,
-
-1. [`distributions`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/distributions.md)
-2. [`fitters`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/fitters.md)
-3. [`generators`](https://github.com/syedalimohsinbukhari/pyMultiFit/tree/main/docs/generators.md)
+The documentation can be found on [readthedocs](https://pymultifit.readthedocs.com/latest/)
