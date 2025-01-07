@@ -1,7 +1,7 @@
 ArcSine Distribution
 ====================
 
-.. autoclass:: pymultifit.distributions.arcSine_d.ArcSineDistribution
+.. autoclass::`~pymultifit.distributions.arcSine_d.ArcSineDistribution`
    :members:
    :inherited-members:
    :show-inheritance:
