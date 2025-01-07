@@ -16,7 +16,9 @@ year = datetime.date.today().year
 project = 'pymultifit'
 copyright = f'2024-{year}, Syed Ali Mohsin Bukhari'
 author = 'Syed Ali Mohsin Bukhari'
-release = 'v0.2.2'
+release = 'v1.0.0'
+
+sys.path.insert(0, os.path.abspath('./../../'))
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -48,7 +50,7 @@ intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
                        "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
                        "matplotlib": ("https://matplotlib.org/stable/", None),
-                       "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None),}
+                       "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None), }
 
 autosummary_generate = True
 autodoc_default_flags = ["members"]
@@ -59,7 +61,6 @@ html_show_sourcelink = False
 numpydoc_show_class_members = True
 numpydoc_show_inherited_class_members = True
 numpydoc_class_members_toctree = False
-
 
 # sphinx_gallery_conf = {
 #     # path to your examples scripts
