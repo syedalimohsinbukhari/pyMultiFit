@@ -1,0 +1,5 @@
+# Exclude Jupyter Notebook files from language stats
+*.ipynb linguist-vendored
+
+# Set Python as the primary language
+*.py linguist-language=Python
