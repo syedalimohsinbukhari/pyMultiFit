@@ -9,7 +9,7 @@ from ...pymultifit.distributions import SkewNormalDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
 
-class TestGaussianDistribution:
+class TestSkewNormalDistribution:
 
     @staticmethod
     def test_initialization():

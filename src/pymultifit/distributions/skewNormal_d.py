@@ -138,5 +138,6 @@ class SkewNormalDistribution(BaseDistribution):
 
         return {'mean': mean_,
                 'mode': mode_,
+                'median': None,
                 'variance': variance_,
                 'std': np.sqrt(variance_)}

@@ -129,7 +129,9 @@ class ChiSquareDistribution(BaseDistribution):
         mean_ = (s * df) + l_
         mode_ = max(df - 2, 0)
         variance_ = 2 * df * s**2
+
         return {'mean': mean_,
+                'median': None,
                 'mode': mode_,
                 'variance': variance_,
                 'std': np.sqrt(variance_)}

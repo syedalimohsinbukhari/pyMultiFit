@@ -157,5 +157,6 @@ class BetaDistribution(BaseDistribution):
 
         return {'mean': mean_,
                 'median': median_,
+                'mode': None,
                 'variance': variance_,
                 'std': np.sqrt(variance_)}
