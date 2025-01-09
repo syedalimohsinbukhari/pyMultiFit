@@ -107,22 +107,6 @@ class ExponentialDistribution(BaseDistribution):
         """
         return cls(loc=loc, scale=1 / scale, normalize=True)
 
-    @property
-    def mean(self) -> float:
-        return (1 / self.scale) + self.loc
-
-    @property
-    def median(self) -> float:
-        return (np.log(2) / self.scale) + self.loc
-
-    @property
-    def variance(self) -> float:
-        return 1 / self.scale**2
-
-    @property
-    def stddev(self) -> float:
-        return np.sqrt(self.variance)
-
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return exponential_pdf_(x=x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
@@ -130,7 +114,14 @@ class ExponentialDistribution(BaseDistribution):
         return exponential_cdf_(x=x, amplitude=self.amplitude, scale=self.scale, loc=self.loc, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
-        return {'mean': self.mean,
-                'median': self.median,
-                'variance': self.variance,
-                'std': self.stddev}
+        s, l_ = self.scale, self.loc
+
+        mean_ = (1 / s) + l_
+        median_ = (np.log(2) / s) + l_
+        mode_ = 0
+        variance_ = 1 / s**2
+        return {'mean': mean_,
+                'median': median_,
+                'mode': mode_,
+                'variance': variance_,
+                'std': np.sqrt(variance_)}

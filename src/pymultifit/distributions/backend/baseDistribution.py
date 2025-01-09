@@ -50,24 +50,24 @@ class BaseDistribution:
     @property
     def mean(self):
         """The mean of the distribution."""
-        return None
+        return self.stats().get('mean', None)
 
     @property
     def median(self):
         """The median of the distribution."""
-        return None
+        return self.stats().get('median', None)
 
     @property
     def variance(self):
         """The variance of the distribution."""
-        return None
+        return self.stats().get('variance', None)
 
     @property
     def stddev(self):
         """The standard deviation of the distribution."""
-        return None
+        return self.stats().get('std', None)
 
     @property
     def mode(self):
         """The mode of the distribution."""
-        return None
+        return self.stats().get('mode', None)
