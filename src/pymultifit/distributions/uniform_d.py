@@ -115,7 +115,8 @@ class UniformDistribution(BaseDistribution):
         if low == high:
             return {'mean': np.nan,
                     'median': np.nan,
-                    'variance': np.nan}
+                    'variance': np.nan,
+                    'std': np.nan}
 
         mean_ = 0.5 * (low + high)
         median_ = mean_
@@ -123,4 +124,5 @@ class UniformDistribution(BaseDistribution):
 
         return {'mean': mean_,
                 'median': median_,
-                'variance': variance_}
+                'variance': variance_,
+                'std': np.sqrt(variance_)}

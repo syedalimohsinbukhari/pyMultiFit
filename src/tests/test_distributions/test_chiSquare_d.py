@@ -69,15 +69,15 @@ class TestChiSquareDistribution:
             return [chi2.cdf(x_, df=degree_of_freedom, loc=loc, scale=scale) if what == 'cdf' else
                     chi2.pdf(x_, df=degree_of_freedom, loc=loc, scale=scale)][0]
 
-        for i in ['pdf']:
+        for i in ['pdf', 'cdf']:
             for _ in range(100):
-                dof = np.random.randint(1, 21)  # Degrees of freedom, always a positive integer
-                loc = np.random.uniform(-10, 10)
-                scale = np.random.uniform(EPSILON, 10)
+                dof_ = np.random.randint(low=1, high=21)  # Degrees of freedom, always a positive integer
+                loc_ = np.random.uniform(low=-10, high=10)
+                scale_ = np.random.uniform(low=EPSILON, high=10)
                 x = np.linspace(start=EPSILON, stop=50.0, num=10)
 
-                distribution = ChiSquareDistribution(degree_of_freedom=dof, loc=loc, scale=scale, normalize=True)
-                expected = _cdf_pdf_scipy(x_=x, degree_of_freedom=dof, loc=loc, scale=scale, what=i)
+                distribution = ChiSquareDistribution(degree_of_freedom=dof_, loc=loc_, scale=scale_, normalize=True)
+                expected = _cdf_pdf_scipy(x_=x, degree_of_freedom=dof_, loc=loc_, scale=scale_, what=i)
                 actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=i)
 
                 np.testing.assert_allclose(actual=actual, desired=expected, rtol=1e-5, atol=1e-8)

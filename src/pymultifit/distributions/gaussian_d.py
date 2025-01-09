@@ -112,29 +112,10 @@ class GaussianDistribution(BaseDistribution):
     def cdf(self, x: np.ndarray) -> np.ndarray:
         return gaussian_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
-    @property
-    def mean(self) -> float:
-        return self.mu
-
-    @property
-    def median(self) -> float:
-        return self.mu
-
-    @property
-    def variance(self) -> float:
-        return self.std_**2
-
-    @property
-    def mode(self) -> float:
-        return self.mu
-
-    @property
-    def stddev(self) -> float:
-        return np.sqrt(self.variance)
-
     def stats(self) -> Dict[str, float]:
-        return {'mean': self.mean,
-                'median': self.median,
-                'mode': self.mode,
-                'variance': self.variance,
-                'std': self.stddev}
+        m, s = self.mu, self.std_
+        return {'mean': m,
+                'median': m,
+                'mode': m,
+                'variance': s**2,
+                'std': s}

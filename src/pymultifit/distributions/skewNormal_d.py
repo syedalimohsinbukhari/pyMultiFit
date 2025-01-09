@@ -122,15 +122,7 @@ class SkewNormalDistribution(BaseDistribution):
     def cdf(self, x: np.ndarray) -> np.ndarray:
         return skew_normal_cdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm)
 
-    @property
-    def mean(self) -> float:
-        alpha, omega, epsilon = self.shape, self.scale, self.location
-        delta = alpha / np.sqrt(1 + alpha**2)
-
-        return epsilon + omega * delta * np.sqrt(2 / np.pi)
-
-    @property
-    def mode(self) -> float:
+    def stats(self) -> Dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location
         delta = alpha / np.sqrt(1 + alpha**2)
 
@@ -140,21 +132,12 @@ class SkewNormalDistribution(BaseDistribution):
             m0 -= (2 * np.pi / abs(alpha_)) * np.exp(-(2 * np.pi / abs(alpha_))) * np.sign(alpha_)
             return m0
 
-        return epsilon + omega * _m0(alpha)
+        mean_ = epsilon + omega * delta * np.sqrt(2 / np.pi)
+        mode_ = epsilon + omega * _m0(alpha)
+        variance_ = omega**2 * (1 - (2 * delta**2 / np.pi))
 
-    @property
-    def variance(self) -> float:
-        alpha, omega = self.shape, self.scale
-        delta = alpha / np.sqrt(1 + alpha**2)
-        return omega**2 * (1 - (2 * delta**2 / np.pi))
-
-    @property
-    def stddev(self) -> float:
-        return np.sqrt(self.variance)
-
-    def stats(self) -> Dict[str, float]:
-        return {'mean': self.mean,
-                'mode': self.mode,
+        return {'mean': mean_,
+                'mode': mode_,
                 'median': None,
-                'variance': self.variance,
-                'std': self.stddev}
+                'variance': variance_,
+                'std': np.sqrt(variance_)}

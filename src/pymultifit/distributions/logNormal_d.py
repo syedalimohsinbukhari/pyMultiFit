@@ -115,29 +115,16 @@ class LogNormalDistribution(BaseDistribution):
     def cdf(self, x: np.ndarray) -> np.ndarray:
         return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm)
 
-    @property
-    def mean(self) -> float:
-        return self.loc + np.exp(self.mu + (self.std**2 / 2))
-
-    @property
-    def median(self) -> float:
-        return self.loc + np.exp(self.mu)
-
-    @property
-    def variance(self) -> float:
-        return (np.exp(self.std**2) - 1) * np.exp(2 * self.mu + self.std**2)
-
-    @property
-    def stddev(self) -> float:
-        return np.sqrt(self.variance)
-
-    @property
-    def mode(self) -> float:
-        return self.loc + np.exp(self.mu - self.std**2)
-
     def stats(self) -> Dict[str, float]:
-        return {'mean': self.mean,
-                'median': self.median,
-                'mode': self.mode,
-                'variance': self.variance,
-                'std': self.stddev}
+        m, s, l_ = self.mu, self.std, self.loc
+
+        mean_ = np.exp(m + (s**2 / 2)) + l_
+        median_ = np.exp(m) + l_
+        mode_ = np.exp(m - s**2) + l_
+        variance_ = (np.exp(s**2) - 1) * np.exp(2 * m + s**2)
+
+        return {'mean': mean_,
+                'median': median_,
+                'mode': mode_,
+                'variance': variance_,
+                'std': np.sqrt(variance_)}

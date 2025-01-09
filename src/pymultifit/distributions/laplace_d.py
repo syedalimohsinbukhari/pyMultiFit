@@ -107,34 +107,20 @@ class LaplaceDistribution(BaseDistribution):
         return cls(mean=loc, diversity=scale, normalize=True)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return laplace_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        return laplace_pdf_(x,
+                            amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return laplace_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
-
-    @property
-    def mean(self) -> float:
-        return self.mu
-
-    @property
-    def median(self) -> float:
-        return self.mu
-
-    @property
-    def mode(self) -> float:
-        return self.mu
-
-    @property
-    def variance(self) -> float:
-        return 2 * self.b**2
-
-    @property
-    def stddev(self) -> float:
-        return np.sqrt(self.variance)
+        return laplace_cdf_(x,
+                            amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
-        return {'mean': self.mean,
-                'median': self.median,
-                'mode': self.mode,
-                'variance': self.variance,
-                'std': self.stddev}
+        m, b = self.mu, self.b
+
+        variance_ = 2 * b**2
+
+        return {'mean': m,
+                'median': m,
+                'mode': m,
+                'variance': variance_,
+                'std': np.sqrt(variance_)}
