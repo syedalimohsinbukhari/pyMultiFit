@@ -338,6 +338,9 @@ def exponential_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
+    if x.size == 0:
+        return np.array([])
+
     y = x - loc
     pdf_ = np.zeros_like(a=y, dtype=float)
     mask_ = y > 0
