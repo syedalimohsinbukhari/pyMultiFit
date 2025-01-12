@@ -338,7 +338,15 @@ def exponential_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    return gamma_sr_pdf_(x, amplitude=amplitude, alpha=1., lambda_=lambda_, loc=loc, normalize=normalize)
+    y = x - loc
+    pdf_ = np.zeros_like(a=y, dtype=float)
+    mask_ = y > 0
+    pdf_[mask_] = lambda_ * np.exp(-lambda_ * y[mask_])
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_, amplitude)
+
+    return pdf_
 
 
 @doc_inherit(parent=exponential_pdf_, style=doc_style)

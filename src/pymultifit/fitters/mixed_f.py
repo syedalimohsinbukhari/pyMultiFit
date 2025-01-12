@@ -9,46 +9,15 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
 
-from .utilities_f import sanity_check
+from .utilities_f import sanity_check, _Line
 from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
-from ..distributions import GaussianDistribution, LaplaceDistribution, line, LogNormalDistribution, \
-    SkewNormalDistribution
-
-
-class _Line:
-    """
-    Helper class for the line fitting function.
-
-    This class is intended for internal use only.
-    Provides a wrapper for evaluating a linear function with a given slope and intercept.
-    """
-
-    def __init__(self, slope: float, intercept: float):
-        self.slope = slope
-        self.intercept = intercept
-
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Calculates the value of the line function.
-
-        Parameters
-        ----------
-        x: np.ndarray
-            The input array to evaluate the line function.
-
-        Returns
-        -------
-        np.ndarray
-            The value of the line function for the given slope and intercept.
-        """
-        return line(x=x, slope=self.slope, intercept=self.intercept)
-
+from .. import distributions as dist
 
 model_dict = {LINE: [_Line, 2],
-              GAUSSIAN: [GaussianDistribution, 3],
-              LOG_NORMAL: [LogNormalDistribution, 3],
-              SKEW_NORMAL: [SkewNormalDistribution, 4],
-              LAPLACE: [LaplaceDistribution, 3]}
+              GAUSSIAN: [dist.GaussianDistribution, 3],
+              LOG_NORMAL: [dist.LogNormalDistribution, 3],
+              SKEW_NORMAL: [dist.SkewNormalDistribution, 4],
+              LAPLACE: [dist.LaplaceDistribution, 3]}
 
 
 class MixedDataFitter:
@@ -252,7 +221,8 @@ class MixedDataFitter:
             raise ValueError("Data must be fitted before plotting.")
 
         fig, ax = plt.subplots(figsize=figure_size)
-        plotter = plot_xy(self.x_values, self.y_values, data_label=data_label if data_label else 'Data', axis=ax)
+        plotter = plot_xy(x_data=self.x_values, y_data=self.y_values,
+                          data_label=data_label if data_label else 'Data', axis=ax)
         plot_xy(x_data=self.x_values, y_data=self.model_function(self.x_values, *self.params),
                 data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
 

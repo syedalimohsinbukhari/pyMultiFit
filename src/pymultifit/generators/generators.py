@@ -1,15 +1,14 @@
 """Created on Jul 18 00:35:26 2024"""
 
-from typing import List, Tuple, Type, Union
+from typing import Type
 
 import numpy as np
 from custom_inherit import doc_inherit
 
-from .. import distributions as dist, doc_style, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL
+from .. import distributions as dist
+from .. import doc_style, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, listOfTuplesOrArray
 from ..distributions.backend import BaseDistribution
-
-listOfTuples = List[Tuple[float, ...]]
-listOfTuplesOrArray = Union[listOfTuples, np.ndarray]
+from ..fitters.utilities_f import _Line
 
 
 def multi_base(x: np.ndarray, distribution_func: Type[BaseDistribution], params: listOfTuplesOrArray,
@@ -98,7 +97,8 @@ def multi_gamma_ss(x: np.ndarray, params: listOfTuplesOrArray,
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_exponential(x: np.ndarray, params: listOfTuplesOrArray,
                       noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
-    r"""Generate multi-:class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` data with optional noise."""
+    r"""Generate multi-:class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` data with optional
+    noise."""
     return multi_base(x=x,
                       distribution_func=dist.ExponentialDistribution, params=params, noise_level=noise_level,
                       normalize=normalize)
@@ -107,7 +107,8 @@ def multi_exponential(x: np.ndarray, params: listOfTuplesOrArray,
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_folded_normal(x: np.ndarray, params: listOfTuplesOrArray,
                         noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
-    r"""Generate multi-:class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution` data with optional noise."""
+    r"""Generate multi-:class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution` data with optional
+    noise."""
     return multi_base(x=x,
                       distribution_func=dist.FoldedNormalDistribution, params=params, noise_level=noise_level,
                       normalize=normalize)
@@ -125,7 +126,8 @@ def multi_gaussian(x: np.ndarray, params: listOfTuplesOrArray,
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_half_normal(x: np.ndarray, params: listOfTuplesOrArray,
                       noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
-    r"""Generate multi-:class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution` data with optional noise."""
+    r"""Generate multi-:class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution` data with optional
+    noise."""
     return multi_base(x=x,
                       distribution_func=dist.HalfNormalDistribution, params=params, noise_level=noise_level,
                       normalize=normalize)
@@ -152,7 +154,8 @@ def multi_log_normal(x: np.ndarray, params: listOfTuplesOrArray,
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_skew_normal(x: np.ndarray, params: listOfTuplesOrArray,
                       noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
-    r"""Generate multi-:class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution` data with optional noise."""
+    r"""Generate multi-:class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution` data with optional
+    noise."""
     return multi_base(x=x,
                       distribution_func=dist.SkewNormalDistribution, params=params, noise_level=noise_level,
                       normalize=normalize)
@@ -183,20 +186,17 @@ def multiple_models(x: np.ndarray, params: listOfTuplesOrArray, model_list,
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
 
-    y = np.zeros_like(x, dtype=float)
+    y = np.zeros_like(a=x, dtype=float)
 
     model_mapping = {GAUSSIAN: dist.GaussianDistribution,
                      LOG_NORMAL: dist.LogNormalDistribution,
                      LAPLACE: dist.LaplaceDistribution,
                      SKEW_NORMAL: dist.SkewNormalDistribution,
-                     LINE: dist.line}
+                     LINE: _Line}
 
     for par_index, model in enumerate(model_list):
         if model in model_mapping:
-            if model == LINE:
-                y += model_mapping[model](x, *params[par_index])
-            else:
-                y += model_mapping[model](*params[par_index], normalize=normalize).pdf(x)
+            y += model_mapping[model](*params[par_index], normalize=normalize).pdf(x)
 
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)
