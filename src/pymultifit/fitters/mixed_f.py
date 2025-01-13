@@ -50,7 +50,7 @@ class MixedDataFitter:
     """
 
     def __init__(self, x_values: Union[List, np.ndarray], y_values: Union[List, np.ndarray],
-                 model_list: List[str], max_iterations: int = 1000, fitter_dictionary=None):
+                 model_list: List[str], fitter_dictionary=None, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
 
         self.x_values = x_values
@@ -62,7 +62,7 @@ class MixedDataFitter:
 
         self.fitter_dict = fitter_dictionary or fitter_dict
 
-        self._validate_models()
+        # self._validate_models()
         self.model_function = self._create_model_function()
 
     def __repr__(self):
@@ -81,7 +81,7 @@ class MixedDataFitter:
         :raises ValueError: If the model is not recognized or return_values are invalid.
         """
         try:
-            fitter_instance = self.fitter_dict[model]([], [])
+            fitter_instance = self.fitter_dict[model](x_values=[], y_values=[])
         except KeyError:
             raise ValueError(f"Model '{model}' not recognized. Ensure it is defined in the fitter dictionary.")
 
@@ -205,20 +205,10 @@ class MixedDataFitter:
             y_component = class_model.fitter(x=x, params=pars)
             plot_xy(x_data=x, y_data=y_component,
                     x_label='', y_label='', plot_title='',
-                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self.format_param(i) for i in pars)})',
+                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self._format_param(i) for i in pars)})',
                     plot_dictionary=LinePlot(line_style='--', color=color),
                     axis=plotter)
             param_index += n_par
-
-    def _validate_models(self):
-        """
-        Validate the models in the model list.
-
-        :raise ValueError: If any model in the model list is not recognized.
-        """
-        allowed_models = {GAUSSIAN, LINE, LOG_NORMAL, SKEW_NORMAL, LAPLACE}
-        if not all(model in allowed_models for model in self.model_list):
-            raise ValueError(f"All models must be one of {allowed_models}.")
 
     def fit(self, p0: Union[List, np.ndarray]):
         """
@@ -238,15 +228,25 @@ class MixedDataFitter:
                                                      p0=p0, maxfev=self.max_iterations, bounds=self._get_bounds())
 
     @staticmethod
-    def format_param(value: float, t_low: float = 0.001, t_high: float = 10_000) -> str:
-        """
-        Formats the parameter value based on its magnitude.
+    def _format_param(value, t_low=0.001, t_high=10_000) -> str:
+        r"""
+        Formats the parameter value to scientific notation based on its magnitude.
 
-        :param value: The value of the parameter to be formatted.
-        :param t_low: The lower bound below which the value is to be formatted.
-        :param t_high: The upper bound above which the value is to be formatted.
+        Parameters
+        ----------
+        value: float
+            The value of the parameter to be formatted.
+        t_low: float, optional
+            The lower bound below which the formatting should be applied to the value.
+            Defaults to 0.001.
+        t_high: float, optional
+            The upper bound above which the formatting should be applied to the value.
+            Defaults to 10,000.
 
-        :return: The formatted value of the parameter
+        Returns
+        -------
+        str:
+            A formatted string of the parameter value.
         """
         return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
 
@@ -300,13 +300,13 @@ class MixedDataFitter:
 
         return self.model_function(self.x_values, *self.params)
 
-    def get_parameters(self, model: Optional[str] = None, get_errors: bool = False):
+    def get_parameters(self, model: Optional[str] = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
 
         :param model: Model name to extract parameters for. If unspecified, extracts parameters for all models.
             Defaults to ``None``.
-        :param get_errors: If ``True``, includes the errors in the returned output. Defaults to ``False``.
+        :param errors: If ``True``, includes the errors in the returned output. Defaults to ``False``.
 
         :return: A dictionary containing:
 
@@ -315,7 +315,7 @@ class MixedDataFitter:
 
                 Otherwise, returns just the parameters directly.
         """
-        if not get_errors:
+        if not errors:
             parameters = self._parameter_extractor(self.params)
             return parameters if model is None else parameters.get(model, [])
 

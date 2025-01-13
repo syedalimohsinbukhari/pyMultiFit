@@ -1,13 +1,41 @@
 """Created on Jul 18 00:35:26 2024"""
-
-from typing import Type
+from inspect import isfunction
+from typing import Type, Callable, Optional, Dict
 
 import numpy as np
 from custom_inherit import doc_inherit
 
-from .. import distributions as dist
-from .. import doc_style, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, listOfTuplesOrArray
+from .. import (ARC_SINE,
+                BETA,
+                CHI_SQUARE,
+                distributions as dist,
+                doc_style,
+                EXPONENTIAL,
+                FOLDED_NORMAL,
+                GAMMA_SR,
+                GAMMA_SS,
+                GAUSSIAN,
+                HALF_NORMAL,
+                LAPLACE,
+                LINE,
+                listOfTuplesOrArray,
+                LOG_NORMAL,
+                SKEW_NORMAL)
 from ..distributions.backend import BaseDistribution
+
+model_map = {ARC_SINE: dist.ArcSineDistribution,
+             BETA: dist.BetaDistribution,
+             CHI_SQUARE: dist.ChiSquareDistribution,
+             EXPONENTIAL: dist.ExponentialDistribution,
+             FOLDED_NORMAL: dist.FoldedNormalDistribution,
+             GAMMA_SS: dist.GammaDistributionSS,
+             GAMMA_SR: dist.GammaDistributionSR,
+             GAUSSIAN: dist.GaussianDistribution,
+             HALF_NORMAL: dist.HalfNormalDistribution,
+             LAPLACE: dist.LaplaceDistribution,
+             LOG_NORMAL: dist.LogNormalDistribution,
+             SKEW_NORMAL: dist.SkewNormalDistribution,
+             LINE: dist.Line}
 
 
 def multi_base(x: np.ndarray, distribution_func: Type[BaseDistribution], params: listOfTuplesOrArray,
@@ -161,8 +189,9 @@ def multi_skew_normal(x: np.ndarray, params: listOfTuplesOrArray,
 
 
 def multiple_models(x: np.ndarray, params: listOfTuplesOrArray, model_list,
-                    noise_level=0.0, normalize: bool = False) -> np.ndarray:
-    r"""
+                    noise_level=0.0, normalize: bool = False,
+                    mapping_dict: Optional[Dict[str, Callable]] = None) -> np.ndarray:
+    """
     Generate data based on a combination of different models with optional noise.
 
     Parameters
@@ -178,6 +207,8 @@ def multiple_models(x: np.ndarray, params: listOfTuplesOrArray, model_list,
     normalize : bool, optional
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
+    mapping_dict: dict, optional
+        A dictionary mapping between distribution names and their corresponding classes.
 
     Returns
     -------
@@ -187,15 +218,17 @@ def multiple_models(x: np.ndarray, params: listOfTuplesOrArray, model_list,
 
     y = np.zeros_like(a=x, dtype=float)
 
-    model_mapping = {GAUSSIAN: dist.GaussianDistribution,
-                     LOG_NORMAL: dist.LogNormalDistribution,
-                     LAPLACE: dist.LaplaceDistribution,
-                     SKEW_NORMAL: dist.SkewNormalDistribution,
-                     LINE: dist.Line}
+    model_mapping = model_map if mapping_dict is None else mapping_dict
 
     for par_index, model in enumerate(model_list):
         if model in model_mapping:
-            y += model_mapping[model](*params[par_index], normalize=normalize).pdf(x)
+            _instance = model_mapping[model]
+            # check if it is a function
+            if isfunction(_instance):
+                y += _instance(x, *params[par_index])
+            # check if it is a subclass of BaseDistribution
+            elif issubclass(_instance, BaseDistribution):
+                y += _instance(*params[par_index], normalize=normalize).pdf(x)
 
     if noise_level > 0:
         y += noise_level * np.random.normal(size=x.size)

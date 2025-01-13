@@ -11,11 +11,11 @@ After going through these tutorials, you will learn how to,
 
 .. toctree::
    :hidden:
-   :maxdepth: 1
 
-   basics1
-   basics2
-   basics3
-   basics4
-   exploration1
-   exploration2
+   basic_examples/basics1
+   basic_examples/basics2
+   basic_examples/basics3
+   basic_examples/basics4
+   exploratory_examples/exploration1
+   exploratory_examples/exploration2
+   exploratory_examples/exploration3
