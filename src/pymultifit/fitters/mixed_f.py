@@ -9,15 +9,34 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
 
-from .utilities_f import sanity_check, _Line
-from .. import GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, NORMAL, SKEW_NORMAL
-from .. import distributions as dist
+# importing from files to avoid circular import
+from .chiSquare_f import ChiSquareFitter
+from .exponential_f import ExponentialFitter
+from .foldedNormal_f import FoldedNormalFitter
+from .gamma_f import GammaFitterSR, GammaFitterSS
+from .gaussian_f import GaussianFitter
+from .halfNormal_f import HalfNormalFitter
+from .laplace_f import LaplaceFitter
+from .logNormal_f import LogNormalFitter
+from .others import LineFitter
+from .skewNormal_f import SkewNormalFitter
+from .utilities_f import sanity_check
+from .. import (GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL, GAMMA_SR,
+                GAMMA_SS, NORMAL, HALF_NORMAL)
 
-model_dict = {LINE: [_Line, 2],
-              GAUSSIAN: [dist.GaussianDistribution, 3],
-              LOG_NORMAL: [dist.LogNormalDistribution, 3],
-              SKEW_NORMAL: [dist.SkewNormalDistribution, 4],
-              LAPLACE: [dist.LaplaceDistribution, 3]}
+# mock initialize the internal classes for auto MixedDataFitter class
+fitter_dict = {CHI_SQUARE: ChiSquareFitter,
+               EXPONENTIAL: ExponentialFitter,
+               FOLDED_NORMAL: FoldedNormalFitter,
+               GAMMA_SR: GammaFitterSR,
+               GAMMA_SS: GammaFitterSS,
+               GAUSSIAN: GaussianFitter,
+               NORMAL: GaussianFitter,
+               HALF_NORMAL: HalfNormalFitter,
+               LAPLACE: LaplaceFitter,
+               LOG_NORMAL: LogNormalFitter,
+               SKEW_NORMAL: SkewNormalFitter,
+               LINE: LineFitter}
 
 
 class MixedDataFitter:
@@ -31,7 +50,7 @@ class MixedDataFitter:
     """
 
     def __init__(self, x_values: Union[List, np.ndarray], y_values: Union[List, np.ndarray],
-                 model_list: List[str], max_iterations: int = 1000):
+                 model_list: List[str], max_iterations: int = 1000, fitter_dictionary=None):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
 
         self.x_values = x_values
@@ -41,13 +60,49 @@ class MixedDataFitter:
         self.params = None
         self.covariance = None
 
-        # Validate the model list and create the model function
+        self.fitter_dict = fitter_dictionary or fitter_dict
+
         self._validate_models()
         self.model_function = self._create_model_function()
 
     def __repr__(self):
         return (f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
                 f"model_list={self.model_list}, max_iterations={self.max_iterations})")
+
+    def _instantiate_fitter(self, model: str, return_values: Union[str, List[str]] = 'class'):
+        """
+        Instantiate the fitter for the specified model and return requested values.
+
+        :param model: The model name as a string.
+        :param return_values: The specific attribute(s) or instance to return.
+                              Options are 'class', 'n_par', and 'bounds'.
+                              Can be a string (for one value) or a list of strings.
+        :return: The requested values as a single value or a tuple.
+        :raises ValueError: If the model is not recognized or return_values are invalid.
+        """
+        try:
+            fitter_instance = self.fitter_dict[model]([], [])
+        except KeyError:
+            raise ValueError(f"Model '{model}' not recognized. Ensure it is defined in the fitter dictionary.")
+
+        valid_options = {'class', 'n_par', 'bounds'}
+        if isinstance(return_values, str):
+            return_values = [return_values]  # Convert to list for uniform processing
+
+        if not all(val in valid_options for val in return_values):
+            invalid_options = [val for val in return_values if val not in valid_options]
+            raise ValueError(f"Invalid return_values {invalid_options}. Expected values: {valid_options}")
+
+        result = []
+        for val in return_values:
+            if val == 'class':
+                result.append(fitter_instance)
+            elif val == 'n_par':
+                result.append(fitter_instance.n_par)
+            elif val == 'bounds':
+                result.append(fitter_instance.fit_boundaries())
+
+        return result[0] if len(result) == 1 else tuple(result)
 
     def _create_model_function(self) -> Callable:
         """
@@ -72,12 +127,12 @@ class MixedDataFitter:
             y : np.ndarray
                 The computed y-values from the composite model.
             """
-            y = np.zeros_like(x, dtype=float)
+            y = np.zeros_like(a=x, dtype=float)
             param_index = 0
 
             for model in self.model_list:
-                func, n_par = model_dict[model]
-                y += func(*params[param_index:param_index + n_par]).pdf(x=x)
+                model_class, n_par = self._instantiate_fitter(model=model, return_values=['class', 'n_par'])
+                y += model_class.fitter(x=x, params=params[param_index:param_index + n_par])
                 param_index += n_par
 
             return y
@@ -92,7 +147,7 @@ class MixedDataFitter:
         """
         count = 0
         for model in self.model_list:
-            _, n_par = model_dict[model]
+            n_par = self._instantiate_fitter(model=model, return_values='n_par')
             count += n_par
 
         return count
@@ -107,15 +162,9 @@ class MixedDataFitter:
         upper_bounds = []
 
         for model in self.model_list:
-            if model in [GAUSSIAN, NORMAL, LOG_NORMAL, LAPLACE]:
-                lower_bounds.extend([0, -np.inf, 0])
-                upper_bounds.extend([np.inf, np.inf, np.inf])
-            elif model == LINE:
-                lower_bounds.extend([-np.inf, -np.inf])
-                upper_bounds.extend([np.inf, np.inf])
-            elif model == SKEW_NORMAL:
-                lower_bounds.extend([0, -np.inf, -np.inf, 0])
-                upper_bounds.extend([np.inf, np.inf, np.inf, np.inf])
+            lb, ub = self._instantiate_fitter(model=model, return_values='bounds')
+            lower_bounds.extend(lb)
+            upper_bounds.extend(ub)
 
         return np.array(lower_bounds), np.array(upper_bounds)
 
@@ -134,7 +183,7 @@ class MixedDataFitter:
             if model not in param_dict:
                 param_dict[model] = []
 
-            _, n_pars = model_dict[model]
+            n_pars = self._instantiate_fitter(model=model, return_values='n_par')
             param_dict[model].extend([values[p_index:p_index + n_pars]])
             p_index += n_pars
 
@@ -151,15 +200,15 @@ class MixedDataFitter:
         param_index = 0
         for i, model in enumerate(self.model_list):
             color = colors[i % len(colors)]
-            m_, p_ = model_dict[model]
-            pars = self.params[param_index:param_index + p_]
-            y_component = m_(*pars).pdf(x)
+            class_model, n_par = self._instantiate_fitter(model=model, return_values=['class', 'n_par'])
+            pars = self.params[param_index:param_index + n_par]
+            y_component = class_model.fitter(x=x, params=pars)
             plot_xy(x_data=x, y_data=y_component,
                     x_label='', y_label='', plot_title='',
                     data_label=f'{model.capitalize()} {i + 1}({", ".join(self.format_param(i) for i in pars)})',
                     plot_dictionary=LinePlot(line_style='--', color=color),
                     axis=plotter)
-            param_index += p_
+            param_index += n_par
 
     def _validate_models(self):
         """
@@ -179,10 +228,11 @@ class MixedDataFitter:
 
         :raises ValueError: If the length of the initial guess is not equal to the expected parameter count.
         """
+        # flatten cannot always work here because the mixed fitter might contain variable number of parameters
         p0 = list(itertools.chain.from_iterable(p0))
         if len(p0) != self._expected_param_count():
-            raise ValueError(
-                f"Initial parameters length {len(p0)} does not match expected count {self._expected_param_count()}.")
+            raise ValueError(f"Initial parameters length {len(p0)} does not match expected count "
+                             f"{self._expected_param_count()}.")
 
         self.params, self.covariance, *_ = curve_fit(f=self.model_function, xdata=self.x_values, ydata=self.y_values,
                                                      p0=p0, maxfev=self.max_iterations, bounds=self._get_bounds())
@@ -282,8 +332,8 @@ class MixedDataFitter:
         keys = ["parameters", "errors"]
         for temp_, key in zip([parameters, errors], keys):
             par_dict = temp_.get(model, [])
-            _, n_par = model_dict[model]
+            n_pars = self._instantiate_fitter(model=model, return_values='n_par')
             flattened_list = [item for sublist in par_dict for item in sublist.tolist()]
-            output[key] = tuple(flattened_list[i::n_par] for i in range(n_par))
+            output[key] = tuple(flattened_list[i::n_pars] for i in range(n_pars))
 
         return output

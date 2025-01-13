@@ -8,7 +8,6 @@ from custom_inherit import doc_inherit
 from .. import distributions as dist
 from .. import doc_style, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, listOfTuplesOrArray
 from ..distributions.backend import BaseDistribution
-from ..fitters.utilities_f import _Line
 
 
 def multi_base(x: np.ndarray, distribution_func: Type[BaseDistribution], params: listOfTuplesOrArray,
@@ -192,7 +191,7 @@ def multiple_models(x: np.ndarray, params: listOfTuplesOrArray, model_list,
                      LOG_NORMAL: dist.LogNormalDistribution,
                      LAPLACE: dist.LaplaceDistribution,
                      SKEW_NORMAL: dist.SkewNormalDistribution,
-                     LINE: _Line}
+                     LINE: dist.Line}
 
     for par_index, model in enumerate(model_list):
         if model in model_mapping:

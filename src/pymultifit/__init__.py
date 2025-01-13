@@ -18,13 +18,17 @@ listOfTuplesOrArray = Union[listOfTuples, np.ndarray]
 GAUSSIAN = 'gaussian'
 NORMAL = GAUSSIAN
 
-LOG_NORMAL = 'log_normal'
-SKEW_NORMAL = 'skew_normal'
-LAPLACE = 'laplace'
+ARC_SINE = 'arc_sine'
+BETA = 'beta'
+CHI_SQUARE = 'chi_square'
+EXPONENTIAL = 'exponential'
+FOLDED_NORMAL = 'folded_normal'
 GAMMA_SR = 'gamma_sr'
 GAMMA_SS = 'gamma_ss'
-BETA = 'beta'
-ARC_SINE = 'arcSine'
+HALF_NORMAL = 'half_normal'
+LAPLACE = 'laplace'
+LOG_NORMAL = 'log_normal'
+SKEW_NORMAL = 'skew_normal'
 
 LINE = 'line'
 LINEAR = LINE

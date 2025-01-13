@@ -1,13 +1,10 @@
 """Created on Aug 18 23:52:19 2024"""
 
-__all__ = ['parameter_logic', 'sanity_check', '_Line', 'model_dict']
+__all__ = ['parameter_logic', 'sanity_check']
 
 from typing import List, Tuple, Union
 
 import numpy as np
-
-from .. import GAUSSIAN, LOG_NORMAL, SKEW_NORMAL, LAPLACE, LINE
-from .. import distributions as dist
 
 # SAFEGUARD:
 xy_values = Union[List[float], np.ndarray]
@@ -64,39 +61,3 @@ def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexTyp
     """
     indices = np.array(selected_models) - 1 if selected_models is not None else slice(None)
     return par_array.reshape(-1, n_par)[indices]
-
-
-class _Line:
-    """
-    Helper class for the line fitting function.
-
-    This class is intended for internal use only.
-    Provides a wrapper for evaluating a linear function with a given slope and intercept.
-    """
-
-    def __init__(self, slope: float, intercept: float, normalize: bool = False):
-        self.slope = slope
-        self.intercept = intercept
-
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Calculates the value of the line function.
-
-        Parameters
-        ----------
-        x: np.ndarray
-            The input array to evaluate the line function.
-
-        Returns
-        -------
-        np.ndarray
-            The value of the line function for the given slope and intercept.
-        """
-        return dist.line(x=x, slope=self.slope, intercept=self.intercept)
-
-
-model_dict = {LINE: [_Line, 2],
-              GAUSSIAN: [dist.GaussianDistribution, 3],
-              LOG_NORMAL: [dist.LogNormalDistribution, 3],
-              SKEW_NORMAL: [dist.SkewNormalDistribution, 4],
-              LAPLACE: [dist.LaplaceDistribution, 3]}

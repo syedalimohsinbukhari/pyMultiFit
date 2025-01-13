@@ -12,7 +12,7 @@ from .gaussian_d import GaussianDistribution
 from .halfNormal_d import HalfNormalDistribution
 from .laplace_d import LaplaceDistribution
 from .logNormal_d import LogNormalDistribution
-from .others import cubic, line, linear, nth_polynomial, quadratic
+from .others import Line
 from .skewNormal_d import SkewNormalDistribution
 from .uniform_d import UniformDistribution
 
