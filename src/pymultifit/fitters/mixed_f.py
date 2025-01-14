@@ -100,7 +100,12 @@ class MixedDataFitter:
             elif val == 'n_par':
                 result.append(fitter_instance.n_par)
             elif val == 'bounds':
-                result.append(fitter_instance.fit_boundaries())
+                try:
+                    result.append(fitter_instance.fit_boundaries())
+                except NotImplementedError:
+                    # in case the boundaries are not defined, put -np.inf, and np.inf to work with
+                    n_par = fitter_instance.n_par
+                    result.append([[-np.inf] * n_par, [np.inf] * n_par])
 
         return result[0] if len(result) == 1 else tuple(result)
 
