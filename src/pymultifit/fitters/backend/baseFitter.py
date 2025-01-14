@@ -312,7 +312,7 @@ class BaseFitter:
             raise RuntimeError('Fit not performed yet. Call fit() first.')
         return self._n_fitter(self.x_values, self.params)
 
-    def get_parameters(self, select: Tuple[int, Any] = None, errors: bool = False):
+    def get_model_parameters(self, select: Tuple[int, Any] = None, errors: bool = False):
         r"""
         Extract specific parameter values or their uncertainties from the fitting process.
 

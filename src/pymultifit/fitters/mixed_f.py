@@ -300,7 +300,88 @@ class MixedDataFitter:
 
         return self.model_function(self.x_values, *self.params)
 
-    def get_parameters(self, model: Optional[str] = None, errors: bool = False):
+    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> np.ndarray:
+        r"""
+        Retrieve the value/error pairs for the fitted parameters.
+
+        This method provides the fitted parameter values and their corresponding standard errors as a combined array or
+        individually based on the input flags.
+
+        Parameters
+        ----------
+        mean_values : bool, optional
+            If ``True``, return only the values of the fitted parameters.
+            Defaults to ``True``.
+        std_values : bool, optional
+            If ``True``, return only the standard errors of the fitted parameters.
+            Defaults to ``False``.
+
+        Returns
+        -------
+        np.ndarray
+            - If ``mean_values`` and ``std_values`` are both ``True``: A 2D array of shape (n_parameters, 2),
+                where each row is ``[value, error]``.
+            - If ``mean_values`` is ``True`` and ``std_values`` is ``False``: A 1D array of parameter values.
+            - If ``std_values`` is ``True`` and ``mean_values`` is ``False``: A 1D array of standard errors.
+            - If both flags are ``False``: An error message.
+
+        Raises
+        ------
+        ValueError
+            If both ``mean_values`` and ``std_values`` are ``False``.
+        """
+        pairs = np.column_stack([self._params(), self._standard_errors()])
+
+        if mean_values and std_values:
+            return pairs
+        elif mean_values:
+            return pairs[:, 0]
+        elif std_values:
+            return pairs[:, 1]
+        else:
+            raise ValueError("Either 'mean_values' or 'std_values' must be True.")
+
+    def _params(self) -> np.ndarray:
+        r"""
+        Store the fitted parameters of the fitted model.
+
+        Returns
+        -------
+        np.ndarray
+            The parameters obtained after performing the fit.
+
+        Raises
+        ------
+        RuntimeError
+            If the fit has not been performed yet (i.e., ``self.params`` is ``None``).
+
+        Notes
+        -----
+        This method assumes that the fitting process assigns values to ``self.params``.
+        """
+        if self.params is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
+        return self.params
+
+    def _standard_errors(self) -> np.ndarray:
+        r"""
+        Store the standard errors of the fitted parameters.
+
+        Returns
+        -------
+        np.ndarray
+            An array containing the standard errors of the fitted parameters.
+
+        Raises
+        ------
+        RuntimeError
+            If the fit has not been performed yet (i.e., ``self.covariance`` is ``None``).
+        """
+        if self.covariance is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
+        return np.sqrt(np.diag(self.covariance))
+
+    def get_model_parameters(self, model: Optional[str] = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
 
@@ -315,25 +396,27 @@ class MixedDataFitter:
 
                 Otherwise, returns just the parameters directly.
         """
-        if not errors:
-            parameters = self._parameter_extractor(self.params)
-            return parameters if model is None else parameters.get(model, [])
 
         parameters = self._parameter_extractor(self.params)
-        errors = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
+        errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
+
+        if not errors:
+            return parameters if model is None else parameters.get(model, [])
 
         if model is None:
             # Return combined dictionary for all models
-            return {"parameters": parameters, "errors": errors}
+            return {"parameters": parameters, "errors": errs}
 
         # Prepare output for a specific model
         output = {"parameters": {}, "errors": {}}
 
         keys = ["parameters", "errors"]
-        for temp_, key in zip([parameters, errors], keys):
+        n_pars = self._instantiate_fitter(model=model, return_values='n_par')
+        for temp_, key in zip([parameters, errs], keys):
             par_dict = temp_.get(model, [])
-            n_pars = self._instantiate_fitter(model=model, return_values='n_par')
-            flattened_list = [item for sublist in par_dict for item in sublist.tolist()]
-            output[key] = tuple(flattened_list[i::n_pars] for i in range(n_pars))
+            if n_pars == 2:
+                output[key] = par_dict
+            else:
+                output[key] = np.array_split(ary=np.array(par_dict).flatten(), indices_or_sections=n_pars)
 
         return output
