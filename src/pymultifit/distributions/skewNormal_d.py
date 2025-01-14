@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution
-from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError, NegativeShapeError
+from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
 from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
 
 
@@ -80,13 +80,12 @@ class SkewNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, shape: float = 1., location: float = 0., scale: float = 1., normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, shape: float = 1., location: float = 0., scale: float = 1.,
+                 normalize: bool = False):
         if not normalize and amplitude < 0.:
             raise NegativeAmplitudeError()
         if scale <= 0.:
             raise NegativeScaleError()
-        if shape <= 0.:
-            raise NegativeShapeError()
 
         self.amplitude = 1 if normalize else amplitude
         self.shape = shape
@@ -117,10 +116,12 @@ class SkewNormalDistribution(BaseDistribution):
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return skew_normal_pdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm)
+        return skew_normal_pdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
+                                normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return skew_normal_cdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm)
+        return skew_normal_cdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
+                                normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location

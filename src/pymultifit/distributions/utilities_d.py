@@ -107,7 +107,8 @@ def beta_pdf_(x: np.ndarray,
 
     .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 - y)^{\beta - 1}}{B(\alpha, \beta)}
 
-    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`scipy.special.beta`), and :math:`y` is the transformed value of :math:`x` such that:
+    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`scipy.special.beta`), and :math:`y` is the
+    transformed value of :math:`x` such that:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
 
@@ -254,9 +255,9 @@ def chi_square_pdf_(x: np.ndarray,
     The final PDF is expressed as :math:`f(y)`.
     """
     y = (x - loc) / scale
-    pdf_ = np.zeros_like(x, dtype=float)
+    pdf_ = np.zeros_like(a=x, dtype=float)
     mask_ = y > 0
-    pdf_[mask_] = gamma_sr_pdf_(y[mask_], amplitude=amplitude, alpha=degree_of_freedom / 2, lambda_=0.5, loc=0,
+    pdf_[mask_] = gamma_sr_pdf_(x=y[mask_], amplitude=amplitude, alpha=degree_of_freedom / 2, lambda_=0.5, loc=0,
                                 normalize=normalize)
 
     return pdf_ / scale
@@ -283,7 +284,7 @@ def chi_square_cdf_(x: np.ndarray,
 
     """
     y = (x - loc) / scale
-    cdf_ = np.zeros_like(x, dtype=float)
+    cdf_ = np.zeros_like(a=y, dtype=float)
     mask_ = y >= 0
     cdf_[mask_] = gammainc(degree_of_freedom / 2, y[mask_] / 2)
     return cdf_
@@ -338,7 +339,7 @@ def exponential_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    return gamma_sr_pdf_(x, amplitude=amplitude, alpha=1., lambda_=lambda_, loc=loc, normalize=normalize)
+    return gamma_sr_pdf_(x=x, amplitude=amplitude, alpha=1., lambda_=lambda_, loc=loc, normalize=normalize)
 
 
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
@@ -432,7 +433,7 @@ def _folded(x, mean, sigma, loc, g_func):
         return np.full(shape=x.size, fill_value=np.nan)
 
     y = (x - loc) / sigma
-    temp_ = np.zeros_like(a=x, dtype=float)
+    temp_ = np.zeros_like(a=y, dtype=float)
 
     mask = y >= 0
     g1 = g_func(x=y[mask], mean=mean, normalize=True)
@@ -769,7 +770,7 @@ def half_normal_pdf_(x: np.ndarray,
 
     where :math:`x >= 0`.
     """
-    return folded_normal_pdf_(x, amplitude=amplitude, mean=0, sigma=sigma, loc=loc, normalize=normalize)
+    return folded_normal_pdf_(x=x, amplitude=amplitude, mean=0, sigma=sigma, loc=loc, normalize=normalize)
 
 
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
@@ -1119,8 +1120,9 @@ def skew_normal_pdf_(x: np.ndarray,
     .. math:: f(y\ |\ \alpha, \xi, \omega) =
              2\phi(y)\Phi(\alpha y)
 
-    where, :math:`\phi(y)` and :math:`\Phi(\alpha y)` are the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
-    PDF and CDF defined at :math:`y` and :math:`\alpha y` respectively. Additionally, :math:`y` is the transformed value of :math:`x`, defined as:
+    where, :math:`\phi(y)` and :math:`\Phi(\alpha y)` are the
+    :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` PDF and CDF defined at :math:`y` and
+    :math:`\alpha y` respectively. Additionally, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \xi}{\omega}
 
@@ -1230,6 +1232,7 @@ def _remove_nans(x: np.ndarray) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        Array with NaN replaced by 0, positive infinity replaced by `np.inf`, and negative infinity replaced by `-np.inf`.
+        Array with NaN replaced by 0, positive infinity replaced by `np.inf`, and negative
+    infinity replaced by `-np.inf`.
     """
     return np.nan_to_num(x=x, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
