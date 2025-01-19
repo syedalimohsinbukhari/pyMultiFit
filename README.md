@@ -35,4 +35,4 @@ Using pip: `pip install pymultifit`
 
 ## Documentation
 
-The documentation can be found on [readthedocs](https://pymultifit.readthedocs.com/latest/)
+The documentation can be found on [readthedocs](https://pymultifit.readthedocs.io/latest/)
