@@ -12,6 +12,7 @@ Available for user
 ------------------
 
 .. autofunction:: arc_sine_pdf_
+.. autofunction:: arc_sine_cdf_
 .. autofunction:: beta_pdf_
 .. autofunction:: beta_cdf_
 .. autofunction:: chi_square_pdf_
@@ -39,5 +40,6 @@ Internal functions
 ------------------
 
 .. autofunction:: _beta_masking
+.. autofunction:: _folded
 .. autofunction:: _pdf_scaling
 .. autofunction:: _remove_nans

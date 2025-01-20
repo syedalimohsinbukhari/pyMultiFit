@@ -39,7 +39,7 @@ class TestArcSineDistribution:
             scipy_stddev = np.sqrt(scipy_variance)
 
             # Assertions for mean and variance
-            np.testing.assert_allclose(actual=scipy_mean, desired=d_stats['mean'], rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_mean, desired=_distribution.mean, rtol=1e-5, atol=1e-8)
             np.testing.assert_allclose(actual=scipy_variance, desired=d_stats['variance'], rtol=1e-5, atol=1e-8)
             np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
             np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
@@ -59,3 +59,15 @@ class TestArcSineDistribution:
 
             np.testing.assert_allclose(actual=pdf_custom, desired=pdf_scipy, rtol=1e-5, atol=1e-8)
             np.testing.assert_allclose(actual=cdf_custom, desired=cdf_scipy, rtol=1e-5, atol=1e-8)
+
+        loc_ = np.random.uniform(low=-5, high=10, size=50)
+        scale_ = np.random.uniform(low=EPSILON, high=10, size=50)
+        stack_ = np.column_stack([loc_, scale_])
+
+        for loc, scale in stack_:
+            distribution = ArcSineDistribution.scipy_like(loc=loc, scale=scale)
+            pdf_scipy = arcsine.pdf(x1, loc=loc, scale=scale)
+            cdf_scipy = arcsine.cdf(x1, loc=loc, scale=scale)
+
+            np.testing.assert_allclose(actual=distribution.pdf(x1), desired=pdf_scipy, rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=distribution.cdf(x1), desired=cdf_scipy, rtol=1e-5, atol=1e-8)

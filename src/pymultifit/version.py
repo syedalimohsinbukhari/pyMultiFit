@@ -1,6 +1,6 @@
 """Created on Nov 02 21:24:07 2024"""
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __author__ = "Syed Ali Mohsin Bukhari"
 __email__ = "syedali.b@outlook.com"
 __license__ = "MIT"
