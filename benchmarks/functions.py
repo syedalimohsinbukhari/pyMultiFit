@@ -4,7 +4,9 @@ from timeit import default_timer as timer
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from matplotlib import pyplot as plt
+from matplotlib.colors import TwoSlopeNorm
 from matplotlib.ticker import FixedLocator
 
 from pymultifit import EPSILON
@@ -253,8 +255,8 @@ def describe_data(data_list, labels=None, caption='PDF'):
     return styled_summary
 
 
-def boxplot_comparison(df1, df2, label, figsize=(15, 6)):
-    f, ax = plt.subplots(nrows=1, ncols=1, figsize=figsize)
+def boxplot_comparison(df1, df2, label, fig_size=(16, 6)):
+    f, ax = plt.subplots(nrows=1, ncols=1, figsize=fig_size)
 
     pd.plotting.boxplot(data=np.log10(df1 / df2), ax=ax)
     ax.axhline(y=np.log10(1), color='r', ls='--')
@@ -264,5 +266,23 @@ def boxplot_comparison(df1, df2, label, figsize=(15, 6)):
     ax.yaxis.set_major_locator(FixedLocator(ax.get_yticks()))
     ax.set_yticklabels([round(10**i, 3) for i in float_list])
 
+    plt.tight_layout()
+    plt.show()
+
+
+def heatmap(m_df, s_df, label='PDF'):
+    raw_ratios = m_df / s_df
+    raw_ratios.index = raw_ratios.index + 1
+
+    v_min = raw_ratios.min().min()
+    v_max = raw_ratios.max().max()
+    norm = TwoSlopeNorm(vcenter=1, vmin=v_min, vmax=v_max)
+
+    plt.figure(figsize=(16, 6))
+    sns.heatmap(data=raw_ratios.T, cmap='RdYlGn_r', annot=False, cbar_kws={'label': 'multifit/scipy'},
+                yticklabels=s_df.columns, robust=True, lw=1, linecolor='k', norm=norm)
+    plt.title(f'Heatmap of execution time ratio for {label} evaluations')
+    plt.ylabel('Distributions')
+    plt.xticks(rotation=0, ha='center')
     plt.tight_layout()
     plt.show()

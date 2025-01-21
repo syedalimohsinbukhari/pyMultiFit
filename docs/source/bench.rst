@@ -54,10 +54,10 @@ Expected Results
 
 At the end of the benchmarks, the following insights will be available:
 
-1. Timing comparisons (in seconds) for each operation (PDF, CDF).
-2. Accuracy comparisons using numerical error metrics.
-3. Identification of cases where custom distributions outperform or lag behind SciPy counterparts.
-4. Recommendations for further optimization, if needed.
+1. Accuracy comparisons using numerical error metrics.
+2. Timing comparisons (in seconds) for each operation (PDF, CDF).
+
+   * Identification of cases where custom distributions outperform or lag behind SciPy counterparts.
 
 .. toctree::
    :hidden:
@@ -65,3 +65,4 @@ At the end of the benchmarks, the following insights will be available:
 
    _bm_accuracy
    _bm_speed
+   _bm_summary
