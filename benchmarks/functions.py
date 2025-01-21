@@ -73,21 +73,31 @@ def evaluate_speed(custom_dist, scipy_dist, n_points_list, compute_cdf=False, re
     avg_times_scipy = []
 
     for n_points in n_points_list:
-        x = np.linspace(1e-10, 10, n_points)
+        x = np.linspace(start=EPSILON, stop=10, num=n_points)
 
         class_times = []
         for _ in range(repetitions):
-            start_class = timer()
-            _ = custom_dist.cdf(x) if compute_cdf else custom_dist.pdf(x)
-            end_class = timer()
+            if compute_cdf:
+                start_class = timer()
+                __ = custom_dist.cdf(x)
+                end_class = timer()
+            else:
+                start_class = timer()
+                __ = custom_dist.pdf(x)
+                end_class = timer()
             class_times.append(end_class - start_class)
         avg_times_class.append(np.mean(class_times))
 
         scipy_times = []
         for _ in range(repetitions):
-            start_scipy = timer()
-            _ = scipy_dist.cdf(x) if compute_cdf else scipy_dist.pdf(x)
-            end_scipy = timer()
+            if compute_cdf:
+                start_scipy = timer()
+                __ = scipy_dist.cdf(x)
+                end_scipy = timer()
+            else:
+                start_scipy = timer()
+                __ = scipy_dist.pdf(x)
+                end_scipy = timer()
             scipy_times.append(end_scipy - start_scipy)
         avg_times_scipy.append(np.mean(scipy_times))
 
@@ -115,13 +125,19 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
     plt.legend()
     plt.grid(True)
 
+    import statsmodels.api as sm
+
+    lowess_results = sm.nonparametric.lowess(ratio_means, n_points_list, frac=0.3)
+    x_smooth, y_smooth = lowess_results[:, 0], lowess_results[:, 1]
+
     plt.subplot(1, 2, 2)
     plt.plot(n_points_list, ratio_means, 'x-', ms=4, label='Ratio (Mean)', color='purple')
+    plt.plot(x_smooth, y_smooth, 'r--', lw=2, alpha=0.75, label='LOESS Fit')
     plt.xscale('log')
     plt.xlabel("Number of Points")
     plt.ylabel("Speed Ratio (Custom/SciPy)")
-    plt.axhline(y=1, color='r', linestyle='--', label='Ratio = 1')
-    plt.title(f"Speed Ratio: Custom/SciPy ({title_suffix})")
+    plt.axhline(y=1, color='k', linestyle=':', label='Ratio = 1')
+    plt.title(f"Speed Ratio: Custom/SciPy ({'Example Title'})")
     plt.legend()
     plt.grid(True)
 
@@ -132,11 +148,13 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
 def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = 15):
     p_times_class, p_times_scipy = evaluate_speed(custom_dist=custom_dist, scipy_dist=scipy_dist,
                                                   n_points_list=n_points, compute_cdf=False, repetitions=repetitions)
-    plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF Computations", save_as=save_as)
+    plot_speed_and_ratios(n_points_list=n_points, times_class=p_times_class, times_scipy=p_times_scipy,
+                          title_suffix="PDF Computations", save_as=save_as)
 
     c_times_class, c_times_scipy = evaluate_speed(custom_dist=custom_dist, scipy_dist=scipy_dist,
                                                   n_points_list=n_points, compute_cdf=False, repetitions=repetitions)
-    plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF Computations", save_as=save_as)
+    plot_speed_and_ratios(n_points_list=n_points, times_class=c_times_class, times_scipy=c_times_scipy,
+                          title_suffix="CDF Computations", save_as=save_as)
 
     return (p_times_class, c_times_class), (p_times_scipy, c_times_scipy)
 
@@ -158,19 +176,19 @@ def plot_distribution_comparison(data_dict, title_labels=('PDF', 'CDF')):
     })
     """
 
-    f, ax = plt.subplots(len(title_labels), 1, figsize=(18, 6 * len(title_labels)))
+    f, ax = plt.subplots(nrows=len(title_labels), ncols=1, figsize=(18, 6 * len(title_labels)))
 
     if len(title_labels) == 1:
-        ax = [ax]  # Ensure consistent indexing for single plot
+        ax = [ax]
 
     for i, title in enumerate(title_labels):
         log_data = []
         xtick_labels = []
 
         for dist_name, (pdf_cdf_pair) in data_dict.items():
-            pdf_or_cdf = pdf_cdf_pair[i]  # i = 0 for PDF, i = 1 for CDF
-            log_data.append(np.log10(pdf_or_cdf[0]))  # Custom timing
-            log_data.append(np.log10(pdf_or_cdf[1]))  # SciPy timing
+            pdf_or_cdf = pdf_cdf_pair[i]
+            log_data.append(np.log10(pdf_or_cdf[0]))
+            log_data.append(np.log10(pdf_or_cdf[1]))
             xtick_labels.append(f'custom\n{dist_name}')
             xtick_labels.append(f'scipy\n{dist_name}')
 
@@ -219,33 +237,26 @@ def describe_data(data_list, labels=None, caption='PDF'):
     - A styled pandas DataFrame with formatted summary statistics for all datasets.
     """
 
-    # Initialize the result dictionary
     summary_list = []
 
-    # Loop through each dataset in the list
     for idx, data in enumerate(data_list):
         if not isinstance(data, pd.Series):
             data = pd.Series(data)
 
-        # Calculate statistics
-        summary_stats = {
-            'N': data.size,
-            'Mean': data.mean(),
-            'Std': data.std(),
-            'Min': data.min(),
-            'Q1 (25%)': data.quantile(0.25),
-            'Q2 (Median)': data.median(),
-            'Q3 (75%)': data.quantile(0.75),
-            'Max': data.max()
-        }
+        summary_stats = {'N': data.size,
+                         'Mean': data.mean(),
+                         'Std': data.std(),
+                         'Min': data.min(),
+                         'Q1 (25%)': data.quantile(0.25),
+                         'Q2 (Median)': data.median(),
+                         'Q3 (75%)': data.quantile(0.75),
+                         'Max': data.max()}
 
         summary_list.append(summary_stats)
 
-    # Convert to DataFrame with labels as index
     index_labels = labels if labels else [f"Dataset {i + 1}" for i in range(len(data_list))]
-    summary_df = pd.DataFrame(summary_list, index=index_labels)
+    summary_df = pd.DataFrame(data=summary_list, index=index_labels)
 
-    # Format the table for better visualization with mixed number formatting
     styled_summary = summary_df.style.set_caption(f"{caption} Statistics") \
         .format({col: "{:.3E}" for col in summary_df.columns[1:]}) \
         .set_table_styles([{'selector': 'th',
