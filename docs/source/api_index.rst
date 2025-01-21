@@ -13,8 +13,8 @@ The documentation first goes through a birdseye view for these three modules, fo
    :maxdepth: 2
    :hidden:
 
-   _distributions
-   _fitters
-   _generators
-   _error_handling
-   _constants
+   distributions/_distributions
+   fitters/_fitters
+   generators/_generators
+   others/_error_handling
+   others/_constants

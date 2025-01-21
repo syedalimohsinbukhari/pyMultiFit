@@ -91,19 +91,19 @@ Other functions
 .. toctree::
    :hidden:
 
-   BaseDistribution         <distributions/baseDistribution>
-   ArcSineDistribution      <distributions/arcSine_d>
-   BetaDistribution         <distributions/beta_d>
-   ChiSquareDistribution    <distributions/chiSquare_d>
-   ExponentialDistribution  <distributions/exponential_d>
-   FoldedNormalDistribution <distributions/foldedNormal_d>
-   GammaDistributionSR      <distributions/gamma_sr_d>
-   GammaDistributionSS      <distributions/gamma_ss_d>
-   GaussianDistribution     <distributions/gaussian_d>
-   HalfNormalDistribution   <distributions/halfNormal_d>
-   LaplaceDistribution      <distributions/laplace_d>
-   LogNormalDistribution    <distributions/logNormal_d>
-   SkewNormalDistribution   <distributions/skewNormal_d>
-   UniformDistribution      <distributions/uniform_d>
-   DistributionUtilities    <distributions/utilities_d>
-   OtherFunctions           <distributions/others>
+   BaseDistribution         <baseDistribution>
+   ArcSineDistribution      <arcSine_d>
+   BetaDistribution         <beta_d>
+   ChiSquareDistribution    <chiSquare_d>
+   ExponentialDistribution  <exponential_d>
+   FoldedNormalDistribution <foldedNormal_d>
+   GammaDistributionSR      <gamma_sr_d>
+   GammaDistributionSS      <gamma_ss_d>
+   GaussianDistribution     <gaussian_d>
+   HalfNormalDistribution   <halfNormal_d>
+   LaplaceDistribution      <laplace_d>
+   LogNormalDistribution    <logNormal_d>
+   SkewNormalDistribution   <skewNormal_d>
+   UniformDistribution      <uniform_d>
+   DistributionUtilities    <utilities_d>
+   OtherFunctions           <others>

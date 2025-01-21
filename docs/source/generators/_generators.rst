@@ -54,4 +54,4 @@ Derived generators
 .. toctree::
    :hidden:
 
-   GeneratorFunctions         <generators/generators>
+   GeneratorFunctions         <generators>

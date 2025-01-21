@@ -1,10 +1,14 @@
 """Created on Aug 14 02:02:42 2024"""
 
-from .backend import errorHandling as erH
-from .beta_d import BetaDistribution
+from typing import Dict
+
+import numpy as np
+
+from .backend import errorHandling as erH, BaseDistribution
+from .utilities_d import arc_sine_pdf_, arc_sine_cdf_
 
 
-class ArcSineDistribution(BetaDistribution):
+class ArcSineDistribution(BaseDistribution):
     r"""
     Class for ArcSine distribution.
 
@@ -74,8 +78,6 @@ class ArcSineDistribution(BetaDistribution):
         self.scale = scale
 
         self.norm = normalize
-        super().__init__(amplitude=self.amplitude, alpha=0.5, beta=0.5, loc=self.loc, scale=self.scale,
-                         normalize=self.norm)
 
     @classmethod
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
@@ -95,3 +97,22 @@ class ArcSineDistribution(BetaDistribution):
             An instance of normalized ArcSineDistribution.
         """
         return cls(loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return arc_sine_pdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        return arc_sine_cdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
+
+    def stats(self) -> Dict[str, float]:
+        s_, l_ = self.scale, self.loc
+
+        mean_ = (s_ * 0.5) + l_
+        median_ = (s_ * 0.5) + l_
+        variance_ = (1 / 8) * s_**2
+
+        return {'mean': mean_,
+                'median': median_,
+                'mode': None,
+                'variance': variance_,
+                'std': np.sqrt(variance_)}

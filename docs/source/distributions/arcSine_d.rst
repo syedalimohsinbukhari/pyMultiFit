@@ -12,8 +12,8 @@ ArcSine Distribution
 
 This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
-* :func:`~utilities_d.beta_pdf_`
-* :func:`~utilities_d.beta_cdf_`
+* :func:`~utilities_d.arc_sine_pdf_`
+* :func:`~utilities_d.arc_sine_cdf_`
 
 Recommended Import
 ^^^^^^^^^^^^^^^^^^

@@ -4,6 +4,8 @@ matplotlib
 mpyez
 custom-inherit
 pytest
+pandas
+seaborn
 astropy
 jupyter
 notebook

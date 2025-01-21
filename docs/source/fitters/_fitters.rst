@@ -59,16 +59,16 @@ Derived Fitters
 .. toctree::
    :hidden:
 
-   BaseFitter         <fitters/baseFitter>
-   ChiSquareFitter    <fitters/chiSquare_f>
-   ExponentialFitter  <fitters/exponential_f>
-   FoldedNormalFitter <fitters/foldedNormal_f>
-   GammaFitterSR      <fitters/gamma_sr_f>
-   GammaFitterSS      <fitters/gamma_ss_f>
-   GaussianFitter     <fitters/gaussian_f>
-   HalfNormalFitter   <fitters/halfNormal_f>
-   LaplaceFitter      <fitters/laplace_f>
-   LogNormalFitter    <fitters/logNormal_f>
-   MixedDataFitter    <fitters/mixed_f>
-   SkewNormalFitter   <fitters/skewNormal_f>
-   FitterUtilities    <fitters/utilities_f>
+   BaseFitter         <baseFitter>
+   ChiSquareFitter    <chiSquare_f>
+   ExponentialFitter  <exponential_f>
+   FoldedNormalFitter <foldedNormal_f>
+   GammaFitterSR      <gamma_sr_f>
+   GammaFitterSS      <gamma_ss_f>
+   GaussianFitter     <gaussian_f>
+   HalfNormalFitter   <halfNormal_f>
+   LaplaceFitter      <laplace_f>
+   LogNormalFitter    <logNormal_f>
+   MixedDataFitter    <mixed_f>
+   SkewNormalFitter   <skewNormal_f>
+   FitterUtilities    <utilities_f>

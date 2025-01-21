@@ -1,7 +1,7 @@
 """Created on Aug 03 17:13:21 2024"""
 
 __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
-           'arc_sine_pdf_',
+           'arc_sine_pdf_', 'arc_sine_cdf_',
            'beta_pdf_', 'beta_cdf_',
            'chi_square_pdf_', 'chi_square_cdf_',
            'exponential_pdf_', 'exponential_cdf_',
@@ -64,7 +64,52 @@ def arc_sine_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    return beta_pdf_(x=x, amplitude=amplitude, alpha=0.5, beta=0.5, loc=loc, scale=scale, normalize=normalize)
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / scale
+    pdf_ = 1 / (np.pi * np.sqrt(y * (1 - y)))
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return _remove_nans(pdf_) / scale
+
+
+@doc_inherit(parent=arc_sine_pdf_, style=doc_style)
+def arc_sine_cdf_(x: np.ndarray,
+                  amplitude: float = 1.0,
+                  loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The ArcSine CDF is defined as:
+
+    .. math:: F(x) = \frac{2}{\pi}\arcsin(\sqrt{y})
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}.
+    """
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / scale
+    cdf_ = np.zeros_like(a=y, dtype=float)
+
+    mask_ = np.logical_and(y > 0, y < 1)
+    cdf_[mask_] = (2 / np.pi) * np.arcsin(np.sqrt(y[mask_]))
+    cdf_[y >= 1] = 1
+
+    return _remove_nans(cdf_)
 
 
 def beta_pdf_(x: np.ndarray,
@@ -428,21 +473,6 @@ def folded_normal_pdf_(x: np.ndarray,
     return pdf_ / sigma
 
 
-def _folded(x, mean, sigma, loc, g_func):
-    if sigma <= 0 or mean < 0:
-        return np.full(shape=x.size, fill_value=np.nan)
-
-    y = (x - loc) / sigma
-    temp_ = np.zeros_like(a=y, dtype=float)
-
-    mask = y >= 0
-    g1 = g_func(x=y[mask], mean=mean, normalize=True)
-    g2 = g_func(x=y[mask], mean=-mean, normalize=True)
-    temp_[mask] = g1 + g2
-
-    return mask, temp_
-
-
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_cdf_(x: np.ndarray,
                        amplitude: float = 1., mean: float = 0.0, sigma: float = 1.0,
@@ -467,7 +497,7 @@ def folded_normal_cdf_(x: np.ndarray,
     where :math:`\Phi` is the CDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`,
     and :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = \dfrac{x - \text{loc}}{\sigma}
+    .. math:: y = \dfrac{x - \text{loc}}{\sigma}.
     """
     if x.size == 0:
         return np.array([])
@@ -1199,6 +1229,21 @@ def _beta_masking(y: np.ndarray, alpha: float, beta: float) -> np.ndarray:
         undefined_mask = np.logical_or(undefined_mask, y == 1)
     mask_ = np.logical_or(out_of_range_mask, undefined_mask)
     return mask_
+
+
+def _folded(x, mean, sigma, loc, g_func):
+    if sigma <= 0 or mean < 0:
+        return np.full(shape=x.size, fill_value=np.nan)
+
+    y = (x - loc) / sigma
+    temp_ = np.zeros_like(a=y, dtype=float)
+
+    mask = y >= 0
+    g1 = g_func(x=y[mask], mean=mean, normalize=True)
+    g2 = g_func(x=y[mask], mean=-mean, normalize=True)
+    temp_[mask] = g1 + g2
+
+    return mask, temp_
 
 
 def _pdf_scaling(pdf_: np.ndarray, amplitude: float) -> np.ndarray:
