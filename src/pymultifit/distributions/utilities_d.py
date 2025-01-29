@@ -67,10 +67,18 @@ def arc_sine_pdf_(x: np.ndarray,
     if x.size == 0:
         return np.array([])
 
+    # short the pdf for x=1
+
     y = (x - loc) / scale
-    pdf_ = 1 / (np.pi * np.sqrt(y * (1 - y)))
+    pdf_ = np.zeros_like(a=y, dtype=float)
+    mask_ = np.logical_and(y > 0, y < 1)
+
+    pdf_[mask_] = 1 / (np.pi * np.sqrt(y[mask_] * (1 - y[mask_])))
     if not normalize:
-        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+        pdf_[mask_] = _pdf_scaling(pdf_=pdf_[mask_], amplitude=amplitude)
+
+    pdf_[y == 0] = np.inf
+    pdf_[y == 1] = np.inf
 
     return _remove_nans(pdf_) / scale
 
@@ -115,61 +123,19 @@ def arc_sine_cdf_(x: np.ndarray,
 def beta_pdf_(x: np.ndarray,
               amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
               loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
-    r"""
-    Compute PDF of :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array of values where PDF is evaluated.
-    amplitude : float, optional
-        The amplitude of the PDF. Defaults to 1.0.
-        Ignored if **normalize** is ``True``.
-    alpha : float, optional
-        The :math:`\alpha` parameter.
-        Default is 1.0.
-    beta : float, optional
-        The :math:`\beta` parameter.
-        Default is 1.0.
-    loc : float, optional
-        The location parameter, for shifting.
-        Default is 0.0.
-    scale : float, optional
-        The scale parameter, for scaling.
-        Default is 1.0.
-    normalize : bool, optional
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-        Defaults to ``False``.
-
-    Returns
-    -------
-    np.ndarray
-        Array of the same shape as `x`, containing the evaluated PDF values.
-
-    Notes
-    -----
-    The Beta PDF is defined as:
-
-    .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 - y)^{\beta - 1}}{B(\alpha, \beta)}
-
-    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`scipy.special.beta`), and :math:`y` is the
-    transformed value of :math:`x` such that:
-
-    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
-
-    The final PDF is expressed as :math:`f(y)/\text{scale}`.
-    """
     if x.size == 0:
         return np.array([])
 
     y = (x - loc) / scale
     pdf_ = np.zeros_like(a=y, dtype=float)
 
-    numerator = y**(alpha - 1) * (1 - y)**(beta - 1)
+    valid_mask = ~_beta_masking(y=y, alpha=alpha, beta=beta)
+
+    log_numerator = np.zeros_like(y)
+    log_numerator[valid_mask] = (alpha - 1) * np.log(y[valid_mask]) + (beta - 1) * np.log(1 - y[valid_mask])
     normalization_factor = gamma(alpha) * gamma(beta) / gamma(alpha + beta)
 
-    mask_ = _beta_masking(y=y, alpha=alpha, beta=beta)
-    pdf_[~mask_] = numerator[~mask_] / normalization_factor
+    pdf_[valid_mask] = np.exp(log_numerator[valid_mask]) / normalization_factor
 
     if alpha <= 1:
         pdf_[y == 0] = np.inf
