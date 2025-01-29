@@ -123,6 +123,50 @@ def arc_sine_cdf_(x: np.ndarray,
 def beta_pdf_(x: np.ndarray,
               amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
               loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
+    r"""
+    Compute PDF of :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values where PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    alpha : float, optional
+        The :math:`\alpha` parameter.
+        Default is 1.0.
+    beta : float, optional
+        The :math:`\beta` parameter.
+        Default is 1.0.
+    loc : float, optional
+        The location parameter, for shifting.
+        Default is 0.0.
+    scale : float, optional
+        The scale parameter, for scaling.
+        Default is 1.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as `x`, containing the evaluated PDF values.
+
+    Notes
+    -----
+    The Beta PDF is defined as:
+
+    .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 - y)^{\beta - 1}}{B(\alpha, \beta)}
+
+    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`scipy.special.beta`), and :math:`y` is the
+    transformed value of :math:`x` such that:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final PDF is expressed as :math:`f(y)/\text{scale}`.
+    """
     if x.size == 0:
         return np.array([])
 
