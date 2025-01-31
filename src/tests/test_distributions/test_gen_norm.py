@@ -5,7 +5,6 @@ import pytest
 from scipy.stats import gennorm
 
 from ...pymultifit import EPSILON
-from ...pymultifit.distributions import GaussianDistribution
 from ...pymultifit.distributions import SymmetricGeneralizedNormalDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
@@ -21,7 +20,7 @@ class TestSymNormalDistribution:
         assert dist.scale == 1.0
         assert not dist.norm
 
-        dist_normalized = GaussianDistribution(amplitude=2.0, normalize=True)
+        dist_normalized = SymmetricGeneralizedNormalDistribution(amplitude=2.0, normalize=True)
         assert dist_normalized.amplitude == 1.0
 
     @staticmethod
@@ -40,8 +39,12 @@ class TestSymNormalDistribution:
     def test_edge_case():
         dist = SymmetricGeneralizedNormalDistribution()
         x = np.array([])
+
         result = dist.pdf(x)
-        assert result.size == 0  # Should return an empty array
+        assert result.size == 0
+
+        result = dist.cdf(x)
+        assert result.size == 0
 
     @staticmethod
     def test_stats():
