@@ -81,7 +81,8 @@ class FoldedNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, mu: float = 0.0, sigma: float = 1., loc: float = 0.0, normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, mu: float = 0.0, sigma: float = 1., loc: float = 0.0,
+                 normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         self.amplitude = 1. if normalize else amplitude
@@ -130,4 +131,5 @@ class FoldedNormalDistribution(BaseDistribution):
         var_y = mean_**2 + std_**2 - mu_y**2
 
         return {'mean': mu_y + self.loc,
-                'variance': var_y}
+                'variance': var_y,
+                'std': np.sqrt(var_y)}

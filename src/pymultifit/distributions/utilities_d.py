@@ -8,18 +8,20 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'folded_normal_pdf_', 'folded_normal_cdf_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_',
            'gamma_ss_pdf_',
+           'gen_sym_normal_pdf_', 'gen_sym_normal_cdf_',
            'gaussian_pdf_', 'gaussian_cdf_',
            'half_normal_pdf_', 'half_normal_cdf_',
            'laplace_pdf_', 'laplace_cdf_',
            'log_normal_pdf_', 'log_normal_cdf_',
            'skew_normal_pdf_', 'skew_normal_cdf_',
-           'uniform_pdf_', 'uniform_cdf_']
+           'uniform_pdf_', 'uniform_cdf_',
+           'un_norm_gamma_inc_low', 'un_norm_gamma_inc_upp']
 
 from typing import Union
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t
+from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t, gammaincc
 
 from .. import doc_style
 
@@ -1181,6 +1183,43 @@ def skew_normal_pdf_(x: np.ndarray,
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
     return _remove_nans(pdf_)
+
+
+def gen_sym_normal_pdf_(x: np.ndarray,
+                        amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, shape: float = 1.0,
+                        normalize: bool = False) -> np.ndarray:
+    mu, alpha, beta = loc, scale, shape
+
+    log1_ = np.log(beta) - np.log(2 * alpha * gamma(1 / beta))
+
+    log2_ = np.log(abs(x - mu) / alpha)
+    log2_ = np.exp(beta * log2_)
+
+    pdf_ = np.exp(log1_ - log2_)
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
+
+
+def gen_sym_normal_cdf_(x: np.ndarray,
+                        amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, shape: float = 1.0,
+                        normalize: bool = False) -> np.ndarray:
+    mu, alpha, beta = loc, scale, shape
+
+    f1 = (x - mu) / alpha
+    f2 = 1 / (2 * gamma(1 / beta))
+    gamma_small = un_norm_gamma_inc_low(x=1 / beta, y=abs(f1)**beta)
+    return 0.5 + (np.sign(x - mu) * gamma_small * f2)
+
+
+def un_norm_gamma_inc_low(x, y):
+    return gammainc(x, y) * gamma(x)
+
+
+def un_norm_gamma_inc_upp(x, y):
+    return gammaincc(x, y) * gamma(x)
 
 
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
