@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 from scipy.special import gamma
 
-from ..backend import BaseDistribution
+from ..backend import BaseDistribution, errorHandling as erH
 from ..utilities_d import gen_sym_normal_pdf_, gen_sym_normal_cdf_
 
 
@@ -13,10 +13,14 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
     def __init__(self, amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                  normalize: bool = False):
+        if amplitude < 0 and not normalize:
+            raise erH.NegativeAmplitudeError()
+        if shape < 0:
+            raise erH.NegativeShapeError()
         self.amplitude = 1. if normalize else amplitude
-        self.mu = loc
-        self.alpha = scale
-        self.beta = shape
+        self.loc = loc
+        self.scale = scale
+        self.shape = shape
 
         self.norm = normalize
 
@@ -26,19 +30,19 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         return instance
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        return gen_sym_normal_pdf_(x, amplitude=self.amplitude, loc=self.mu, scale=self.alpha, shape=self.beta,
+        return gen_sym_normal_pdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, shape=self.shape,
                                    normalize=self.norm)
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        return gen_sym_normal_cdf_(x, amplitude=self.amplitude, loc=self.mu, scale=self.alpha, shape=self.beta,
+        return gen_sym_normal_cdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, shape=self.shape,
                                    normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
-        mean_ = self.mu
-        median_ = self.mu
-        mode_ = self.mu
-        variance_ = self.alpha**2 * gamma(3 / self.beta)
-        variance_ /= gamma(1 / self.beta)
+        mean_ = self.loc
+        median_ = self.loc
+        mode_ = self.loc
+        variance_ = self.scale**2 * gamma(3 / self.shape)
+        variance_ /= gamma(1 / self.shape)
 
         return {'mean': mean_,
                 'median': median_,

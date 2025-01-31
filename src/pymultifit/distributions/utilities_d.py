@@ -1188,6 +1188,9 @@ def skew_normal_pdf_(x: np.ndarray,
 def gen_sym_normal_pdf_(x: np.ndarray,
                         amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, shape: float = 1.0,
                         normalize: bool = False) -> np.ndarray:
+    if x.size == 0:
+        return np.array([])
+
     mu, alpha, beta = loc, scale, shape
 
     log1_ = np.log(beta) - np.log(2 * alpha * gamma(1 / beta))
@@ -1206,6 +1209,9 @@ def gen_sym_normal_pdf_(x: np.ndarray,
 def gen_sym_normal_cdf_(x: np.ndarray,
                         amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, shape: float = 1.0,
                         normalize: bool = False) -> np.ndarray:
+    if x.size == 0:
+        return np.array([])
+
     mu, alpha, beta = loc, scale, shape
 
     f1 = (x - mu) / alpha
