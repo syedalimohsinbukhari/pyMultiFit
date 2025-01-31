@@ -9,6 +9,7 @@ from .exponential_d import ExponentialDistribution
 from .foldedNormal_d import FoldedNormalDistribution
 from .gamma_d import GammaDistributionSR, GammaDistributionSS
 from .gaussian_d import GaussianDistribution
+from .generalized.genNorm_d import SymmetricGeneralizedNormalDistribution
 from .halfNormal_d import HalfNormalDistribution
 from .laplace_d import LaplaceDistribution
 from .logNormal_d import LogNormalDistribution

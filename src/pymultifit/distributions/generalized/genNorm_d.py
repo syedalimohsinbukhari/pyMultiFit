@@ -9,7 +9,7 @@ from ..backend import BaseDistribution
 from ..utilities_d import gen_sym_normal_pdf_, gen_sym_normal_cdf_
 
 
-class SymmetricGeneralizedGaussianDistribution(BaseDistribution):
+class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
     def __init__(self, amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                  normalize: bool = False):
