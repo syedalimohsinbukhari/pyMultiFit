@@ -1,8 +1,6 @@
 """Created on Jan 29 15:42:23 2025"""
 
-from typing import Dict
-
-from scipy.special import gamma
+from math import sqrt, gamma
 
 from ..backend import BaseDistribution, errorHandling as erH
 from ..utilities_d import sym_gen_normal_pdf_, sym_gen_normal_cdf_
@@ -41,7 +39,8 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
        :lineno-start: 3
        :lines: 3-7
 
-    Generating a standard SymmetricGeneralizedNormalDistribution(:math:`\beta=1, \mu=0, \alpha = 1`) distribution with ``pyMultiFit`` and ``scipy``:
+    Generating a standard SymmetricGeneralizedNormalDistribution(:math:`\beta=1, \mu=0, \alpha = 1`)
+     with ``pyMultiFit`` and ``scipy``:
 
     .. literalinclude:: ../../../examples/basic/gennorm.py
        :language: python
@@ -61,7 +60,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
        :alt: GenNorm(1, 0, 1)
        :align: center
 
-    Generating a scaled and translated SymmetricGeneralizedNormalDistribution(:math:`\beta=2, \mu=-3, \alpha=5`) distribution:
+    Generating a scaled and translated SymmetricGeneralizedNormalDistribution(:math:`\beta=2, \mu=-3, \alpha=5`):
 
     .. literalinclude:: ../../../examples/basic/gennorm.py
        :language: python
@@ -122,7 +121,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         return sym_gen_normal_cdf_(x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale,
                                    normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         mean_ = self.loc
         median_ = self.loc
         mode_ = self.loc
@@ -133,4 +132,4 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
                 'median': median_,
                 'mode': mode_,
                 'variance': variance_,
-                'std': variance_**0.5}
+                'std': sqrt(variance_)}
