@@ -1,5 +1,5 @@
 """Created on Dec 31 05:45:40 2024"""
-
+import time
 from timeit import default_timer as timer
 
 import numpy as np
@@ -297,3 +297,69 @@ def heatmap(m_df, s_df, label='PDF'):
     plt.xticks(rotation=0, ha='center')
     plt.tight_layout()
     plt.show()
+
+
+def time_function(func, test_values, num_runs=500):
+    total_time = 0
+    for _ in range(num_runs):
+        start = time.perf_counter()
+        func(test_values)
+        end = time.perf_counter()
+        total_time += (end - start)
+
+    avg_run_time = total_time / num_runs
+    return avg_run_time
+
+
+def plot_runtime_subplot(ax, functions, values, latex_annotations, n_runs=500):
+    avg_times = [time_function(func=i, test_values=values, num_runs=n_runs) for i in functions]
+
+    versions = [f'Version {i}' for i in range(1, len(functions) + 1)]
+
+    bars = ax.bar(x=versions, height=np.log10(avg_times),
+                  color=['#a3c4f3', '#b8e5b5', '#f5a8a8', '#f7b39e', '#c6a8e6', '#a0e6d7'])
+
+    min_ = np.log10(min(avg_times))
+    ax.axhline(y=min_, color='r', ls='--', label=f'$10^{{{min_:.5f}}}$ s')
+
+    for i, bar in enumerate(bars):
+        height = bar.get_height()
+        ax.text(x=bar.get_x() + bar.get_width() / 2, y=height / 2,
+                s=latex_annotations[i], ha='center', va='center',
+                color='k', rotation=90)
+
+    min_idx = np.argmin(avg_times)
+    second_min_idx = np.argsort(avg_times)[1]
+
+    min_val_log = np.log10(avg_times[min_idx])
+    second_val_log = np.log10(avg_times[second_min_idx])
+
+    ax.scatter(x=bars[min_idx].get_x() + bars[min_idx].get_width() / 2, y=min_val_log,
+               color='k', marker='*', s=150)
+    ax.text(x=bars[min_idx].get_x() + bars[min_idx].get_width() / 2, y=min_val_log + 0.05,
+            s=f"$10^{{{min_val_log:.4f}}}$ s", ha='center', color='k')
+
+    ax.scatter(x=bars[second_min_idx].get_x() + bars[second_min_idx].get_width() / 2,
+               y=second_val_log, color='tab:blue', marker='*', s=150)
+    ax.text(x=bars[second_min_idx].get_x() + bars[second_min_idx].get_width() / 2,
+            y=second_val_log + 0.05, s=f"$10^{{{second_val_log:.4f}}}$ s", ha='center', color='tab:blue')
+
+    ax.legend(loc='upper right')
+
+
+def plot_all_variations(distribution_name, functions, values, latex_annotations, n_runs=500, save_fig=True):
+    fig, axes = plt.subplots(2, 3, figsize=(18, 12), sharex=True, sharey=True)
+    axes = axes.flatten()
+
+    for i, ax in enumerate(axes):
+        plot_runtime_subplot(ax, functions, values, latex_annotations, n_runs)
+        if i % 3 == 0:
+            ax.set_ylabel('Time (log10 seconds)')
+
+    fig.tight_layout()
+
+    if save_fig:
+        plt.savefig(f'./variation_plots/{distribution_name}_variations.png', dpi=300)
+        plt.close()
+    else:
+        plt.show()

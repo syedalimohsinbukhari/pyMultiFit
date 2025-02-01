@@ -25,3 +25,4 @@ for i in ax:
     i.set_xlabel('X')
     i.legend()
 plt.tight_layout()
+plt.savefig('./../../images/arcsine_example.png')

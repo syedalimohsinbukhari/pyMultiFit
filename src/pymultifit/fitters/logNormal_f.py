@@ -1,6 +1,6 @@
 """Created on Jul 18 19:01:45 2024"""
 
-import numpy as np
+from math import inf
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -24,8 +24,8 @@ class LogNormalFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, -np.inf, 0, -np.inf)
-        ub = (np.inf, np.inf, np.inf, np.inf)
+        lb = (0, -inf, 0, -inf)
+        ub = (inf, inf, inf, inf)
         return lb, ub
 
     @staticmethod

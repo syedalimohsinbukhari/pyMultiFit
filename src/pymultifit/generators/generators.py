@@ -1,4 +1,5 @@
 """Created on Jul 18 00:35:26 2024"""
+
 from inspect import isfunction
 from typing import Type, Callable, Optional, Dict
 
@@ -223,10 +224,8 @@ def multiple_models(x: np.ndarray, params: listOfTuplesOrArray, model_list,
     for par_index, model in enumerate(model_list):
         if model in model_mapping:
             _instance = model_mapping[model]
-            # check if it is a function
             if isfunction(_instance):
                 y += _instance(x, *params[par_index])
-            # check if it is a subclass of BaseDistribution
             elif issubclass(_instance, BaseDistribution):
                 y += _instance(*params[par_index], normalize=normalize).pdf(x)
 

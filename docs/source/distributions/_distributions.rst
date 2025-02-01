@@ -46,6 +46,9 @@ Derived Distributions
    * - :class:`~gamma_d.GammaDistributionSR`
      - Gamma distribution with shape-rate parameterization.
      - :math:`\dfrac{1}{\Gamma(\alpha)}\lambda^\alpha x^{\alpha - 1}\exp\left[-\lambda x\right]`
+   * - :class:`~generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`
+     - Symmetric Generalized Normal distribution.
+     - :math:`\dfrac{\beta}{2\alpha\Gamma(1/\beta)}\exp\left[-\dfrac{|x-\mu|^\beta}{\alpha^\beta}\right]`
    * - :class:`~gaussian_d.GaussianDistribution`
      - Gaussian distribution.
      - :math:`\dfrac{1}{\sqrt{2\pi}\sigma}\exp\left[-\dfrac{(x-\mu)^2}{2\sigma^2}\right]`
@@ -100,6 +103,7 @@ Other functions
    GammaDistributionSR      <gamma_sr_d>
    GammaDistributionSS      <gamma_ss_d>
    GaussianDistribution     <gaussian_d>
+   SymGeneralizedNormalDistribution <genNorm_d>
    HalfNormalDistribution   <halfNormal_d>
    LaplaceDistribution      <laplace_d>
    LogNormalDistribution    <logNormal_d>

@@ -1,8 +1,6 @@
 """Created on Dec 11 20:40:15 2024"""
 
-from typing import Dict
-
-import numpy as np
+from math import sqrt, nan
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_pdf_
@@ -103,20 +101,20 @@ class UniformDistribution(BaseDistribution):
         """
         return cls(low=loc, high=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x):
         return uniform_pdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x):
         return uniform_cdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         low, high = self.low, self.low + self.high
 
         if low == high:
-            return {'mean': np.nan,
-                    'median': np.nan,
-                    'variance': np.nan,
-                    'std': np.nan}
+            return {'mean': nan,
+                    'median': nan,
+                    'variance': nan,
+                    'std': nan}
 
         mean_ = 0.5 * (low + high)
         median_ = mean_
@@ -125,4 +123,4 @@ class UniformDistribution(BaseDistribution):
         return {'mean': mean_,
                 'median': median_,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': sqrt(variance_)}

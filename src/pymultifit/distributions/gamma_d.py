@@ -1,9 +1,5 @@
 """Created on Aug 14 01:28:13 2024"""
 
-from typing import Dict
-
-import numpy as np
-
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gamma_sr_cdf_, gamma_sr_pdf_
 
@@ -117,17 +113,17 @@ class GammaDistributionSR(BaseDistribution):
         """
         return cls(shape=a, loc=loc, rate=1 / scale, normalize=True)
 
-    def pdf(self, x: np.array) -> np.array:
+    def pdf(self, x):
         return gamma_sr_pdf_(x,
                              amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
                              normalize=self.norm)
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x):
         return gamma_sr_cdf_(x,
                              amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
                              normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         s, r, l_ = self.shape, self.rate, self.loc
 
         mean_ = (s / r) + l_
@@ -137,7 +133,7 @@ class GammaDistributionSR(BaseDistribution):
         return {'mean': mean_,
                 'mode': mode_,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': variance_**0.5}
 
 
 class GammaDistributionSS(GammaDistributionSR):

@@ -1,8 +1,7 @@
 """Created on Jan 13 11:47:55 2025"""
 
+from math import inf
 from typing import Tuple, Any
-
-import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -18,11 +17,11 @@ class LineFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (-np.inf, -np.inf)
-        ub = (np.inf, np.inf)
+        lb = (-inf, -inf)
+        ub = (inf, inf)
 
         return lb, ub
 
     @staticmethod
-    def fitter(x: np.ndarray, params: Tuple[float, Any]):
+    def fitter(x, params: Tuple[float, Any]):
         return line(x, *params)

@@ -33,6 +33,8 @@ Available for user
 .. autofunction:: log_normal_cdf_
 .. autofunction:: skew_normal_pdf_
 .. autofunction:: skew_normal_cdf_
+.. autofunction:: sym_gen_normal_pdf_
+.. autofunction:: sym_gen_normal_cdf_
 .. autofunction:: uniform_pdf_
 .. autofunction:: uniform_cdf_
 

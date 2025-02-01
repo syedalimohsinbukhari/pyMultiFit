@@ -1,6 +1,6 @@
 """Created on Jul 18 00:25:57 2024"""
 
-import numpy as np
+from math import inf
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -17,8 +17,8 @@ class GaussianFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, -np.inf, 0)
-        ub = (np.inf, np.inf, np.inf)
+        lb = (0, -inf, 0)
+        ub = (inf, inf, inf)
         return lb, ub
 
     @staticmethod

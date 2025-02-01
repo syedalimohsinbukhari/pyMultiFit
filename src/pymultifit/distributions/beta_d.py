@@ -1,8 +1,5 @@
 """Created on Aug 14 00:45:37 2024"""
 
-from typing import Dict
-
-import numpy as np
 from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
@@ -124,23 +121,14 @@ class BetaDistribution(BaseDistribution):
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        if self.scale > 0:
-            return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc,
-                             scale=self.scale, normalize=self.norm)
-        else:
-            return np.full(shape=x.shape, fill_value=np.nan)
+    def pdf(self, x):
+        return beta_pdf_(x=x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc,
+                         scale=self.scale, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        if self.scale > 0:
-            return beta_cdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale)
-        else:
-            return np.full(shape=x.shape, fill_value=np.nan)
+    def cdf(self, x):
+        return beta_cdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale)
 
-    # def logpdf(self, x: np.array) -> np.array:
-    #     return beta_logpdf_(x=x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale, normalize=self.norm)
-
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         a, b = self.alpha, self.beta
         s, _l = self.scale, self.loc
 
@@ -159,4 +147,4 @@ class BetaDistribution(BaseDistribution):
                 'median': median_,
                 'mode': None,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': variance_**0.5}

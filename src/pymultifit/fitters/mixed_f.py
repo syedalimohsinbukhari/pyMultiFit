@@ -21,8 +21,8 @@ from .logNormal_f import LogNormalFitter
 from .others import LineFitter
 from .skewNormal_f import SkewNormalFitter
 from .utilities_f import sanity_check
-from .. import (epsilon, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL, GAMMA_SR, GAMMA_SS, NORMAL,
-                HALF_NORMAL)
+from .. import (epsilon, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL,
+                GAMMA_SR, GAMMA_SS, NORMAL, HALF_NORMAL)
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {CHI_SQUARE: ChiSquareFitter,
