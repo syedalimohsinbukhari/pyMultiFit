@@ -1,12 +1,19 @@
 """Created on Aug 03 21:35:28 2024"""
 
-from typing import Dict
-
-import numpy as np
+from math import sqrt, pi, exp
 
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
 from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
+
+
+def my_sign(x):
+    if x > 0:
+        return 1
+    elif x < 0:
+        return -1
+    else:
+        return 0
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -115,30 +122,32 @@ class SkewNormalDistribution(BaseDistribution):
         """
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x):
         return skew_normal_pdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
                                 normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x):
         return skew_normal_cdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
                                 normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         alpha, omega, epsilon = self.shape, self.scale, self.location
-        delta = alpha / np.sqrt(1 + alpha**2)
+        delta = alpha / sqrt(1 + alpha**2)
+        delta_sqrt_2_pi = sqrt(2 / pi) * delta
 
         def _m0(alpha_):
-            m0 = np.sqrt(2 / np.pi) * delta
-            m0 -= ((1 - np.pi / 4) * (np.sqrt(2 / np.pi) * delta)**3) / (1 - (2 / np.pi) * delta**2)
-            m0 -= (2 * np.pi / abs(alpha_)) * np.exp(-(2 * np.pi / abs(alpha_))) * np.sign(alpha_)
-            return m0
+            term2 = (1 - pi / 4) * delta_sqrt_2_pi**3 / (1 - (2 / pi) * delta**2)
+            term3 = (2 * pi / abs(alpha_)) * exp(-(2 * pi / abs(alpha_))) * my_sign(alpha_)
+            return delta_sqrt_2_pi - term2 - term3
 
-        mean_ = epsilon + omega * delta * np.sqrt(2 / np.pi)
+        # Calculating mean, mode, variance, and std
+        mean_ = epsilon + omega * delta_sqrt_2_pi
         mode_ = epsilon + omega * _m0(alpha)
-        variance_ = omega**2 * (1 - (2 * delta**2 / np.pi))
+        variance_ = omega**2 * (1 - (2 * delta**2 / pi))
+        std_ = sqrt(variance_)
 
         return {'mean': mean_,
                 'mode': mode_,
                 'median': None,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': std_}

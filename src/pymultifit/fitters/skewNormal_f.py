@@ -1,6 +1,6 @@
 """Created on Jul 18 13:54:03 2024"""
 
-import numpy as np
+from math import inf
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -17,8 +17,8 @@ class SkewNormalFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, -np.inf, -np.inf, 0)
-        ub = (np.inf, np.inf, np.inf, np.inf)
+        lb = (0, -inf, -inf, 0)
+        ub = (inf, inf, inf, inf)
         return lb, ub
 
     @staticmethod

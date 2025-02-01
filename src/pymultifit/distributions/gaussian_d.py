@@ -1,9 +1,5 @@
 """Created on Aug 03 20:07:50 2024"""
 
-from typing import Dict
-
-import numpy as np
-
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gaussian_cdf_, gaussian_pdf_
 
@@ -106,13 +102,13 @@ class GaussianDistribution(BaseDistribution):
         """
         return cls(mu=loc, std=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x):
         return gaussian_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x):
         return gaussian_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         m, s = self.mu, self.std_
         return {'mean': m,
                 'median': m,

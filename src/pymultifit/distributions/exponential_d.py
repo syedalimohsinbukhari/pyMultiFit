@@ -1,8 +1,6 @@
 """Created on Nov 30 10:49:49 2024"""
 
-from typing import Dict
-
-import numpy as np
+from math import log
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import exponential_cdf_, exponential_pdf_
@@ -107,21 +105,21 @@ class ExponentialDistribution(BaseDistribution):
         """
         return cls(loc=loc, scale=1 / scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x):
         return exponential_pdf_(x=x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x):
         return exponential_cdf_(x=x, amplitude=self.amplitude, scale=self.scale, loc=self.loc, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         s, l_ = self.scale, self.loc
 
         mean_ = (1 / s) + l_
-        median_ = (np.log(2) / s) + l_
+        median_ = (log(2) / s) + l_
         mode_ = 0
         variance_ = 1 / s**2
         return {'mean': mean_,
                 'median': median_,
                 'mode': mode_,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': variance_**0.5}

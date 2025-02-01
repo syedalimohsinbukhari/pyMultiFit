@@ -1,9 +1,6 @@
 """Created on Dec 04 03:42:42 2024"""
 
-from typing import Any, Dict
-
-import numpy as np
-from scipy.special import erf
+from math import pi, exp, erf
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import folded_normal_cdf_, folded_normal_pdf_
@@ -113,23 +110,25 @@ class FoldedNormalDistribution(BaseDistribution):
         """
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x):
         return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x):
         return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self):
         mean_, std_ = self.mean, self.sigma
 
-        f1 = std_ * np.sqrt(2 / np.pi) * np.exp(-mean_**2 / (2 * std_**2))
-        f2 = mean_ * erf(mean_ / (np.sqrt(2 * np.pi)))
+        sqrt_ = (2 / pi)**0.5
+
+        f1 = std_ * sqrt_ * exp(-0.5 * (mean_ / std_)**2)
+        f2 = mean_ * erf(mean_ / sqrt_)
 
         mu_y = f1 + f2
         var_y = mean_**2 + std_**2 - mu_y**2
 
         return {'mean': mu_y + self.loc,
                 'variance': var_y,
-                'std': np.sqrt(var_y)}
+                'std': var_y**0.5}

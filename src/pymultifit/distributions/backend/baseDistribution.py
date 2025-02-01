@@ -29,6 +29,12 @@ class BaseDistribution:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
+    def logpdf(self, x: np.array) -> np.ndarray:
+        pass
+
+    def logcdf(self, x: np.array) -> np.ndarray:
+        pass
+
     def stats(self) -> Dict[str, float]:
         r"""
         Computes and returns the statistical properties of the distribution, including,

@@ -1,8 +1,6 @@
 """Created on Dec 03 17:37:05 2024"""
 
-from typing import Dict, Union
-
-import numpy as np
+from typing import Union
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import chi_square_cdf_, chi_square_pdf_
@@ -114,15 +112,15 @@ class ChiSquareDistribution(BaseDistribution):
         """
         return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x):
         return chi_square_pdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
                                normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x):
         return chi_square_cdf_(x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
                                normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         df = self.dof
         s, l_ = self.scale, self.loc
 
@@ -134,4 +132,4 @@ class ChiSquareDistribution(BaseDistribution):
                 'median': None,
                 'mode': mode_,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': variance_**0.5}

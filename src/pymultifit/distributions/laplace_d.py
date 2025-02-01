@@ -1,9 +1,5 @@
 """Created on Aug 03 21:12:13 2024"""
 
-from typing import Dict
-
-import numpy as np
-
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_pdf_
 
@@ -106,15 +102,15 @@ class LaplaceDistribution(BaseDistribution):
         """
         return cls(mean=loc, diversity=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x):
         return laplace_pdf_(x,
                             amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x):
         return laplace_cdf_(x,
                             amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         m, b = self.mu, self.b
 
         variance_ = 2 * b**2
@@ -123,4 +119,4 @@ class LaplaceDistribution(BaseDistribution):
                 'median': m,
                 'mode': m,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': variance_**0.5}

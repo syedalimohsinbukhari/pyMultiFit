@@ -29,7 +29,7 @@ for i in ax:
 plt.tight_layout()
 plt.savefig('./../../images/gaussian_example1.png')
 
-y_multifit = GaussianDistribution(std=2, normalize=True)
+y_multifit = GaussianDistribution(mu=3, std=2, normalize=True)
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
 
@@ -41,7 +41,7 @@ ax[1].plot(x_values, y_scipy.cdf(x=x_values, loc=3, scale=2), label='Scipy trans
 ax[1].plot(x_values, y_multifit.cdf(x_values), 'k:', label='pyMultiFit translated Gaussian')
 ax[1].set_ylabel('F(x)')
 
-f.suptitle(r'Folded Normal(0, 1, 3)')
+f.suptitle(r'Gaussian(3, 2)')
 
 for i in ax:
     i.set_xlabel('X')

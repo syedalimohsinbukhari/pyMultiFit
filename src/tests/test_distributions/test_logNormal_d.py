@@ -1,5 +1,7 @@
 """Created on Dec 14 04:10:02 2024"""
 
+from math import log
+
 import numpy as np
 import pytest
 from scipy.stats import lognorm
@@ -15,7 +17,7 @@ class TestLogNormalDistribution:
     def test_initialization():
         dist = LogNormalDistribution(amplitude=2.0, mu=1.0, std=0.5, normalize=False)
         assert dist.amplitude == 2.0
-        assert dist.mu == np.log(1.0)
+        assert dist.mu == log(1)
         assert dist.std == 0.5
         assert not dist.norm
 
@@ -70,7 +72,8 @@ class TestLogNormalDistribution:
             return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
 
         def _cdf_pdf_scipy(x_, s, loc, scale, what='cdf'):
-            return lognorm.cdf(x_, s=s, scale=scale, loc=loc) if what == 'cdf' else lognorm.pdf(x_, s=s, scale=scale, loc=loc)
+            return lognorm.cdf(x_, s=s, scale=scale, loc=loc) if what == 'cdf' else lognorm.pdf(x_, s=s, scale=scale,
+                                                                                                loc=loc)
 
         for i in ['cdf', 'pdf']:
             for _ in range(50):  # Run 50 random tests

@@ -2,14 +2,83 @@
 
 from typing import Dict
 
-import numpy as np
 from scipy.special import gamma
 
 from ..backend import BaseDistribution, errorHandling as erH
-from ..utilities_d import gen_sym_normal_pdf_, gen_sym_normal_cdf_
+from ..utilities_d import sym_gen_normal_pdf_, sym_gen_normal_cdf_
 
 
 class SymmetricGeneralizedNormalDistribution(BaseDistribution):
+    r"""
+    Class for SymmetricGeneralizedNormalDistribution.
+
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :type amplitude: float, optional
+
+    :param shape: The shape parameter, :math:`\beta`. Defaults to 1.0.
+    :type shape: float, optional
+
+    :param loc: The shape parameter, :math:`\mu`. Defaults to 0.0.
+    :type loc: float, optional
+
+    :param scale: The standard deviation parameter, :math:`\alpha`. Defaults to 1.0.
+    :type scale: float, optional
+
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+     Defaults to ``False``.
+    :type normalize: bool, optional
+
+    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    :raise NegativeScaleError: If the provided value of scale parameter is negative.
+
+    Examples
+    --------
+    Importing libraries:
+
+    .. literalinclude:: ../../../examples/basic/gaussian.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
+
+    Generating a standard SymmetricGeneralizedNormalDistribution(:math:`\beta=1, \mu=0, \alpha = 1`) distribution with ``pyMultiFit`` and ``scipy``:
+
+    .. literalinclude:: ../../../examples/basic/gennorm.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/gennorm.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/gen_norm_example1.png
+       :alt: GenNorm(1, 0, 1)
+       :align: center
+
+    Generating a scaled and translated SymmetricGeneralizedNormalDistribution(:math:`\beta=2, \mu=-3, \alpha=5`) distribution:
+
+    .. literalinclude:: ../../../examples/basic/gennorm.py
+       :language: python
+       :lineno-start: 32
+       :lines: 32
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/gennorm.py
+       :language: python
+       :lineno-start: 34
+       :lines: 34-49
+
+    .. image:: ../../../images/gen_norm_example2.png
+       :alt: GenNorm(2, -3, 5)
+       :align: center
+    """
 
     def __init__(self, amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                  normalize: bool = False):
@@ -26,15 +95,31 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
     @classmethod
     def scipy_like(cls, beta, loc: float = 0.0, scale: float = 1.0):
-        instance = cls(shape=beta, loc=loc, scale=scale, normalize=True)
-        return instance
+        """
+        Instantiate SymmetricGeneralizedNormalDistribution with scipy parametrization.
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return gen_sym_normal_pdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, shape=self.shape,
+        Parameters
+        ----------
+        beta: float
+            The shape parameter.
+        loc: float, optional
+            The mean parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        SymmetricGeneralizedNormalDistribution
+            An instance of normalized SymmetricGeneralizedNormalDistribution.
+        """
+        return cls(shape=beta, loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x):
+        return sym_gen_normal_pdf_(x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale,
                                    normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return gen_sym_normal_cdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, shape=self.shape,
+    def cdf(self, x):
+        return sym_gen_normal_cdf_(x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale,
                                    normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
@@ -48,4 +133,4 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
                 'median': median_,
                 'mode': mode_,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': variance_**0.5}

@@ -1,8 +1,6 @@
 """Created on Aug 03 21:02:45 2024"""
 
-from typing import Dict
-
-import numpy as np
+from math import exp, log, inf
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import log_normal_cdf_, log_normal_pdf_
@@ -76,13 +74,17 @@ class LogNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1., mu: float = 0.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False):
+    def __init__(self, amplitude: float = 1., mu: float = 0.0, std: float = 1.0, loc: float = 0.0,
+                 normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif std <= 0:
             raise erH.NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
-        self.mu = np.log(mu)
+        try:
+            self.mu = log(mu)
+        except ValueError:
+            self.mu = -inf
         self.std = std
         self.loc = loc
 
@@ -109,22 +111,24 @@ class LogNormalDistribution(BaseDistribution):
         """
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm)
+    def pdf(self, x):
+        return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
+                               normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm)
+    def cdf(self, x):
+        return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
+                               normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self):
         m, s, l_ = self.mu, self.std, self.loc
 
-        mean_ = np.exp(m + (s**2 / 2)) + l_
-        median_ = np.exp(m) + l_
-        mode_ = np.exp(m - s**2) + l_
-        variance_ = (np.exp(s**2) - 1) * np.exp(2 * m + s**2)
+        mean_ = exp(m + (s**2 / 2)) + l_
+        median_ = exp(m) + l_
+        mode_ = exp(m - s**2) + l_
+        variance_ = (exp(s**2) - 1) * exp(2 * m + s**2)
 
         return {'mean': mean_,
                 'median': median_,
                 'mode': mode_,
                 'variance': variance_,
-                'std': np.sqrt(variance_)}
+                'std': variance_**0.5}
