@@ -85,6 +85,41 @@ def arc_sine_pdf_(x: np.ndarray,
 
 
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
+def arc_sine_log_pdf_(x: np.ndarray,
+                      amplitude: float = 1.0,
+                      loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
+    r"""
+    Compute logPDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
+
+    Notes
+    -----
+    The ArcSine logPDF is defined as:
+
+    .. math:: \ell(y) = -\ln(\pi)  - 0.5\ln(y-y^2)
+
+    where, :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
+    """
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / scale
+
+    log_pdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
+    mask_ = np.logical_and(y > 0, y < 1)
+
+    log_pdf_[mask_] = -np.log(np.pi) - 0.5 * np.log(y[mask_] - y[mask_]**2)
+
+    log_pdf_[y == 0] = np.inf
+    log_pdf_[y == 1] = np.inf
+
+    return _remove_nans(log_pdf_ - np.log(scale))
+
+
+@doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_cdf_(x: np.ndarray,
                   amplitude: float = 1.0,
                   loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
@@ -102,7 +137,7 @@ def arc_sine_cdf_(x: np.ndarray,
     -----
     The ArcSine CDF is defined as:
 
-    .. math:: F(x) = \frac{2}{\pi}\arcsin(\sqrt{y})
+    .. math:: F(y) = \left(\frac{2}{\pi}\right)\arcsin(\sqrt{y})
 
     where :math:`y` is the transformed value of :math:`x`, defined as:
 
@@ -121,28 +156,25 @@ def arc_sine_cdf_(x: np.ndarray,
     return _remove_nans(cdf_)
 
 
-def arc_sine_log_pdf_(x: np.ndarray,
-                      amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
-                      normalize: bool = False):
-    if x.size == 0:
-        return np.array([])
-
-    y = (x - loc) / scale
-
-    log_pdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
-    mask_ = np.logical_and(y > 0, y < 1)
-
-    log_pdf_[mask_] = -np.log(np.pi) - 0.5 * np.log(y[mask_] - y[mask_]**2)
-
-    log_pdf_[y == 0] = np.inf
-    log_pdf_[y == 1] = np.inf
-
-    return _remove_nans(log_pdf_ - np.log(scale))
-
-
+@doc_inherit(parent=arc_sine_cdf_, style=doc_style)
 def arc_sine_log_cdf_(x: np.array,
                       amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                       normalize: bool = False):
+    r"""
+    Compute log CDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
+
+    Notes
+    -----
+    The ArcSine log CDF is defined as:
+
+    .. math:: \mathcal{L}(y) = \ln\left(\frac{2}{\pi}\right) + \ln\arcsin(\sqrt{y})
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
+
+    The final logCDF is expressed as :math:`\mathcal{L}(y)`.
+    """
     if x.size == 0:
         return np.array([])
 
