@@ -103,11 +103,12 @@ Other functions
    GammaDistributionSR      <gamma_sr_d>
    GammaDistributionSS      <gamma_ss_d>
    GaussianDistribution     <gaussian_d>
-   SymGeneralizedNormalDistribution <genNorm_d>
    HalfNormalDistribution   <halfNormal_d>
    LaplaceDistribution      <laplace_d>
    LogNormalDistribution    <logNormal_d>
+   ScaledInverseChiSquareDistribution <scaledInvChiSquare_d>
    SkewNormalDistribution   <skewNormal_d>
+   SymGeneralizedNormalDistribution <genNorm_d>
    UniformDistribution      <uniform_d>
    DistributionUtilities    <utilities_d>
    OtherFunctions           <others>

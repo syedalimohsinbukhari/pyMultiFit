@@ -13,6 +13,8 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'half_normal_pdf_', 'half_normal_cdf_',
            'laplace_pdf_', 'laplace_cdf_',
            'log_normal_pdf_', 'log_normal_cdf_',
+           'scaled_inv_chi_square_pdf_', 'scaled_inv_chi_square_log_pdf_',
+           'scaled_inv_chi_square_cdf_', 'scaled_inv_chi_square_log_cdf_',
            'skew_normal_pdf_', 'skew_normal_cdf_',
            'uniform_pdf_', 'uniform_cdf_']
 
@@ -20,7 +22,7 @@ from typing import Union
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t
+from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t, gammaincc
 
 from .. import doc_style
 
@@ -1162,6 +1164,149 @@ def uniform_cdf_(x: np.ndarray,
     return cdf_values
 
 
+def scaled_inv_chi_square_pdf_(x, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0,
+                               loc: float = 0.0, normalize: bool = False):
+    r"""
+    Compute PDF of :class:`~pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    amplitude : float, optional
+        The amplitude of the PDF.
+        Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    df : float, optional
+        The degree of freedom.
+        Defaults to 1.0.
+    scale: float, optional
+        The scale parameter, for scaling.
+        Defaults to 1.0,
+    loc : float, optional
+        The location parameter, for shifting.
+        Defaults to 0.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Scaled Inverse ChiSquare PDF is defined as:
+
+    .. math:: f(y\ | \nu,\phi) = \dfrac{\tau^2\nu_2}{\Gamma(\nu_2)}\dfrac{1}{y^{1+\nu_2}}\exp\left[-\dfrac{\nu\tau^2}{2y}\right]
+
+    where :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}` and :math:`y` is the transformed
+    value of :math:`x`, defined as:
+
+    .. math:: y = x - \text{loc}
+
+    The final PDF is expressed as :math:`f(y)`.
+    """
+    if x.size == 0:
+        return np.array([])
+
+    tau2 = scale / df
+    df_half = df / 2
+
+    y = x - loc
+
+    pdf_ = np.zeros_like(a=y, dtype=float)
+    mask = y > 0
+
+    frac1 = np.power(tau2 * df_half, df_half) / gamma(df_half)
+    if np.any(mask):
+        y_valid = y[mask]
+        frac2 = np.exp(-(df * tau2) / (2 * y_valid)) / np.power(y_valid, 1 + df_half)
+
+        pdf_[mask] = frac1 * frac2
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
+
+
+@doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
+def scaled_inv_chi_square_log_pdf_(x: np.ndarray, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0,
+                                   loc: float = 0.0, normalize: bool = False):
+    r"""
+    Compute logPDF of :class:`~pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`.
+
+    Notes
+    -----
+    The Scaled Inverse ChiSquare PDF is defined as:
+
+    .. math:: \ell(y) = \ln(\tau^2\nu_2) - \ln\Gamma(\nu_2) - (1+\nu_2)\ln(\nu) - \dfrac{\nu\tau^2}{2y}
+
+    where :math:`\ln` is the natural logarithm, :math:`\ln\Gamma(\cdot)` is the :obj:`~scipy.special.gammaln` function,
+    :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}` and :math:`y` is the transformed value of
+    :math:`x`, defined as:
+
+    .. math:: y = x - \text{loc}
+
+    The final PDF is expressed as :math:`\ell(y)`.
+    """
+    if x.size == 0:
+        return np.array([])
+
+    tau2 = scale / df
+    df_half = df / 2
+
+    y = x - loc
+
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    mask_ = y > 0
+
+    frac1 = df_half * np.log(tau2 * df_half) - gammaln(df_half)
+    if np.any(mask_):
+        y_valid = y[mask_]
+        frac2 = -(tau2 * df) / (2 * y_valid) - (1 + df_half) * np.log(y_valid)
+
+        log_pdf_[mask_] = frac1 + frac2
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_
+
+
+def scaled_inv_chi_square_cdf_(x, amplitude, df, scale, loc: float = 0.0,
+                               normalize: bool = False):
+    if x.size == 0:
+        return np.array([])
+
+    tau2 = scale / df
+    df_half = df / 2
+
+    y = x - loc
+    cdf_ = np.zeros_like(a=y, dtype=float)
+    mask_ = y > 0
+    cdf_[mask_] = gammaincc(df_half, (tau2 * df_half) / y[mask_])
+
+    return cdf_
+
+
+def scaled_inv_chi_square_log_cdf_(x, amplitude, df, scale, loc, normalize=False):
+    if x.size == 0:
+        return np.array([])
+
+    tau2 = scale / df
+    df_half = df / 2
+
+    y = x - loc
+    log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    mask_ = y > 0
+    log_cdf_[mask_] = np.log(gammaincc(df_half, (tau2 * df_half) / y[mask_]))
+
+    return log_cdf_
+
+
 def skew_normal_pdf_(x: np.ndarray,
                      amplitude: float = 1.0, shape: float = 0.0, loc: float = 0.0, scale: float = 1.0,
                      normalize: bool = False) -> np.ndarray:
@@ -1405,6 +1550,11 @@ def _pdf_scaling(pdf_: np.ndarray, amplitude: float) -> np.ndarray:
         The scaled PDF array.
     """
     return amplitude * (pdf_ / np.max(pdf_))
+
+
+def _log_pdf_scaling(log_pdf_: np.ndarray, amplitude: float) -> np.ndarray:
+    scaling = log_pdf_ - np.max(log_pdf_)
+    return np.log(amplitude) + scaling
 
 
 def _remove_nans(x: np.ndarray) -> np.ndarray:

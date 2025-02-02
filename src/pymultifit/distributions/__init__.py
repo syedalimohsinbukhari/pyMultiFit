@@ -14,6 +14,7 @@ from .halfNormal_d import HalfNormalDistribution
 from .laplace_d import LaplaceDistribution
 from .logNormal_d import LogNormalDistribution
 from .others import Line
+from .scaledInvChiSquare_d import ScaledInverseChiSquareDistribution
 from .skewNormal_d import SkewNormalDistribution
 from .uniform_d import UniformDistribution
 

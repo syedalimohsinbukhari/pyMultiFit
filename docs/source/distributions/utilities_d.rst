@@ -31,6 +31,10 @@ Available for user
 .. autofunction:: laplace_cdf_
 .. autofunction:: log_normal_pdf_
 .. autofunction:: log_normal_cdf_
+.. autofunction:: scaled_inv_chi_square_pdf_
+.. autofunction:: scaled_inv_chi_square_log_pdf_
+.. autofunction:: scaled_inv_chi_square_cdf_
+.. autofunction:: scaled_inv_chi_square_log_cdf_
 .. autofunction:: skew_normal_pdf_
 .. autofunction:: skew_normal_cdf_
 .. autofunction:: sym_gen_normal_pdf_
