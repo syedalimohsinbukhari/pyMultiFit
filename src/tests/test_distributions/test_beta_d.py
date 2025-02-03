@@ -48,4 +48,4 @@ class TestBetaDistribution:
     @staticmethod
     def test_pdfs():
         value_functions(custom_distribution=BetaDistribution.scipy_like, scipy_distribution=beta,
-                        parameters=[shape_parameter, shape_parameter, loc_parameter, scale_parameter])
+                        parameters=[shape_parameter, shape_parameter, loc_parameter, scale_parameter], log_check=True)

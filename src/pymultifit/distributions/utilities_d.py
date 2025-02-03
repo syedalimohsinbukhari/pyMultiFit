@@ -2,7 +2,7 @@
 
 __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_log_pdf_', 'arc_sine_log_cdf_',
-           'beta_pdf_', 'beta_cdf_',
+           'beta_pdf_', 'beta_cdf_', 'beta_log_pdf_', 'beta_log_cdf_',
            'chi_square_pdf_', 'chi_square_cdf_',
            'exponential_pdf_', 'exponential_cdf_',
            'folded_normal_pdf_', 'folded_normal_cdf_',
@@ -239,9 +239,6 @@ def beta_pdf_(x: np.ndarray,
     if x.size == 0:
         return np.array([])
 
-    if scale < 0:
-        return np.full(shape=x.shape, fill_value=np.nan)
-
     y = (x - loc) / scale
     pdf_ = np.zeros_like(a=y, dtype=float)
 
@@ -269,35 +266,51 @@ def beta_pdf_(x: np.ndarray,
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
-def beta_logpdf_(x: np.ndarray,
+def beta_log_pdf_(x: np.ndarray,
                  amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
                  loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
-    r"""Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`."""
+    r"""Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
+
+    Notes
+    -----
+    The Beta logPDFis defined as
+
+    .. math:: \ell(y) = (\alpha - 1)\ln(y) + (\beta - 1)\ln(1 - y) - \ln(\text{Beta}(\alpha, \beta))
+
+    where :math:`B(\alpha, \beta)` is the :obj:`~scipy.special.beta` function, and :math:`y` is the
+    transformed value of :math:`x` such that:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
+    """
     if x.size == 0:
         return np.array([])
 
     y = (x - loc) / scale
-    mask_ = _beta_masking(y=y, alpha=alpha, beta=beta)
 
     logpdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
-    log_numerator = (alpha - 1) * np.log(y) + (beta - 1) * np.log(1 - y)
+    mask_ = ~_beta_masking(y=y, alpha=alpha, beta=beta)
 
-    if normalize:
-        log_normalization = gammaln(alpha) + gammaln(beta) - gammaln(alpha + beta)
-        amplitude = 1.0
-    else:
-        log_normalization = 0.0
+    log_numerator = np.zeros_like(a=y, dtype=float)
+    log_numerator[mask_] = (alpha - 1) * np.log(y[mask_]) + (beta - 1) * np.log(1 - y[mask_])
+    normalization_factor = gammaln(alpha) + gammaln(beta) - gammaln(alpha + beta)
 
-    logpdf_[~mask_] = np.log(amplitude) + log_numerator[~mask_] - log_normalization
+    logpdf_[mask_] = log_numerator[mask_] - normalization_factor
 
     if alpha <= 1:
-        logpdf_[y == 0] = np.inf
+        logpdf_[y == 0] = np.nan
     if beta <= 1:
-        logpdf_[y == 1] = np.inf
+        logpdf_[y == 1] = np.nan
     if alpha == 1 and beta == 1:
         logpdf_[y == 1] = np.log(1)
 
-    return logpdf_ - np.log(scale)
+    if not normalize:
+        logpdf_ = _log_pdf_scaling(log_pdf_=logpdf_, amplitude=amplitude)
+
+    # handle the cases where nans can occur with nan_to_num
+    # np.inf and -np.inf to not affect the infinite values
+    return _remove_nans(logpdf_ - np.log(scale))
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
@@ -320,9 +333,14 @@ def beta_cdf_(x: np.ndarray,
     -----
     The Beta CDF is defined as:
 
-    .. math:: I_x(\alpha, \beta)
+    .. math:: I_y(\alpha, \beta)
 
-    where :math:`I_x(\alpha, \beta)` is the regularized incomplete Beta function, see :obj:`~scipy.special.betainc`.
+    where :math:`I_y(\alpha, \beta)` is the :obj:`~scipy.special.betainc` function, and :math:`y` is the transformed
+     value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final CDF is expressed as :math:`F(y)`.
     """
     if x.size == 0:
         return np.array([])
@@ -338,6 +356,39 @@ def beta_cdf_(x: np.ndarray,
     cdf_[y >= 1] = 1
 
     return cdf_
+
+
+@doc_inherit(parent=beta_cdf_, style=doc_style)
+def beta_log_cdf_(x: np.ndarray,
+                  amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
+                  loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
+    r"""
+    Compute logCDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
+
+    Notes
+    -----
+    The Beta logCDF is defined as:
+
+    .. math:: \mathcal{L}(y) = \ln\left[I_y(\alpha, \beta)\right]
+
+    where :math:`I_y(\alpha, \beta)` is the :obj:`~scipy.special.betainc` function, and :math:`y` is the transformed
+    value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final logCDF is expressed as :math:`\mathcal{L}(y)`.
+    """
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / scale
+    logcdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
+
+    mask_ = np.logical_and(y > 0, y < 1)
+    logcdf_[mask_] = np.log(betainc(alpha, beta, y[mask_]))
+    logcdf_[y >= 1] = np.log(1)
+
+    return logcdf_
 
 
 def chi_square_pdf_(x: np.ndarray,

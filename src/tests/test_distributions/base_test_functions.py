@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from pymultifit import EPSILON
+from ...pymultifit import EPSILON
 
 loc_parameter = np.random.uniform(low=-500, high=500, size=1000)
 scale_parameter = np.random.uniform(low=EPSILON, high=500, size=1000)
@@ -59,7 +59,7 @@ def stats(custom_distribution, scipy_distribution, parameters, mean_variance=Tru
                    parameters=stack, mean_variance=mean_variance, median=median)
 
 
-def value_functions(custom_distribution, scipy_distribution, parameters, n_values=10):
+def value_functions(custom_distribution, scipy_distribution, parameters, n_values=10, log_check=False):
     x = np.linspace(start=-100, stop=100, num=n_values)
     x = np.concatenate([x, np.array([0, 1])])
     x.sort()
@@ -68,7 +68,7 @@ def value_functions(custom_distribution, scipy_distribution, parameters, n_value
 
     for params in stack_:
         scaled_distributions(custom_distribution=custom_distribution, scipy_distribution=scipy_distribution,
-                             x=x, parameters=params)
+                             x=x, parameters=params, log_check=log_check)
 
 
 def two_parameter_extreme_test(custom_distribution, scipy_distribution, log_check=False):

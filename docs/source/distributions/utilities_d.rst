@@ -16,7 +16,9 @@ Available for user
 .. autofunction:: arc_sine_cdf_
 .. autofunction:: arc_sine_log_cdf_
 .. autofunction:: beta_pdf_
+.. autofunction:: beta_log_pdf_
 .. autofunction:: beta_cdf_
+.. autofunction:: beta_log_cdf_
 .. autofunction:: chi_square_pdf_
 .. autofunction:: exponential_pdf_
 .. autofunction:: exponential_cdf_

@@ -30,4 +30,4 @@ class TestArcSineDistribution:
     @staticmethod
     def test_pdfs():
         value_functions(custom_distribution=ArcSineDistribution.scipy_like, scipy_distribution=arcsine,
-                        parameters=[loc_parameter, scale_parameter])
+                        parameters=[loc_parameter, scale_parameter], log_check=True)
