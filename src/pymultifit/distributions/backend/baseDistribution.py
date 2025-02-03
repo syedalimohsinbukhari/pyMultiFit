@@ -1,10 +1,8 @@
 """Created on Aug 03 22:06:29 2024"""
 
-from typing import Dict, Union
+from typing import Dict
 
-import numpy as np
-
-fArray = Union[float, np.ndarray]
+from ... import fArray
 
 
 class BaseDistribution:

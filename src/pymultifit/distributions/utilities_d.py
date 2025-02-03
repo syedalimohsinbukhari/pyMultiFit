@@ -24,7 +24,7 @@ import numpy as np
 from custom_inherit import doc_inherit
 from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t, gammaincc
 
-from .. import doc_style
+from .. import fArray, doc_style
 
 
 def arc_sine_pdf_(x: np.ndarray,
@@ -527,7 +527,7 @@ def chi_square_log_cdf_(x: np.ndarray,
 
 
 def exponential_pdf_(x: np.ndarray,
-                     amplitude: float = 1., lambda_: float = 1., loc: float = 0.0,
+                     amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0,
                      normalize: bool = False) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
@@ -594,6 +594,28 @@ def exponential_pdf_(x: np.ndarray,
     return pdf_.item() if scalar_input else pdf_
 
 
+def exponential_log_pdf_(x: fArray,
+                         amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0,
+                         normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    y = x - loc
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    mask_ = y >= 0
+    if np.any(mask_):
+        y_valid = y[mask_]
+        log_pdf_[mask_] = np.log(lambda_) - (lambda_ * y_valid)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
+
+
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_cdf_(x: np.ndarray,
                      amplitude: float = 1., scale: float = 1., loc: float = 0.0,
@@ -630,6 +652,23 @@ def exponential_cdf_(x: np.ndarray,
     cdf_[mask_] = 1 - np.exp(-scale * y[mask_])
 
     return cdf_.item() if scalar_input else cdf_
+
+
+def exponential_log_cdf_(x: fArray,
+                         amplitude: float = 1., lambda_: float = 1.0, loc: float = 0.0,
+                         normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+    if x.size == 0:
+        return np.array([])
+    y = x - loc
+    log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    mask_ = y >= 0
+    if np.any(mask_):
+        y_valid = y[mask_]
+        log_cdf_[mask_] = np.log1p(-np.exp(-lambda_ * y_valid))
+
+    return log_cdf_.item() if scalar_input else log_cdf_
 
 
 def folded_normal_pdf_(x: np.ndarray,

@@ -31,7 +31,7 @@ class TestChiSquareDistribution:
 
     @staticmethod
     def test_edge_cases():
-        btf.edge_cases(ChiSquareDistribution(), log_check=True)
+        btf.edge_cases(distribution=ChiSquareDistribution(), log_check=True)
 
     @staticmethod
     def test_stats():

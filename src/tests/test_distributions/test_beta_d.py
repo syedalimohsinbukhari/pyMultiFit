@@ -37,7 +37,7 @@ class TestBetaDistribution:
 
     @staticmethod
     def test_edge_cases():
-        btf.edge_cases(BetaDistribution(), log_check=True)
+        btf.edge_cases(distribution=BetaDistribution(), log_check=True)
 
     @staticmethod
     def test_stats():
