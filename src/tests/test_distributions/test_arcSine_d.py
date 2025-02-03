@@ -20,7 +20,7 @@ class TestArcSineDistribution:
 
     @staticmethod
     def test_edge_cases():
-        btf.edge_cases(ArcSineDistribution())
+        btf.edge_cases(distribution=ArcSineDistribution(), log_check=True)
 
     @staticmethod
     def test_stats():
