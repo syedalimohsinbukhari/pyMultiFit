@@ -1,9 +1,8 @@
 """Created on Dec 14 06:55:53 2024"""
-
 import pytest
 from scipy.stats import beta
 
-from .base_test_functions import edge_cases, scale_parameter, value_functions, loc_parameter, stats, shape_parameter
+from . import base_test_functions as btf
 from ...pymultifit.distributions import BetaDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
@@ -38,14 +37,22 @@ class TestBetaDistribution:
 
     @staticmethod
     def test_edge_cases():
-        edge_cases(BetaDistribution())
+        btf.edge_cases(BetaDistribution())
 
     @staticmethod
     def test_stats():
-        stats(custom_distribution=BetaDistribution.scipy_like,
-              scipy_distribution=beta, parameters=[shape_parameter, shape_parameter, loc_parameter, scale_parameter])
+        btf.stats(custom_distribution=BetaDistribution.scipy_like,
+                  scipy_distribution=beta,
+                  parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter, btf.scale_parameter])
 
     @staticmethod
     def test_pdfs():
-        value_functions(custom_distribution=BetaDistribution.scipy_like, scipy_distribution=beta,
-                        parameters=[shape_parameter, shape_parameter, loc_parameter, scale_parameter], log_check=True)
+        btf.value_functions(custom_distribution=BetaDistribution.scipy_like, scipy_distribution=beta,
+                            parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter,
+                                        btf.scale_parameter], log_check=True)
+
+    @staticmethod
+    def test_single_values():
+        btf.single_input_n_variables(custom_distribution=BetaDistribution.scipy_like, scipy_distribution=beta,
+                                     parameters=[btf.shape_parameter, btf.shape_parameter,
+                                                 btf.loc_parameter, btf.scale_parameter], log_check=True)

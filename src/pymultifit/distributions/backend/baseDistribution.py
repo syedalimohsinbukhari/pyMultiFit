@@ -1,8 +1,10 @@
 """Created on Aug 03 22:06:29 2024"""
 
-from typing import Dict
+from typing import Dict, Union
 
 import numpy as np
+
+fArray = Union[float, np.ndarray]
 
 
 class BaseDistribution:
@@ -13,7 +15,7 @@ class BaseDistribution:
     for probability density function (PDF), cumulative distribution function (CDF), and statistics.
     """
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: fArray) -> fArray:
         r"""
         Compute the probability density function (PDF) for the distribution.
 
@@ -21,7 +23,7 @@ class BaseDistribution:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def logpdf(self, x: np.array) -> np.ndarray:
+    def logpdf(self, x: fArray) -> fArray:
         r"""
         Compute the log probability density function (logPDF) for the distribution.
 
@@ -29,7 +31,7 @@ class BaseDistribution:
         """
         pass
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: fArray) -> fArray:
         """
         Compute the cumulative density function (CDF) for the distribution.
 
@@ -37,7 +39,7 @@ class BaseDistribution:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def logcdf(self, x: np.array) -> np.ndarray:
+    def logcdf(self, x: fArray) -> fArray:
         r"""
         Compute the log cumulative density function (logCDF) for the distribution.
 

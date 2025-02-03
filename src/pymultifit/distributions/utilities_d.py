@@ -116,7 +116,7 @@ def arc_sine_log_pdf_(x: np.ndarray,
     log_pdf_[y == 0] = np.inf
     log_pdf_[y == 1] = np.inf
 
-    return _remove_nans(log_pdf_ - np.log(scale))
+    return log_pdf_ - np.log(scale)
 
 
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
@@ -186,7 +186,7 @@ def arc_sine_log_cdf_(x: np.array,
     log_cdf_[mask_] = np.log(2 / np.pi) + np.log(np.arcsin(np.sqrt(y[mask_])))
     log_cdf_[y >= 1] = np.log(1)
 
-    return _remove_nans(log_cdf_)
+    return log_cdf_
 
 
 def beta_pdf_(x: np.ndarray,
@@ -236,6 +236,9 @@ def beta_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -262,13 +265,14 @@ def beta_pdf_(x: np.ndarray,
 
     # handle the cases where nans can occur with nan_to_num
     # np.inf and -np.inf to not affect the infinite values
-    return _remove_nans(pdf_ / scale)
+    pdf_ = _remove_nans(pdf_ / scale)
+    return pdf_.item() if scalar_input else pdf_
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_log_pdf_(x: np.ndarray,
-                 amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
-                 loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
+                  amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
+                  loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
     r"""Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
     Notes
@@ -284,33 +288,38 @@ def beta_log_pdf_(x: np.ndarray,
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
     y = (x - loc) / scale
 
-    logpdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
+    log_pdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
     mask_ = ~_beta_masking(y=y, alpha=alpha, beta=beta)
 
     log_numerator = np.zeros_like(a=y, dtype=float)
     log_numerator[mask_] = (alpha - 1) * np.log(y[mask_]) + (beta - 1) * np.log(1 - y[mask_])
     normalization_factor = gammaln(alpha) + gammaln(beta) - gammaln(alpha + beta)
 
-    logpdf_[mask_] = log_numerator[mask_] - normalization_factor
+    log_pdf_[mask_] = log_numerator[mask_] - normalization_factor
 
     if alpha <= 1:
-        logpdf_[y == 0] = np.nan
+        log_pdf_[y == 0] = np.nan
     if beta <= 1:
-        logpdf_[y == 1] = np.nan
+        log_pdf_[y == 1] = np.nan
     if alpha == 1 and beta == 1:
-        logpdf_[y == 1] = np.log(1)
+        log_pdf_[y == 1] = np.log(1)
 
     if not normalize:
-        logpdf_ = _log_pdf_scaling(log_pdf_=logpdf_, amplitude=amplitude)
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     # handle the cases where nans can occur with nan_to_num
     # np.inf and -np.inf to not affect the infinite values
-    return _remove_nans(logpdf_ - np.log(scale))
+    log_pdf_ -= np.log(scale)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
@@ -342,6 +351,9 @@ def beta_cdf_(x: np.ndarray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -355,7 +367,9 @@ def beta_cdf_(x: np.ndarray,
     cdf_[mask_] = betainc(alpha, beta, y[mask_])
     cdf_[y >= 1] = 1
 
-    return cdf_
+    cdf_ = _remove_nans(cdf_)
+
+    return cdf_.item() if scalar_input else cdf_
 
 
 @doc_inherit(parent=beta_cdf_, style=doc_style)
@@ -378,17 +392,20 @@ def beta_log_cdf_(x: np.ndarray,
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
     y = (x - loc) / scale
-    logcdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
+    log_cdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
 
     mask_ = np.logical_and(y > 0, y < 1)
-    logcdf_[mask_] = np.log(betainc(alpha, beta, y[mask_]))
-    logcdf_[y >= 1] = np.log(1)
+    log_cdf_[mask_] = np.log(betainc(alpha, beta, y[mask_]))
+    log_cdf_[y >= 1] = np.log(1)
 
-    return logcdf_
+    return log_cdf_.item() if scalar_input else log_cdf_
 
 
 def chi_square_pdf_(x: np.ndarray,
@@ -435,13 +452,37 @@ def chi_square_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y = (x - loc) / scale
-    pdf_ = np.zeros_like(a=x, dtype=float)
-    mask_ = y > 0
-    pdf_[mask_] = gamma_sr_pdf_(x=y[mask_], amplitude=amplitude, alpha=degree_of_freedom / 2, lambda_=0.5, loc=0,
-                                normalize=normalize)
+    # adapted from scipy as they also take exponentiation of logpdf for chi2 distribution
+    log_pdf_ = chi_square_log_pdf_(x, amplitude=amplitude, degree_of_freedom=degree_of_freedom, loc=loc, scale=scale,
+                                   normalize=normalize)
+    return np.exp(log_pdf_)
 
-    return pdf_ / scale
+
+def chi_square_log_pdf_(x: np.ndarray,
+                        amplitude: float = 1.0, degree_of_freedom: Union[int, float] = 1,
+                        loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / scale
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    mask_ = y > 0
+    if np.any(mask_):
+        y_valid = y[mask_]
+        df_half = degree_of_freedom / 2
+        numerator = (df_half - 1) * np.log(y_valid) - (y_valid / 2)
+        denominator = df_half * np.log(2) + gammaln(df_half)
+        log_pdf_[mask_] = numerator - denominator
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    log_pdf_ -= np.log(scale)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
 
 
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
@@ -464,11 +505,25 @@ def chi_square_cdf_(x: np.ndarray,
 
 
     """
+    log_cdf_ = chi_square_log_cdf_(x, amplitude=amplitude, degree_of_freedom=degree_of_freedom, loc=loc, scale=scale,
+                                   normalize=normalize)
+    return np.exp(log_cdf_)
+
+
+def chi_square_log_cdf_(x: np.ndarray,
+                        amplitude: float = 1.0, degree_of_freedom: Union[int, float] = 1,
+                        loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> np.ndarray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
     y = (x - loc) / scale
-    cdf_ = np.zeros_like(a=y, dtype=float)
+    log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
     mask_ = y >= 0
-    cdf_[mask_] = gammainc(degree_of_freedom / 2, y[mask_] / 2)
-    return cdf_
+    log_cdf_[mask_] = np.log(gammainc(degree_of_freedom / 2, y[mask_] / 2))
+    return log_cdf_.item() if scalar_input else log_cdf_
 
 
 def exponential_pdf_(x: np.ndarray,
@@ -520,7 +575,23 @@ def exponential_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    return gamma_sr_pdf_(x=x, amplitude=amplitude, alpha=1., lambda_=lambda_, loc=loc, normalize=normalize)
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    y = x - loc
+    pdf_ = np.zeros_like(a=y, dtype=float)
+    mask_ = y >= 0
+    if np.any(mask_):
+        y_valid = y[mask_]
+        pdf_[mask_] = lambda_ * np.exp(-lambda_ * y_valid)
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_.item() if scalar_input else pdf_
 
 
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
@@ -547,11 +618,18 @@ def exponential_cdf_(x: np.ndarray,
 
     .. math:: F(x) = 1 - \exp\left[-\lambda x\right].
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
     y = x - loc
-    pdf_ = np.zeros_like(a=y, dtype=float)
+    cdf_ = np.zeros_like(a=y, dtype=float)
     mask_ = y > 0
-    pdf_[mask_] = 1 - np.exp(-scale * y[mask_])
-    return pdf_
+    cdf_[mask_] = 1 - np.exp(-scale * y[mask_])
+
+    return cdf_.item() if scalar_input else cdf_
 
 
 def folded_normal_pdf_(x: np.ndarray,
@@ -1655,4 +1733,4 @@ def _remove_nans(x: np.ndarray) -> np.ndarray:
         Array with NaN replaced by 0, positive infinity replaced by `np.inf`, and negative
     infinity replaced by `-np.inf`.
     """
-    return np.nan_to_num(x=x, copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
+    return np.nan_to_num(x=np.asarray(x), copy=False, nan=0, posinf=np.inf, neginf=-np.inf)

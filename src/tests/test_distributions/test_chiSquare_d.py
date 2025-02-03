@@ -1,10 +1,9 @@
 """Created on Dec 14 12:49:44 2024"""
 
-import numpy as np
 import pytest
 from scipy.stats import chi2
 
-from ...pymultifit import EPSILON
+from . import base_test_functions as btf
 from ...pymultifit.distributions import ChiSquareDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
@@ -31,53 +30,21 @@ class TestChiSquareDistribution:
         assert distribution.amplitude == 1.0
 
     @staticmethod
-    def test_edge_case():
-        dist = ChiSquareDistribution()
-        x = np.array([])
-        result = dist.pdf(x)
-        assert result.size == 0  # Should return an empty array
+    def test_edge_cases():
+        btf.edge_cases(ChiSquareDistribution())
 
     @staticmethod
     def test_stats():
-        df_ = np.random.randint(low=EPSILON, high=100, size=10)
-        loc_ = np.random.uniform(low=-5, high=10, size=10)
-        scale_ = np.random.uniform(low=EPSILON, high=10, size=10)
-        stack_ = np.column_stack([df_, loc_, scale_])
-
-        for df, loc, scale in stack_:
-            _distribution = ChiSquareDistribution.scipy_like(df=df, loc=loc, scale=scale)
-            d_stats = _distribution.stats()
-
-            # Scipy calculations
-            scipy_mean, scipy_variance = chi2.stats(df=df, loc=loc, scale=scale, moments='mv')
-            scipy_stddev = np.sqrt(scipy_variance)
-
-            # Assertions for mean and variance
-            np.testing.assert_allclose(actual=scipy_mean, desired=d_stats['mean'], rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(actual=scipy_variance, desired=d_stats['variance'], rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
-            assert d_stats['median'] is None
+        btf.stats(custom_distribution=ChiSquareDistribution.scipy_like, scipy_distribution=chi2,
+                  parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], median=False)
 
     @staticmethod
-    def test_pdf_cdf():
-        def _cdf_pdf_custom(x_, dist_, what='cdf'):
-            """Evaluate the CDF or PDF for the custom ChiSquareDistribution."""
-            return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
+    def test_pdfs():
+        btf.value_functions(custom_distribution=ChiSquareDistribution.scipy_like, scipy_distribution=chi2,
+                            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], log_check=True)
 
-        def _cdf_pdf_scipy(x_, degree_of_freedom, loc, scale, what='cdf'):
-            """Evaluate the CDF or PDF using scipy.stats.chi2."""
-            return [chi2.cdf(x_, df=degree_of_freedom, loc=loc, scale=scale) if what == 'cdf' else
-                    chi2.pdf(x_, df=degree_of_freedom, loc=loc, scale=scale)][0]
-
-        for i in ['pdf', 'cdf']:
-            for _ in range(100):
-                dof_ = np.random.randint(low=1, high=21)  # Degrees of freedom, always a positive integer
-                loc_ = np.random.uniform(low=-10, high=10)
-                scale_ = np.random.uniform(low=EPSILON, high=10)
-                x = np.linspace(start=EPSILON, stop=50.0, num=10)
-
-                distribution = ChiSquareDistribution(degree_of_freedom=dof_, loc=loc_, scale=scale_, normalize=True)
-                expected = _cdf_pdf_scipy(x_=x, degree_of_freedom=dof_, loc=loc_, scale=scale_, what=i)
-                actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=i)
-
-                np.testing.assert_allclose(actual=actual, desired=expected, rtol=1e-5, atol=1e-8)
+    @staticmethod
+    def test_single_values():
+        btf.single_input_n_variables(custom_distribution=ChiSquareDistribution.scipy_like, scipy_distribution=chi2,
+                                     parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+                                     log_check=True)

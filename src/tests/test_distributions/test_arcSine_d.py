@@ -3,7 +3,7 @@
 import pytest
 from scipy.stats import arcsine
 
-from .base_test_functions import edge_cases, scale_parameter, value_functions, loc_parameter, stats
+from . import base_test_functions as btf
 from ...pymultifit.distributions.arcSine_d import ArcSineDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
@@ -20,14 +20,19 @@ class TestArcSineDistribution:
 
     @staticmethod
     def test_edge_cases():
-        edge_cases(ArcSineDistribution())
+        btf.edge_cases(ArcSineDistribution())
 
     @staticmethod
     def test_stats():
-        stats(custom_distribution=ArcSineDistribution.scipy_like,
-              scipy_distribution=arcsine, parameters=[loc_parameter, scale_parameter])
+        btf.stats(custom_distribution=ArcSineDistribution.scipy_like,
+                  scipy_distribution=arcsine, parameters=[btf.loc_parameter, btf.scale_parameter])
 
     @staticmethod
     def test_pdfs():
-        value_functions(custom_distribution=ArcSineDistribution.scipy_like, scipy_distribution=arcsine,
-                        parameters=[loc_parameter, scale_parameter], log_check=True)
+        btf.value_functions(custom_distribution=ArcSineDistribution.scipy_like, scipy_distribution=arcsine,
+                            parameters=[btf.loc_parameter, btf.scale_parameter], log_check=True)
+
+    @staticmethod
+    def test_single_values():
+        btf.single_input_n_variables(custom_distribution=ArcSineDistribution.scipy_like, scipy_distribution=arcsine,
+                                     parameters=[btf.loc_parameter, btf.scale_parameter], log_check=True)

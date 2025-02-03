@@ -96,3 +96,20 @@ def two_parameter_extreme_test(custom_distribution, scipy_distribution, log_chec
 
             np.testing.assert_allclose(actual=dist_.logpdf(x_), desired=scipy_logpdf, rtol=1e-5, atol=1e-8)
             np.testing.assert_allclose(actual=dist_.logcdf(x_), desired=scipy_logcdf, rtol=1e-5, atol=1e-8)
+
+
+def single_input_n_variables(custom_distribution, scipy_distribution, parameters, n_size=1_000, log_check=False):
+    rand_ = np.random.uniform(low=0, high=1, size=n_size)
+
+    parameters = np.array(object=parameters, dtype=object)
+    param_array = np.column_stack(parameters)
+
+    for value, pars in zip(rand_, param_array):
+        p1 = scipy_distribution(*pars)
+        p2 = custom_distribution(*pars)
+
+        np.testing.assert_allclose(actual=p1.pdf(value), desired=p2.pdf(value), rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(actual=p1.cdf(value), desired=p2.cdf(value), rtol=1e-5, atol=1e-8)
+        if log_check:
+            np.testing.assert_allclose(actual=p1.logpdf(value), desired=p2.logpdf(value), rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=p1.logcdf(value), desired=p2.logcdf(value), rtol=1e-5, atol=1e-8)
