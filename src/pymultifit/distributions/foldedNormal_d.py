@@ -3,7 +3,7 @@
 from math import pi, exp, erf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import folded_normal_cdf_, folded_normal_pdf_
+from .utilities_d import folded_normal_cdf_, folded_normal_pdf_, folded_normal_log_pdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):
@@ -113,6 +113,10 @@ class FoldedNormalDistribution(BaseDistribution):
     def pdf(self, x):
         return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
+
+    def logpdf(self, x):
+        return folded_normal_log_pdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
+                                      normalize=self.norm)
 
     def cdf(self, x):
         return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,

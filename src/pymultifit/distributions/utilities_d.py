@@ -266,6 +266,7 @@ def beta_pdf_(x: np.ndarray,
     # handle the cases where nans can occur with nan_to_num
     # np.inf and -np.inf to not affect the infinite values
     pdf_ = _remove_nans(pdf_ / scale)
+
     return pdf_.item() if scalar_input else pdf_
 
 
@@ -659,8 +660,10 @@ def exponential_log_cdf_(x: fArray,
                          normalize: bool = False) -> fArray:
     x = np.asarray(a=x, dtype=float)
     scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
+
     y = x - loc
     log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
     mask_ = y >= 0
@@ -715,6 +718,9 @@ def folded_normal_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)/\sigma`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -723,7 +729,36 @@ def folded_normal_pdf_(x: np.ndarray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_ / sigma
+    pdf_ = _remove_nans(pdf_ / sigma)
+
+    return pdf_.item() if scalar_input else pdf_
+
+
+def folded_normal_log_pdf_(x: fArray,
+                           amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1.0,
+                           loc: float = 0.0, normalize: bool = False):
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / sigma
+
+    mask_ = y >= 0
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    if np.any(mask_):
+        y_valid = y[mask_]
+        f1 = -0.5 * np.log(2 * np.pi)
+        f2 = np.log(np.exp(-0.5 * (y_valid - mean)**2) + np.exp(-0.5 * (y_valid + mean)**2))
+        log_pdf_[mask_] = f1 + f2
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    log_pdf_ -= np.log(sigma)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
 
 
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
@@ -758,6 +793,13 @@ def folded_normal_cdf_(x: np.ndarray,
     mask_, cdf_ = _folded(x=x, mean=mean, sigma=sigma, loc=loc, g_func=gaussian_cdf_)
     cdf_[mask_] -= 1
     return cdf_
+
+
+def folded_normal_log_cdf_(x: fArray,
+                           amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1.0,
+                           loc: float = 0.0, normalize: bool = False) -> fArray:
+    if x.size == 0:
+        return np.array([])
 
 
 def gamma_sr_pdf_(x: np.ndarray,
