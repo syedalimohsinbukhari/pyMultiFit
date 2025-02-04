@@ -108,7 +108,7 @@ def two_parameter_extreme_test(custom_distribution, scipy_distribution, log_chec
 
 
 def single_input_n_variables(custom_distribution, scipy_distribution, parameters, n_size=1_000, log_check=False,
-                             is_expon=True):
+                             is_expon=False):
     rand_ = np.random.uniform(low=0, high=1, size=n_size)
 
     parameters = np.array(object=parameters, dtype=object)
