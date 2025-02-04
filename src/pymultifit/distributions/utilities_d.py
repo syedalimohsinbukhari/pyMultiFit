@@ -3,8 +3,8 @@
 __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_log_pdf_', 'arc_sine_log_cdf_',
            'beta_pdf_', 'beta_cdf_', 'beta_log_pdf_', 'beta_log_cdf_',
-           'chi_square_pdf_', 'chi_square_cdf_',
-           'exponential_pdf_', 'exponential_cdf_',
+           'chi_square_pdf_', 'chi_square_cdf_', 'chi_square_log_pdf_', 'chi_square_log_cdf_',
+           'exponential_pdf_', 'exponential_cdf_', 'exponential_log_pdf_', 'exponential_log_cdf_',
            'folded_normal_pdf_', 'folded_normal_cdf_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_',
            'gamma_ss_pdf_',
@@ -618,7 +618,7 @@ def exponential_log_pdf_(x: fArray,
 
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_cdf_(x: np.ndarray,
-                     amplitude: float = 1., scale: float = 1., loc: float = 0.0,
+                     amplitude: float = 1., lambda_: float = 1., loc: float = 0.0,
                      normalize: bool = False) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
@@ -649,7 +649,7 @@ def exponential_cdf_(x: np.ndarray,
     y = x - loc
     cdf_ = np.zeros_like(a=y, dtype=float)
     mask_ = y > 0
-    cdf_[mask_] = 1 - np.exp(-scale * y[mask_])
+    cdf_[mask_] = 1 - np.exp(-lambda_ * y[mask_])
 
     return cdf_.item() if scalar_input else cdf_
 

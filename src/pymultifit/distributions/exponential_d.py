@@ -3,7 +3,7 @@
 from math import log
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import exponential_cdf_, exponential_pdf_
+from .utilities_d import exponential_cdf_, exponential_pdf_, exponential_log_pdf_, exponential_log_cdf_
 
 
 class ExponentialDistribution(BaseDistribution):
@@ -103,13 +103,23 @@ class ExponentialDistribution(BaseDistribution):
         ExponentialDistribution
             A instance of normalized ExponentialDistribution.
         """
-        return cls(loc=loc, scale=1 / scale, normalize=True)
+        return cls(loc=loc, scale=scale, normalize=True)
 
     def pdf(self, x):
-        return exponential_pdf_(x=x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
+        return exponential_pdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
+                                normalize=self.norm)
+
+    def logpdf(self, x):
+        return exponential_log_pdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
+                                    normalize=self.norm)
 
     def cdf(self, x):
-        return exponential_cdf_(x=x, amplitude=self.amplitude, scale=self.scale, loc=self.loc, normalize=self.norm)
+        return exponential_cdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
+                                normalize=self.norm)
+
+    def logcdf(self, x):
+        return exponential_log_cdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
+                                    normalize=self.norm)
 
     def stats(self):
         s, l_ = self.scale, self.loc
