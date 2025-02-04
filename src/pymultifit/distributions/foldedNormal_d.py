@@ -1,9 +1,9 @@
 """Created on Dec 04 03:42:42 2024"""
 
-from math import pi, exp, erf
+from math import erf, sqrt, exp, pi
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import folded_normal_cdf_, folded_normal_pdf_, folded_normal_log_pdf_
+from .utilities_d import folded_normal_cdf_, folded_normal_pdf_, folded_normal_log_pdf_, folded_normal_log_cdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):
@@ -122,17 +122,21 @@ class FoldedNormalDistribution(BaseDistribution):
         return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 
+    def logcdf(self, x):
+        return folded_normal_log_cdf_(x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
+                                      normalize=self.norm)
+
     def stats(self):
-        mean_, std_ = self.mean, self.sigma
+        mean_, std_ = self.mu, self.sigma
 
         sqrt_ = (2 / pi)**0.5
 
-        f1 = std_ * sqrt_ * exp(-0.5 * (mean_ / std_)**2)
-        f2 = mean_ * erf(mean_ / sqrt_)
+        f1 = sqrt_ * exp(-0.5 * mean_**2)
+        f2 = mean_ * erf(mean_ / sqrt(2))
 
         mu_y = f1 + f2
-        var_y = mean_**2 + std_**2 - mu_y**2
+        var_y = mean_**2 + 1 - mu_y**2
 
-        return {'mean': mu_y + self.loc,
-                'variance': var_y,
-                'std': var_y**0.5}
+        return {'mean': (std_ * mu_y) + self.loc,
+                'variance': var_y * std_**2,
+                'std': sqrt(var_y * std_**2)}

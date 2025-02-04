@@ -4,14 +4,14 @@ import numpy as np
 import pytest
 from scipy.stats import foldnorm
 
-from ...pymultifit import EPSILON
+from . import base_test_functions as btf
 from ...pymultifit.distributions import FoldedNormalDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
 
 np.random.seed(45)
 
 
-class TestFoldedNormalDistribution:
+class TestChiSquareDistribution:
 
     @staticmethod
     def test_initialization():
@@ -34,55 +34,22 @@ class TestFoldedNormalDistribution:
         assert distribution.amplitude == 1.0
 
     @staticmethod
-    def test_edge_case():
-        dist = FoldedNormalDistribution()
-        x = np.array([])
-        result = dist.pdf(x)
-        assert result.size == 0  # Should return an empty array
-
-    # @staticmethod
-    # def test_stats():
-    #     mean_values = np.linspace(start=EPSILON, stop=10, num=50)
-    #     loc_values = np.linspace(start=-10, stop=10, num=50)
-    #     sigma_values = np.linspace(start=EPSILON, stop=10, num=50)
-    #     stack_ = np.column_stack([mean_values, loc_values, sigma_values])
-    #
-    #     for mean_, loc_, scale_ in stack_:
-    #         # Custom distribution parameters
-    #         _distribution = FoldedNormalDistribution(mu=mean_, sigma=scale_, loc=loc_, normalize=True)
-    #         d_stats = _distribution.stats()
-    #
-    #         # Scipy calculations
-    #         scipy_mean, scipy_variance = foldnorm.stats(loc=loc_, c=mean_, scale=scale_, moments='mv')
-    #         scipy_median = foldnorm.median(c=mean_, loc=loc_, scale=scale_)
-    #         scipy_stddev = np.sqrt(scipy_variance)
-    #
-    #         # Assertions for mean and variance
-    #         np.testing.assert_allclose(desired=scipy_mean, actual=d_stats['mean'], rtol=1e-5, atol=1e-8)
-    #        np.testing.assert_allclose(desired=scipy_variance, actual=d_stats['variance'], rtol=1e-5, atol=1e-8)
-    #        np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
-    #        np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
+    def test_edge_cases():
+        btf.edge_cases(distribution=FoldedNormalDistribution(), log_check=True)
 
     @staticmethod
-    def test_pdf_cdf():
-        np.random.seed(43)
+    def test_stats():
+        btf.stats(custom_distribution=FoldedNormalDistribution.scipy_like, scipy_distribution=foldnorm,
+                  parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], median=False)
 
-        def _cdf_pdf_custom(x_, dist_, what='cdf'):
-            return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
+    @staticmethod
+    def test_pdfs():
+        btf.value_functions(custom_distribution=FoldedNormalDistribution.scipy_like, scipy_distribution=foldnorm,
+                            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], log_check=True)
 
-        def _cdf_pdf_scipy(x_, c_, loc_, scale_, what='cdf'):
-            return foldnorm.cdf(x_, c=c_, loc=loc_, scale=scale_) if what == 'cdf' else foldnorm.pdf(x_, c=c_, loc=loc_, scale=scale_)
-
-        for test_type in ['cdf']:
-            for _ in range(50):
-                shape = np.random.uniform(low=EPSILON, high=10)
-                std = np.random.uniform(low=EPSILON, high=10)
-                loc = np.random.uniform(low=-10, high=10)
-
-                x = np.linspace(-20, 20, 50)
-                distribution = FoldedNormalDistribution(mu=shape, sigma=std, loc=loc, normalize=True)
-
-                actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=test_type)
-                desired = _cdf_pdf_scipy(x_=x, c_=shape, loc_=loc, scale_=std, what=test_type)
-
-                np.testing.assert_allclose(actual=actual, desired=desired, rtol=1e-5, atol=1e-8)
+    @staticmethod
+    def test_single_values():
+        btf.single_input_n_variables(custom_distribution=FoldedNormalDistribution.scipy_like,
+                                     scipy_distribution=foldnorm,
+                                     parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+                                     log_check=True)

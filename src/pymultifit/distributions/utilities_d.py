@@ -743,20 +743,13 @@ def folded_normal_log_pdf_(x: fArray,
     if x.size == 0:
         return np.array([])
 
-    y = (x - loc) / sigma
-
-    mask_ = y >= 0
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    if np.any(mask_):
-        y_valid = y[mask_]
-        f1 = -0.5 * np.log(2 * np.pi)
-        f2 = np.log(np.exp(-0.5 * (y_valid - mean)**2) + np.exp(-0.5 * (y_valid + mean)**2))
-        log_pdf_[mask_] = f1 + f2
+    _, pdf_ = _folded(x=x, mean=mean, sigma=sigma, loc=loc, g_func=gaussian_pdf_)
+    log_pdf_ = np.log(pdf_)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    log_pdf_ -= np.log(sigma)
+    log_pdf_ = _remove_nans(log_pdf_ - np.log(sigma))
 
     return log_pdf_.item() if scalar_input else log_pdf_
 
@@ -787,19 +780,52 @@ def folded_normal_cdf_(x: np.ndarray,
 
     .. math:: y = \dfrac{x - \text{loc}}{\sigma}.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
     mask_, cdf_ = _folded(x=x, mean=mean, sigma=sigma, loc=loc, g_func=gaussian_cdf_)
     cdf_[mask_] -= 1
-    return cdf_
+    return cdf_.item() if scalar_input else cdf_
 
 
 def folded_normal_log_cdf_(x: fArray,
                            amplitude: float = 1.0, mean: float = 0.0, sigma: float = 1.0,
                            loc: float = 0.0, normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
+
+    y = (x - loc) / sigma
+    mask_ = y >= 0
+    log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+
+    if np.any(mask_):
+        y_valid = y[mask_]
+        q = y_valid + mean
+        r = y_valid - mean
+        log_cdf_[mask_] = -np.log(2) + np.log(erf(q / np.sqrt(2)) + erf(r / np.sqrt(2)))
+
+    return log_cdf_.item() if scalar_input else log_cdf_
+
+
+def _folded(x, mean, sigma, loc, g_func):
+    if sigma <= 0 or mean < 0:
+        return np.full(shape=x.size, fill_value=np.nan)
+
+    y = (x - loc) / sigma
+    temp_ = np.zeros_like(a=y, dtype=float)
+
+    mask = y >= 0
+    g1 = g_func(x=y[mask], mean=mean, normalize=True)
+    g2 = g_func(x=y[mask], mean=-mean, normalize=True)
+    temp_[mask] = g1 + g2
+
+    return mask, temp_
 
 
 def gamma_sr_pdf_(x: np.ndarray,
@@ -1760,21 +1786,6 @@ def _beta_masking(y: np.ndarray, alpha: float, beta: float) -> np.ndarray:
     return mask_
 
 
-def _folded(x, mean, sigma, loc, g_func):
-    if sigma <= 0 or mean < 0:
-        return np.full(shape=x.size, fill_value=np.nan)
-
-    y = (x - loc) / sigma
-    temp_ = np.zeros_like(a=y, dtype=float)
-
-    mask = y >= 0
-    g1 = g_func(x=y[mask], mean=mean, normalize=True)
-    g2 = g_func(x=y[mask], mean=-mean, normalize=True)
-    temp_[mask] = g1 + g2
-
-    return mask, temp_
-
-
 def _pdf_scaling(pdf_: np.ndarray, amplitude: float) -> np.ndarray:
     """
     Scales a probability density function (PDF) by a given amplitude.
@@ -1815,3 +1826,35 @@ def _remove_nans(x: np.ndarray) -> np.ndarray:
     infinity replaced by `-np.inf`.
     """
     return np.nan_to_num(x=np.asarray(x), copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
+
+
+import numpy as np
+
+
+def _remove_log_nans(x: np.ndarray, replacement_neg: float = -1e10) -> np.ndarray:
+    """
+    Replaces NaN, positive infinity, negative infinity, and zero values in an array
+    specifically for logarithmic data.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array that may contain NaN, positive infinity, negative infinity, or zero values.
+
+    replacement_neg : float, optional
+        Value to replace log(0) or NaN values with. Default is `-1e8`.
+
+    Returns
+    -------
+    np.ndarray
+        Array with:
+        - NaN and log(0) replaced by `replacement_neg`
+        - Positive infinity (`np.inf`) retained
+        - Negative infinity replaced by `replacement_neg`
+    """
+    x = np.asarray(x, dtype=float)
+
+    x = np.nan_to_num(x, nan=replacement_neg, posinf=np.inf, neginf=replacement_neg)
+    x[x == 0] = replacement_neg
+
+    return x
