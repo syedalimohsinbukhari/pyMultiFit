@@ -106,19 +106,23 @@ class ExponentialDistribution(BaseDistribution):
         return cls(loc=loc, scale=scale, normalize=True)
 
     def pdf(self, x):
-        return exponential_pdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
+        return exponential_pdf_(x,
+                                amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
                                 normalize=self.norm)
 
     def logpdf(self, x):
-        return exponential_log_pdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
+        return exponential_log_pdf_(x,
+                                    amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
                                     normalize=self.norm)
 
     def cdf(self, x):
-        return exponential_cdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
+        return exponential_cdf_(x,
+                                amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
                                 normalize=self.norm)
 
     def logcdf(self, x):
-        return exponential_log_cdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
+        return exponential_log_cdf_(x,
+                                    amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
                                     normalize=self.norm)
 
     def stats(self):

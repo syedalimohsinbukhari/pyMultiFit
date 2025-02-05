@@ -122,19 +122,24 @@ class BetaDistribution(BaseDistribution):
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
     def pdf(self, x):
-        return beta_pdf_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc,
-                         scale=self.scale, normalize=self.norm)
+        return beta_pdf_(x,
+                         amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale,
+                         normalize=self.norm)
 
     def logpdf(self, x):
-        return beta_log_pdf_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc,
-                             scale=self.scale, normalize=self.norm)
+        return beta_log_pdf_(x,
+                             amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale,
+                             normalize=self.norm)
 
     def cdf(self, x):
-        return beta_cdf_(x, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale)
+        return beta_cdf_(x,
+                         amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale,
+                         normalize=self.norm)
 
     def logcdf(self, x):
-        return beta_log_cdf_(x, amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc,
-                             scale=self.scale, normalize=self.norm)
+        return beta_log_cdf_(x,
+                             amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale,
+                             normalize=self.norm)
 
     def stats(self):
         a, b = self.alpha, self.beta

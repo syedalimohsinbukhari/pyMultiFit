@@ -5,9 +5,9 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'beta_pdf_', 'beta_cdf_', 'beta_log_pdf_', 'beta_log_cdf_',
            'chi_square_pdf_', 'chi_square_cdf_', 'chi_square_log_pdf_', 'chi_square_log_cdf_',
            'exponential_pdf_', 'exponential_cdf_', 'exponential_log_pdf_', 'exponential_log_cdf_',
-           'folded_normal_pdf_', 'folded_normal_cdf_',
-           'gamma_sr_pdf_', 'gamma_sr_cdf_',
-           'gamma_ss_pdf_',
+           'folded_normal_pdf_', 'folded_normal_cdf_', 'folded_normal_log_pdf_', 'folded_normal_log_cdf_',
+           'gamma_sr_pdf_', 'gamma_sr_cdf_', 'gamma_sr_log_pdf_', 'gamma_sr_log_cdf_',
+           'gamma_ss_pdf_', 'gamma_ss_log_pdf_', 'gamma_ss_cdf_', 'gamma_ss_log_cdf_',
            'sym_gen_normal_pdf_', 'sym_gen_normal_cdf_',
            'gaussian_pdf_', 'gaussian_cdf_',
            'half_normal_pdf_', 'half_normal_cdf_',
@@ -877,20 +877,36 @@ def gamma_sr_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
+    log_pdf_ = gamma_sr_log_pdf_(x,
+                                 amplitude=amplitude, alpha=alpha, lambda_=lambda_,
+                                 loc=loc, normalize=normalize)
+    return np.exp(log_pdf_)
+
+
+def gamma_sr_log_pdf_(x: fArray,
+                      amplitude: float = 1.0, alpha: float = 1.0, lambda_: float = 1.0,
+                      loc: float = 0.0, normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
     y = x - loc
-    numerator = y**(alpha - 1) * np.exp(-lambda_ * y)
-    normalization_factor = gamma(alpha) / lambda_**alpha
 
-    pdf_ = numerator / normalization_factor
-    pdf_[x < loc] = 0
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    mask_ = y >= 0
+
+    if np.any(mask_):
+        y_valid = y[mask_]
+        log_pdf_[mask_] = alpha * np.log(lambda_) + (alpha - 1) * np.log(y_valid) - (lambda_ * y_valid) - gammaln(alpha)
 
     if not normalize:
-        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return pdf_
+    log_pdf_ = _remove_nans(log_pdf_)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
 
 
 @doc_inherit(parent=gamma_sr_pdf_, style=doc_style)
@@ -917,17 +933,31 @@ def gamma_sr_cdf_(x: np.ndarray,
 
     where, :math:`\gamma(\alpha, \lambda x)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
     y = x - loc
     y = np.maximum(y, 0)
-    return gammainc(alpha, lambda_ * y)
+    cdf_ = gammainc(alpha, lambda_ * y)
+
+    return cdf_.item() if scalar_input else cdf_
 
 
-def gamma_ss_pdf_(x: np.ndarray,
+def gamma_sr_log_cdf_(x: fArray,
+                      amplitude: float = 1.0, alpha: float = 1.0, lambda_: float = 1.0,
+                      loc: float = 0.0, normalize: bool = False) -> np.ndarray:
+    cdf_ = gamma_sr_cdf_(x,
+                         amplitude=amplitude, alpha=alpha, lambda_=lambda_, loc=loc, normalize=normalize)
+
+    return np.log(cdf_)
+
+
+def gamma_ss_pdf_(x: fArray,
                   amplitude: float = 1.0, alpha: float = 1.0, theta: float = 1.0,
-                  normalize: bool = False) -> np.ndarray:
+                  loc: float = 0.0, normalize: bool = False) -> fArray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape)
     and :math:`\theta` (scale) parameters.
@@ -945,6 +975,9 @@ def gamma_ss_pdf_(x: np.ndarray,
     theta : float, optional
         The scale parameter, :math:`\lambda`.
         Defaults to 1.0.
+    loc : float, optional
+        The location parameter, for shifting.
+        Defaults to 0.0.
     normalize : bool, optional
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -967,19 +1000,29 @@ def gamma_ss_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    return gamma_sr_pdf_(x=x, amplitude=amplitude, alpha=alpha, lambda_=1 / theta, normalize=normalize)
+    log_pdf_ = gamma_sr_log_pdf_(x,
+                                 amplitude=amplitude, alpha=alpha, lambda_=1 / theta, loc=loc, normalize=normalize)
+    return np.exp(log_pdf_)
+
+
+def gamma_ss_log_pdf_(x: fArray,
+                      amplitude: float = 1.0, alpha: float = 1.0, theta: float = 1.0,
+                      loc: float = 0.0, normalize: bool = False) -> fArray:
+    return gamma_sr_log_pdf_(x,
+                             amplitude=amplitude, alpha=alpha, lambda_=1 / theta, loc=loc, normalize=normalize)
 
 
 @doc_inherit(parent=gamma_ss_pdf_, style=doc_style)
 def gamma_ss_cdf_(x: np.ndarray,
-                  amplitude: float = 1., alpha: float = 1.0, theta: float = 1.0,
-                  normalize: bool = False) -> np.ndarray:
+                  amplitude: float = 1.0, alpha: float = 1.0, theta: float = 1.0,
+                  loc: float = 0.0, normalize: bool = False) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` with :math:`\alpha` (shape)
     and :math:`\theta` (scale) parameters.
 
     Parameters
     ----------
+    loc
     amplitude: float, optional
         For API consistency only.
     normalize: bool, optional
@@ -993,7 +1036,15 @@ def gamma_ss_cdf_(x: np.ndarray,
 
     where, :math:`\gamma(\alpha, \lambda y)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
     """
-    return gamma_sr_cdf_(x=x, amplitude=amplitude, alpha=alpha, lambda_=1 / theta, normalize=normalize)
+    return gamma_sr_cdf_(x=x, amplitude=amplitude, alpha=alpha, lambda_=1 / theta, loc=loc, normalize=normalize)
+
+
+def gamma_ss_log_cdf_(x: fArray,
+                      amplitude: float = 1.0, alpha: float = 1.0, theta: float = 1.0,
+                      loc: float = 0.0, normalize: bool = False) -> fArray:
+    cdf_ = gamma_sr_cdf_(x,
+                         amplitude=amplitude, alpha=alpha, lambda_=1 / theta, loc=loc, normalize=normalize)
+    return np.log(cdf_)
 
 
 def gaussian_pdf_(x: np.ndarray,

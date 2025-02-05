@@ -111,19 +111,23 @@ class FoldedNormalDistribution(BaseDistribution):
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
     def pdf(self, x):
-        return folded_normal_pdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
+        return folded_normal_pdf_(x,
+                                  amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 
     def logpdf(self, x):
-        return folded_normal_log_pdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
+        return folded_normal_log_pdf_(x,
+                                      amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                       normalize=self.norm)
 
     def cdf(self, x):
-        return folded_normal_cdf_(x=x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
+        return folded_normal_cdf_(x,
+                                  amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                   normalize=self.norm)
 
     def logcdf(self, x):
-        return folded_normal_log_cdf_(x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
+        return folded_normal_log_cdf_(x,
+                                      amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
                                       normalize=self.norm)
 
     def stats(self):

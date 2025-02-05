@@ -76,16 +76,24 @@ class ArcSineDistribution(BaseDistribution):
         self.norm = normalize
 
     def pdf(self, x):
-        return arc_sine_pdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
+        return arc_sine_pdf_(x,
+                             amplitude=self.amplitude, loc=self.loc, scale=self.scale,
+                             normalize=self.norm)
 
     def logpdf(self, x):
-        return arc_sine_log_pdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
+        return arc_sine_log_pdf_(x,
+                                 amplitude=self.amplitude, loc=self.loc, scale=self.scale,
+                                 normalize=self.norm)
 
     def cdf(self, x):
-        return arc_sine_cdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
+        return arc_sine_cdf_(x,
+                             amplitude=self.amplitude, loc=self.loc, scale=self.scale,
+                             normalize=self.norm)
 
     def logcdf(self, x):
-        return arc_sine_log_cdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
+        return arc_sine_log_cdf_(x,
+                                 amplitude=self.amplitude, loc=self.loc, scale=self.scale,
+                                 normalize=self.norm)
 
     @classmethod
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
