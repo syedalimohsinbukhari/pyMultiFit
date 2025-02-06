@@ -6,9 +6,11 @@ import numpy as np
 import pytest
 from scipy.stats import lognorm
 
-from ...pymultifit import EPSILON
+from . import base_test_functions as btf
 from ...pymultifit.distributions import LogNormalDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+
+np.random.seed(42)
 
 
 class TestLogNormalDistribution:
@@ -37,54 +39,22 @@ class TestLogNormalDistribution:
             LogNormalDistribution(std=-3.0)
 
     @staticmethod
-    def test_edge_case():
-        dist = LogNormalDistribution()
-        x = np.array([])
-        result = dist.pdf(x)
-        assert result.size == 0  # Should return an empty array
+    def test_edge_cases():
+        btf.edge_cases(distribution=LogNormalDistribution(), log_check=True)
 
     @staticmethod
     def test_stats():
-        shape_ = np.random.uniform(low=EPSILON, high=10, size=100)
-        loc_ = np.random.uniform(low=-5, high=10, size=100)
-        scale_ = np.random.uniform(low=EPSILON, high=10, size=100)
-        stack_ = np.column_stack([shape_, loc_, scale_])
-
-        for shape, loc, scale in stack_:
-            _distribution = LogNormalDistribution.scipy_like(s=shape, loc=loc, scale=scale)
-            d_stats = _distribution.stats()
-
-            # Scipy calculations
-            scipy_mean, scipy_variance = lognorm.stats(s=shape, loc=loc, scale=scale, moments='mv')
-            scipy_median = lognorm.median(s=shape, loc=loc, scale=scale)
-            scipy_stddev = np.sqrt(scipy_variance)
-
-            # Assertions for mean and variance
-            np.testing.assert_allclose(actual=scipy_mean, desired=d_stats['mean'], rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(actual=scipy_variance, desired=d_stats['variance'], rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats['std'], rtol=1e-5, atol=1e-8)
+        btf.stats(custom_distribution=LogNormalDistribution.scipy_like, scipy_distribution=lognorm,
+                  parameters=[btf.scale_parameter, btf.loc_parameter, btf.scale_parameter])
 
     @staticmethod
-    def test_pdf_cdf_log_norm():
-        def _cdf_pdf_custom(x_, dist_, what='cdf'):
-            """Evaluate the CDF or PDF for the custom LogNormalDistribution."""
-            return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
+    def test_pdfs():
+        btf.value_functions(custom_distribution=LogNormalDistribution.scipy_like, scipy_distribution=lognorm,
+                            parameters=[btf.scale_parameter, btf.loc_parameter, btf.scale_parameter], log_check=True)
 
-        def _cdf_pdf_scipy(x_, s, loc, scale, what='cdf'):
-            return lognorm.cdf(x_, s=s, scale=scale, loc=loc) if what == 'cdf' else lognorm.pdf(x_, s=s, scale=scale,
-                                                                                                loc=loc)
-
-        for i in ['cdf', 'pdf']:
-            for _ in range(50):  # Run 50 random tests
-                shape_ = np.random.uniform(low=EPSILON, high=10)
-                loc_ = np.random.uniform(low=-10, high=10)
-                scale_ = np.random.uniform(low=EPSILON, high=10.0)
-
-                x = np.random.uniform(low=EPSILON, high=200.0, size=50)
-                distribution = LogNormalDistribution.scipy_like(s=shape_, loc=loc_, scale=scale_)
-
-                expected = _cdf_pdf_scipy(x_=x, s=shape_, loc=loc_, scale=scale_, what=i)
-                actual = _cdf_pdf_custom(x_=x, dist_=distribution, what=i)
-
-                np.testing.assert_allclose(actual=actual, desired=expected, rtol=1e-5, atol=1e-8)
+    @staticmethod
+    def test_single_values():
+        btf.single_input_n_variables(custom_distribution=LogNormalDistribution.scipy_like,
+                                     scipy_distribution=lognorm,
+                                     parameters=[btf.scale_parameter, btf.loc_parameter, btf.scale_parameter],
+                                     log_check=True)

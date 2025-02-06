@@ -1,10 +1,12 @@
 """Created on Dec 04 03:57:18 2024"""
 
-from .backend import errorHandling as erH
-from .foldedNormal_d import FoldedNormalDistribution
+from math import sqrt, pi
+
+from .backend import errorHandling as erH, BaseDistribution
+from .utilities_d import half_normal_pdf_, half_normal_cdf_, half_normal_log_pdf_, half_normal_log_cdf_
 
 
-class HalfNormalDistribution(FoldedNormalDistribution):
+class HalfNormalDistribution(BaseDistribution):
     r"""
     Class for halfnormal distribution.
 
@@ -72,13 +74,17 @@ class HalfNormalDistribution(FoldedNormalDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
+    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0,
+                 normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-
+        if scale < 0:
+            raise erH.NegativeScaleError()
+        self.amplitude = 1 if normalize else amplitude
         self.scale = scale
         self.loc = loc
-        super().__init__(amplitude=amplitude, sigma=scale, loc=loc, normalize=normalize)
+
+        self.norm = normalize
 
     @classmethod
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
@@ -98,3 +104,33 @@ class HalfNormalDistribution(FoldedNormalDistribution):
             An instance of normalized HalfNormalDistribution.
         """
         return cls(loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x):
+        return half_normal_pdf_(x,
+                                amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
+
+    def logpdf(self, x):
+        return half_normal_log_pdf_(x,
+                                    amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
+
+    def cdf(self, x):
+        return half_normal_cdf_(x,
+                                amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
+
+    def logcdf(self, x):
+        return half_normal_log_cdf_(x,
+                                    amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
+
+    def stats(self):
+        s_, l_ = self.scale, self.loc
+
+        mean_ = sqrt(2 / pi)
+        mode_ = 0
+
+        variance_ = (1 - (2 / pi))
+        variance_ *= s_**2
+
+        return {'mean': (s_ * mean_) + l_,
+                'mode': mode_,
+                'variance': variance_,
+                'std': sqrt(variance_)}

@@ -4,9 +4,11 @@ import numpy as np
 import pytest
 from scipy.stats import halfnorm
 
-from ...pymultifit import EPSILON
+from . import base_test_functions as btf
 from ...pymultifit.distributions import FoldedNormalDistribution, HalfNormalDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+
+np.random.seed(42)
 
 
 class TestHalfNormalDistribution:
@@ -31,28 +33,22 @@ class TestHalfNormalDistribution:
         assert distribution.amplitude == 1.0
 
     @staticmethod
-    def test_edge_case():
-        dist = HalfNormalDistribution()
-        x = np.array([])
-        result = dist.pdf(x)
-        assert result.size == 0  # Should return an empty array
+    def test_edge_cases():
+        btf.edge_cases(distribution=HalfNormalDistribution(), log_check=True)
 
     @staticmethod
-    def test_pdf_cdf():
-        def _cdf_pdf_custom(x_, dist_, what='cdf'):
-            return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
+    def test_stats():
+        btf.stats(custom_distribution=HalfNormalDistribution.scipy_like, scipy_distribution=halfnorm,
+                  parameters=[btf.loc_parameter, btf.scale_parameter], median=False)
 
-        def _cdf_pdf_scipy(x_, loc, scale, what='cdf'):
-            c = abs(loc) / scale
-            return halfnorm.cdf(x_, loc=0, scale=scale) if what == 'cdf' else halfnorm.pdf(x_, loc=0, scale=scale)
+    @staticmethod
+    def test_pdfs():
+        btf.value_functions(custom_distribution=HalfNormalDistribution.scipy_like, scipy_distribution=halfnorm,
+                            parameters=[btf.loc_parameter, btf.scale_parameter], log_check=True)
 
-        for i in ['pdf', 'cdf']:
-            for _ in range(50):  # Run 50 random tests
-                loc_ = np.random.uniform(low=-10, high=10)
-                scale_ = np.random.uniform(low=0.1, high=5)
-                x = np.random.uniform(low=EPSILON, high=loc_ + 10, size=50)
-                distribution = HalfNormalDistribution(scale=scale_, normalize=True)
-                expected = _cdf_pdf_scipy(x_=x, loc=loc_, scale=scale_, what=i)
-                expected = np.nan_to_num(expected, True, 0)
-                np.testing.assert_allclose(actual=_cdf_pdf_custom(x_=x, dist_=distribution, what=i),
-                                           desired=expected, rtol=1e-5, atol=1e-8)
+    @staticmethod
+    def test_single_values():
+        btf.single_input_n_variables(custom_distribution=HalfNormalDistribution.scipy_like,
+                                     scipy_distribution=halfnorm,
+                                     parameters=[btf.loc_parameter, btf.scale_parameter],
+                                     log_check=True)

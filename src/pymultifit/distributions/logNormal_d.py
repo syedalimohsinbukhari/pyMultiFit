@@ -3,7 +3,7 @@
 from math import exp, log, inf
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import log_normal_cdf_, log_normal_pdf_
+from .utilities_d import log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_
 
 
 class LogNormalDistribution(BaseDistribution):
@@ -115,9 +115,19 @@ class LogNormalDistribution(BaseDistribution):
         return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
                                normalize=self.norm)
 
+    def logpdf(self, x):
+        return log_normal_log_pdf_(x,
+                                   amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
+                                   normalize=self.norm)
+
     def cdf(self, x):
         return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
                                normalize=self.norm)
+
+    def logcdf(self, x):
+        return log_normal_log_cdf_(x,
+                                   amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
+                                   normalize=self.norm)
 
     def stats(self):
         m, s, l_ = self.mu, self.std, self.loc
