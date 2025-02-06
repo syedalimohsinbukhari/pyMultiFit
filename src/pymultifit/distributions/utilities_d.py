@@ -9,7 +9,7 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'gamma_sr_pdf_', 'gamma_sr_cdf_', 'gamma_sr_log_pdf_', 'gamma_sr_log_cdf_',
            'gamma_ss_pdf_', 'gamma_ss_log_pdf_', 'gamma_ss_cdf_', 'gamma_ss_log_cdf_',
            'sym_gen_normal_pdf_', 'sym_gen_normal_cdf_',
-           'gaussian_pdf_', 'gaussian_cdf_',
+           'gaussian_pdf_', 'gaussian_cdf_', 'gaussian_log_pdf_', 'gaussian_log_cdf_',
            'half_normal_pdf_', 'half_normal_cdf_',
            'laplace_pdf_', 'laplace_cdf_',
            'log_normal_pdf_', 'log_normal_cdf_',
@@ -22,7 +22,7 @@ from typing import Union
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t, gammaincc
+from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t, gammaincc, log_ndtr
 
 from .. import fArray, doc_style
 
@@ -1085,20 +1085,36 @@ def gaussian_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(x)`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
-    exponent_factor = (x - mean)**2 / (2 * std**2)
-    exponent_factor = np.exp(-exponent_factor)
-    normalization_factor = std * np.sqrt(2 * np.pi)
-
-    pdf_ = exponent_factor / normalization_factor
+    exp_factor = (x - mean) / std
+    pdf_ = np.exp(-0.5 * exp_factor**2) / (np.sqrt(2 * np.pi * std**2))
 
     if not normalize:
-        pdf_ = pdf_ / np.max(pdf_)
-        pdf_ *= amplitude
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_
+    return pdf_.item() if scalar_input else pdf_
+
+
+def gaussian_log_pdf_(x: fArray, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0,
+                      normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    exp_factor = (x - mean) / std
+    log_pdf_ = -0.5 * np.log(2 * np.pi) - np.log(std) - 0.5 * exp_factor**2
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
 
 
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
@@ -1123,12 +1139,31 @@ def gaussian_cdf_(x: np.ndarray,
         F(x) = \Phi\left(\dfrac{x-\mu}{\sigma}\right) =
         \dfrac{1}{2} \left[1 + \text{erf}\left(\dfrac{x - \mu}{\sigma\sqrt{2}}\right)\right]
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
     num_ = x - mean
     den_ = std * np.sqrt(2)
-    return 0.5 * (1 + erf(num_ / den_))
+    cdf_ = 0.5 * (1 + erf(num_ / den_))
+
+    return cdf_.item() if scalar_input else cdf_
+
+
+def gaussian_log_cdf_(x: fArray, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0,
+                      normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - mean) / std
+    log_cdf_ = log_ndtr(y)
+
+    return log_cdf_.item() if scalar_input else log_cdf_
 
 
 def half_normal_pdf_(x: np.ndarray,

@@ -1,7 +1,7 @@
 """Created on Aug 03 20:07:50 2024"""
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import gaussian_cdf_, gaussian_pdf_
+from .utilities_d import gaussian_cdf_, gaussian_pdf_, gaussian_log_pdf_, gaussian_log_cdf_
 
 
 class GaussianDistribution(BaseDistribution):
@@ -105,11 +105,18 @@ class GaussianDistribution(BaseDistribution):
     def pdf(self, x):
         return gaussian_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
+    def logpdf(self, x):
+        return gaussian_log_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
+
     def cdf(self, x):
         return gaussian_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
+    def logcdf(self, x):
+        return gaussian_log_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
+
     def stats(self):
         m, s = self.mu, self.std_
+
         return {'mean': m,
                 'median': m,
                 'mode': m,
