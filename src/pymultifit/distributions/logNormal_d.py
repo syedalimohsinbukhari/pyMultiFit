@@ -1,6 +1,6 @@
 """Created on Aug 03 21:02:45 2024"""
 
-from math import exp, log, inf
+import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_
@@ -81,10 +81,7 @@ class LogNormalDistribution(BaseDistribution):
         elif std <= 0:
             raise erH.NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
-        try:
-            self.mu = log(mu)
-        except ValueError:
-            self.mu = -inf
+        self.mu = np.log(mu)
         self.std = std
         self.loc = loc
 
@@ -132,13 +129,10 @@ class LogNormalDistribution(BaseDistribution):
     def stats(self):
         m, s, l_ = self.mu, self.std, self.loc
 
-        mean_ = exp(m + (s**2 / 2)) + l_
-        median_ = exp(m) + l_
-        mode_ = exp(m - s**2) + l_
-        variance_ = (exp(s**2) - 1) * exp(2 * m + s**2)
+        mean_ = np.exp(m + (s**2 / 2)) + l_
+
+        variance_ = (np.exp(s**2) - 1) * np.exp(2 * m + s**2)
 
         return {'mean': mean_,
-                'median': median_,
-                'mode': mode_,
                 'variance': variance_,
-                'std': variance_**0.5}
+                'std': np.sqrt(variance_)}

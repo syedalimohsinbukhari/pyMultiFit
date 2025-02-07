@@ -11,8 +11,8 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'sym_gen_normal_pdf_', 'sym_gen_normal_cdf_',
            'gaussian_pdf_', 'gaussian_cdf_', 'gaussian_log_pdf_', 'gaussian_log_cdf_',
            'half_normal_pdf_', 'half_normal_cdf_', 'half_normal_log_pdf_', 'half_normal_log_cdf_',
-           'laplace_pdf_', 'laplace_cdf_',
-           'log_normal_pdf_', 'log_normal_cdf_',
+           'laplace_pdf_', 'laplace_cdf_', 'laplace_log_pdf_', 'laplace_log_cdf_',
+           'log_normal_pdf_', 'log_normal_cdf_', 'log_normal_log_pdf_', 'log_normal_log_cdf_',
            'scaled_inv_chi_square_pdf_', 'scaled_inv_chi_square_log_pdf_',
            'scaled_inv_chi_square_cdf_', 'scaled_inv_chi_square_log_cdf_',
            'skew_normal_pdf_', 'skew_normal_cdf_',
@@ -1488,8 +1488,8 @@ def log_normal_pdf_(x: np.ndarray,
 
     if np.any(mask_):
         y_valid = y[mask_]
-        f1 = np.log(y_valid - mean)**2 / (2 * std**2)
-        pdf_[mask_] = np.exp(-f1)
+        f1 = (np.log(y_valid) - mean)**2 / (2 * std**2)
+        f1 = np.exp(-f1)
         pdf_[mask_] = f1 / (std * y_valid * np.sqrt(2 * np.pi))
 
     if not normalize:
@@ -1515,12 +1515,14 @@ def log_normal_log_pdf_(x: fArray,
 
     if np.any(mask_):
         y_valid = y[mask_]
-        f1 = np.log(y_valid - mean)**2 / (2 * std**2)
+        f1 = (np.log(y_valid) - mean)**2 / (2 * std**2)
         log_pdf_[mask_] = -f1
         log_pdf_[mask_] -= np.log(std * y_valid * np.sqrt(2 * np.pi))
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    log_pdf_ = _remove_nans(log_pdf_)
 
     return log_pdf_.item() if scalar_input else log_pdf_
 
@@ -1558,8 +1560,14 @@ def log_normal_cdf_(x: np.ndarray,
 def log_normal_log_cdf_(x: fArray,
                         amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0,
                         loc: float = 0.0, normalize: bool = False) -> fArray:
-    return _remove_nans(gaussian_log_cdf_(x=np.log(x - loc),
-                                          amplitude=amplitude, mean=mean, std=std, normalize=normalize))
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / mean
+    return np.log(gaussian_cdf_(x=np.log(y), amplitude=amplitude, mean=mean, std=std, normalize=normalize))
 
 
 def uniform_pdf_(x: np.ndarray,
