@@ -1566,8 +1566,12 @@ def log_normal_log_cdf_(x: fArray,
     if x.size == 0:
         return np.array([])
 
-    y = (x - loc) / mean
-    return np.log(gaussian_cdf_(x=np.log(y), amplitude=amplitude, mean=mean, std=std, normalize=normalize))
+    y = x - loc
+    log_cdf_ = gaussian_log_cdf_(np.log(y),
+                                 amplitude=amplitude, mean=mean, std=std, normalize=normalize)
+    log_cdf_ = _remove_nans(log_cdf_, nan_value=-np.inf)
+
+    return log_cdf_.item() if scalar_input else log_cdf_
 
 
 def uniform_pdf_(x: np.ndarray,
@@ -2041,7 +2045,7 @@ def _log_pdf_scaling(log_pdf_: np.ndarray, amplitude: float) -> np.ndarray:
     return np.log(amplitude) + scaling
 
 
-def _remove_nans(x: np.ndarray) -> np.ndarray:
+def _remove_nans(x: np.ndarray, nan_value=0) -> np.ndarray:
     """
     Replaces NaN, positive infinity, and negative infinity values in an array.
 
@@ -2056,36 +2060,4 @@ def _remove_nans(x: np.ndarray) -> np.ndarray:
         Array with NaN replaced by 0, positive infinity replaced by `np.inf`, and negative
     infinity replaced by `-np.inf`.
     """
-    return np.nan_to_num(x=np.asarray(x), copy=False, nan=0, posinf=np.inf, neginf=-np.inf)
-
-
-import numpy as np
-
-
-def _remove_log_nans(x: np.ndarray, replacement_neg: float = -1e10) -> np.ndarray:
-    """
-    Replaces NaN, positive infinity, negative infinity, and zero values in an array
-    specifically for logarithmic data.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array that may contain NaN, positive infinity, negative infinity, or zero values.
-
-    replacement_neg : float, optional
-        Value to replace log(0) or NaN values with. Default is `-1e8`.
-
-    Returns
-    -------
-    np.ndarray
-        Array with:
-        - NaN and log(0) replaced by `replacement_neg`
-        - Positive infinity (`np.inf`) retained
-        - Negative infinity replaced by `replacement_neg`
-    """
-    x = np.asarray(x, dtype=float)
-
-    x = np.nan_to_num(x, nan=replacement_neg, posinf=np.inf, neginf=replacement_neg)
-    x[x == 0] = replacement_neg
-
-    return x
+    return np.nan_to_num(x=np.asarray(x), copy=False, nan=nan_value, posinf=np.inf, neginf=-np.inf)
