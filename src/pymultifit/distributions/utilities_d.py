@@ -1566,6 +1566,9 @@ def uniform_pdf_(x: np.ndarray,
 
     .. math:: f(x\ |\ a, b) = \dfrac{1}{b-a}
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -1581,7 +1584,33 @@ def uniform_pdf_(x: np.ndarray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return _remove_nans(pdf_)
+    pdf_ = _remove_nans(pdf_)
+
+    return pdf_.item() if scalar_input else pdf_
+
+
+def uniform_log_pdf_(x: fArray,
+                     amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
+                     normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    high_ = high + low
+    log_pdf_ = np.full(shape=x.shape, fill_value=-np.inf)
+
+    # if high_ == low:
+    #     return log_pdf_
+
+    mask_ = np.logical_and(x >= low, x <= high_)
+    log_pdf_[mask_] = -np.log(high_ - low)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
 
 
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
@@ -1608,20 +1637,45 @@ def uniform_cdf_(x: np.ndarray,
                         1 &, x > b
                         \end{cases}
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
     high = high + low
+    cdf_ = np.zeros_like(a=x, dtype=float)
 
     if low == high == 0:
         return np.full(shape=x.size, fill_value=np.nan)
 
-    cdf_values = np.zeros_like(a=x, dtype=float)
-    within_bounds = (x >= low) & (x <= high)
-    cdf_values[within_bounds] = (x[within_bounds] - low) / (high - low)
-    cdf_values[x > high] = 1
+    mask_ = (x >= low) & (x <= high)
+    cdf_[mask_] = (x[mask_] - low) / (high - low)
+    cdf_[x > high] = 1
 
-    return cdf_values
+    return cdf_.item() if scalar_input else cdf_
+
+
+def uniform_log_cdf_(x: fArray,
+                     amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
+                     normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    high = high + low
+    log_cdf_ = np.full(shape=x.shape, fill_value=-np.inf)
+
+    if low == high == 0:
+        return log_cdf_
+
+    mask_ = np.logical_and(x >= low, x <= high)
+    log_cdf_[mask_] = np.log(x[mask_] - low) - np.log(high - low)
+    log_cdf_[x > high] = 0
+
+    return log_cdf_.item() if scalar_input else log_cdf_
 
 
 def scaled_inv_chi_square_pdf_(x, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0,
@@ -1668,6 +1722,9 @@ def scaled_inv_chi_square_pdf_(x, amplitude: float = 1.0, df: float = 1.0, scale
 
     The final PDF is expressed as :math:`f(y)`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -1712,6 +1769,9 @@ def scaled_inv_chi_square_log_pdf_(x: np.ndarray, amplitude: float = 1.0, df: fl
 
     The final PDF is expressed as :math:`\ell(y)`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -1738,6 +1798,9 @@ def scaled_inv_chi_square_log_pdf_(x: np.ndarray, amplitude: float = 1.0, df: fl
 
 def scaled_inv_chi_square_cdf_(x, amplitude, df, scale, loc: float = 0.0,
                                normalize: bool = False):
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -1753,6 +1816,9 @@ def scaled_inv_chi_square_cdf_(x, amplitude, df, scale, loc: float = 0.0,
 
 
 def scaled_inv_chi_square_log_cdf_(x, amplitude, df, scale, loc, normalize=False):
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -1814,6 +1880,9 @@ def skew_normal_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)/\omega`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -1870,6 +1939,9 @@ def sym_gen_normal_pdf_(x: np.ndarray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -1911,6 +1983,9 @@ def sym_gen_normal_cdf_(x: np.ndarray,
 
     where :math:`\gamma(\cdot,\cdot)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -1943,6 +2018,9 @@ def skew_normal_cdf_(x: np.ndarray,
     where, :math:`T` is the Owen's T function, see :obj:`scipy.special.owens_t`, and
     :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function.
     """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
     if x.size == 0:
         return np.array([])
 
@@ -2002,7 +2080,7 @@ def _log_pdf_scaling(log_pdf_: np.ndarray, amplitude: float) -> np.ndarray:
     return np.log(amplitude) + scaling
 
 
-def _remove_nans(x: np.ndarray, nan_value=0) -> np.ndarray:
+def _remove_nans(x: np.ndarray, nan_value=None) -> np.ndarray:
     """
     Replaces NaN, positive infinity, and negative infinity values in an array.
 
@@ -2017,4 +2095,5 @@ def _remove_nans(x: np.ndarray, nan_value=0) -> np.ndarray:
         Array with NaN replaced by 0, positive infinity replaced by `np.inf`, and negative
     infinity replaced by `-np.inf`.
     """
+    nan_value = 0 if nan_value is None else nan_value
     return np.nan_to_num(x=np.asarray(x), copy=False, nan=nan_value, posinf=np.inf, neginf=-np.inf)
