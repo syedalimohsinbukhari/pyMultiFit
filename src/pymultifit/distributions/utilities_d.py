@@ -16,7 +16,7 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'scaled_inv_chi_square_pdf_', 'scaled_inv_chi_square_log_pdf_',
            'scaled_inv_chi_square_cdf_', 'scaled_inv_chi_square_log_cdf_',
            'skew_normal_pdf_', 'skew_normal_cdf_',
-           'uniform_pdf_', 'uniform_cdf_']
+           'uniform_pdf_', 'uniform_cdf_', 'uniform_log_pdf_', 'uniform_log_cdf_']
 
 from typing import Union
 
@@ -1369,7 +1369,7 @@ def laplace_cdf_(x: np.ndarray,
     def _cdf2(x_):
         return 1 - 0.5 * np.exp(-(x_ - mean) / diversity)
 
-    cdf_ = np.zeros_like(a=x, dtype=np.float64)
+    cdf_ = np.zeros_like(a=x, dtype=float)
 
     mask_leq = x <= mean
     cdf_[mask_leq] += _cdf1(x[mask_leq])
@@ -1834,7 +1834,7 @@ def scaled_inv_chi_square_log_cdf_(x, amplitude, df, scale, loc, normalize=False
 
 
 def skew_normal_pdf_(x: np.ndarray,
-                     amplitude: float = 1.0, shape: float = 0.0, loc: float = 0.0, scale: float = 1.0,
+                     amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                      normalize: bool = False) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
@@ -1895,7 +1895,65 @@ def skew_normal_pdf_(x: np.ndarray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return _remove_nans(pdf_)
+    pdf_ = _remove_nans(pdf_)
+
+    return pdf_.item() if scalar_input else pdf_
+
+
+def skew_normal_log_pdf_(x: fArray,
+                         amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                         normalize: bool = False) -> fArray:
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / scale
+    g_l_pdf_ = gaussian_log_pdf_(x=y, normalize=True)
+    g_l_cdf_ = gaussian_log_cdf_(x=shape * y, normalize=True)
+
+    log_pdf_ = np.log(2 / scale) + g_l_pdf_ + g_l_cdf_
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
+
+
+@doc_inherit(parent=skew_normal_pdf_, style=doc_style)
+def skew_normal_cdf_(x: np.ndarray,
+                     amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                     normalize: bool = False):
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
+
+    Parameters
+    ----------
+    amplitude: float, optional
+        For API consistency only.
+    normalize: float, optional
+        For API consistency only.
+
+    Notes
+    ------
+    The SkewNormal CDF is defined as:
+
+    .. math:: F(x) = \Phi\left(\dfrac{x - \xi}{\omega}\right) - 2T\left(\dfrac{x - \xi}{\omega}, \alpha\right)
+
+    where, :math:`T` is the Owen's T function, see :obj:`scipy.special.owens_t`, and
+    :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function.
+    """
+    x = np.asarray(a=x, dtype=float)
+    scalar_input = np.isscalar(x)
+
+    if x.size == 0:
+        return np.array([])
+
+    y = (x - loc) / scale
+    cdf_ = gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
+
+    return cdf_.item() if scalar_input else cdf_
 
 
 def sym_gen_normal_pdf_(x: np.ndarray,
@@ -1957,7 +2015,7 @@ def sym_gen_normal_pdf_(x: np.ndarray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_
+    return pdf_.item() if scalar_input else pdf_
 
 
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
@@ -1992,40 +2050,9 @@ def sym_gen_normal_cdf_(x: np.ndarray,
     mu, alpha, beta = loc, scale, shape
 
     f1 = (x - mu) / alpha
-    return 0.5 + (np.sign(x - mu) * 0.5 * gammainc(1 / beta, abs(f1)**beta))
+    cdf_ = 0.5 + (np.sign(x - mu) * 0.5 * gammainc(1 / beta, abs(f1)**beta))
 
-
-@doc_inherit(parent=skew_normal_pdf_, style=doc_style)
-def skew_normal_cdf_(x: np.ndarray,
-                     amplitude: float = 1.0, shape: float = 0.0, loc: float = 0.0, scale: float = 1.0,
-                     normalize: bool = False):
-    r"""
-    Compute CDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
-
-    Parameters
-    ----------
-    amplitude: float, optional
-        For API consistency only.
-    normalize: float, optional
-        For API consistency only.
-
-    Notes
-    ------
-    The SkewNormal CDF is defined as:
-
-    .. math:: F(x) = \Phi\left(\dfrac{x - \xi}{\omega}\right) - 2T\left(\dfrac{x - \xi}{\omega}, \alpha\right)
-
-    where, :math:`T` is the Owen's T function, see :obj:`scipy.special.owens_t`, and
-    :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function.
-    """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
-
-    if x.size == 0:
-        return np.array([])
-
-    y = (x - loc) / scale
-    return gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
+    return cdf_.item() if scalar_input else cdf_
 
 
 def _beta_masking(y: np.ndarray, alpha: float, beta: float) -> np.ndarray:
