@@ -127,12 +127,16 @@ class LogNormalDistribution(BaseDistribution):
                                    normalize=self.norm)
 
     def stats(self):
-        m, s, l_ = self.mu, self.std, self.loc
+        m, s, l_ = np.exp(self.mu), self.std, self.loc
 
-        mean_ = np.exp(m + (s**2 / 2)) + l_
+        # copied from scipy source-code,
+        # simpler implementations give reasonable higher values > 10^100 but scipy gives np.inf,
+        # so I'm shortcutting it by taking scipy implementation here directly.
+        p = np.exp(s * s)
+        mean_ = np.sqrt(p)
+        variance_ = p * (p - 1)
+        variance_ *= m**2
 
-        variance_ = (np.exp(s**2) - 1) * np.exp(2 * m + s**2)
-
-        return {'mean': mean_,
+        return {'mean': (m * mean_) + l_,
                 'variance': variance_,
                 'std': np.sqrt(variance_)}

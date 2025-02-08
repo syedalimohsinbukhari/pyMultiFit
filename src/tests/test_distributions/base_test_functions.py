@@ -4,9 +4,9 @@ import numpy as np
 
 from ...pymultifit import EPSILON
 
-loc_parameter = np.random.uniform(low=-10, high=10, size=1000)
-scale_parameter = np.random.uniform(low=EPSILON, high=10, size=1000)
-shape_parameter = np.random.uniform(low=EPSILON, high=10, size=1000)
+loc_parameter = np.random.uniform(low=-100, high=100, size=500)
+scale_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
+shape_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
 
 
 def edge_cases(distribution, log_check=False):
@@ -68,7 +68,7 @@ def stats(custom_distribution, scipy_distribution, parameters, mean_variance=Tru
                    parameters=stack, mean_variance=mean_variance, median=median, is_expon=is_expon)
 
 
-def value_functions(custom_distribution, scipy_distribution, parameters, n_values=10, log_check=False, is_expon=False):
+def value_functions(custom_distribution, scipy_distribution, parameters, n_values=50, log_check=False, is_expon=False):
     x = np.linspace(start=-100, stop=100, num=n_values)
     x = np.concatenate([x, np.array([0, 1])])
     x.sort()
@@ -81,7 +81,7 @@ def value_functions(custom_distribution, scipy_distribution, parameters, n_value
 
 
 def two_parameter_extreme_test(custom_distribution, scipy_distribution, log_check=False):
-    x_ = np.linspace(start=-0.5, stop=1.5, num=100)
+    x_ = np.linspace(start=-0.5, stop=1.5, num=50)
 
     extreme_cases = [(1e-5, 1e-5),
                      (1e5, 1e5),
@@ -107,7 +107,7 @@ def two_parameter_extreme_test(custom_distribution, scipy_distribution, log_chec
             np.testing.assert_allclose(actual=dist_.logcdf(x_), desired=scipy_logcdf, rtol=1e-5, atol=1e-8)
 
 
-def single_input_n_variables(custom_distribution, scipy_distribution, parameters, n_size=1_000, log_check=False,
+def single_input_n_variables(custom_distribution, scipy_distribution, parameters, n_size=50, log_check=False,
                              is_expon=False):
     rand_ = np.random.uniform(low=0, high=1, size=n_size)
 

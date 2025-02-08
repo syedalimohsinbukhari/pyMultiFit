@@ -1304,40 +1304,6 @@ def half_normal_log_cdf_(x: fArray,
 def laplace_pdf_(x: np.ndarray,
                  amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
                  normalize: bool = False) -> np.ndarray:
-    r"""
-    Compute PDF for :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array of values.
-    amplitude : float, optional
-        The amplitude of the PDF.
-        Defaults to 1.0.
-        Ignored if **normalize** is ``True``.
-    mean : float, optional
-        The mean parameter, :math:`\mu`.
-        Defaults to 0.0.
-    diversity : float, optional
-        The diversity parameter, :math:`b`.
-        Defaults to 1.0.
-    normalize : bool, optional
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-        Defaults to ``False``.
-
-    Returns
-    -------
-    np.ndarray
-        Array of the same shape as :math:`x`, containing the evaluated values.
-
-    Notes
-    -----
-    The Laplace PDF is defined as:
-
-    .. math:: f(x\ |\ \mu, b) = \dfrac{1}{2b}\exp\left(-\dfrac{|x - \mu|}{b}\right)
-
-    The final PDF is expressed as :math:`f(x)`.
-    """
     x = np.asarray(a=x, dtype=float)
     scalar_input = np.isscalar(x)
 
@@ -1356,19 +1322,10 @@ def laplace_pdf_(x: np.ndarray,
 def laplace_log_pdf_(x: fArray,
                      amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
                      normalize: bool = False) -> fArray:
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    pdf_ = laplace_pdf_(x,
+                        amplitude=amplitude, mean=mean, diversity=diversity, normalize=normalize)
 
-    if x.size == 0:
-        return np.array([])
-
-    log_pdf_ = abs(x - mean) / diversity
-    log_pdf_ = -log_pdf_ - np.log(2 * diversity)
-
-    if not normalize:
-        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
-
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return np.log(pdf_)
 
 
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
