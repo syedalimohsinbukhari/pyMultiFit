@@ -41,7 +41,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
                                           normalize=self.norm)
 
     def logcdf(self, x):
-        return scaled_inv_chi_square_log_cdf_(x, amplitude=self.amplitude, df=self.df, scale=self.scale, loc=self.loc,
+        return scaled_inv_chi_square_log_cdf_(x, amplitude=self.amplitude, df=self.df, loc=self.loc, scale=self.scale,
                                               normalize=self.norm)
 
     def stats(self):

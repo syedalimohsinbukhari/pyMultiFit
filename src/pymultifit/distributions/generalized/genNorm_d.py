@@ -1,6 +1,7 @@
 """Created on Jan 29 15:42:23 2025"""
 
-from math import sqrt, gamma
+import numpy as np
+from scipy.special import gammaln
 
 from ..backend import BaseDistribution, errorHandling as erH
 from ..utilities_d import sym_gen_normal_pdf_, sym_gen_normal_cdf_
@@ -125,11 +126,12 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         mean_ = self.loc
         median_ = self.loc
         mode_ = self.loc
-        variance_ = self.scale**2 * gamma(3 / self.shape)
-        variance_ /= gamma(1 / self.shape)
+
+        variance_ = 2 * np.log(self.scale) + gammaln(3 / self.shape) - gammaln(1 / self.shape)
+        variance_ = np.exp(variance_)
 
         return {'mean': mean_,
                 'median': median_,
                 'mode': mode_,
                 'variance': variance_,
-                'std': sqrt(variance_)}
+                'std': np.sqrt(variance_)}

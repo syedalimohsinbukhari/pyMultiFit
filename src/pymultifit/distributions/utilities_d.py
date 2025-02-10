@@ -22,7 +22,7 @@ from typing import Union, Callable
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, erf, gamma, gammainc, gammaln, owens_t, gammaincc, log_ndtr, ndtr
+from scipy.special import betainc, erf, gammainc, gammaln, owens_t, gammaincc, log_ndtr, ndtr, rgamma
 
 from .. import fArray, doc_style
 
@@ -78,8 +78,9 @@ def arc_sine_pdf_(x: fArray,
     pdf_[mask_] = 1 / (np.pi * np.sqrt(y[mask_] * (1 - y[mask_])))
     pdf_ = _remove_nans(pdf_) / scale
 
-    pdf_[y == 0] = np.inf
-    pdf_[y == 1] = np.inf
+    if not scalar_input:
+        pdf_[y == 0] = np.inf
+        pdf_[y == 1] = np.inf
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -739,16 +740,16 @@ def folded_normal_pdf_(x: fArray,
     where :math:`\phi` is the PDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`,
     and :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = \dfrac{x - \text{loc}}{\sigma}
+    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
 
-    The final PDF is expressed as :math:`f(y)/\sigma`.
+    The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
     x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
         return x
 
-    _, pdf_ = _folded(x=x, mean=mean, sigma=sigma, loc=loc, g_func=gaussian_pdf_)
+    _, pdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_pdf_)
     pdf_ = _remove_nans(pdf_) / sigma
 
     if not normalize:
@@ -782,7 +783,7 @@ def folded_normal_log_pdf_(x: fArray,
     if x.size == 0:
         return x
 
-    _, pdf_ = _folded(x=x, mean=mean, sigma=sigma, loc=loc, g_func=gaussian_pdf_)
+    _, pdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_pdf_)
     log_pdf_ = np.log(pdf_) - np.log(sigma)
 
     if not normalize:
@@ -823,7 +824,7 @@ def folded_normal_cdf_(x: fArray,
     if x.size == 0:
         return x
 
-    mask_, cdf_ = _folded(x=x, mean=mean, sigma=sigma, loc=loc, g_func=gaussian_cdf_)
+    mask_, cdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_cdf_)
     cdf_[mask_] -= 1
 
     return cdf_.item() if scalar_input else cdf_
@@ -868,7 +869,7 @@ def folded_normal_log_cdf_(x: fArray,
     return log_cdf_.item() if scalar_input else log_cdf_
 
 
-def _folded(x: fArray, mean: float, sigma: float, loc: float, g_func: Callable):
+def _folded(x: fArray, mean: float, loc: float, scale: float, g_func: Callable):
     r"""
     Precompute the gaussian part of :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -879,7 +880,7 @@ def _folded(x: fArray, mean: float, sigma: float, loc: float, g_func: Callable):
     mean : float, optional
         The mean parameter, :math:`\mu`.
         Defaults to 0.0.
-    sigma : float, optional
+    scale : float, optional
         The standard deviation parameter, :math:`\sigma`.
         Defaults to 1.0.
     loc : float, optional
@@ -893,10 +894,10 @@ def _folded(x: fArray, mean: float, sigma: float, loc: float, g_func: Callable):
     np.ndarray
         The additive gaussian part of the folded normal distribution.
     """
-    if sigma <= 0 or mean < 0:
+    if scale <= 0 or mean < 0:
         return np.full(shape=x.size, fill_value=np.nan)
 
-    y = (x - loc) / sigma
+    y = (x - loc) / scale
     distribution_ = np.zeros_like(a=y, dtype=float)
 
     mask = y >= 0
@@ -1484,14 +1485,12 @@ def half_normal_log_cdf_(x: fArray,
 def laplace_pdf_(x: fArray,
                  amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
                  normalize: bool = False) -> fArray:
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
-    pdf_ = abs(x - mean) / diversity
-    pdf_ = np.exp(-pdf_) / (2 * diversity)
+    pdf_ = np.exp(-np.abs(y)) / (2 * diversity)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1503,7 +1502,8 @@ def laplace_log_pdf_(x: fArray,
                      amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
                      normalize: bool = False) -> fArray:
     pdf_ = laplace_pdf_(x,
-                        amplitude=amplitude, mean=mean, diversity=diversity, normalize=normalize)
+                        amplitude=amplitude, mean=mean, diversity=diversity,
+                        normalize=normalize)
 
     return np.log(pdf_)
 
@@ -1537,11 +1537,10 @@ def laplace_cdf_(x: fArray,
         1 - \dfrac{1}{2}\exp\left(-\dfrac{x-\mu}{b}\right) &,&x\geq\mu
         \end{cases}
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
-        return np.array([])
+        return x
 
     def _cdf1(x_):
         return 0.5 * np.exp((x_ - mean) / diversity)
@@ -1562,7 +1561,8 @@ def laplace_log_cdf_(x: fArray,
                      amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
                      normalize: bool = False) -> fArray:
     cdf_ = laplace_cdf_(x,
-                        amplitude=amplitude, mean=mean, diversity=diversity, normalize=normalize)
+                        amplitude=amplitude, mean=mean, diversity=diversity,
+                        normalize=normalize)
 
     return np.log(cdf_)
 
@@ -1613,26 +1613,20 @@ def log_normal_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
-    y = x - loc
-    pdf_ = np.zeros_like(a=y, dtype=float)
     mask_ = y > 0
 
-    if np.any(mask_):
-        y_valid = y[mask_]
-        f1 = (np.log(y_valid) - mean)**2 / (2 * std**2)
-        f1 = np.exp(-f1)
-        pdf_[mask_] = f1 / (std * y_valid * np.sqrt(2 * np.pi))
+    pdf_ = np.zeros(shape=y.shape)
+    q = (np.log(y[mask_]) - mean) / std
+    pdf_[mask_] = np.exp(-0.5 * q**2) / (std * y[mask_] * np.sqrt(2 * np.pi))
+    pdf_ = _remove_nans(pdf_)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
-
-    pdf_ = _remove_nans(pdf_)
 
     return pdf_.item() if scalar_input else pdf_
 
@@ -1640,26 +1634,20 @@ def log_normal_pdf_(x: fArray,
 def log_normal_log_pdf_(x: fArray,
                         amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0,
                         loc: float = 0.0, normalize: bool = False) -> fArray:
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
-    y = x - loc
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
     mask_ = y > 0
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
 
-    if np.any(mask_):
-        y_valid = y[mask_]
-        f1 = (np.log(y_valid) - mean)**2 / (2 * std**2)
-        log_pdf_[mask_] = -f1
-        log_pdf_[mask_] -= np.log(std * y_valid * np.sqrt(2 * np.pi))
+    q = (np.log(y[mask_]) - mean) / std
+    log_pdf_[mask_] = -0.5 * q**2 - np.log(std) - np.log(y[mask_]) - 0.5 * np.log(2 * np.pi)
+    log_pdf_ = _remove_nans(x=log_pdf_, nan_value=-np.inf)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
-
-    log_pdf_ = _remove_nans(log_pdf_)
 
     return log_pdf_.item() if scalar_input else log_pdf_
 
@@ -1690,25 +1678,20 @@ def log_normal_cdf_(x: fArray,
     .. math::
         F(x) = \Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)
     """
-    return _remove_nans(gaussian_cdf_(x=np.log(x - loc),
-                                      amplitude=amplitude, mean=mean, std=std, normalize=normalize))
+    cdf_ = gaussian_cdf_(np.log(x - loc),
+                         amplitude=amplitude, mean=mean, std=std,
+                         normalize=normalize)
+    return _remove_nans(cdf_)
 
 
 def log_normal_log_cdf_(x: fArray,
                         amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0,
                         loc: float = 0.0, normalize: bool = False) -> fArray:
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    log_cdf_ = gaussian_log_cdf_(np.log(x - loc),
+                                 amplitude=amplitude, mean=mean, std=std,
+                                 normalize=normalize)
 
-    if x.size == 0:
-        return np.array([])
-
-    y = x - loc
-    log_cdf_ = gaussian_log_cdf_(np.log(y),
-                                 amplitude=amplitude, mean=mean, std=std, normalize=normalize)
-    log_cdf_ = _remove_nans(log_cdf_, nan_value=-np.inf)
-
-    return log_cdf_.item() if scalar_input else log_cdf_
+    return _remove_nans(x=log_cdf_, nan_value=-np.inf)
 
 
 def uniform_pdf_(x: fArray,
@@ -1746,25 +1729,23 @@ def uniform_pdf_(x: fArray,
 
     .. math:: f(x\ |\ a, b) = \dfrac{1}{b-a}
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
-        return np.array([])
+        return x
 
     high_ = high + low
-    pdf_ = np.zeros_like(a=x, dtype=float)
-
     if high_ == low:
         return np.full(shape=x.size, fill_value=np.nan)
 
     mask_ = np.logical_and(x >= low, x <= high_)
+
+    pdf_ = np.zeros(shape=x.shape, dtype=float)
     pdf_[mask_] = 1 / (high_ - low)
+    pdf_ = _remove_nans(pdf_)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
-
-    pdf_ = _remove_nans(pdf_)
 
     return pdf_.item() if scalar_input else pdf_
 
@@ -1772,19 +1753,15 @@ def uniform_pdf_(x: fArray,
 def uniform_log_pdf_(x: fArray,
                      amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
                      normalize: bool = False) -> fArray:
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
-        return np.array([])
+        return x
 
     high_ = high + low
-    log_pdf_ = np.full(shape=x.shape, fill_value=-np.inf)
-
-    # if high_ == low:
-    #     return log_pdf_
-
     mask_ = np.logical_and(x >= low, x <= high_)
+
+    log_pdf_ = np.full(shape=x.shape, fill_value=-np.inf)
     log_pdf_[mask_] = -np.log(high_ - low)
 
     if not normalize:
@@ -1817,21 +1794,21 @@ def uniform_cdf_(x: fArray,
                         1 &, x > b
                         \end{cases}
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
-        return np.array([])
+        return x
 
-    high = high + low
-    cdf_ = np.zeros_like(a=x, dtype=float)
+    high_ = high + low
 
-    if low == high == 0:
+    if low == high_ == 0:
         return np.full(shape=x.size, fill_value=np.nan)
 
-    mask_ = (x >= low) & (x <= high)
-    cdf_[mask_] = (x[mask_] - low) / (high - low)
-    cdf_[x > high] = 1
+    mask_ = np.logical_and(x >= low, x <= high_)
+
+    cdf_ = np.zeros(shape=x.shape, dtype=float)
+    cdf_[mask_] = (x[mask_] - low) / (high_ - low)
+    cdf_[x > high_] = 1
 
     return cdf_.item() if scalar_input else cdf_
 
@@ -1839,21 +1816,20 @@ def uniform_cdf_(x: fArray,
 def uniform_log_cdf_(x: fArray,
                      amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
                      normalize: bool = False) -> fArray:
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
-        return np.array([])
+        return x
 
-    high = high + low
+    high_ = high + low
     log_cdf_ = np.full(shape=x.shape, fill_value=-np.inf)
 
-    if low == high == 0:
+    if low == high_ == 0:
         return log_cdf_
 
-    mask_ = np.logical_and(x >= low, x <= high)
-    log_cdf_[mask_] = np.log(x[mask_] - low) - np.log(high - low)
-    log_cdf_[x > high] = 0
+    mask_ = np.logical_and(x >= low, x <= high_)
+    log_cdf_[mask_] = np.log(x[mask_] - low) - np.log(high_ - low)
+    log_cdf_[x > high_] = 0
 
     return log_cdf_.item() if scalar_input else log_cdf_
 
@@ -1902,31 +1878,25 @@ def scaled_inv_chi_square_pdf_(x, amplitude: float = 1.0, df: float = 1.0, scale
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
     tau2 = scale / df
     df_half = df / 2
 
-    y = x - loc
+    mask_ = y > 0
 
     pdf_ = np.zeros_like(a=y, dtype=float)
-    mask = y > 0
-
-    frac1 = np.power(tau2 * df_half, df_half) / gamma(df_half)
-    if np.any(mask):
-        y_valid = y[mask]
-        frac2 = np.exp(-(df * tau2) / (2 * y_valid)) / np.power(y_valid, 1 + df_half)
-
-        pdf_[mask] = frac1 * frac2
+    frac1 = np.power(tau2 * df_half, df_half) * rgamma(df_half)
+    frac2 = np.exp(-(df * tau2) / (2 * y[mask_])) / np.power(y[mask_], 1 + df_half)
+    pdf_[mask_] = frac1 * frac2
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_
+    return pdf_.item() if scalar_input else pdf_
 
 
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
@@ -1949,26 +1919,21 @@ def scaled_inv_chi_square_log_pdf_(x: fArray, amplitude: float = 1.0, df: float 
 
     The final PDF is expressed as :math:`\ell(y)`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
     tau2 = scale / df
     df_half = df / 2
 
-    y = x - loc
-
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
     mask_ = y > 0
 
-    frac1 = df_half * np.log(tau2 * df_half) - gammaln(df_half)
-    if np.any(mask_):
-        y_valid = y[mask_]
-        frac2 = -(tau2 * df) / (2 * y_valid) - (1 + df_half) * np.log(y_valid)
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
 
-        log_pdf_[mask_] = frac1 + frac2
+    frac1 = df_half * np.log(tau2 * df_half) - gammaln(df_half)
+    frac2 = -(tau2 * df) / (2 * y[mask_]) - (1 + df_half) * np.log(y[mask_])
+    log_pdf_[mask_] = frac1 + frac2
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1978,39 +1943,27 @@ def scaled_inv_chi_square_log_pdf_(x: fArray, amplitude: float = 1.0, df: float 
 
 def scaled_inv_chi_square_cdf_(x, amplitude, df, scale, loc: float = 0.0,
                                normalize: bool = False):
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
     tau2 = scale / df
     df_half = df / 2
 
-    y = x - loc
-    cdf_ = np.zeros_like(a=y, dtype=float)
     mask_ = y > 0
+    cdf_ = np.zeros(shape=y.shape, dtype=float)
     cdf_[mask_] = gammaincc(df_half, (tau2 * df_half) / y[mask_])
 
-    return cdf_
+    return cdf_.item() if scalar_input else cdf_
 
 
-def scaled_inv_chi_square_log_cdf_(x, amplitude, df, scale, loc, normalize=False):
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+def scaled_inv_chi_square_log_cdf_(x, amplitude, df, loc, scale, normalize=False):
+    cdf_ = scaled_inv_chi_square_cdf_(x,
+                                      amplitude=amplitude, df=df, scale=scale,
+                                      loc=loc, normalize=normalize)
 
-    if x.size == 0:
-        return np.array([])
-
-    tau2 = scale / df
-    df_half = df / 2
-
-    y = x - loc
-    log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    mask_ = y > 0
-    log_cdf_[mask_] = np.log(gammaincc(df_half, (tau2 * df_half) / y[mask_]))
-
-    return log_cdf_
+    return np.log(cdf_)
 
 
 def skew_normal_pdf_(x: fArray,
@@ -2060,22 +2013,19 @@ def skew_normal_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)/\omega`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
-    y = (x - loc) / scale
     g_pdf_ = gaussian_pdf_(x=y, normalize=True)
     g_cdf_ = gaussian_cdf_(x=shape * y, normalize=True)
 
     pdf_ = (2 / scale) * g_pdf_ * g_cdf_
+    pdf_ = _remove_nans(pdf_)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
-
-    pdf_ = _remove_nans(pdf_)
 
     return pdf_.item() if scalar_input else pdf_
 
@@ -2083,13 +2033,11 @@ def skew_normal_pdf_(x: fArray,
 def skew_normal_log_pdf_(x: fArray,
                          amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                          normalize: bool = False) -> fArray:
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
-    y = (x - loc) / scale
     g_l_pdf_ = gaussian_log_pdf_(x=y, normalize=True)
     g_l_cdf_ = gaussian_log_cdf_(x=shape * y, normalize=True)
 
@@ -2124,13 +2072,7 @@ def skew_normal_cdf_(x: fArray,
     where, :math:`T` is the Owen's T function, see :obj:`scipy.special.owens_t`, and
     :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
-
-    if x.size == 0:
-        return np.array([])
-
-    y = (x - loc) / scale
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
     cdf_ = gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
 
     return cdf_.item() if scalar_input else cdf_
@@ -2139,6 +2081,15 @@ def skew_normal_cdf_(x: fArray,
 def sym_gen_normal_pdf_(x: fArray,
                         amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                         normalize: bool = False) -> fArray:
+    log_pdf_ = sym_gen_normal_log_pdf_(x,
+                                       amplitude=amplitude, shape=shape,
+                                       loc=loc, scale=scale, normalize=normalize)
+    return np.exp(log_pdf_)
+
+
+def sym_gen_normal_log_pdf_(x: fArray,
+                            amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                            normalize: bool = False) -> fArray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -2177,20 +2128,15 @@ def sym_gen_normal_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    x, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
 
     if x.size == 0:
-        return np.array([])
+        return x
 
     mu, alpha, beta = loc, scale, shape
 
-    log1_ = np.log(beta) - np.log(2 * alpha * gamma(1 / beta))
-
-    log2_ = np.log(abs(x - mu) / alpha)
-    log2_ = np.exp(beta * log2_)
-
-    pdf_ = np.exp(log1_ - log2_)
+    log_const_ = np.log(beta) - np.log(2) - gammaln(1 / beta)
+    pdf_ = log_const_ - np.power(np.abs(x), beta) - np.log(scale)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -2221,18 +2167,26 @@ def sym_gen_normal_cdf_(x: fArray,
 
     where :math:`\gamma(\cdot,\cdot)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
     mu, alpha, beta = loc, scale, shape
 
-    f1 = (x - mu) / alpha
-    cdf_ = 0.5 + (np.sign(x - mu) * 0.5 * gammainc(1 / beta, abs(f1)**beta))
+    cdf_ = 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, np.power(np.abs(y), beta))
 
     return cdf_.item() if scalar_input else cdf_
+
+
+def sym_gen_normal_log_cdf_(x: fArray,
+                            amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                            normalize: bool = False) -> fArray:
+    cdf_ = sym_gen_normal_cdf_(x,
+                               amplitude=amplitude, shape=shape,
+                               loc=loc, scale=scale, normalize=normalize)
+
+    return np.log(cdf_)
 
 
 def _beta_masking(y: fArray, alpha: float, beta: float) -> fArray:
@@ -2254,7 +2208,7 @@ def _beta_masking(y: fArray, alpha: float, beta: float) -> fArray:
         A boolean mask array where `True` indicates out-of-range or undefined values.
     """
     out_of_range_mask = np.logical_or(y < 0, y > 1)
-    undefined_mask = np.zeros_like(a=y, dtype=bool)
+    undefined_mask = np.zeros(shape=y.shape, dtype=bool)
     if alpha <= 1:
         undefined_mask = np.logical_or(undefined_mask, y == 0)
     if beta <= 1:
@@ -2283,8 +2237,7 @@ def _pdf_scaling(pdf_: fArray, amplitude: float) -> fArray:
 
 
 def _log_pdf_scaling(log_pdf_: fArray, amplitude: float) -> fArray:
-    scaling = log_pdf_ - np.max(log_pdf_)
-    return np.log(amplitude) + scaling
+    return log_pdf_ + np.log(amplitude) - np.max(log_pdf_)
 
 
 def _remove_nans(x: fArray, nan_value=None) -> fArray:
@@ -2326,8 +2279,8 @@ def preprocess_input(x, loc=0.0, scale=1.0):
     tuple:
         (processed array, scalar_input_flag)
     """
-    x = np.asarray(a=x, dtype=float)
     scalar_input = np.isscalar(x)
+    x = np.asarray(a=x, dtype=float)
 
     if x.size == 0:
         return np.array([]), scalar_input
