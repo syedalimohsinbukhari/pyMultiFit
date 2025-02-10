@@ -20,8 +20,13 @@ Available for user
 .. autofunction:: beta_cdf_
 .. autofunction:: beta_log_cdf_
 .. autofunction:: chi_square_pdf_
+.. autofunction:: chi_square_log_pdf_
+.. autofunction:: chi_square_cdf_
+.. autofunction:: chi_square_log_cdf_
 .. autofunction:: exponential_pdf_
+.. autofunction:: exponential_log_pdf_
 .. autofunction:: exponential_cdf_
+.. autofunction:: exponential_log_cdf_
 .. autofunction:: folded_normal_pdf_
 .. autofunction:: folded_normal_cdf_
 .. autofunction:: gamma_sr_pdf_
