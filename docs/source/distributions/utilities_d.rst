@@ -35,7 +35,9 @@ Available for user
 .. autofunction:: gaussian_pdf_
 .. autofunction:: gaussian_cdf_
 .. autofunction:: half_normal_pdf_
+.. autofunction:: half_normal_log_pdf_
 .. autofunction:: half_normal_cdf_
+.. autofunction:: half_normal_log_cdf_
 .. autofunction:: laplace_pdf_
 .. autofunction:: laplace_cdf_
 .. autofunction:: log_normal_pdf_

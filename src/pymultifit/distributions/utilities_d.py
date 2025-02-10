@@ -826,7 +826,7 @@ def folded_normal_pdf_(x: fArray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    pdf_ = _remove_nans(pdf_ / sigma)
+    pdf_ = _remove_nans(pdf_) / sigma
 
     return pdf_.item() if scalar_input else pdf_
 
@@ -1270,7 +1270,7 @@ def half_normal_pdf_(x: fArray,
     Compute PDF for the :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
     .. note::
-        The :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`. is a special case of the
+        The :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution` is a special case of the
         :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution` with :math:`\mu = 0`.
 
     Parameters
@@ -1300,9 +1300,13 @@ def half_normal_pdf_(x: fArray,
     The HalfNormal PDF is defined as:
 
     .. math::
-        f(x\ |\ \sigma) = \sqrt{\dfrac{2}{\pi\sigma^2}}\exp\left[-\dfrac{x^2}{2\sigma^2}\right]
+        f(y\ |\ \sigma) = \sqrt{\dfrac{2}{\pi}}\exp\left(-\dfrac{y^2}{2}\right)
 
-    where :math:`x >= 0`.
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}.
+
+    The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
     x = np.asarray(a=x, dtype=float)
     scalar_input = np.isscalar(x)
@@ -1320,14 +1324,29 @@ def half_normal_pdf_(x: fArray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    pdf_ = _remove_nans(pdf_ / sigma)
+    pdf_ = _remove_nans(pdf_) / sigma
 
     return pdf_.item() if scalar_input else pdf_
 
-
+@doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_log_pdf_(x: fArray,
                          amplitude: float = 1.0, sigma: float = 1.0,
                          loc: float = 0.0, normalize: bool = False) -> fArray:
+    r"""
+    Compute log PDF for the :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
+
+    Notes
+    -----
+    The HalfNormal log PDF is defined as:
+
+    .. math:: \ell(y\ |\ \sigma) = \dfrac{1}{2}\ln\left(\dfrac{2}{\pi}\right) - \dfrac{y^2}{2}
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}.
+
+    The final log PDF is expressed as :math:`\ell(y) - \ln\left(\text{scale}\right)`.
+    """
     x = np.asarray(a=x, dtype=float)
     scalar_input = np.isscalar(x)
 
@@ -1365,7 +1384,13 @@ def half_normal_cdf_(x: fArray,
     -----
     The HalfNormal CDF is defined as:
 
-    .. math:: F(x) = \text{erf}\left( \frac{x}{\sqrt{2\sigma^2}}\right)
+    .. math:: F(y) = \text{erf}\left(\frac{y}{\sqrt{2}}\right)
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}.
+
+    The final CDF is expressed as :math:`F(y)`.
     """
     x = np.asarray(a=x, dtype=float)
     scalar_input = np.isscalar(x)
@@ -1380,22 +1405,30 @@ def half_normal_cdf_(x: fArray,
 
     return cdf_.item() if scalar_input else cdf_
 
-
+@doc_inherit(parent=half_normal_cdf_, style=doc_style)
 def half_normal_log_cdf_(x: fArray,
                          amplitude: float = 1.0, sigma: float = 1.0,
                          loc: float = 0.0, normalize: bool = False) -> fArray:
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    r"""
+    Compute the log CDF for :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
-    if x.size == 0:
-        return np.array([])
+    Notes
+    -----
+    The HalfNormal log CDF is defined as:
 
-    y = (x - loc) / sigma
-    mask_ = y >= 0
-    log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_cdf_[mask_] = np.log(erf(y[mask_] / np.sqrt(2)))
+    .. math:: \mathcal{L}(y) = \ln\text{erf}\left(\frac{y}{\sqrt{2}}\right)
 
-    return log_cdf_.item() if scalar_input else log_cdf_
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}.
+
+    The final log CDF is expressed as :math:`\mathcal{L}(y)`.
+    """
+    cdf_ = half_normal_cdf_(x,
+                            amplitude=amplitude, sigma=sigma,
+                            loc=loc, normalize=normalize)
+
+    return np.log(cdf_)
 
 
 def laplace_pdf_(x: fArray,
