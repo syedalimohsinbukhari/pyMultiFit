@@ -3,7 +3,7 @@
 from math import sqrt, nan
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import uniform_cdf_, uniform_pdf_
+from .utilities_d import uniform_cdf_, uniform_pdf_, uniform_log_pdf_, uniform_log_cdf_
 
 
 class UniformDistribution(BaseDistribution):
@@ -102,10 +102,20 @@ class UniformDistribution(BaseDistribution):
         return cls(low=loc, high=scale, normalize=True)
 
     def pdf(self, x):
-        return uniform_pdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        return uniform_pdf_(x,
+                            amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+
+    def logpdf(self, x):
+        return uniform_log_pdf_(x,
+                                amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
     def cdf(self, x):
-        return uniform_cdf_(x=x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        return uniform_cdf_(x,
+                            amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+
+    def logcdf(self, x):
+        return uniform_log_cdf_(x,
+                                amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
     def stats(self):
         low, high = self.low, self.low + self.high

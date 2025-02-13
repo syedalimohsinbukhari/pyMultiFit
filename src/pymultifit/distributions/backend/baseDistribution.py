@@ -2,7 +2,7 @@
 
 from typing import Dict
 
-import numpy as np
+from ... import fArray
 
 
 class BaseDistribution:
@@ -13,15 +13,7 @@ class BaseDistribution:
     for probability density function (PDF), cumulative distribution function (CDF), and statistics.
     """
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        """
-        Compute the cumulative density function (CDF) for the distribution.
-
-        :param x: Input array at which to evaluate the CDF.
-        """
-        raise NotImplementedError("Subclasses should implement this method.")
-
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: fArray) -> fArray:
         r"""
         Compute the probability density function (PDF) for the distribution.
 
@@ -29,10 +21,28 @@ class BaseDistribution:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def logpdf(self, x: np.array) -> np.ndarray:
+    def logpdf(self, x: fArray) -> fArray:
+        r"""
+        Compute the log probability density function (logPDF) for the distribution.
+
+        :param x: Input array at which to evaluate the logPDF.
+        """
         pass
 
-    def logcdf(self, x: np.array) -> np.ndarray:
+    def cdf(self, x: fArray) -> fArray:
+        """
+        Compute the cumulative density function (CDF) for the distribution.
+
+        :param x: Input array at which to evaluate the CDF.
+        """
+        raise NotImplementedError("Subclasses should implement this method.")
+
+    def logcdf(self, x: fArray) -> fArray:
+        r"""
+        Compute the log cumulative density function (logCDF) for the distribution.
+
+        :param x: Input array at which to evaluate the logCDF.
+        """
         pass
 
     def stats(self) -> Dict[str, float]:
@@ -64,6 +74,11 @@ class BaseDistribution:
         return self.stats().get('median', None)
 
     @property
+    def mode(self):
+        """The mode of the distribution."""
+        return self.stats().get('mode', None)
+
+    @property
     def variance(self):
         """The variance of the distribution."""
         return self.stats().get('variance', None)
@@ -72,8 +87,3 @@ class BaseDistribution:
     def stddev(self):
         """The standard deviation of the distribution."""
         return self.stats().get('std', None)
-
-    @property
-    def mode(self):
-        """The mode of the distribution."""
-        return self.stats().get('mode', None)

@@ -1,7 +1,8 @@
 """Created on Aug 14 01:28:13 2024"""
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import gamma_sr_cdf_, gamma_sr_pdf_
+from .utilities_d import (gamma_sr_pdf_, gamma_sr_log_pdf_, gamma_sr_cdf_, gamma_sr_log_cdf_,
+                          gamma_ss_pdf_, gamma_ss_log_pdf_, gamma_ss_cdf_, gamma_ss_log_cdf_)
 
 
 class GammaDistributionSR(BaseDistribution):
@@ -118,10 +119,20 @@ class GammaDistributionSR(BaseDistribution):
                              amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
                              normalize=self.norm)
 
+    def logpdf(self, x):
+        return gamma_sr_log_pdf_(x,
+                                 amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
+                                 normalize=self.norm)
+
     def cdf(self, x):
         return gamma_sr_cdf_(x,
                              amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
                              normalize=self.norm)
+
+    def logcdf(self, x):
+        return gamma_sr_log_cdf_(x,
+                                 amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
+                                 normalize=self.norm)
 
     def stats(self):
         s, r, l_ = self.shape, self.rate, self.loc
@@ -132,11 +143,12 @@ class GammaDistributionSR(BaseDistribution):
 
         return {'mean': mean_,
                 'mode': mode_,
+                'median': None,
                 'variance': variance_,
                 'std': variance_**0.5}
 
 
-class GammaDistributionSS(GammaDistributionSR):
+class GammaDistributionSS(BaseDistribution):
     r"""
     Class for Gamma distribution with shape and scale parameters.
 
@@ -208,16 +220,21 @@ class GammaDistributionSS(GammaDistributionSR):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, shape: float = 1.0, scale: float = 1.0, loc: float = 0.0,
+    def __init__(self,
+                 amplitude: float = 1.0, shape: float = 1.0, scale: float = 1.0, loc: float = 0.0,
                  normalize: bool = False):
-        self.scale = scale
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif shape <= 0:
             raise erH.NegativeShapeError()
         elif scale <= 0:
             raise erH.NegativeScaleError()
-        super().__init__(amplitude=amplitude, shape=shape, rate=1 / self.scale, loc=loc, normalize=normalize)
+        self.amplitude = 1. if normalize else amplitude
+        self.shape = shape
+        self.scale = 1 / scale
+        self.loc = loc
+
+        self.norm = normalize
 
     @classmethod
     def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0):
@@ -239,3 +256,27 @@ class GammaDistributionSS(GammaDistributionSR):
             An instance of normalized GammaDistributionSS.
         """
         return cls(shape=a, loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x):
+        return gamma_ss_pdf_(x,
+                             amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
+                             normalize=self.norm)
+
+    def logpdf(self, x):
+        return gamma_ss_log_pdf_(x,
+                                 amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
+                                 normalize=self.norm)
+
+    def cdf(self, x):
+        return gamma_ss_cdf_(x,
+                             amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
+                             normalize=self.norm)
+
+    def logcdf(self, x):
+        return gamma_ss_log_cdf_(x,
+                                 amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
+                                 normalize=self.norm)
+
+    def stats(self):
+        GammaDistributionSR(amplitude=self.amplitude, shape=self.shape, rate=1 / self.scale, loc=self.loc,
+                            normalize=self.norm).stats()

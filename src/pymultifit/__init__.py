@@ -8,6 +8,7 @@ from .version import __author__, __copyright__, __description__, __email__, __li
 
 doc_style = 'numpy_napoleon_with_merge'
 
+fArray = Union[float, np.ndarray]
 # taken from https://stackoverflow.com/a/19141711
 EPSILON = np.finfo(float).eps
 epsilon = np.sqrt(EPSILON)

@@ -1,7 +1,7 @@
 """Created on Aug 03 21:12:13 2024"""
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import laplace_cdf_, laplace_pdf_
+from .utilities_d import laplace_cdf_, laplace_pdf_, laplace_log_pdf_, laplace_log_cdf_
 
 
 class LaplaceDistribution(BaseDistribution):
@@ -106,9 +106,17 @@ class LaplaceDistribution(BaseDistribution):
         return laplace_pdf_(x,
                             amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
+    def logpdf(self, x):
+        return laplace_log_pdf_(x,
+                                amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+
     def cdf(self, x):
         return laplace_cdf_(x,
                             amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+
+    def logcdf(self, x):
+        return laplace_log_cdf_(x,
+                                amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def stats(self):
         m, b = self.mu, self.b

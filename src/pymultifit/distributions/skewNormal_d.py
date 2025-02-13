@@ -2,18 +2,11 @@
 
 from math import sqrt, pi, exp
 
+import numpy as np
+
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
 from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
-
-
-def my_sign(x):
-    if x > 0:
-        return 1
-    elif x < 0:
-        return -1
-    else:
-        return 0
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -123,11 +116,13 @@ class SkewNormalDistribution(BaseDistribution):
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
     def pdf(self, x):
-        return skew_normal_pdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
+        return skew_normal_pdf_(x,
+                                amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
                                 normalize=self.norm)
 
     def cdf(self, x):
-        return skew_normal_cdf_(x=x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
+        return skew_normal_cdf_(x,
+                                amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
                                 normalize=self.norm)
 
     def stats(self):
@@ -137,7 +132,7 @@ class SkewNormalDistribution(BaseDistribution):
 
         def _m0(alpha_):
             term2 = (1 - pi / 4) * delta_sqrt_2_pi**3 / (1 - (2 / pi) * delta**2)
-            term3 = (2 * pi / abs(alpha_)) * exp(-(2 * pi / abs(alpha_))) * my_sign(alpha_)
+            term3 = (2 * pi / abs(alpha_)) * exp(-(2 * pi / abs(alpha_))) * np.sign(alpha_)
             return delta_sqrt_2_pi - term2 - term3
 
         # Calculating mean, mode, variance, and std

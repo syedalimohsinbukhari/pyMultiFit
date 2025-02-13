@@ -1,9 +1,9 @@
 """Created on Aug 03 21:02:45 2024"""
 
-from math import exp, log, inf
+import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import log_normal_cdf_, log_normal_pdf_
+from .utilities_d import log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_
 
 
 class LogNormalDistribution(BaseDistribution):
@@ -81,10 +81,7 @@ class LogNormalDistribution(BaseDistribution):
         elif std <= 0:
             raise erH.NegativeStandardDeviationError()
         self.amplitude = 1. if normalize else amplitude
-        try:
-            self.mu = log(mu)
-        except ValueError:
-            self.mu = -inf
+        self.mu = np.log(mu)
         self.std = std
         self.loc = loc
 
@@ -115,20 +112,31 @@ class LogNormalDistribution(BaseDistribution):
         return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
                                normalize=self.norm)
 
+    def logpdf(self, x):
+        return log_normal_log_pdf_(x,
+                                   amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
+                                   normalize=self.norm)
+
     def cdf(self, x):
         return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
                                normalize=self.norm)
 
+    def logcdf(self, x):
+        return log_normal_log_cdf_(x,
+                                   amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
+                                   normalize=self.norm)
+
     def stats(self):
-        m, s, l_ = self.mu, self.std, self.loc
+        m, s, l_ = np.exp(self.mu), self.std, self.loc
 
-        mean_ = exp(m + (s**2 / 2)) + l_
-        median_ = exp(m) + l_
-        mode_ = exp(m - s**2) + l_
-        variance_ = (exp(s**2) - 1) * exp(2 * m + s**2)
+        # copied from scipy source-code,
+        # simpler implementations give reasonable higher values > 10^100 but scipy gives np.inf,
+        # so I'm shortcutting it by taking scipy implementation here directly.
+        p = np.exp(s * s)
+        mean_ = np.sqrt(p)
+        variance_ = p * (p - 1)
+        variance_ *= m**2
 
-        return {'mean': mean_,
-                'median': median_,
-                'mode': mode_,
+        return {'mean': (m * mean_) + l_,
                 'variance': variance_,
-                'std': variance_**0.5}
+                'std': np.sqrt(variance_)}

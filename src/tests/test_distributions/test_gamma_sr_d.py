@@ -4,12 +4,15 @@ import numpy as np
 import pytest
 from scipy.stats import gamma
 
-from ...pymultifit import EPSILON
+from . import base_test_functions as btf
 from ...pymultifit.distributions import GammaDistributionSR, GammaDistributionSS
 from ...pymultifit.distributions.backend import errorHandling as erH
 
+np.random.seed(45)
 
-class TestGammaDistributionSR:
+
+class TestGammaSRDistribution:
+
     @staticmethod
     def test_initialization():
         dist = GammaDistributionSR(amplitude=1.0, shape=1.0, rate=1.0, normalize=False)
@@ -39,63 +42,72 @@ class TestGammaDistributionSR:
 
     @staticmethod
     def test_edge_cases():
-        dist = GammaDistributionSR()
-        x = np.array([])
-        result = dist.pdf(x)
-        assert result.size == 0  # Should return an empty array
+        btf.edge_cases(distribution=GammaDistributionSR(), log_check=True)
 
     @staticmethod
     def test_stats():
-        def check_stats_sr(custom_, scipy_):
-            stats = custom_.stats()
-
-            scipy_mean = scipy_.mean()
-            assert np.isclose(stats['mean'], scipy_mean, rtol=1e-6), f"Mean mismatch: {stats['mean']} vs {scipy_mean}"
-
-            scipy_variance = scipy_.var()
-            assert np.isclose(stats['variance'], scipy_variance,
-                              rtol=1e-6), f"Variance mismatch: {stats['variance']} vs {scipy_variance}"
-
-            # scipy doesn't provide mode for the distribution so I'm not doing that test
-
-            assert stats.get('median', []) == [], "Median check failed (should be empty)."
-
-        for _ in range(50):
-            shape_ = np.random.uniform(low=EPSILON, high=10.0)
-            scale_ = np.random.uniform(low=EPSILON, high=10.0)
-            loc_ = np.random.uniform(low=-10.0, high=10.0)
-
-            dist1 = GammaDistributionSR(shape=shape_, rate=scale_, loc=loc_, normalize=True)
-            dist2 = GammaDistributionSS(shape=shape_, scale=1 / scale_, loc=loc_, normalize=True)
-
-            scipy_dist = gamma(a=shape_, scale=1 / scale_, loc=loc_)
-
-            check_stats_sr(custom_=dist1, scipy_=scipy_dist)
-            check_stats_sr(custom_=dist2, scipy_=scipy_dist)
+        btf.stats(custom_distribution=GammaDistributionSR.scipy_like, scipy_distribution=gamma,
+                  parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], median=False)
 
     @staticmethod
-    def test_pdf_cdf():
-        def _cdf_pdf_custom(x_, dist_, what='cdf'):
-            return dist_.cdf(x_) if what == 'cdf' else dist_.pdf(x_)
+    def test_pdfs():
+        btf.value_functions(custom_distribution=GammaDistributionSR.scipy_like, scipy_distribution=gamma,
+                            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], log_check=True)
 
-        def _cdf_pdf_scipy(x_, shape, rate, loc, what='cdf'):
-            return [gamma.cdf(x_, a=shape, scale=rate, loc=loc) if what == 'cdf' else
-                    gamma.pdf(x_, a=shape, scale=rate, loc=loc)][0]
+    @staticmethod
+    def test_single_values():
+        btf.single_input_n_variables(custom_distribution=GammaDistributionSR.scipy_like,
+                                     scipy_distribution=gamma,
+                                     parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+                                     log_check=True)
 
-        for i in ['pdf', 'cdf']:
-            for _ in range(50):  # Run 50 random tests
-                loc_ = np.random.uniform(low=EPSILON, high=5)
-                shape_ = np.random.uniform(low=EPSILON, high=10)
-                rate_ = np.random.uniform(low=EPSILON, high=10)
-                scale_ = 1 / rate_
 
-                x = np.linspace(start=0, stop=5, num=10)  # Generate valid x values
-                distribution_sr = GammaDistributionSR(shape=shape_, rate=rate_, loc=loc_, normalize=True)
-                distribution_ss = GammaDistributionSS(shape=shape_, scale=scale_, loc=loc_, normalize=True)
+class TestGammaSSDistribution:
 
-                expected = _cdf_pdf_scipy(x_=x, shape=shape_, rate=scale_, loc=loc_, what=i)
-                custom1 = _cdf_pdf_custom(x_=x, dist_=distribution_sr, what=i)
-                custom2 = _cdf_pdf_custom(x_=x, dist_=distribution_ss, what=i)
+    @staticmethod
+    def test_initialization():
+        dist = GammaDistributionSS(amplitude=1.0, shape=1.0, scale=1.0, normalize=False)
+        assert dist.amplitude == 1.0
+        assert dist.shape == 1.0
+        assert dist.scale == 1.0
+        assert not dist.norm
 
-                np.testing.assert_allclose(actual=custom1, desired=expected, rtol=1e-6, atol=1e-8)
-                np.testing.assert_allclose(actual=custom2, desired=expected, rtol=1e-6, atol=1e-8)
+        # normalization should make amplitude = 1
+        dist_normalized = GammaDistributionSS(amplitude=2.0, normalize=True)
+        assert dist_normalized.amplitude == 1
+
+    @staticmethod
+    def test_constraints():
+        with pytest.raises(erH.NegativeAmplitudeError, match=f"Amplitude {erH.neg_message}"):
+            GammaDistributionSS(amplitude=-1.0)
+
+        # amplitude should be internally updated to 1.0 if `normalize` is called
+        distribution = GammaDistributionSS(amplitude=-1.0, normalize=True)
+        assert distribution.amplitude == 1.0
+
+        with pytest.raises(erH.NegativeShapeError, match=f"Shape {erH.neg_message}"):
+            GammaDistributionSS(shape=-1.0)
+
+        with pytest.raises(erH.NegativeScaleError, match=f"Scale {erH.neg_message}"):
+            GammaDistributionSS(scale=-3.0)
+
+    @staticmethod
+    def test_edge_cases():
+        btf.edge_cases(distribution=GammaDistributionSR(), log_check=True)
+
+    @staticmethod
+    def test_stats():
+        btf.stats(custom_distribution=GammaDistributionSR.scipy_like, scipy_distribution=gamma,
+                  parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], median=False)
+
+    @staticmethod
+    def test_pdfs():
+        btf.value_functions(custom_distribution=GammaDistributionSR.scipy_like, scipy_distribution=gamma,
+                            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], log_check=True)
+
+    @staticmethod
+    def test_single_values():
+        btf.single_input_n_variables(custom_distribution=GammaDistributionSR.scipy_like,
+                                     scipy_distribution=gamma,
+                                     parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+                                     log_check=True)
