@@ -1,6 +1,6 @@
 """Created on Aug 03 17:13:21 2024"""
 
-__all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
+__all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans', 'preprocess_input',
            'arc_sine_pdf_', 'arc_sine_cdf_', 'arc_sine_log_pdf_', 'arc_sine_log_cdf_',
            'beta_pdf_', 'beta_cdf_', 'beta_log_pdf_', 'beta_log_cdf_',
            'chi_square_pdf_', 'chi_square_cdf_', 'chi_square_log_pdf_', 'chi_square_log_cdf_',
@@ -8,7 +8,7 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans',
            'folded_normal_pdf_', 'folded_normal_cdf_', 'folded_normal_log_pdf_', 'folded_normal_log_cdf_',
            'gamma_sr_pdf_', 'gamma_sr_cdf_', 'gamma_sr_log_pdf_', 'gamma_sr_log_cdf_',
            'gamma_ss_pdf_', 'gamma_ss_log_pdf_', 'gamma_ss_cdf_', 'gamma_ss_log_cdf_',
-           'sym_gen_normal_pdf_', 'sym_gen_normal_cdf_',
+           'sym_gen_normal_pdf_', 'sym_gen_normal_cdf_', 'sym_gen_normal_log_pdf_', 'sym_gen_normal_log_cdf_',
            'gaussian_pdf_', 'gaussian_cdf_', 'gaussian_log_pdf_', 'gaussian_log_cdf_',
            'half_normal_pdf_', 'half_normal_cdf_', 'half_normal_log_pdf_', 'half_normal_log_cdf_',
            'laplace_pdf_', 'laplace_cdf_', 'laplace_log_pdf_', 'laplace_log_cdf_',
@@ -1357,23 +1357,19 @@ def half_normal_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=sigma)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
-    y = (x - loc) / sigma
-    pdf_ = np.zeros_like(a=y, dtype=float)
     mask_ = y >= 0
 
-    f1 = np.sqrt(2 / np.pi)
-    pdf_[mask_] = f1 * np.exp(-0.5 * y[mask_]**2)
+    pdf_ = np.zeros_like(a=y, dtype=float)
+    pdf_[mask_] = np.sqrt(2 / np.pi) * np.exp(-0.5 * y[mask_]**2)
+    pdf_ = _remove_nans(pdf_) / sigma
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
-
-    pdf_ = _remove_nans(pdf_) / sigma
 
     return pdf_.item() if scalar_input else pdf_
 
@@ -1397,21 +1393,18 @@ def half_normal_log_pdf_(x: fArray,
 
     The final log PDF is expressed as :math:`\ell(y) - \ln\left(\text{scale}\right)`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=sigma)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
-    y = (x - loc) / sigma
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
     mask_ = y >= 0
-    log_pdf_[mask_] = 0.5 * np.log(2 / np.pi) - 0.5 * y[mask_]**2
+
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    log_pdf_[mask_] = 0.5 * np.log(2 / np.pi) - 0.5 * y[mask_]**2 - np.log(sigma)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
-
-    log_pdf_ -= np.log(sigma)
 
     return log_pdf_.item() if scalar_input else log_pdf_
 
@@ -1442,15 +1435,13 @@ def half_normal_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    x = np.asarray(a=x, dtype=float)
-    scalar_input = np.isscalar(x)
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=sigma)
 
-    if x.size == 0:
-        return np.array([])
+    if y.size == 0:
+        return y
 
-    y = (x - loc) / sigma
     mask_ = y >= 0
-    cdf_ = np.zeros_like(a=y, dtype=float)
+    cdf_ = np.zeros(shape=y.shape, dtype=float)
     cdf_[mask_] = erf(y[mask_] / np.sqrt(2))
 
     return cdf_.item() if scalar_input else cdf_
@@ -1485,12 +1476,50 @@ def half_normal_log_cdf_(x: fArray,
 def laplace_pdf_(x: fArray,
                  amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
                  normalize: bool = False) -> fArray:
+    r"""
+    Compute PDF for the :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
+
+    Parameters
+    ----------
+    x : fArray
+        Input array of values.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    mean : float, optional
+        The mean of laplace distribution.
+        Defaults to 0.0.
+    diversity : float, optional
+        The diversity parameter for laplace distribution.
+        Defaults to 1.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Laplace PDF is defined as:
+
+    .. math:: f(y\ |\ \mu, b) = 0.5\exp\left(-|y|\right)
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{b}.
+
+    The final PDF is expressed as :math:`f(y)/b`.
+    """
     y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
 
     if y.size == 0:
         return y
 
-    pdf_ = np.exp(-np.abs(y)) / (2 * diversity)
+    pdf_ = 0.5 * np.exp(-np.abs(y))
+    pdf_ /= diversity
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1498,9 +1527,25 @@ def laplace_pdf_(x: fArray,
     return pdf_.item() if scalar_input else pdf_
 
 
+@doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_log_pdf_(x: fArray,
                      amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
                      normalize: bool = False) -> fArray:
+    r"""
+    Compute log PDF for the :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
+
+    Notes
+    -----
+    The Laplace log PDF is defined as:
+
+    .. math:: \ell(y\ |\ \mu, b) = -\ln(2) - |y|
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{b}.
+
+    The final log PDF is expressed as :math:`\ell(y) - \ln(b)`.
+    """
     pdf_ = laplace_pdf_(x,
                         amplitude=amplitude, mean=mean, diversity=diversity,
                         normalize=normalize)
@@ -1536,30 +1581,46 @@ def laplace_cdf_(x: fArray,
         \dfrac{1}{2}\exp\left(\dfrac{x-\mu}{b}\right) &,&x\leq\mu\\
         1 - \dfrac{1}{2}\exp\left(-\dfrac{x-\mu}{b}\right) &,&x\geq\mu
         \end{cases}
+
+    The final CDF is expressed as :math:`F(x)`.
     """
     x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
         return x
 
-    def _cdf1(x_):
+    def _f1(x_):
         return 0.5 * np.exp((x_ - mean) / diversity)
 
-    def _cdf2(x_):
+    def _f2(x_):
         return 1 - 0.5 * np.exp(-(x_ - mean) / diversity)
 
     cdf_ = np.zeros_like(a=x, dtype=float)
 
     mask_leq = x <= mean
-    cdf_[mask_leq] += _cdf1(x[mask_leq])
-    cdf_[~mask_leq] += _cdf2(x[~mask_leq])
+    cdf_[mask_leq] += _f1(x[mask_leq])
+    cdf_[~mask_leq] += _f2(x[~mask_leq])
 
     return cdf_.item() if scalar_input else cdf_
 
 
+@doc_inherit(parent=laplace_cdf_, style=doc_style)
 def laplace_log_cdf_(x: fArray,
                      amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0,
                      normalize: bool = False) -> fArray:
+    r"""
+    Compute log CDF for :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
+
+    Notes
+    -----
+    The Laplace log CDF is defined as:
+
+    .. math:: \mathcal{L}(x) =
+        \begin{cases}
+        -\ln(2) + \dfrac{x-\mu}{b} &,&x\leq\mu\\
+        \ln\left[1 - \dfrac{1}{2}\exp\left(-\dfrac{x-\mu}{b}\right)\right] &,&x\geq\mu
+        \end{cases}
+    """
     cdf_ = laplace_cdf_(x,
                         amplitude=amplitude, mean=mean, diversity=diversity,
                         normalize=normalize)
@@ -1608,8 +1669,7 @@ def log_normal_pdf_(x: fArray,
 
     where, :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math::
-        y = x - \text{loc}
+    .. math:: y = x - \text{loc}
 
     The final PDF is expressed as :math:`f(y)`.
     """
@@ -1631,9 +1691,26 @@ def log_normal_pdf_(x: fArray,
     return pdf_.item() if scalar_input else pdf_
 
 
+@doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_log_pdf_(x: fArray,
                         amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0,
                         loc: float = 0.0, normalize: bool = False) -> fArray:
+    r"""
+    Compute log PDF for :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
+
+    Notes
+    -----
+    The LogNormal log PDF is defined as:
+
+    .. math::
+        f(y\ |\ \mu, \sigma) = -\ln(\sigma) -\ln(y) - 0.5\ln(2\pi) -\dfrac{1}{2}\dfrac{(\ln y - \mu)^2}{\sigma^2}
+
+    where, :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = x - \text{loc}
+
+    The final PDF is expressed as :math:`f(y)`.
+    """
     y, scalar_input = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
@@ -1673,25 +1750,43 @@ def log_normal_cdf_(x: fArray,
 
     Notes
     -----
-    The LogNormal CDF is defined as:
+    .. important::
+        The LogNormal CDF is defined as:
 
-    .. math::
-        F(x) = \Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)
+        .. math::
+            F(x) = \Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)
+
+        which can be calculated via :obj:`scipy.special.ndtr` function with ``ndtr(y)``, where :math:`y` is the
+        transformed value of :math:`x`, defined as:
+
+        .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
     """
-    cdf_ = gaussian_cdf_(np.log(x - loc),
-                         amplitude=amplitude, mean=mean, std=std,
-                         normalize=normalize)
-    return _remove_nans(cdf_)
+    y = (np.log(x - loc) - mean) / std
+    return _remove_nans(x=ndtr(y))
 
 
+@doc_inherit(parent=log_normal_cdf_, style=doc_style)
 def log_normal_log_cdf_(x: fArray,
                         amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0,
                         loc: float = 0.0, normalize: bool = False) -> fArray:
-    log_cdf_ = gaussian_log_cdf_(np.log(x - loc),
-                                 amplitude=amplitude, mean=mean, std=std,
-                                 normalize=normalize)
+    r"""
+    Compute log CDF of :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
-    return _remove_nans(x=log_cdf_, nan_value=-np.inf)
+    Notes
+    -----
+    .. important::
+        The LogNormal log CDF is defined as:
+
+        .. math::
+            F(x) = \ln\left[\Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)\right]
+
+        which can be calculated via :obj:`scipy.special.log_ndtr` function function with ``log_ndtr(y)``, where :math:`y`
+        is the transformed value of :math:`x`, defined as:
+
+        .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
+    """
+    y = (np.log(x - loc) - mean) / std
+    return _remove_nans(x=log_ndtr(y), nan_value=-np.inf)
 
 
 def uniform_pdf_(x: fArray,
@@ -1727,7 +1822,10 @@ def uniform_pdf_(x: fArray,
     -----
     The Uniform PDF is defined as:
 
-    .. math:: f(x\ |\ a, b) = \dfrac{1}{b-a}
+    .. math:: f(x\ |\ a, b) = \dfrac{1}{\beta - a}
+
+    Where :math:`\beta = a + b` consistent with ``loc`` and ``scale`` factors and the final PDF is expressed as,
+    :math:`f(x)`.
     """
     x, scalar_input = preprocess_input(x=x)
 
@@ -1741,8 +1839,7 @@ def uniform_pdf_(x: fArray,
     mask_ = np.logical_and(x >= low, x <= high_)
 
     pdf_ = np.zeros(shape=x.shape, dtype=float)
-    pdf_[mask_] = 1 / (high_ - low)
-    pdf_ = _remove_nans(pdf_)
+    pdf_[mask_] = _remove_nans(1 / high)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1753,16 +1850,27 @@ def uniform_pdf_(x: fArray,
 def uniform_log_pdf_(x: fArray,
                      amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
                      normalize: bool = False) -> fArray:
+    r"""
+    Compute log PDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
+
+    Notes
+    -----
+    The Uniform log PDF is defined as:
+
+    .. math:: \ell(x\ |\ a, b) = -\ln(\beta - a)
+
+    where :math:`\beta = a + b` is consistent with ``loc`` and ``scale`` factors, and the final logPDF is expressed as,
+    :math:`\ell(x)`.
+    """
     x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
         return x
 
-    high_ = high + low
-    mask_ = np.logical_and(x >= low, x <= high_)
+    mask_ = np.logical_and(x >= low, x <= low + high)
 
     log_pdf_ = np.full(shape=x.shape, fill_value=-np.inf)
-    log_pdf_[mask_] = -np.log(high_ - low)
+    log_pdf_[mask_] = -np.log(high)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1789,9 +1897,9 @@ def uniform_cdf_(x: fArray,
     The Uniform CDF is defined as:
 
     .. math:: F(x) = \begin{cases}
-                        0 &, x < a\\
-                        \dfrac{x-a}{b-a} &, x \in [a, b]\\
-                        1 &, x > b
+                        0 &,& x < a\\
+                        \dfrac{x-a}{b-a} &,& x \in [a, b]\\
+                        1 &,& x > b
                         \end{cases}
     """
     x, scalar_input = preprocess_input(x=x)
@@ -1800,22 +1908,37 @@ def uniform_cdf_(x: fArray,
         return x
 
     high_ = high + low
-
     if low == high_ == 0:
         return np.full(shape=x.size, fill_value=np.nan)
 
     mask_ = np.logical_and(x >= low, x <= high_)
 
     cdf_ = np.zeros(shape=x.shape, dtype=float)
-    cdf_[mask_] = (x[mask_] - low) / (high_ - low)
+    cdf_[mask_] = (x[mask_] - low) / high
     cdf_[x > high_] = 1
 
     return cdf_.item() if scalar_input else cdf_
 
 
+@doc_inherit(parent=uniform_cdf_, style=doc_style)
 def uniform_log_cdf_(x: fArray,
                      amplitude: float = 1.0, low: float = 0.0, high: float = 1.0,
                      normalize: bool = False) -> fArray:
+    r"""
+    Compute log CDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
+
+    Notes
+    -----
+    The Uniform log CDF is defined as:
+
+    .. math:: \mathcal{L}(x) = \begin{cases}
+                        -\infty &,& x < a\\
+                        \ln\left(\dfrac{x-a}{\beta-a}\right) &,& x \in [a, b]\\
+                        0 &,& x > \beta
+                        \end{cases}
+
+    The final logCDF is expressed as, :math:`\mathcal{L}(x)`.
+    """
     x, scalar_input = preprocess_input(x=x)
 
     if x.size == 0:
@@ -1828,7 +1951,7 @@ def uniform_log_cdf_(x: fArray,
         return log_cdf_
 
     mask_ = np.logical_and(x >= low, x <= high_)
-    log_cdf_[mask_] = np.log(x[mask_] - low) - np.log(high_ - low)
+    log_cdf_[mask_] = np.log(x[mask_] - low) - np.log(high)
     log_cdf_[x > high_] = 0
 
     return log_cdf_.item() if scalar_input else log_cdf_
@@ -1900,7 +2023,8 @@ def scaled_inv_chi_square_pdf_(x, amplitude: float = 1.0, df: float = 1.0, scale
 
 
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
-def scaled_inv_chi_square_log_pdf_(x: fArray, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0,
+def scaled_inv_chi_square_log_pdf_(x: fArray,
+                                   amplitude: float = 1.0, df: Union[int, float] = 1.0, scale: float = 1.0,
                                    loc: float = 0.0, normalize: bool = False):
     r"""
     Compute logPDF of :class:`~pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`.
@@ -1941,8 +2065,34 @@ def scaled_inv_chi_square_log_pdf_(x: fArray, amplitude: float = 1.0, df: float 
     return log_pdf_
 
 
-def scaled_inv_chi_square_cdf_(x, amplitude, df, scale, loc: float = 0.0,
-                               normalize: bool = False):
+@doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
+def scaled_inv_chi_square_cdf_(x: fArray,
+                               amplitude: float = 1.0, df: Union[int, float] = 1.0, scale: float = 1.0,
+                               loc: float = 0.0, normalize: bool = False):
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`.
+
+    Parameters
+    ----------
+    amplitude : float, optional
+        For API consistency only.
+    normalize : bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The Scaled Inverse ChiSquare CDF is defined as:
+
+    .. math:: F(y) = \Gamma\left(\nu_2, \dfrac{\tau^2\nu_2}{y}\right)
+
+    where :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}`, :math:`\Gamma(a, b)` is the regularized
+    upper gamma function, see :obj:`scipy.special.gammaincc`,and :math:`y` is the transformed value of :math:`x`,
+    defined as:
+
+    .. math:: y = x - \text{loc}
+
+    The final CDF is expressed as :math:`F(y)`.
+    """
     y, scalar_input = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
@@ -1958,7 +2108,26 @@ def scaled_inv_chi_square_cdf_(x, amplitude, df, scale, loc: float = 0.0,
     return cdf_.item() if scalar_input else cdf_
 
 
-def scaled_inv_chi_square_log_cdf_(x, amplitude, df, loc, scale, normalize=False):
+@doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
+def scaled_inv_chi_square_log_cdf_(x: fArray, amplitude: float = 1.0, df: Union[int, float] = 1.0, scale: float = 1.0,
+                                   loc: float = 0.0, normalize: bool = False) -> fArray:
+    r"""
+    Compute log CDF of :class:`~pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`.
+
+    Notes
+    -----
+    The Scaled Inverse ChiSquare log CDF is defined as:
+
+    .. math:: \mathcal{L}(y) = \ln\left[\Gamma\left(\nu_2, \dfrac{\tau^2\nu_2}{y}\right)\right]
+
+    where :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}`, :math:`\Gamma(a, b)` is the regularized
+    upper gamma function, see :obj:`scipy.special.gammaincc`,and :math:`y` is the transformed value of :math:`x`,
+    defined as:
+
+    .. math:: y = x - \text{loc}
+
+    The final log CDF is expressed as :math:`\mathcal{L}(y)`.
+    """
     cdf_ = scaled_inv_chi_square_cdf_(x,
                                       amplitude=amplitude, df=df, scale=scale,
                                       loc=loc, normalize=normalize)
@@ -2030,9 +2199,27 @@ def skew_normal_pdf_(x: fArray,
     return pdf_.item() if scalar_input else pdf_
 
 
+@doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_log_pdf_(x: fArray,
                          amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                          normalize: bool = False) -> fArray:
+    r"""
+    Compute log PDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
+
+    Notes
+    -----
+    The SkewNormal log PDF is defined as:
+
+    .. math:: \ell(y\ |\ \alpha, \xi, \omega) = \ln(2) + \ln\phi(y) + \ln\Phi(\alpha y)
+
+    where, :math:`\phi(y)` and :math:`\Phi(\alpha y)` are the
+    :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` PDF and CDF defined at :math:`y` and
+    :math:`\alpha y` respectively. Additionally, :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \xi}{\omega}
+
+    The final log PDF is expressed as :math:`\ell(y)/\omega`.
+    """
     y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -2067,10 +2254,15 @@ def skew_normal_cdf_(x: fArray,
     ------
     The SkewNormal CDF is defined as:
 
-    .. math:: F(x) = \Phi\left(\dfrac{x - \xi}{\omega}\right) - 2T\left(\dfrac{x - \xi}{\omega}, \alpha\right)
+    .. math:: F(y) = \Phi(y) - 2T(y, \alpha)
 
     where, :math:`T` is the Owen's T function, see :obj:`scipy.special.owens_t`, and
-    :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function.
+    :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function, and
+    :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final CDF is expressed as :math:`F(y)`.
     """
     y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
     cdf_ = gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
@@ -2081,15 +2273,6 @@ def skew_normal_cdf_(x: fArray,
 def sym_gen_normal_pdf_(x: fArray,
                         amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                         normalize: bool = False) -> fArray:
-    log_pdf_ = sym_gen_normal_log_pdf_(x,
-                                       amplitude=amplitude, shape=shape,
-                                       loc=loc, scale=scale, normalize=normalize)
-    return np.exp(log_pdf_)
-
-
-def sym_gen_normal_log_pdf_(x: fArray,
-                            amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
-                            normalize: bool = False) -> fArray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -2120,23 +2303,53 @@ def sym_gen_normal_log_pdf_(x: fArray,
         Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
-    -----
+    ------
     The SymmetricGeneralizedNormalDistribution PDF is defined as:
 
-    .. math:: f(y\ |\ \beta, \mu, \alpha) =
-        \dfrac{\beta}{2\alpha\Gamma(1/\beta)}\exp\left[-\dfrac{|x-\mu|^\beta}{\alpha^\beta}\right]
+    .. math:: f(y\ |\ \beta, \mu, \alpha) = \dfrac{\beta}{2\Gamma(1/\beta)}\exp\left(-|y|^\beta\right)
 
-    The final PDF is expressed as :math:`f(y)`.
+    where, :math:`\Gamma` is the :obj:`scipy.special.gamma` function, and :math:`y` is the transformed value of
+    :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \mu}{\alpha}
+
+    The final PDF is expressed as :math:`f(y)/\alpha`.
     """
-    x, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    log_pdf_ = sym_gen_normal_log_pdf_(x,
+                                       amplitude=amplitude, shape=shape,
+                                       loc=loc, scale=scale, normalize=normalize)
+    return np.exp(log_pdf_)
 
-    if x.size == 0:
-        return x
+
+@doc_inherit(sym_gen_normal_pdf_, style=doc_style)
+def sym_gen_normal_log_pdf_(x: fArray,
+                            amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                            normalize: bool = False) -> fArray:
+    r"""
+    Compute log PDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
+
+    Notes
+    -----
+    The SymmetricGeneralizedNormalDistribution log PDF is defined as:
+
+    .. math:: \ell(y\ |\ \beta, \mu, \alpha) = \ln(\beta) - \ln(2) - \ln\Gamma\left(\dfrac{1}{\beta}\right) - |y|^\beta
+
+    where, :math:`\Gamma` is the :obj:`scipy.special.gamma` function, and :math:`y` is the transformed value of
+    :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \mu}{\alpha}
+
+    The final log PDF is expressed as :math:`\ell(y)/\alpha`.
+    """
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+
+    if y.size == 0:
+        return y
 
     mu, alpha, beta = loc, scale, shape
 
     log_const_ = np.log(beta) - np.log(2) - gammaln(1 / beta)
-    pdf_ = log_const_ - np.power(np.abs(x), beta) - np.log(scale)
+    pdf_ = log_const_ - np.power(np.abs(y), beta) - np.log(scale)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -2162,10 +2375,14 @@ def sym_gen_normal_cdf_(x: fArray,
     -----
     The SymmetricGeneralizedNormalDistribution CDF is defined as:
 
-    .. math:: F(x) =
-     \dfrac{1}{2} + \dfrac{\text{sign}(x-\mu)}{2}\gamma\left(\dfrac{1}{\beta},\left|\dfrac{x - mu}{\alpha}\right|^\beta\,\right)
+    .. math:: F(y) = \dfrac{1}{2} + \dfrac{\text{sign}(y)}{2}\gamma\left(\dfrac{1}{\beta},|y|^\beta\,\right)
 
-    where :math:`\gamma(\cdot,\cdot)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`.
+    where :math:`\gamma(\cdot,\cdot)` is the regularized lower incomplete gamma function, see
+    :obj:`~scipy.special.gammainc`, and :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final CDF is expressed as :math:`F(y)`.
     """
     y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
 
@@ -2179,9 +2396,28 @@ def sym_gen_normal_cdf_(x: fArray,
     return cdf_.item() if scalar_input else cdf_
 
 
+@doc_inherit(parent=sym_gen_normal_cdf_, style=doc_style)
 def sym_gen_normal_log_cdf_(x: fArray,
                             amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
                             normalize: bool = False) -> fArray:
+    r"""
+    Compute log CDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
+
+    Notes
+    -----
+    The SymmetricGeneralizedNormalDistribution log CDF is defined as:
+
+    .. math:: \mathcal{L}(y) =
+     \ln\left[\dfrac{1}{2} + \dfrac{\text{sign}(y)}{2}\gamma\left(\dfrac{1}{\beta},|y|^\beta\,\right)\right]
+
+    where :math:`\gamma(\cdot,\cdot)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`, and
+    :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final PDF is expressed as :math:`f(y)/\text{scale}`.
+
+    """
     cdf_ = sym_gen_normal_cdf_(x,
                                amplitude=amplitude, shape=shape,
                                loc=loc, scale=scale, normalize=normalize)

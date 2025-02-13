@@ -48,19 +48,28 @@ Available for user
 .. autofunction:: half_normal_cdf_
 .. autofunction:: half_normal_log_cdf_
 .. autofunction:: laplace_pdf_
+.. autofunction:: laplace_log_pdf_
 .. autofunction:: laplace_cdf_
+.. autofunction:: laplace_log_cdf_
 .. autofunction:: log_normal_pdf_
+.. autofunction:: log_normal_log_pdf_
 .. autofunction:: log_normal_cdf_
+.. autofunction:: log_normal_log_cdf_
 .. autofunction:: scaled_inv_chi_square_pdf_
 .. autofunction:: scaled_inv_chi_square_log_pdf_
 .. autofunction:: scaled_inv_chi_square_cdf_
 .. autofunction:: scaled_inv_chi_square_log_cdf_
 .. autofunction:: skew_normal_pdf_
+.. autofunction:: skew_normal_log_pdf_
 .. autofunction:: skew_normal_cdf_
 .. autofunction:: sym_gen_normal_pdf_
+.. autofunction:: sym_gen_normal_log_pdf_
 .. autofunction:: sym_gen_normal_cdf_
+.. autofunction:: sym_gen_normal_log_cdf_
 .. autofunction:: uniform_pdf_
+.. autofunction:: uniform_log_pdf_
 .. autofunction:: uniform_cdf_
+.. autofunction:: uniform_log_cdf_
 
 Internal functions
 ------------------
@@ -69,3 +78,4 @@ Internal functions
 .. autofunction:: _folded
 .. autofunction:: _pdf_scaling
 .. autofunction:: _remove_nans
+.. autofunction:: preprocess_input
