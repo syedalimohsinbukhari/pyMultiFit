@@ -46,12 +46,15 @@ def scaled_distributions(custom_distribution, scipy_distribution, x, parameters,
 
 
 def statistics(custom_distribution, scipy_distribution, parameters, mean_variance=False, median=False,
-               is_expon=False, is_scaled_inv_chi=False):
+               is_expon=False, is_scaled_inv_chi=False, is_gamma_ss=False):
     d_stats = custom_distribution(*parameters).stats()
 
     # make an exception for exponential distribution which gets scale = 1/scale
     if is_expon:
         parameters[1] = 1 / parameters[1]
+
+    if is_gamma_ss:
+        parameters[1] = 1 / parameters[2]
 
     if is_scaled_inv_chi:
         parameters[0] = parameters[0] / 2
@@ -70,13 +73,13 @@ def statistics(custom_distribution, scipy_distribution, parameters, mean_varianc
 
 
 def stats(custom_distribution, scipy_distribution, parameters, mean_variance=True, median=True,
-          is_expon=False, is_scaled_inv_chi=False):
+          is_expon=False, is_scaled_inv_chi=False, is_gamma_ss=False):
     stack_ = np.column_stack(parameters)
 
     for stack in stack_:
         statistics(custom_distribution=custom_distribution, scipy_distribution=scipy_distribution,
                    parameters=stack, mean_variance=mean_variance, median=median,
-                   is_expon=is_expon, is_scaled_inv_chi=is_scaled_inv_chi)
+                   is_expon=is_expon, is_scaled_inv_chi=is_scaled_inv_chi, is_gamma_ss=is_gamma_ss)
 
 
 def value_functions(custom_distribution, scipy_distribution, parameters, n_values=10, log_check=False,

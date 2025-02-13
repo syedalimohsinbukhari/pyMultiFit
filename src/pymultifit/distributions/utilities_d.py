@@ -1107,8 +1107,8 @@ def gamma_ss_pdf_(x: fArray,
         The Gamma SS PDF is calculated via exponentiation of :func:`gamma_sr_log_pdf_` by setting
         :math:`\lambda = \dfrac{1}{\theta}`.
     """
-    log_pdf_ = gamma_sr_log_pdf_(x,
-                                 amplitude=amplitude, alpha=alpha, lambda_=1 / theta,
+    log_pdf_ = gamma_ss_log_pdf_(x,
+                                 amplitude=amplitude, alpha=alpha, theta=theta,
                                  loc=loc, normalize=normalize)
     return np.exp(log_pdf_)
 
@@ -1126,9 +1126,20 @@ def gamma_ss_log_pdf_(x: fArray,
 
         The Gamma SS log PDF is calculated via :func:`gamma_sr_log_pdf_` by setting :math:`\lambda = \dfrac{1}{\theta}`.
     """
-    return gamma_sr_log_pdf_(x,
-                             amplitude=amplitude, alpha=alpha, lambda_=1 / theta,
-                             loc=loc, normalize=normalize)
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=1 / theta)
+
+    if y.size == 0:
+        return y
+
+    mask_ = y >= 0
+
+    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
+    log_pdf_[mask_] = (alpha - 1) * np.log(y[mask_]) - y[mask_] - gammaln(alpha) + np.log(theta)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_.item() if scalar_input else log_pdf_
 
 
 @doc_inherit(parent=gamma_ss_pdf_, style=doc_style)
@@ -1151,9 +1162,12 @@ def gamma_ss_cdf_(x: fArray,
 
         The Gamma SS CDF is calculated via :func:`gamma_sr_cdf_` by setting :math:`\lambda = \dfrac{1}{\theta}`.
     """
-    return gamma_sr_cdf_(x,
-                         amplitude=amplitude, alpha=alpha, lambda_=1 / theta,
-                         loc=loc, normalize=normalize)
+    y, scale_input = preprocess_input(x=x, loc=loc, scale=1 / theta)
+
+    if y.size == 0:
+        return y
+
+    return gammainc(alpha, np.maximum(y, 0))
 
 
 @doc_inherit(parent=gamma_ss_cdf_, style=doc_style)
@@ -1170,8 +1184,8 @@ def gamma_ss_log_cdf_(x: fArray,
         The Gamma SS log CDF is calculated via logarithm of :func:`gamma_sr_cdf_` by setting
         :math:`\lambda = \dfrac{1}{\theta}`.
     """
-    cdf_ = gamma_sr_cdf_(x,
-                         amplitude=amplitude, alpha=alpha, lambda_=1 / theta,
+    cdf_ = gamma_ss_cdf_(x,
+                         amplitude=amplitude, alpha=alpha, theta=theta,
                          loc=loc, normalize=normalize)
 
     return np.log(cdf_)

@@ -278,5 +278,5 @@ class GammaDistributionSS(BaseDistribution):
                                  normalize=self.norm)
 
     def stats(self):
-        GammaDistributionSR(amplitude=self.amplitude, shape=self.shape, rate=1 / self.scale, loc=self.loc,
-                            normalize=self.norm).stats()
+        return GammaDistributionSR(amplitude=self.amplitude, shape=self.shape, loc=self.loc, rate=self.scale,
+                                   normalize=self.norm).stats()
