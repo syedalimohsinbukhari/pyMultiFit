@@ -170,3 +170,4 @@ LYSO_Spectra/
 /**/*.fig
 /**/extra*.py
 /**/extra
+.vscode
