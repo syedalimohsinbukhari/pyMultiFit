@@ -1,7 +1,7 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
