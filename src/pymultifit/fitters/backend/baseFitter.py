@@ -17,7 +17,8 @@ from ... import listOfTuplesOrArray, epsilon
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    def __init__(self, x_values: list | np.ndarray, y_values: list | np.ndarray, max_iterations: int = 1000):
+    def __init__(self, x_values: Union[list, np.ndarray], y_values: Union[list, np.ndarray],
+                 max_iterations: int = 1000):
         self.x_values = x_values
         self.y_values = y_values
         self.max_iterations = max_iterations

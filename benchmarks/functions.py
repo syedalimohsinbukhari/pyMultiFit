@@ -1,4 +1,5 @@
 """Created on Dec 31 05:45:40 2024"""
+
 import time
 from timeit import default_timer as timer
 
@@ -24,43 +25,82 @@ def test_and_plot(general_case, edge_case, custom_dist, scipy_dist, title):
 def compare_accuracy(x, custom_dist, scipy_dist):
     pdf_custom = custom_dist.pdf(x)
     cdf_custom = custom_dist.cdf(x)
+
     pdf_scipy = scipy_dist.pdf(x)
     cdf_scipy = scipy_dist.cdf(x)
 
     pdf_abs_diff = np.abs(pdf_custom - pdf_scipy) + EPSILON
-
     cdf_abs_diff = np.abs(cdf_custom - cdf_scipy) + EPSILON
 
+    class_name = custom_dist.__class__.__name__
+    cond = class_name != 'SkewNormalDistribution'
+
+    if cond:
+        logpdf_custom = custom_dist.logpdf(x)
+        logcdf_custom = custom_dist.logcdf(x)
+        logpdf_scipy = scipy_dist.logpdf(x)
+        logcdf_scipy = scipy_dist.logcdf(x)
+        logpdf_abs_diff = np.abs(logpdf_custom - logpdf_scipy) + EPSILON
+        logcdf_abs_diff = np.abs(logcdf_custom - logcdf_scipy) + EPSILON
+
     return {"pdf_abs_diff": pdf_abs_diff,
-            "cdf_abs_diff": cdf_abs_diff}
+            "log_pdf_abs_diff": logpdf_abs_diff if cond else None,
+            "cdf_abs_diff": cdf_abs_diff,
+            "log_cdf_abs_diff": logcdf_abs_diff if cond else None}
 
 
 # Plotting Function
 def plot_accuracy(x, results, title_suffix):
-    plt.figure(figsize=(12, 4))
+    plt.figure(figsize=(12, 8))
 
-    plt.subplot(1, 2, 1)
+    plt.subplot(2, 2, 1)
     plt.plot(x, results["pdf_abs_diff"], label="PDF Absolute Diff", marker='.')
     plt.xscale("log")
-    plt.yscale("symlog")
+    plt.yscale("log")
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (PDF)")
     plt.title(f"Absolute Difference:\nPDF {title_suffix}")
+    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
-    plt.subplot(1, 2, 2)
+    if results.get('log_pdf_abs_diff') is not None:
+        plt.subplot(2, 2, 2)
+        plt.plot(x, results["log_pdf_abs_diff"], label="log PDF Absolute Diff", marker='.')
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.xlabel("x")
+        plt.ylabel("Absolute Difference (log PDF)")
+        plt.title(f"Absolute Difference:\nlog PDF {title_suffix}")
+        # plt.gca().set_ylim(top=1e5, bottom=1e-310)
+        plt.legend()
+        plt.grid(True)
+
+    plt.subplot(2, 2, 3)
     plt.plot(x, results["cdf_abs_diff"], label="CDF Absolute Diff", marker='.')
     plt.xscale("log")
-    plt.yscale("symlog")
+    plt.yscale("log")
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (CDF)")
     plt.title(f"Absolute Difference:\nCDF {title_suffix}")
+    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
+    if results.get('log_cdf_abs_diff') is not None:
+        plt.subplot(2, 2, 4)
+        plt.plot(x, results["log_cdf_abs_diff"], label="log CDF Absolute Diff", marker='.')
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.xlabel("x")
+        plt.ylabel("Absolute Difference (log CDF)")
+        plt.title(f"Absolute Difference:\nlog CDF {title_suffix}")
+        # plt.gca().set_ylim(top=1e5, bottom=1e-310)
+        plt.legend()
+        plt.grid(True)
+
     plt.tight_layout()
-    plt.savefig('plots/{title_suffix}.png'.format(title_suffix=title_suffix))
+    # plt.savefig('plots/{title_suffix}.png'.format(title_suffix=title_suffix))
 
 
 #####################################################################################################################################################

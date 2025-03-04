@@ -26,6 +26,27 @@ from scipy.special import betainc, erf, gammainc, gammaln, owens_t, gammaincc, l
 
 from .. import fArray, doc_style
 
+TWO = 2.0
+SQRT_TWO = np.sqrt(TWO)
+LOG_TWO = np.log(TWO)
+LOG_SQRT_TWO = 0.5 * LOG_TWO
+
+PI = np.pi
+SQRT_PI = np.sqrt(PI)
+LOG_PI = np.log(PI)
+LOG_SQRT_PI = 0.5 * LOG_PI
+
+TWO_PI = 2 * PI
+SQRT_TWO_PI = np.sqrt(TWO_PI)
+LOG_TWO_PI = np.log(TWO_PI)
+LOG_SQRT_TWO_PI = 0.5 * LOG_TWO_PI
+
+INV_PI = 1.0 / PI
+TWO_BY_PI = 2.0 * INV_PI
+SQRT_TWO_BY_PI = np.sqrt(TWO_BY_PI)
+LOG_TWO_BY_PI = np.log(TWO_BY_PI)
+LOG_SQRT_TWO_BY_PI = 0.5 * LOG_TWO_BY_PI
+
 
 def arc_sine_pdf_(x: fArray,
                   amplitude: float = 1.0,
@@ -75,7 +96,7 @@ def arc_sine_pdf_(x: fArray,
     mask_ = np.logical_and(y > 0, y < 1)
 
     pdf_ = np.zeros_like(a=y, dtype=float)
-    pdf_[mask_] = 1 / (np.pi * np.sqrt(y[mask_] * (1 - y[mask_])))
+    pdf_[mask_] = 1 / (PI * np.sqrt(y[mask_] * (1 - y[mask_])))
     pdf_ = _remove_nans(pdf_) / scale
 
     if not scalar_input:
@@ -115,7 +136,7 @@ def arc_sine_log_pdf_(x: fArray,
     mask_ = np.logical_and(y > 0, y < 1)
 
     log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_pdf_[mask_] = -np.log(np.pi) - 0.5 * np.log(y[mask_] - y[mask_]**2)
+    log_pdf_[mask_] = -LOG_PI - 0.5 * np.log(y[mask_] - y[mask_]**2)
     log_pdf_ -= np.log(scale)
 
     log_pdf_[y == 0] = np.inf
@@ -159,7 +180,7 @@ def arc_sine_cdf_(x: fArray,
     mask_ = np.logical_and(y > 0, y < 1)
 
     cdf_ = np.where(y < 1, 0, 1).astype(float)
-    cdf_[mask_] = (2 / np.pi) * np.arcsin(np.sqrt(y[mask_]))
+    cdf_[mask_] = TWO_BY_PI * np.arcsin(np.sqrt(y[mask_]))
 
     return cdf_.item() if scalar_input else cdf_
 
@@ -191,7 +212,7 @@ def arc_sine_log_cdf_(x: fArray,
     mask_ = np.logical_and(y > 0, y < 1)
 
     log_cdf_ = np.where(y < 1, -np.inf, 0)
-    log_cdf_[mask_] = np.log(2 / np.pi) + np.log(np.arcsin(np.sqrt(y[mask_])))
+    log_cdf_[mask_] = LOG_TWO_BY_PI + np.log(np.arcsin(np.sqrt(y[mask_])))
 
     return log_cdf_.item() if scalar_input else log_cdf_
 
@@ -280,9 +301,8 @@ def beta_log_pdf_(x: fArray,
 
     normalization_factor = gammaln(alpha) + gammaln(beta) - gammaln(alpha + beta)
 
-    log_pdf_[mask_] = (alpha - 1) * np.log(y[mask_]) + (beta - 1) * np.log(1 - y[mask_])
-    log_pdf_[mask_] = log_pdf_[mask_] - normalization_factor
-    log_pdf_ -= np.log(scale)
+    log_pdf_[mask_] = (alpha - 1) * np.log(y[mask_]) + (beta - 1) * np.log1p(-y[mask_])
+    log_pdf_[mask_] = log_pdf_[mask_] - normalization_factor - np.log(scale)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -864,7 +884,7 @@ def folded_normal_log_cdf_(x: fArray,
         y_valid = y[mask_]
         q = y_valid + mean
         r = y_valid - mean
-        log_cdf_[mask_] = -np.log(2) + np.log(erf(q / np.sqrt(2)) + erf(r / np.sqrt(2)))
+        log_cdf_[mask_] = -LOG_TWO + np.log(erf(q / SQRT_TWO) + erf(r / SQRT_TWO))
 
     return log_cdf_.item() if scalar_input else log_cdf_
 
@@ -1229,13 +1249,13 @@ def gaussian_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(x)`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    x, scalar_input = preprocess_input(x=x, loc=mean, scale=std)
 
     if x.size == 0:
         return x
 
-    exp_factor = (x - mean) / std
-    pdf_ = np.exp(-0.5 * exp_factor**2) / (np.sqrt(2 * np.pi * std**2))
+    pdf_ = np.exp(-0.5 * x**2) / SQRT_TWO_PI
+    pdf_ /= std
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1259,13 +1279,12 @@ def gaussian_log_pdf_(x: fArray,
 
     The final log PDF is expressed as :math:`\ell(x)`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    y, scalar_input = preprocess_input(x=x, loc=mean, scale=std)
 
-    if x.size == 0:
-        return x
+    if y.size == 0:
+        return y
 
-    exp_factor = (x - mean) / std
-    log_pdf_ = -0.5 * np.log(2 * np.pi) - np.log(std) - 0.5 * exp_factor**2
+    log_pdf_ = -y**2 / 2.0 - np.log(np.sqrt(2 * np.pi)) - np.log(std)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1379,7 +1398,7 @@ def half_normal_pdf_(x: fArray,
     mask_ = y >= 0
 
     pdf_ = np.zeros_like(a=y, dtype=float)
-    pdf_[mask_] = np.sqrt(2 / np.pi) * np.exp(-0.5 * y[mask_]**2)
+    pdf_[mask_] = SQRT_TWO_BY_PI * np.exp(-0.5 * y[mask_]**2)
     pdf_ = _remove_nans(pdf_) / sigma
 
     if not normalize:
@@ -1415,7 +1434,7 @@ def half_normal_log_pdf_(x: fArray,
     mask_ = y >= 0
 
     log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_pdf_[mask_] = 0.5 * np.log(2 / np.pi) - 0.5 * y[mask_]**2 - np.log(sigma)
+    log_pdf_[mask_] = 0.5 * np.log(2 / PI) - 0.5 * y[mask_]**2 - np.log(sigma)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1519,26 +1538,16 @@ def laplace_pdf_(x: fArray,
     -----
     The Laplace PDF is defined as:
 
-    .. math:: f(y\ |\ \mu, b) = 0.5\exp\left(-|y|\right)
+    .. math:: f(y\ |\ \mu, b) = \dfrac{1}{2b}\exp\left(-\dfrac{|y|}{b}\right)
 
     where :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = \dfrac{x - \mu}{b}.
+    .. math:: y = x - \mu.
 
-    The final PDF is expressed as :math:`f(y)/b`.
+    The final PDF is expressed as :math:`f(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
-
-    if y.size == 0:
-        return y
-
-    pdf_ = 0.5 * np.exp(-np.abs(y))
-    pdf_ /= diversity
-
-    if not normalize:
-        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
-
-    return pdf_.item() if scalar_input else pdf_
+    log_pdf_ = laplace_log_pdf_(x, amplitude, mean, diversity, normalize)
+    return np.exp(log_pdf_)
 
 
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
@@ -1552,19 +1561,26 @@ def laplace_log_pdf_(x: fArray,
     -----
     The Laplace log PDF is defined as:
 
-    .. math:: \ell(y\ |\ \mu, b) = -\ln(2) - |y|
+    .. math:: \ell(y\ |\ \mu, b) = -\ln(2b) - \dfrac{|y|}{b}
 
     where :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \mu}{b}.
 
-    The final log PDF is expressed as :math:`\ell(y) - \ln(b)`.
+    The final log PDF is expressed as :math:`\ell(y)`.
     """
-    pdf_ = laplace_pdf_(x,
-                        amplitude=amplitude, mean=mean, diversity=diversity,
-                        normalize=normalize)
+    y, scalar_input = preprocess_input(x=x)
 
-    return np.log(pdf_)
+    if y.size == 0:
+        return y
+
+    log_pdf_ = -1 * (np.abs(x - mean) / diversity)
+    log_pdf_ -= np.log(2 * diversity)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_
 
 
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
@@ -1598,22 +1614,19 @@ def laplace_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(x)`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
 
-    if x.size == 0:
-        return x
+    if y.size == 0:
+        return y
 
     def _f1(x_):
-        return 0.5 * np.exp((x_ - mean) / diversity)
+        return 0.5 * np.exp(x_)
 
     def _f2(x_):
-        return 1 - 0.5 * np.exp(-(x_ - mean) / diversity)
+        return 1.0 - 0.5 * np.exp(-x_)
 
-    cdf_ = np.zeros_like(a=x, dtype=float)
-
-    mask_leq = x <= mean
-    cdf_[mask_leq] += _f1(x[mask_leq])
-    cdf_[~mask_leq] += _f2(x[~mask_leq])
+    with np.errstate(over='ignore'):
+        cdf_ = np.where(y > 0, _f2(y), _f1(y))
 
     return cdf_.item() if scalar_input else cdf_
 
@@ -1635,11 +1648,20 @@ def laplace_log_cdf_(x: fArray,
         \ln\left[1 - \dfrac{1}{2}\exp\left(-\dfrac{x-\mu}{b}\right)\right] &,&x\geq\mu
         \end{cases}
     """
-    cdf_ = laplace_cdf_(x,
-                        amplitude=amplitude, mean=mean, diversity=diversity,
-                        normalize=normalize)
+    y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
 
-    return np.log(cdf_)
+    if y.size == 0:
+        return y
+
+    def _f1(x_):
+        return np.log(0.5) + x_
+
+    def _f2(x_):
+        return np.log1p(- 0.5 * np.exp(-x_))
+
+    log_cdf_ = np.where(y > 0, _f2(y), _f1(y))
+
+    return log_cdf_.item() if scalar_input else log_cdf_
 
 
 def log_normal_pdf_(x: fArray,
@@ -1687,22 +1709,9 @@ def log_normal_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
-
-    if y.size == 0:
-        return y
-
-    mask_ = y > 0
-
-    pdf_ = np.zeros(shape=y.shape)
-    q = (np.log(y[mask_]) - mean) / std
-    pdf_[mask_] = np.exp(-0.5 * q**2) / (std * y[mask_] * np.sqrt(2 * np.pi))
-    pdf_ = _remove_nans(pdf_)
-
-    if not normalize:
-        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
-
-    return pdf_.item() if scalar_input else pdf_
+    log_pdf_ = log_normal_log_pdf_(x,
+                                   amplitude=amplitude, mean=mean, std=std, loc=loc, normalize=normalize)
+    return np.exp(log_pdf_)
 
 
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
@@ -1730,11 +1739,8 @@ def log_normal_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y > 0
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-
-    q = (np.log(y[mask_]) - mean) / std
-    log_pdf_[mask_] = -0.5 * q**2 - np.log(std) - np.log(y[mask_]) - 0.5 * np.log(2 * np.pi)
+    q = (np.log(y) - mean) / std
+    log_pdf_ = - np.log(y) - q**2 / 2.0 - np.log(std) - LOG_SQRT_TWO_PI
     log_pdf_ = _remove_nans(x=log_pdf_, nan_value=-np.inf)
 
     if not normalize:
@@ -2242,7 +2248,7 @@ def skew_normal_log_pdf_(x: fArray,
     g_l_pdf_ = gaussian_log_pdf_(x=y, normalize=True)
     g_l_cdf_ = gaussian_log_cdf_(x=shape * y, normalize=True)
 
-    log_pdf_ = np.log(2 / scale) + g_l_pdf_ + g_l_cdf_
+    log_pdf_ = LOG_TWO - np.log(scale) + g_l_pdf_ + g_l_cdf_
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -2362,7 +2368,7 @@ def sym_gen_normal_log_pdf_(x: fArray,
 
     mu, alpha, beta = loc, scale, shape
 
-    log_const_ = np.log(beta) - np.log(2) - gammaln(1 / beta)
+    log_const_ = np.log(beta) - LOG_TWO - gammaln(1 / beta)
     pdf_ = log_const_ - np.power(np.abs(y), beta) - np.log(scale)
 
     if not normalize:
