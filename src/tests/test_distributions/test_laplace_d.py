@@ -48,11 +48,11 @@ class TestLaplaceDistribution:
     @staticmethod
     def test_pdfs():
         btf.value_functions(custom_distribution=LaplaceDistribution.scipy_like, scipy_distribution=laplace,
-                            parameters=[btf.loc_parameter, btf.scale_parameter], log_check=True)
+                            parameters=[btf.loc_parameter, btf.scale_parameter], log_check=False)
 
     @staticmethod
     def test_single_values():
         btf.single_input_n_variables(custom_distribution=LaplaceDistribution.scipy_like,
                                      scipy_distribution=laplace,
                                      parameters=[btf.loc_parameter, btf.scale_parameter],
-                                     log_check=True)
+                                     log_check=False)

@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from pymultifit import EPSILON
+from ...pymultifit import EPSILON
 
 loc_parameter = np.random.uniform(low=-100, high=100, size=500)
 scale_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
