@@ -387,7 +387,8 @@ def beta_log_cdf_(x: fArray,
                      amplitude=amplitude, alpha=alpha, beta=beta,
                      loc=loc, scale=scale, normalize=normalize)
 
-    return np.log(cdf_)
+    with np.errstate(divide='ignore'):
+        return np.log(cdf_)
 
 
 def chi_square_pdf_(x: fArray,
@@ -542,7 +543,8 @@ def chi_square_log_cdf_(x: fArray,
                            amplitude=amplitude, degree_of_freedom=degree_of_freedom,
                            loc=loc, scale=scale, normalize=normalize)
 
-    return np.log(cdf_)
+    with np.errstate(divide='ignore'):
+        return np.log(cdf_)
 
 
 def exponential_pdf_(x: fArray,
