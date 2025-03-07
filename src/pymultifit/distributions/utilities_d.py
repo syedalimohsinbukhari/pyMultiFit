@@ -580,30 +580,19 @@ def exponential_pdf_(x: fArray,
     .. math::
         f(y, \lambda) =
         \begin{cases}
-        \lambda \exp\left[-\lambda y\right] &;& y \geq 0, \\
+        \exp(-y) &;& y \geq 0, \\
         0 &;& y < 0.
         \end{cases}
 
     where, :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = x - \text{loc}
+    .. math:: y = \dfrac{x - \text{loc}}{\theta}
 
-    The final PDF is expressed as :math:`f(y)`.
+    and :math:`\theta = \dfrac{1}{\lambda}`. The final PDF is expressed as :math:`f(y)/\theta`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
-
-    if y.size == 0:
-        return y
-
-    mask_ = y >= 0
-
-    pdf_ = np.zeros(shape=y.shape, dtype=float)
-    pdf_[mask_] = lambda_ * np.exp(-lambda_ * y[mask_])
-
-    if not normalize:
-        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
-
-    return pdf_.item() if scalar_input else pdf_
+    log_pdf_ = exponential_log_pdf_(x,
+                                    amplitude=amplitude, lambda_=lambda_, loc=loc, normalize=normalize)
+    return np.exp(log_pdf_)
 
 
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
@@ -627,17 +616,18 @@ def exponential_log_pdf_(x: fArray,
     .. math::
         \ell(y, \lambda) =
         \begin{cases}
-        \ln\lambda -\lambda y &;& y \geq 0, \\
-        -inf &;& y < 0.
+        - y &;& y \geq 0, \\
+        -\infty &;& y < 0.
         \end{cases}
 
     where, :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = x - \text{loc}
+    .. math:: y = \dfrac{x - \text{loc}}{\theta}
 
-    The final log PDF is expressed as :math:`\ell(y)`.
+    and :math:`\theta = \dfrac{1}{\lambda}`. The final log PDF is expressed as :math:`\ell(y) - \ln(\theta)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
+    rate = 1 / lambda_
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=rate)
 
     if y.size == 0:
         return y
@@ -645,7 +635,7 @@ def exponential_log_pdf_(x: fArray,
     mask_ = y >= 0
 
     log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_pdf_[mask_] = np.log(lambda_) - (lambda_ * y[mask_])
+    log_pdf_[mask_] = -y[mask_] - np.log(rate)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -661,8 +651,8 @@ def exponential_cdf_(x: fArray,
     Compute CDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
     .. note::
-        This function uses :func:`~pymultifit.distributions.utilities_d.gamma_sr_cdf_` to calculate the CDF with
-        :math:`\alpha = 1` and :math:`\lambda_\text{gammaSR} = \lambda_\text{expon}`.
+        This function uses :obj:`scipy.special.gammainc` to calculate the CDF with
+        :math:`a = 1` and :math:`x = \dfrac{x - \text{loc}}{\theta}`, where :math:`\theta = \dfrac{1}{\lambda}`.
 
     Parameters
     ----------
@@ -675,19 +665,16 @@ def exponential_cdf_(x: fArray,
     -----
     The Exponential CDF is defined as:
 
-    .. math:: F(x) = 1 - \exp\left[-\lambda x\right].
+    .. math:: F(y) = 1 - \exp\left[-y\right].
+
+    where, :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\theta}
+
+    and :math:`\theta = \dfrac{1}{\lambda}`. The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
-
-    if y.size == 0:
-        return y
-
-    mask_ = y > 0
-
-    cdf_ = np.zeros_like(a=y, dtype=float)
-    cdf_[mask_] = 1 - np.exp(-lambda_ * y[mask_])
-
-    return cdf_.item() if scalar_input else cdf_
+    y, scalar_input = preprocess_input(x=x, loc=loc, scale=1 / lambda_)
+    return np.nan_to_num(gammainc(1, y), copy=False, nan=0)
 
 
 @doc_inherit(parent=exponential_cdf_, style=doc_style)
@@ -697,27 +684,25 @@ def exponential_log_cdf_(x: fArray,
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
+    .. note::
+        This function uses log transformation of :obj:`scipy.special.gammainc` to calculate the log CDF with
+        :math:`a = 1` and :math:`x = \dfrac{x - \text{loc}}{\theta}`, where :math:`\theta = \dfrac{1}{\lambda}`.
+
     Notes
     -----
     The Exponential log CDF is defined as:
 
-    .. math:: \mathcal{L}(y) = \ln\left(1 -\exp(\lambda y)\right).
+    .. math:: \mathcal{L}(y) = \ln\left(1 -\exp(y)\right).
 
-    where :math:`\ln(1-\theta)` is calculated using :obj:`~numpy.log1p` function, and :math:`y` is the transformed value
-    of :math:`x`, defined as:
+    where :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = x - \text{loc}.
+    .. math:: y = \dfrac{x - \text{loc}}{\theta}.
 
-    The final log CDF is expressed as :math:`\mathcal{L}(y)`.
+    and :math:`\theta = \dfrac{1}{\lambda}`. The final log CDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
-
-    mask_ = y >= 0
-
-    log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_cdf_[mask_] = np.log1p(-np.exp(-lambda_ * y[mask_]))
-
-    return log_cdf_.item() if scalar_input else log_cdf_
+    cdf_ = exponential_cdf_(x,
+                            amplitude=amplitude, lambda_=lambda_, loc=loc, normalize=normalize)
+    return np.log(cdf_)
 
 
 def folded_normal_pdf_(x: fArray,
@@ -804,7 +789,9 @@ def folded_normal_log_pdf_(x: fArray,
         return x
 
     _, pdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_pdf_)
-    log_pdf_ = np.log(pdf_) - np.log(sigma)
+
+    with np.errstate(divide='ignore'):
+        log_pdf_ = np.log(pdf_) - np.log(sigma)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -884,7 +871,8 @@ def folded_normal_log_cdf_(x: fArray,
         y_valid = y[mask_]
         q = y_valid + mean
         r = y_valid - mean
-        log_cdf_[mask_] = -LOG_TWO + np.log(erf(q / SQRT_TWO) + erf(r / SQRT_TWO))
+        with np.errstate(divide='ignore'):
+            log_cdf_[mask_] = -LOG_TWO + np.log(erf(q / SQRT_TWO) + erf(r / SQRT_TWO))
 
     return log_cdf_.item() if scalar_input else log_cdf_
 
@@ -1546,8 +1534,17 @@ def laplace_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    log_pdf_ = laplace_log_pdf_(x, amplitude, mean, diversity, normalize)
-    return np.exp(log_pdf_)
+    y, scalar_input = preprocess_input(x=x, loc=mean)
+
+    if y.size == 0:
+        return y
+
+    pdf_ = (2 * diversity)**-1 * np.exp(-abs(y) / diversity)
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
 
 
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
@@ -1565,22 +1562,15 @@ def laplace_log_pdf_(x: fArray,
 
     where :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = \dfrac{x - \mu}{b}.
+    .. math:: y = x - \mu
 
     The final log PDF is expressed as :math:`\ell(y)`.
     """
-    y, scalar_input = preprocess_input(x=x)
-
-    if y.size == 0:
-        return y
-
-    log_pdf_ = -1 * (np.abs(x - mean) / diversity)
-    log_pdf_ -= np.log(2 * diversity)
-
-    if not normalize:
-        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
-
-    return log_pdf_
+    pdf_ = laplace_pdf_(x,
+                        amplitude=amplitude, mean=mean, diversity=diversity,
+                        normalize=normalize)
+    with np.errstate(divide='ignore'):
+        return np.log(pdf_)
 
 
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
@@ -1710,7 +1700,8 @@ def log_normal_pdf_(x: fArray,
     The final PDF is expressed as :math:`f(y)`.
     """
     log_pdf_ = log_normal_log_pdf_(x,
-                                   amplitude=amplitude, mean=mean, std=std, loc=loc, normalize=normalize)
+                                   amplitude=amplitude, mean=mean, std=std,
+                                   loc=loc, normalize=normalize)
     return np.exp(log_pdf_)
 
 

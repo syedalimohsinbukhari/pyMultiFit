@@ -29,8 +29,9 @@ def compare_accuracy(x, custom_dist, scipy_dist):
     pdf_scipy = scipy_dist.pdf(x)
     cdf_scipy = scipy_dist.cdf(x)
 
-    pdf_abs_diff = np.abs(pdf_custom - pdf_scipy) + EPSILON
-    cdf_abs_diff = np.abs(cdf_custom - cdf_scipy) + EPSILON
+    with np.errstate(invalid='ignore'):
+        pdf_abs_diff = np.nan_to_num(np.abs(pdf_custom - pdf_scipy), False, 0) + EPSILON
+        cdf_abs_diff = np.nan_to_num(np.abs(cdf_custom - cdf_scipy), False, 0) + EPSILON
 
     class_name = custom_dist.__class__.__name__
     cond = class_name != 'SkewNormalDistribution'
@@ -40,8 +41,11 @@ def compare_accuracy(x, custom_dist, scipy_dist):
         logcdf_custom = custom_dist.logcdf(x)
         logpdf_scipy = scipy_dist.logpdf(x)
         logcdf_scipy = scipy_dist.logcdf(x)
-        logpdf_abs_diff = np.abs(logpdf_custom - logpdf_scipy) + EPSILON
-        logcdf_abs_diff = np.abs(logcdf_custom - logcdf_scipy) + EPSILON
+        with np.errstate(invalid='ignore'):
+            logpdf_abs_diff = np.nan_to_num(np.abs(logpdf_custom - logpdf_scipy),
+                                            False, 0) + EPSILON
+            logcdf_abs_diff = np.nan_to_num(np.abs(logcdf_custom - logcdf_scipy),
+                                            False, 0) + EPSILON
 
     return {"pdf_abs_diff": pdf_abs_diff,
             "log_pdf_abs_diff": logpdf_abs_diff if cond else None,
