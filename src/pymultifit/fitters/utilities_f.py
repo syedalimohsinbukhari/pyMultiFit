@@ -1,10 +1,14 @@
 """Created on Aug 18 23:52:19 2024"""
 
-__all__ = ['parameter_logic', 'sanity_check']
+__all__ = ['parameter_logic', 'sanity_check', 'plot_fit']
 
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Optional
 
 import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
+from mpyez.backend.uPlotting import LinePlot
+from mpyez.ezPlotting import plot_xy
 
 # SAFEGUARD:
 xy_values = Union[List[float], np.ndarray]
@@ -61,3 +65,56 @@ def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexTyp
     """
     indices = np.array(selected_models) - 1 if selected_models is not None else slice(None)
     return par_array.reshape(-1, n_par)[indices]
+
+
+def plot_fit(x_values, y_values, parameters, n_fits, class_name, _n_fitter, _n_plotter, show_individuals: bool = False,
+             x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
+             data_label: Union[list[str], str] = None, axis: Optional[Axes] = None):
+    """
+    Plot the fitted models.
+
+    Parameters
+    ----------
+    show_individuals: bool, optional
+        Whether to show individually fitted models or not.
+    x_label: str, optional
+        The label for the x-axis.
+    y_label: str, optional
+        The label for the y-axis.
+    title: str, optional
+        The title for the plot.
+    data_label: str, optional
+        The label for the data.
+    axis: Axes, optional
+        Axes to plot instead of the entire figure. Defaults to None.
+
+    Returns
+    -------
+    plotter
+        The plotter handle for the drawn plot.
+    """
+    if parameters is None:
+        raise RuntimeError("Fit not performed yet. Call fit() first.")
+
+    if 1 < len(data_label) <= 2:
+        dl, tt = data_label
+    elif len(data_label) == 1 or isinstance(data_label, str):
+        dl, tt = data_label, 'Total fit'
+    else:
+        raise ValueError()
+
+    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis)
+
+    plot_xy(x_data=x_values, y_data=_n_fitter(x_values, *parameters),
+            x_label=x_label, y_label=y_label, plot_title=title, data_label=tt,
+            plot_dictionary=LinePlot(color='k'), axis=plotter)
+
+    if show_individuals:
+        _n_plotter(plotter=plotter)
+
+    plotter.set_xlabel(x_label if x_label else 'X')
+    plotter.set_ylabel(y_label if y_label else 'Y')
+    plotter.set_title(title if title else f'{n_fits} {class_name} fit')
+    plt.tight_layout()
+
+    return plotter

@@ -5,6 +5,7 @@ from typing import Optional, Tuple, Union, List, Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import Bounds, curve_fit
@@ -20,7 +21,7 @@ from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter
 from .others import LineFitter
 from .skewNormal_f import SkewNormalFitter
-from .utilities_f import sanity_check
+from .utilities_f import sanity_check, plot_fit
 from .. import (epsilon, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL,
                 GAMMA_SR, GAMMA_SS, NORMAL, HALF_NORMAL)
 
@@ -403,38 +404,10 @@ class MixedDataFitter:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
     def plot_fit(self, show_individuals: bool = False,
-                 x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
-                 data_label: Optional[str] = None, figure_size: tuple = (12, 6)) -> tuple:
-        """
-        Plots the original data, fitted model, and optionally individual components.
-
-        :param show_individuals: Whether to plot individual fitted functions, by default False.
-        :param x_label: The label for the x-axis of the plot.
-        :param y_label: The label for the y-axis of the plot.
-        :param title: The title for the plot.
-        :param data_label: The label for the data to be plotted.
-        :param figure_size: The size of the figure. Default is (12,6).
-
-        :return: A tuple of figure and axes object for the drawn plot
-
-        :raises ValueError: Raised if the plotting function is called before the fitting is done.
-        """
-        if self.y_values is None or self.params is None:
-            raise ValueError("Data must be fitted before plotting.")
-
-        fig, ax = plt.subplots(figsize=figure_size)
-        plotter = plot_xy(x_data=self.x_values, y_data=self.y_values,
-                          data_label=data_label if data_label else 'Data', axis=ax)
-        plot_xy(x_data=self.x_values, y_data=self.model_function(self.x_values, *self.params),
-                data_label='Total Fit', plot_dictionary=LinePlot(color='k'), axis=plotter)
-
-        if show_individuals:
-            self._plot_individual_fitter(plotter=plotter)
-
-        plotter.set_xlabel(x_label if x_label else 'X')
-        plotter.set_ylabel(y_label if y_label else 'Y')
-        plotter.set_title(title if title else f'{self.__class__.__name__} fit')
-        plotter.legend(loc='best')
-        fig.tight_layout()
-
-        return fig, plotter
+                 x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
+                 title: Optional[str] = None, axis: Optional[Axes] = None):
+        return plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params,
+                        n_fits=self._expected_param_count(), class_name=self.__class__.__name__,
+                        _n_fitter=self.model_function, _n_plotter=self._plot_individual_fitter,
+                        show_individuals=show_individuals, x_label=x_label, y_label=y_label, title=title,
+                        data_label=data_label, axis=axis)
