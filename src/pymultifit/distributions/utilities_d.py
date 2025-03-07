@@ -676,7 +676,7 @@ def exponential_cdf_(x: fArray,
     and :math:`\theta = \dfrac{1}{\lambda}`. The final CDF is expressed as :math:`F(y)`.
     """
     y, scalar_input = preprocess_input(x=x, loc=loc, scale=1 / lambda_)
-    return np.nan_to_num(gammainc(1, y), copy=False, nan=0)
+    return _remove_nans(x=gammainc(1, y), nan_value=0)
 
 
 @doc_inherit(parent=exponential_cdf_, style=doc_style)
