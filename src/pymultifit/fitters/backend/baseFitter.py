@@ -10,7 +10,7 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import Bounds, curve_fit
 
-from ..utilities_f import parameter_logic
+from ..utilities_f import parameter_logic, _plot_fit
 from ... import listOfTuplesOrArray, epsilon
 
 
@@ -211,7 +211,7 @@ class BaseFitter:
 
         Notes
         -----
-        - `self.params` must contain the fitted parameters reshaped into (``self.n_fits``, ``self.n_par``).
+        - ``self.params`` must contain the fitted parameters reshaped into (``self.n_fits``, ``self.n_par``).
         - Each plot will be labeled with the class name and the index of the fit, along with the formatted parameters.
         """
         x = self.x_values
@@ -300,7 +300,7 @@ class BaseFitter:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def get_fit_values(self) -> np.ndarray:
+    def get_fitted_curve(self) -> np.ndarray:
         """
         Get the fitted values of the model.
 
@@ -404,15 +404,15 @@ class BaseFitter:
         else:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
-    def plot_fit(self, show_individual: bool = False,
-                 x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
-                 data_label: Optional[str] = None, axis: Optional[Axes] = None):
+    def plot_fit(self, show_individuals: bool = False,
+                 x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
+                 title: Optional[str] = None, axis: Optional[Axes] = None):
         """
         Plot the fitted models.
 
         Parameters
         ----------
-        show_individual: bool, optional
+        show_individuals: bool, optional
             Whether to show individually fitted models or not.
         x_label: str, optional
             The label for the x-axis.
@@ -430,22 +430,7 @@ class BaseFitter:
         plotter
             The plotter handle for the drawn plot.
         """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        plotter = plot_xy(x_data=self.x_values, y_data=self.y_values,
-                          data_label=data_label if data_label else 'Data', axis=axis)
-
-        plot_xy(x_data=self.x_values, y_data=self._n_fitter(self.x_values, *self.params),
-                x_label=x_label, y_label=y_label, plot_title=title, data_label='Total Fit',
-                plot_dictionary=LinePlot(color='k'), axis=plotter)
-
-        if show_individual:
-            self._plot_individual_fitter(plotter=plotter)
-
-        plotter.set_xlabel(x_label if x_label else 'X')
-        plotter.set_ylabel(y_label if y_label else 'Y')
-        plotter.set_title(title if title else f'{self.n_fits} {self.__class__.__name__} fit')
-        plt.tight_layout()
-
-        return plotter
+        return _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params, n_fits=self.n_fits,
+                         class_name=self.__class__.__name__, _n_fitter=self._n_fitter,
+                         _n_plotter=self._plot_individual_fitter, show_individuals=show_individuals, x_label=x_label,
+                         y_label=y_label, title=title, data_label=data_label, axis=axis)

@@ -55,4 +55,4 @@ class TestLaplaceDistribution:
         btf.single_input_n_variables(custom_distribution=LaplaceDistribution.scipy_like,
                                      scipy_distribution=laplace,
                                      parameters=[btf.loc_parameter, btf.scale_parameter],
-                                     log_check=False)
+                                     log_check=True)

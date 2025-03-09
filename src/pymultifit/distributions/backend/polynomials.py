@@ -49,7 +49,7 @@ def linear(x: np.ndarray, a: optFloat = 1., b: optFloat = 1) -> np.ndarray:
     return line(x, slope=a, intercept=b)
 
 
-def quadratic(x, a: optFloat = 1., b: optFloat = 1., c: optFloat = 1.) -> np.ndarray:
+def quadratic(x: np.ndarray, a: optFloat = 1., b: optFloat = 1., c: optFloat = 1.) -> np.ndarray:
     """
     Computes the y-values of a quadratic function given x-values.
 

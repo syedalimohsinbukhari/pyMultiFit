@@ -1,6 +1,6 @@
 """Created on Dec 27 11:31:54 2024"""
 
-from math import inf
+from numpy import inf
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -25,7 +25,7 @@ class GammaFitterSR(BaseFitter):
 
     @staticmethod
     def fitter(x, params):
-        return gamma_sr_pdf_(x, *params, normalize=False)
+        return gamma_sr_pdf_(x, *params)
 
 
 class GammaFitterSS(BaseFitter):
@@ -46,4 +46,4 @@ class GammaFitterSS(BaseFitter):
 
     @staticmethod
     def fitter(x, params):
-        return gamma_ss_pdf_(x, *params, normalize=False)
+        return gamma_ss_pdf_(x, *params)

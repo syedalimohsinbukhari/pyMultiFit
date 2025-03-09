@@ -16,7 +16,7 @@ year = datetime.date.today().year
 project = 'pymultifit'
 copyright = f'2024-{year}, Syed Ali Mohsin Bukhari'
 author = 'Syed Ali Mohsin Bukhari'
-release = 'v1.0.4'
+release = 'v1.0.6'
 
 sys.path.insert(0, os.path.abspath('./../../'))
 
@@ -45,12 +45,12 @@ nbsphinx_execute = 'auto'
 source_suffix = {'.rst': 'restructuredtext', '.md': 'restructuredtext'}
 suppress_warnings = ["config.cache"]
 
-# intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
-#                        "numpy": ('https://numpy.org/devdocs', None),
-#                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
-#                        "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
-#                        "matplotlib": ("https://matplotlib.org/stable/", None),
-#                        "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None), }
+intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
+                       "numpy": ('https://numpy.org/devdocs', None),
+                       'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+                       "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
+                       "matplotlib": ("https://matplotlib.org/stable/", None),
+                       "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None), }
 
 autosummary_generate = True
 autodoc_default_flags = ["members"]
@@ -99,6 +99,7 @@ pygments_style = "colorful"
 add_function_parentheses = True
 html_show_sphinx = True
 html_show_copyright = True
+show_version_warning_banner = True
 
 # Theme config
 html_theme = "pydata_sphinx_theme"
@@ -110,6 +111,7 @@ html_theme_options = {
         "theme-switcher",
         "navbar-icon-links"
     ],
+    "back_to_top_button": "True",
 }
 
 html_context = {
