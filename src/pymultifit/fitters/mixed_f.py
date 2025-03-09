@@ -21,7 +21,7 @@ from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter
 from .others import LineFitter
 from .skewNormal_f import SkewNormalFitter
-from .utilities_f import sanity_check, plot_fit
+from .utilities_f import sanity_check, _plot_fit
 from .. import (epsilon, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL,
                 GAMMA_SR, GAMMA_SS, NORMAL, HALF_NORMAL)
 
@@ -309,7 +309,7 @@ class MixedDataFitter:
         self.params, self.covariance, *_ = curve_fit(f=self.model_function, xdata=self.x_values, ydata=self.y_values,
                                                      p0=p0, maxfev=self.max_iterations, bounds=Bounds(lb=lb, ub=ub))
 
-    def get_fit_values(self) -> np.ndarray:
+    def get_fitted_curve(self) -> np.ndarray:
         """
         Gets the y-values from the fitted model.
 
@@ -406,8 +406,31 @@ class MixedDataFitter:
     def plot_fit(self, show_individuals: bool = False,
                  x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
                  title: Optional[str] = None, axis: Optional[Axes] = None):
-        return plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params,
-                        n_fits=self._expected_param_count(), class_name=self.__class__.__name__,
-                        _n_fitter=self.model_function, _n_plotter=self._plot_individual_fitter,
-                        show_individuals=show_individuals, x_label=x_label, y_label=y_label, title=title,
-                        data_label=data_label, axis=axis)
+        """
+        Plot the fitted models.
+
+        Parameters
+        ----------
+        show_individuals: bool, optional
+            Whether to show individually fitted models or not.
+        x_label: str, optional
+            The label for the x-axis.
+        y_label: str, optional
+            The label for the y-axis.
+        title: str, optional
+            The title for the plot.
+        data_label: str, optional
+            The label for the data.
+        axis: Axes, optional
+            Axes to plot instead of the entire figure. Defaults to None.
+
+        Returns
+        -------
+        plotter
+            The plotter handle for the drawn plot.
+        """
+        return _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params,
+                         n_fits=self._expected_param_count(), class_name=self.__class__.__name__,
+                         _n_fitter=self.model_function, _n_plotter=self._plot_individual_fitter,
+                         show_individuals=show_individuals, x_label=x_label, y_label=y_label, title=title,
+                         data_label=data_label, axis=axis)

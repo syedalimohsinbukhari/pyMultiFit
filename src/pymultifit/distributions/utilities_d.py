@@ -2316,7 +2316,7 @@ def sym_gen_normal_pdf_(x: fArray,
         Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
-    ------
+    -----
     The SymmetricGeneralizedNormalDistribution PDF is defined as:
 
     .. math:: f(y\ |\ \beta, \mu, \alpha) = \dfrac{\beta}{2\Gamma(1/\beta)}\exp\left(-|y|^\beta\right)

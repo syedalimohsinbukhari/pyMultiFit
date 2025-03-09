@@ -1,8 +1,8 @@
 """Created on Aug 18 23:52:19 2024"""
 
-__all__ = ['parameter_logic', 'sanity_check', 'plot_fit']
+__all__ = ['parameter_logic', 'sanity_check', '_plot_fit']
 
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional, Callable
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -67,14 +67,29 @@ def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexTyp
     return par_array.reshape(-1, n_par)[indices]
 
 
-def plot_fit(x_values, y_values, parameters, n_fits, class_name, _n_fitter, _n_plotter, show_individuals: bool = False,
-             x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
-             data_label: Union[list[str], str] = None, axis: Optional[Axes] = None):
+def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n_fits: int, class_name: str,
+              _n_fitter: Callable, _n_plotter: Callable, show_individuals: bool = False,
+              x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
+              data_label: Union[list[str], str] = None, axis: Optional[Axes] = None):
     """
-    Plot the fitted models.
+    Base function to plot the fitted models.
 
     Parameters
     ----------
+    x_values : array-like
+        The x-axis values.
+    y_values : array-like
+        The observed data values corresponding to `x_values`.
+    parameters : tuple or list
+        The optimized parameters from the fitting process.
+    n_fits : int
+        The number of fits performed.
+    class_name : str
+        The name of the fitting model class used.
+    _n_fitter : callable
+        A function that evaluates the fitted model given `x_values` and `parameters`.
+    _n_plotter : callable
+        A function that plots individual model components if `show_individuals` is True.
     show_individuals: bool, optional
         Whether to show individually fitted models or not.
     x_label: str, optional
@@ -103,7 +118,7 @@ def plot_fit(x_values, y_values, parameters, n_fits, class_name, _n_fitter, _n_p
     else:
         raise ValueError()
 
-    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis)
+    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_dictionary=LinePlot(alpha=0.75))
 
     plot_xy(x_data=x_values, y_data=_n_fitter(x_values, *parameters),
             x_label=x_label, y_label=y_label, plot_title=title, data_label=tt,

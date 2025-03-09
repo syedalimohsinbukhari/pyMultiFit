@@ -99,6 +99,7 @@ pygments_style = "colorful"
 add_function_parentheses = True
 html_show_sphinx = True
 html_show_copyright = True
+show_version_warning_banner = True
 
 # Theme config
 html_theme = "pydata_sphinx_theme"
@@ -110,6 +111,12 @@ html_theme_options = {
         "theme-switcher",
         "navbar-icon-links"
     ],
+    "back_to_top_button": "True",
+    "switcher": {
+        "version_match": "latest",  # This should match the current version
+        # URL to the versions JSON
+        "json_url": "https://github.com/syedalimohsinbukhari/pyMultiFit/blob/log-correction/versions.json",
+    },
 }
 
 html_context = {

@@ -10,7 +10,7 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import Bounds, curve_fit
 
-from ..utilities_f import parameter_logic, plot_fit
+from ..utilities_f import parameter_logic, _plot_fit
 from ... import listOfTuplesOrArray, epsilon
 
 
@@ -300,7 +300,7 @@ class BaseFitter:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def get_fit_values(self) -> np.ndarray:
+    def get_fitted_curve(self) -> np.ndarray:
         """
         Get the fitted values of the model.
 
@@ -407,7 +407,30 @@ class BaseFitter:
     def plot_fit(self, show_individuals: bool = False,
                  x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
                  title: Optional[str] = None, axis: Optional[Axes] = None):
-        return plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params, n_fits=self.n_fits,
-                        class_name=self.__class__.__name__, _n_fitter=self._n_fitter,
-                        _n_plotter=self._plot_individual_fitter, show_individuals=show_individuals, x_label=x_label,
-                        y_label=y_label, title=title, data_label=data_label, axis=axis)
+        """
+        Plot the fitted models.
+
+        Parameters
+        ----------
+        show_individuals: bool, optional
+            Whether to show individually fitted models or not.
+        x_label: str, optional
+            The label for the x-axis.
+        y_label: str, optional
+            The label for the y-axis.
+        title: str, optional
+            The title for the plot.
+        data_label: str, optional
+            The label for the data.
+        axis: Axes, optional
+            Axes to plot instead of the entire figure. Defaults to None.
+
+        Returns
+        -------
+        plotter
+            The plotter handle for the drawn plot.
+        """
+        return _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params, n_fits=self.n_fits,
+                         class_name=self.__class__.__name__, _n_fitter=self._n_fitter,
+                         _n_plotter=self._plot_individual_fitter, show_individuals=show_individuals, x_label=x_label,
+                         y_label=y_label, title=title, data_label=data_label, axis=axis)
