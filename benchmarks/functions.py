@@ -6,6 +6,7 @@ from timeit import default_timer as timer
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import statsmodels.api as sm
 from matplotlib import pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.ticker import FixedLocator
@@ -168,8 +169,6 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
     plt.title(f"Speed Comparison: Custom vs SciPy ({title_suffix})")
     plt.legend()
     plt.grid(True)
-
-    import statsmodels.api as sm
 
     lowess_results = sm.nonparametric.lowess(ratio_means, n_points_list, frac=0.3)
     x_smooth, y_smooth = lowess_results[:, 0], lowess_results[:, 1]
