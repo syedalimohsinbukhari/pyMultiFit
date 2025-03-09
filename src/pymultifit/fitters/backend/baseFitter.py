@@ -211,7 +211,7 @@ class BaseFitter:
 
         Notes
         -----
-        - `self.params` must contain the fitted parameters reshaped into (``self.n_fits``, ``self.n_par``).
+        - ``self.params`` must contain the fitted parameters reshaped into (``self.n_fits``, ``self.n_par``).
         - Each plot will be labeled with the class name and the index of the fit, along with the formatted parameters.
         """
         x = self.x_values
