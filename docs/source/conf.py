@@ -112,6 +112,7 @@ html_theme_options = {
         "navbar-icon-links"
     ],
     "back_to_top_button": "True",
+    "check_switcher": True,
     "switcher": {
         "version_match": "latest",  # This should match the current version
         # URL to the versions JSON
