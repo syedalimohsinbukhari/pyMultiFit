@@ -111,10 +111,12 @@ def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n
     if parameters is None:
         raise RuntimeError("Fit not performed yet. Call fit() first.")
 
-    if 1 < len(data_label) <= 2:
-        dl, tt = data_label
+    if data_label is None:
+        dl, tt = 'Data', 'Total fit'
     elif len(data_label) == 1 or isinstance(data_label, str):
         dl, tt = data_label, 'Total fit'
+    elif 1 < len(data_label) <= 2:
+        dl, tt = data_label
     else:
         raise ValueError()
 

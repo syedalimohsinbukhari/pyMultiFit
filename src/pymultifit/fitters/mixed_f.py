@@ -430,7 +430,7 @@ class MixedDataFitter:
             The plotter handle for the drawn plot.
         """
         return _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params,
-                         n_fits=self._expected_param_count(), class_name=self.__class__.__name__,
+                         n_fits=len(self.model_list), class_name=self.__class__.__name__,
                          _n_fitter=self.model_function, _n_plotter=self._plot_individual_fitter,
                          show_individuals=show_individuals, x_label=x_label, y_label=y_label, title=title,
                          data_label=data_label, axis=axis)
