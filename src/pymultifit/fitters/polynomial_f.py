@@ -4,9 +4,9 @@ from typing import Tuple, Any
 
 import numpy as np
 
-from pymultifit.distributions.backend import nth_polynomial, line
-from pymultifit.fitters.backend import BaseFitter
-from pymultifit.fitters.utilities_f import sanity_check
+from .backend import BaseFitter
+from .utilities_f import sanity_check
+from ..distributions.backend import line, nth_polynomial
 
 
 class LineFitter(BaseFitter):
