@@ -16,9 +16,10 @@ __all__ = ['_beta_masking', '_pdf_scaling', '_remove_nans', 'preprocess_input',
            'scaled_inv_chi_square_pdf_', 'scaled_inv_chi_square_log_pdf_',
            'scaled_inv_chi_square_cdf_', 'scaled_inv_chi_square_log_cdf_',
            'skew_normal_pdf_', 'skew_normal_cdf_',
-           'uniform_pdf_', 'uniform_cdf_', 'uniform_log_pdf_', 'uniform_log_cdf_']
+           'uniform_pdf_', 'uniform_cdf_', 'uniform_log_pdf_', 'uniform_log_cdf_',
+           'line', 'linear', 'quadratic', 'cubic', 'nth_polynomial']
 
-from typing import Union, Callable
+from typing import Union, Callable, Optional
 
 import numpy as np
 from custom_inherit import doc_inherit
@@ -545,6 +546,40 @@ def chi_square_log_cdf_(x: fArray,
 
     with np.errstate(divide='ignore'):
         return np.log(cdf_)
+
+
+def cubic(x: np.ndarray, a: Optional[float] = 1., b: Optional[float] = 1., c: Optional[float] = 1.,
+          d: Optional[float] = 1.) -> np.ndarray:
+    r"""
+    Computes the y-values of a cubic function given x-values.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    a : float
+        The coefficient of the cubic term (x^3).
+    b : float
+        The coefficient of the quadratic term (x^2).
+    c : float
+        The coefficient of the linear term (x).
+    d : float
+        The constant term (y-intercept).
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The cubic function is defined as:
+
+    .. math:: y = ax^3 + bx^2 + cx + d
+
+    where, :math:`a`, math:`b`, :math:`c`, and :math:`d` are the cubic coefficients.
+    """
+    return a * x**3 + b * x**2 + c * x + d
 
 
 def exponential_pdf_(x: fArray,
@@ -1656,6 +1691,38 @@ def laplace_log_cdf_(x: fArray,
     return log_cdf_.item() if scalar_input else log_cdf_
 
 
+def line(x: np.ndarray, slope: Optional[float] = 1., intercept: Optional[float] = 0.) -> np.ndarray:
+    r"""
+    Computes the y-values of a line given x-values, slope, and intercept.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    slope : float
+        The slope of the line.
+    intercept : float
+        The y-intercept of the line.
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The line/linear function is defined as:
+
+    .. math:: y = mx + c
+
+    where :math:`m` is the slope and :math:`c` is the intercept of the function.
+    """
+    return slope * x + intercept
+
+
+linear = line
+
+
 def log_normal_pdf_(x: fArray,
                     amplitude: float = 1., mean: float = 0., std: float = 1.,
                     loc: float = 0., normalize: bool = False) -> fArray:
@@ -1800,6 +1867,34 @@ def log_normal_log_cdf_(x: fArray,
     """
     y = (np.log(x - loc) - mean) / std
     return _remove_nans(x=log_ndtr(y), nan_value=-np.inf)
+
+
+def nth_polynomial(x: np.ndarray, coefficients: list[float]) -> np.ndarray:
+    r"""
+    Evaluate a polynomial at given points.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    coefficients : list of float
+        Coefficients of the polynomial in descending order of degree.
+        For example, [a, b, c] represents the polynomial ax^2 + bx + c.
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The nth polynomial function is defined as:
+
+    .. math:: P(x) = \sum_{i=0}^{N}a_i x^i
+
+    where, :math:`a_i` is the :math:`i^\text{th}` coefficient of the polynomial.
+    """
+    return np.polyval(p=coefficients, x=x)
 
 
 def uniform_pdf_(x: fArray,
@@ -2436,6 +2531,37 @@ def sym_gen_normal_log_cdf_(x: fArray,
                                loc=loc, scale=scale, normalize=normalize)
 
     return np.log(cdf_)
+
+
+def quadratic(x: np.ndarray, a: Optional[float] = 1., b: Optional[float] = 1., c: Optional[float] = 1.) -> np.ndarray:
+    r"""
+    Computes the y-values of a quadratic function given x-values.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    a : float
+        The coefficient of the quadratic term (x^2).
+    b : float
+        The coefficient of the linear term (x).
+    c : float
+        The constant term (y-intercept).
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The quadratic function is defined as:
+
+    .. math:: y = ax^2 + bx + c
+
+    where, :math:`a`, :math:`b`, and :math:`c` are the quadratic coefficients.
+    """
+    return a * x**2 + b * x + c
 
 
 def _beta_masking(y: fArray, alpha: float, beta: float) -> fArray:

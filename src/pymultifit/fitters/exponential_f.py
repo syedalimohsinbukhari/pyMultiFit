@@ -1,6 +1,6 @@
 """Created on Nov 30 11:30:45 2024"""
 
-from math import inf
+import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -19,10 +19,10 @@ class ExponentialFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, 0, -inf)
-        ub = (inf, inf, inf)
+        lb = (0, 0, -np.inf)
+        ub = (np.inf, np.inf, np.inf)
         return lb, ub
 
     @staticmethod
     def fitter(x, params):
-        return exponential_pdf_(x, *params, normalize=False)
+        return exponential_pdf_(x, *params)

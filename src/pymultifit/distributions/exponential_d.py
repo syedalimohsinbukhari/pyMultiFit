@@ -1,6 +1,6 @@
 """Created on Nov 30 10:49:49 2024"""
 
-from math import log
+import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import exponential_cdf_, exponential_pdf_, exponential_log_pdf_, exponential_log_cdf_
@@ -129,7 +129,7 @@ class ExponentialDistribution(BaseDistribution):
         s, l_ = self.scale, self.loc
 
         mean_ = (1 / s) + l_
-        median_ = (log(2) / s) + l_
+        median_ = (np.log(2) / s) + l_
         mode_ = 0
         variance_ = 1 / s**2
         return {'mean': mean_,

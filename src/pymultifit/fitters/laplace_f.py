@@ -1,6 +1,6 @@
 """Created on Jul 20 16:59:14 2024"""
 
-from math import inf
+import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -17,10 +17,10 @@ class LaplaceFitter(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, -inf, 0)
-        ub = (inf, inf, inf)
+        lb = (0, -np.inf, 0)
+        ub = (np.inf, np.inf, np.inf)
         return lb, ub
 
     @staticmethod
     def fitter(x, params):
-        return laplace_pdf_(x, *params, normalize=False)
+        return laplace_pdf_(x, *params)

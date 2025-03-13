@@ -1,6 +1,8 @@
 """Created on Dec 04 03:42:42 2024"""
 
-from math import erf, sqrt, exp, pi
+from math import erf
+
+import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import folded_normal_cdf_, folded_normal_pdf_, folded_normal_log_pdf_, folded_normal_log_cdf_
@@ -133,14 +135,14 @@ class FoldedNormalDistribution(BaseDistribution):
     def stats(self):
         mean_, std_ = self.mu, self.sigma
 
-        sqrt_ = (2 / pi)**0.5
+        sqrt_ = (2 / np.pi)**0.5
 
-        f1 = sqrt_ * exp(-0.5 * mean_**2)
-        f2 = mean_ * erf(mean_ / sqrt(2))
+        f1 = sqrt_ * np.exp(-0.5 * mean_**2)
+        f2 = mean_ * erf(mean_ / np.sqrt(2))
 
         mu_y = f1 + f2
         var_y = mean_**2 + 1 - mu_y**2
 
         return {'mean': (std_ * mu_y) + self.loc,
                 'variance': var_y * std_**2,
-                'std': sqrt(var_y * std_**2)}
+                'std': np.sqrt(var_y * std_**2)}

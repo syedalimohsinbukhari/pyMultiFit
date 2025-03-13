@@ -1,7 +1,5 @@
 """Created on Aug 03 21:35:28 2024"""
 
-from math import sqrt, pi, exp
-
 import numpy as np
 
 from .backend import BaseDistribution
@@ -127,19 +125,19 @@ class SkewNormalDistribution(BaseDistribution):
 
     def stats(self):
         alpha, omega, epsilon = self.shape, self.scale, self.location
-        delta = alpha / sqrt(1 + alpha**2)
-        delta_sqrt_2_pi = sqrt(2 / pi) * delta
+        delta = alpha / np.sqrt(1 + alpha**2)
+        delta_sqrt_2_pi = np.sqrt(2 / np.pi) * delta
 
         def _m0(alpha_):
-            term2 = (1 - pi / 4) * delta_sqrt_2_pi**3 / (1 - (2 / pi) * delta**2)
-            term3 = (2 * pi / abs(alpha_)) * exp(-(2 * pi / abs(alpha_))) * np.sign(alpha_)
+            term2 = (1 - np.pi / 4) * delta_sqrt_2_pi**3 / (1 - (2 / np.pi) * delta**2)
+            term3 = (2 * np.pi / abs(alpha_)) * np.exp(-(2 * np.pi / abs(alpha_))) * np.sign(alpha_)
             return delta_sqrt_2_pi - term2 - term3
 
         # Calculating mean, mode, variance, and std
         mean_ = epsilon + omega * delta_sqrt_2_pi
         mode_ = epsilon + omega * _m0(alpha)
-        variance_ = omega**2 * (1 - (2 * delta**2 / pi))
-        std_ = sqrt(variance_)
+        variance_ = omega**2 * (1 - (2 * delta**2 / np.pi))
+        std_ = np.sqrt(variance_)
 
         return {'mean': mean_,
                 'mode': mode_,

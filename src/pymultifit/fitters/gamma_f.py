@@ -1,6 +1,6 @@
 """Created on Dec 27 11:31:54 2024"""
 
-from numpy import inf
+import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -19,8 +19,8 @@ class GammaFitterSR(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, 0, 0, -inf)
-        ub = (inf, inf, inf, inf)
+        lb = (0, 0, 0, -np.inf)
+        ub = (np.inf, np.inf, np.inf, np.inf)
         return lb, ub
 
     @staticmethod
@@ -40,8 +40,8 @@ class GammaFitterSS(BaseFitter):
 
     @staticmethod
     def fit_boundaries():
-        lb = (0, 0, 0, -inf)
-        ub = (inf, inf, inf, inf)
+        lb = (0, 0, 0, -np.inf)
+        ub = (np.inf, np.inf, np.inf, np.inf)
         return lb, ub
 
     @staticmethod

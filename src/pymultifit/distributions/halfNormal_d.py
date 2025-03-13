@@ -1,6 +1,6 @@
 """Created on Dec 04 03:57:18 2024"""
 
-from math import sqrt, pi
+import numpy as np
 
 from .backend import errorHandling as erH, BaseDistribution
 from .utilities_d import half_normal_pdf_, half_normal_cdf_, half_normal_log_pdf_, half_normal_log_cdf_
@@ -124,13 +124,13 @@ class HalfNormalDistribution(BaseDistribution):
     def stats(self):
         s_, l_ = self.scale, self.loc
 
-        mean_ = sqrt(2 / pi)
+        mean_ = np.sqrt(2 / np.pi)
         mode_ = 0
 
-        variance_ = (1 - (2 / pi))
+        variance_ = (1 - (2 / np.pi))
         variance_ *= s_**2
 
         return {'mean': (s_ * mean_) + l_,
                 'mode': mode_,
                 'variance': variance_,
-                'std': sqrt(variance_)}
+                'std': np.sqrt(variance_)}

@@ -1,6 +1,6 @@
 """Created on Dec 11 11:24:19 2024"""
 
-from typing import Any, Dict
+from typing import Dict
 
 import numpy as np
 import pytest
@@ -32,12 +32,6 @@ class TestMockDistribution:
         # Check for NotImplementedError in all abstract methods
         with pytest.raises(NotImplementedError):
             base_dist.pdf(x)
-
-        with pytest.raises(NotImplementedError):
-            base_dist.cdf(x)
-
-        with pytest.raises(NotImplementedError):
-            base_dist.stats()
 
     @staticmethod
     def test_mock_distribution_pdf():

@@ -1,7 +1,7 @@
 ScaledInvChiSquareDistribution
 --------------------------------------
 
-.. autoclass:: pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution
+.. autoclass:: pymultifit.distributions.generalized.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution
    :members:
    :inherited-members:
    :show-inheritance:
@@ -24,6 +24,4 @@ Full Import
 
 .. code-block:: python
 
-   from pymultifit.distributions.scaledInvChiSquare_d import ScaledInverseChiSquareDistribution
-
-
+   from pymultifit.distributions.generalized.scaledInvChiSquare_d import ScaledInverseChiSquareDistribution

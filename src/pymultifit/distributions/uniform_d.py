@@ -1,6 +1,6 @@
 """Created on Dec 11 20:40:15 2024"""
 
-from math import sqrt, nan
+import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_pdf_, uniform_log_pdf_, uniform_log_cdf_
@@ -121,10 +121,10 @@ class UniformDistribution(BaseDistribution):
         low, high = self.low, self.low + self.high
 
         if low == high:
-            return {'mean': nan,
-                    'median': nan,
-                    'variance': nan,
-                    'std': nan}
+            return {'mean': np.nan,
+                    'median': np.nan,
+                    'variance': np.nan,
+                    'std': np.nan}
 
         mean_ = 0.5 * (low + high)
         median_ = mean_
@@ -133,4 +133,4 @@ class UniformDistribution(BaseDistribution):
         return {'mean': mean_,
                 'median': median_,
                 'variance': variance_,
-                'std': sqrt(variance_)}
+                'std': np.sqrt(variance_)}
