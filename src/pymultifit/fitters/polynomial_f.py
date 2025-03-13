@@ -6,10 +6,11 @@ import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from ..distributions.backend import line, nth_polynomial
+from ..distributions.utilities_d import line, nth_polynomial
 
 
 class LineFitter(BaseFitter):
+    """A class for fitting a line to the given data."""
 
     def __init__(self, x_values, y_values, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -22,6 +23,7 @@ class LineFitter(BaseFitter):
 
 
 class PolynomialFitter(BaseFitter):
+    """A class for fitting nth order polynomial to the given data."""
 
     def __init__(self, x_values, y_values, order, max_iterations=1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)

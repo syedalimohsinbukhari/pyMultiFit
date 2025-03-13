@@ -25,4 +25,4 @@ class ChiSquareFitter(BaseFitter):
 
     @staticmethod
     def fitter(x, params):
-        return chi_square_pdf_(x, *params, normalize=False)
+        return chi_square_pdf_(x, *params)

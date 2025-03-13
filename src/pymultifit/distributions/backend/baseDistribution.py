@@ -35,7 +35,7 @@ class BaseDistribution:
 
         :param x: Input array at which to evaluate the CDF.
         """
-        raise NotImplementedError("Subclasses should implement this method.")
+        pass
 
     def logcdf(self, x: fArray) -> fArray:
         r"""
@@ -61,7 +61,7 @@ class BaseDistribution:
         -----
         If any of the parameter is not computable for a distribution, this method returns None.
         """
-        raise NotImplementedError("Subclasses should implement this method.")
+        pass
 
     @property
     def mean(self):

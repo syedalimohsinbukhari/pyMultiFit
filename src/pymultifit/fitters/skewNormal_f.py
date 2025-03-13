@@ -23,4 +23,4 @@ class SkewNormalFitter(BaseFitter):
 
     @staticmethod
     def fitter(x, params):
-        return skew_normal_pdf_(x, *params, normalize=False)
+        return skew_normal_pdf_(x, *params)

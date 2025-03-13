@@ -23,6 +23,7 @@ Available for user
 .. autofunction:: chi_square_log_pdf_
 .. autofunction:: chi_square_cdf_
 .. autofunction:: chi_square_log_cdf_
+.. autofunction:: cubic
 .. autofunction:: exponential_pdf_
 .. autofunction:: exponential_log_pdf_
 .. autofunction:: exponential_cdf_
@@ -51,10 +52,14 @@ Available for user
 .. autofunction:: laplace_log_pdf_
 .. autofunction:: laplace_cdf_
 .. autofunction:: laplace_log_cdf_
+.. autofunction:: line
+.. autofunction:: linear
 .. autofunction:: log_normal_pdf_
 .. autofunction:: log_normal_log_pdf_
 .. autofunction:: log_normal_cdf_
 .. autofunction:: log_normal_log_cdf_
+.. autofunction:: nth_polynomial
+.. autofunction:: quadratic
 .. autofunction:: scaled_inv_chi_square_pdf_
 .. autofunction:: scaled_inv_chi_square_log_pdf_
 .. autofunction:: scaled_inv_chi_square_cdf_

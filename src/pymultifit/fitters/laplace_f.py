@@ -23,4 +23,4 @@ class LaplaceFitter(BaseFitter):
 
     @staticmethod
     def fitter(x, params):
-        return laplace_pdf_(x, *params, normalize=False)
+        return laplace_pdf_(x, *params)

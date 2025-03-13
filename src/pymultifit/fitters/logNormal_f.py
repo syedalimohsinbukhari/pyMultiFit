@@ -30,4 +30,4 @@ class LogNormalFitter(BaseFitter):
 
     @staticmethod
     def fitter(x, params):
-        return log_normal_pdf_(x, *params, normalize=False)
+        return log_normal_pdf_(x, *params)
