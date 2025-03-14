@@ -10,6 +10,8 @@ from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 
+from .. import MPL_COLORS
+
 # SAFEGUARD:
 xy_values = Union[List[float], np.ndarray]
 xy_tuple = Tuple[np.ndarray, np.ndarray]
@@ -70,7 +72,8 @@ def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexTyp
 def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n_fits: int, class_name: str,
               _n_fitter: Callable, _n_plotter: Callable, show_individuals: bool = False,
               x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
-              data_label: Union[list[str], str] = None, axis: Optional[Axes] = None):
+              data_label: Union[list[str], str] = None, axis: Optional[Axes] = None,
+              data_color: str = MPL_COLORS[0], grid: bool = True):
     """
     Base function to plot the fitted models.
 
@@ -102,6 +105,10 @@ def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n
         The label for the data.
     axis: Axes, optional
         Axes to plot instead of the entire figure. Defaults to None.
+    data_color: str, optional
+        The color for plotted data. Defaults to matplotlib default.
+    grid: bool, optional
+        Whether to apply the grid on the plot or not. Defaults to True.
 
     Returns
     -------
@@ -120,7 +127,8 @@ def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n
     else:
         raise ValueError()
 
-    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_dictionary=LinePlot(alpha=0.75))
+    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis,
+                      plot_dictionary=LinePlot(color=data_color, alpha=0.75))
 
     plot_xy(x_data=x_values, y_data=_n_fitter(x_values, *parameters),
             x_label=x_label, y_label=y_label, plot_title=title, data_label=tt,
@@ -132,6 +140,8 @@ def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n
     plotter.set_xlabel(x_label if x_label else 'X')
     plotter.set_ylabel(y_label if y_label else 'Y')
     plotter.set_title(title if title else f'{n_fits} {class_name} fit')
+    if grid:
+        plotter.grid()
     plt.tight_layout()
 
     return plotter

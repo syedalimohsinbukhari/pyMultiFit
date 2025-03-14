@@ -3,8 +3,8 @@
 import itertools
 from typing import Optional, Tuple, Union, List, Callable
 
-import matplotlib.pyplot as plt
 import numpy as np
+from custom_inherit import doc_inherit
 from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
@@ -23,7 +23,7 @@ from .polynomial_f import LineFitter
 from .skewNormal_f import SkewNormalFitter
 from .utilities_f import sanity_check, _plot_fit
 from .. import (epsilon, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL,
-                GAMMA_SR, GAMMA_SS, NORMAL, HALF_NORMAL)
+                GAMMA_SR, GAMMA_SS, NORMAL, HALF_NORMAL, MPL_COLORS, doc_style)
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {CHI_SQUARE: ChiSquareFitter,
@@ -247,7 +247,7 @@ class MixedDataFitter:
         :param plotter: The plotting axis object
         """
         x = self.x_values
-        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
+        colors = MPL_COLORS[1:]
         param_index = 0
         for i, model in enumerate(self.model_list):
             color = colors[i % len(colors)]
@@ -403,26 +403,13 @@ class MixedDataFitter:
         else:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
+    @doc_inherit(parent=_plot_fit, style=doc_style)
     def plot_fit(self, show_individuals: bool = False,
                  x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
-                 title: Optional[str] = None, axis: Optional[Axes] = None):
+                 title: Optional[str] = None, axis: Optional[Axes] = None,
+                 data_color: str = MPL_COLORS[0], grid: bool = True):
         """
         Plot the fitted models.
-
-        Parameters
-        ----------
-        show_individuals: bool, optional
-            Whether to show individually fitted models or not.
-        x_label: str, optional
-            The label for the x-axis.
-        y_label: str, optional
-            The label for the y-axis.
-        title: str, optional
-            The title for the plot.
-        data_label: str, optional
-            The label for the data.
-        axis: Axes, optional
-            Axes to plot instead of the entire figure. Defaults to None.
 
         Returns
         -------
@@ -433,4 +420,4 @@ class MixedDataFitter:
                          n_fits=len(self.model_list), class_name=self.__class__.__name__,
                          _n_fitter=self.model_function, _n_plotter=self._plot_individual_fitter,
                          show_individuals=show_individuals, x_label=x_label, y_label=y_label, title=title,
-                         data_label=data_label, axis=axis)
+                         data_label=data_label, axis=axis, data_color=data_color, grid=grid)

@@ -3,10 +3,13 @@
 from typing import Tuple, Union, List
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
 
 doc_style = 'numpy_napoleon_with_merge'
+
+MPL_COLORS = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
 fArray = Union[float, np.ndarray]
 # taken from https://stackoverflow.com/a/19141711
