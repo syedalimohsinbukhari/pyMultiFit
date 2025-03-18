@@ -96,7 +96,7 @@ def arc_sine_pdf_(x: fArray,
         return y
 
     with np.errstate(divide='ignore', invalid='ignore'):
-        pdf_ = _arcsine(y)
+        pdf_ = _arc_sine(y)
         pdf_ = _remove_nans(pdf_) / scale
 
     if not scalar_input:
@@ -109,9 +109,13 @@ def arc_sine_pdf_(x: fArray,
     return pdf_.item() if scalar_input else pdf_
 
 
-def _arcsine(y, un_log=True):
-    pdf = np.where(np.logical_and(y > 0, y < 1),
-                   1 / PI / np.sqrt(y * (1 - y)), 0.0)
+def _arc_sine(y: np.ndarray, un_log=True):
+    c1 = np.logical_and(y > 0, y < 1)
+    c2 = y == 0
+    c3 = y == 1
+    pdf = np.select(condlist=[c1, c2, c3],
+                    choicelist=[1 / PI / np.sqrt(y * (1 - y)), np.inf, np.inf],
+                    default=0.0)
     return pdf if un_log else np.log(pdf)
 
 
@@ -140,10 +144,7 @@ def arc_sine_log_pdf_(x: fArray,
         return y
 
     with np.errstate(divide='ignore', invalid='ignore'):
-        log_pdf_ = _arcsine(y, False) - np.log(scale)
-
-    log_pdf_[y == 0] = np.inf
-    log_pdf_[y == 1] = np.inf
+        log_pdf_ = _arc_sine(y, False) - np.log(scale)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -268,17 +269,11 @@ def beta_pdf_(x: fArray,
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
     # evaluating log_pdf_ for Beta distribution is safer than evaluating direct pdf_ due to less over/under flow issues
-    y, scalar_input = preprocess_input(x, loc, scale)
+    log_pdf_ = beta_log_pdf_(x,
+                             amplitude=amplitude, alpha=alpha, beta=beta,
+                             loc=loc, scale=scale, normalize=normalize)
 
-    if y.size == 0:
-        return y
-
-    pdf_ = _beta_(alpha, beta, y, True) / scale
-
-    if not normalize:
-        pdf_ = _pdf_scaling(pdf_, amplitude)
-
-    return pdf_.item() if scalar_input else pdf_
+    return _remove_nans(x=np.exp(log_pdf_), nan_value=-np.inf)
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
@@ -305,19 +300,25 @@ def beta_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    log_pdf_ = _beta_(alpha, beta, y) - np.log(scale)
+    log_pdf_ = np.full_like(a=y, fill_value=-np.inf, dtype=float)
+    mask_ = ~_beta_masking(y=y, alpha=alpha, beta=beta)
+
+    normalization_factor = gammaln(alpha) + gammaln(beta) - gammaln(alpha + beta)
+
+    log_pdf_[mask_] = (alpha - 1) * np.log(y[mask_]) + (beta - 1) * np.log1p(-y[mask_])
+    log_pdf_[mask_] = log_pdf_[mask_] - normalization_factor - np.log(scale)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
+    if alpha <= 1:
+        log_pdf_[y == 0] = np.nan
+    if beta <= 1:
+        log_pdf_[y == 1] = np.nan
+    if alpha == 1 and beta == 1:
+        log_pdf_[y == 1] = 0
+
     return log_pdf_.item() if scalar_input else log_pdf_
-
-
-def _beta_(alpha, beta, y, un_log=False):
-    log_pdf_ = xlog1py(alpha - 1, y) + xlogy(beta - 1, -y) - betaln(alpha, beta)
-    log_pdf_ = np.where(np.logical_and(y > 0, y < 1), log_pdf_, -np.inf)
-
-    return np.exp(log_pdf_) if un_log else log_pdf_
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
