@@ -8,10 +8,10 @@ from custom_inherit import doc_inherit
 from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
-from scipy.optimize import Bounds, curve_fit
+from scipy.optimize import curve_fit
 
 from ..utilities_f import parameter_logic, _plot_fit
-from ... import listOfTuplesOrArray, epsilon, MPL_COLORS, doc_style
+from ... import listOfTuplesOrArray, MPL_COLORS, doc_style, epsilon
 
 
 class BaseFitter:
@@ -26,6 +26,8 @@ class BaseFitter:
         self.n_par = None
         self.pn_par = self.n_par
         self.sn_par = {}
+
+        self.p0 = None
 
         self.n_fits = None
         self.params = None
@@ -80,56 +82,43 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return self.covariance
 
-    def _fit_preprocessing(self, p0: listOfTuplesOrArray, frozen: List[bool]):
+    def _fit_preprocessing(self, frozen: dict):
         """
         Process frozen parameters and adjust bounds.
 
         Parameters
         ----------
-        p0: listOfTuplesOrArray
-            A list of initial guesses for the parameters of the models.
-            For example: [(1, 1, 0), (3, 3, 2)].
-        frozen: List[bool]
-            A list of booleans indicating which parameters are frozen.
-            For example: [False, False, True] for 3 parameters.
+        frozen: Dict[int, List[int]]
+            A dictionary where keys are indices of model fits (1-based), and values are lists of parameter indices
+            (1-based) to freeze.
 
         Returns
         -------
         Tuple[np.ndarray, np.ndarray, np.ndarray]
             Adjusted lower and upper bounds, and flattened initial guesses.
         """
-        # Get initial boundaries
         try:
             lb, ub = self.fit_boundaries()
         except NotImplementedError:
-            # if they're not implemented, self impose -inf + inf boundaries
-            lb = [-np.inf] * self.n_fits
-            ub = [np.inf] * self.n_fits
+            lb = np.full(shape=self.n_fits, fill_value=-np.inf)
+            ub = np.full(shape=self.n_fits, fill_value=np.inf)
 
-        # Resize bounds to match total parameters
-        lb = np.resize(a=lb, new_shape=self.n_par * self.n_fits)
-        ub = np.resize(a=ub, new_shape=self.n_par * self.n_fits)
+        # Ensure bounds are NumPy arrays and resize properly
+        lb = np.resize(a=lb, new_shape=(self.n_fits, self.n_par))
+        ub = np.resize(a=ub, new_shape=(self.n_fits, self.n_par))
 
-        # Validate frozen length
-        if frozen is None:
-            frozen = [False] * self.n_par
+        p0_array = np.array(self.p0)
 
-        if len(frozen) != self.n_par:
-            raise ValueError("The length of 'frozen' must match the number of parameters per model.")
+        if frozen:
+            # Process frozen parameters
+            for key, values in frozen.items():
+                values = values if isinstance(values, list) else [values]
+                for val in values:
+                    param_value = p0_array[key - 1, val - 1]
+                    lb[key - 1, val - 1] = param_value - epsilon
+                    ub[key - 1, val - 1] = param_value + epsilon
 
-        # Repeat frozen mask for all models
-        frozen = frozen * self.n_fits
-
-        # Flatten initial guesses
-        p0_flat = np.array(p0).flatten()
-
-        # Adjust bounds for frozen parameters
-        for i, is_frozen in enumerate(frozen):
-            if is_frozen:
-                lb[i] = p0_flat[i] - epsilon
-                ub[i] = p0_flat[i] + epsilon
-
-        return lb, ub, p0_flat
+        return lb.flatten(), ub.flatten(), p0_array.flatten()
 
     @staticmethod
     def _format_param(value, t_low=0.001, t_high=10_000) -> str:
@@ -254,7 +243,7 @@ class BaseFitter:
         """
         plot_xy(x_data=self.x_values, y_data=self.y_values, axis=axis)
 
-    def fit(self, p0: listOfTuplesOrArray, frozen: List[bool] = None):
+    def fit(self, p0: listOfTuplesOrArray, frozen: dict = None):
         """
         Fit the data.
 
@@ -262,24 +251,35 @@ class BaseFitter:
         ----------
         p0: listOfTuplesOrArray
             A list of initial guesses for the parameters of the models.
-            For example: [(1, 1, 0), (3, 3, 2)].
-        frozen: List[bool]
-            A list of booleans indicating whether each parameter is frozen.
-            For example: [False, False, True] for 3 parameters.
+            Each element is a tuple or array representing the parameters for a single fit.
+            Example: [(1, 1, 0), (3, 3, 2)].
+
+        frozen: Dict[int, List[int]], optional
+            A dictionary specifying which parameters should be frozen during fitting.
+            - Keys are 1-based indices corresponding to the fits.
+            - Values are lists of 1-based parameter indices to freeze for that fit.
+            - Example: `{1: [2, 3], 2: [1]}` freezes parameter 2 and 3 for the first and parameter 1 for the second fit.
+
+        Returns
+        -------
+        None
+            Performs the fitting process with the given constraints.
         """
+        self.p0 = p0
         self.n_fits = len(p0)
         len_guess = len(list(chain(*p0)))
         total_pars = self.n_par * self.n_fits
 
         if len_guess != total_pars:
-            p0 = self._adjust_parameters(p0)
+            self.p0 = self._adjust_parameters(p0)
 
-        lb, ub, p0_flat = self._fit_preprocessing(p0=p0, frozen=frozen)
+        lb, ub, p0_flat = self._fit_preprocessing(frozen=frozen)
 
+        # remove the Bound parameter for the library to work with previous version of `scipy`
         self.params, self.covariance, *_ = curve_fit(f=self._n_fitter,
                                                      xdata=self.x_values, ydata=self.y_values,
                                                      p0=p0_flat, maxfev=self.max_iterations,
-                                                     bounds=Bounds(lb=lb, ub=ub))
+                                                     bounds=(lb, ub))
 
     @staticmethod
     def fit_boundaries():
@@ -422,3 +422,14 @@ class BaseFitter:
                          _n_plotter=self._plot_individual_fitter, show_individuals=show_individuals, x_label=x_label,
                          y_label=y_label, title=title, data_label=data_label, axis=axis,
                          data_color=data_color, grid=grid)
+
+    def residuals(self):
+        return self.y_values - self.get_fitted_curve()
+
+    def mse_rmse(self):
+        residuals = self.y_values - self.get_fitted_curve()
+
+        mse = np.mean(residuals**2)  # Mean squared error
+        rmse = np.sqrt(mse)  # Root mean squared error
+
+        return mse, rmse

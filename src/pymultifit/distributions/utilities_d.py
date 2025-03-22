@@ -31,23 +31,23 @@ from .. import fArray, doc_style
 TWO = 2.0
 SQRT_TWO = np.sqrt(TWO)
 LOG_TWO = np.log(TWO)
-LOG_SQRT_TWO = 0.5 * LOG_TWO
+LOG_SQRT_TWO = np.log(SQRT_TWO)
 
 PI = np.pi
 SQRT_PI = np.sqrt(PI)
 LOG_PI = np.log(PI)
-LOG_SQRT_PI = 0.5 * LOG_PI
+LOG_SQRT_PI = np.log(SQRT_PI)
 
 TWO_PI = 2 * PI
 SQRT_TWO_PI = np.sqrt(TWO_PI)
 LOG_TWO_PI = np.log(TWO_PI)
-LOG_SQRT_TWO_PI = 0.5 * LOG_TWO_PI
+LOG_SQRT_TWO_PI = np.log(SQRT_TWO_PI)
 
 INV_PI = 1.0 / PI
 TWO_BY_PI = 2.0 * INV_PI
 SQRT_TWO_BY_PI = np.sqrt(TWO_BY_PI)
 LOG_TWO_BY_PI = np.log(TWO_BY_PI)
-LOG_SQRT_TWO_BY_PI = 0.5 * LOG_TWO_BY_PI
+LOG_SQRT_TWO_BY_PI = np.log(SQRT_TWO_BY_PI)
 
 
 def arc_sine_pdf_(x: fArray,
