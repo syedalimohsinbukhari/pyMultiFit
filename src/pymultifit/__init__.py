@@ -16,8 +16,10 @@ fArray = Union[float, np.ndarray]
 EPSILON = np.finfo(float).eps
 epsilon = np.sqrt(EPSILON)
 
+listOfFloats = List[float]
 listOfTuples = List[Tuple[float, ...]]
 listOfTuplesOrArray = Union[listOfTuples, np.ndarray]
+listOfTuplesOrFloatsOrArray = Union[listOfFloats, listOfTuplesOrArray]
 
 GAUSSIAN = 'gaussian'
 NORMAL = GAUSSIAN

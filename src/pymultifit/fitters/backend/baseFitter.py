@@ -10,8 +10,9 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from scipy.optimize import curve_fit
 
+from .errorHandling import BoundaryInconsistentWithGuess
 from ..utilities_f import parameter_logic, _plot_fit
-from ... import listOfTuplesOrArray, MPL_COLORS, doc_style, epsilon
+from ... import MPL_COLORS, doc_style, epsilon, listOfTuplesOrFloatsOrArray
 
 
 class BaseFitter:
@@ -243,7 +244,7 @@ class BaseFitter:
         """
         plot_xy(x_data=self.x_values, y_data=self.y_values, axis=axis)
 
-    def fit(self, p0: listOfTuplesOrArray, frozen: dict = None):
+    def fit(self, p0: listOfTuplesOrFloatsOrArray, frozen: dict = None):
         """
         Fit the data.
 
@@ -266,8 +267,13 @@ class BaseFitter:
             Performs the fitting process with the given constraints.
         """
         self.p0 = p0
-        self.n_fits = len(p0)
-        len_guess = len(list(chain(*p0)))
+
+        # int -> list converter check
+        if isinstance(p0[0], int | float):
+            self.p0 = [p0]
+
+        self.n_fits = len(self.p0)
+        len_guess = len(list(chain(*self.p0)))
 
         c_name = self.__class__.__name__
 
@@ -279,7 +285,10 @@ class BaseFitter:
         lb, ub, p0_flat = self._fit_preprocessing(frozen=frozen)
 
         if len(lb) != total_pars and c_name != 'MixedDataFitter':
-            self.p0 = self._adjust_parameters(p0)
+            self.p0 = self._adjust_parameters(self.p0)
+
+        if ub.shape[0] != len(self.p0[0]) * self.n_fits:
+            raise BoundaryInconsistentWithGuess(f"{ub.shape[0]} != {len(self.p0[0]) * self.n_fits}.")
 
         # remove the Bound parameter for the library to work with previous version of `scipy`
         self.params, self.covariance, *_ = curve_fit(f=self._n_fitter,
