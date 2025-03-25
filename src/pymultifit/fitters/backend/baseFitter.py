@@ -268,12 +268,18 @@ class BaseFitter:
         self.p0 = p0
         self.n_fits = len(p0)
         len_guess = len(list(chain(*p0)))
-        total_pars = self.n_par * self.n_fits
 
-        if len_guess != total_pars:
-            self.p0 = self._adjust_parameters(p0)
+        c_name = self.__class__.__name__
+
+        if not c_name == 'MixedDataFitter':
+            total_pars = self.n_par * self.n_fits
+        else:
+            total_pars = len_guess
 
         lb, ub, p0_flat = self._fit_preprocessing(frozen=frozen)
+
+        if len(lb) != total_pars and c_name != 'MixedDataFitter':
+            self.p0 = self._adjust_parameters(p0)
 
         # remove the Bound parameter for the library to work with previous version of `scipy`
         self.params, self.covariance, *_ = curve_fit(f=self._n_fitter,

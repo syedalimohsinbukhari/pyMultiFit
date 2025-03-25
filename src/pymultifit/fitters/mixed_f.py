@@ -1,15 +1,13 @@
 """Created on Aug 10 23:08:38 2024"""
 
-import itertools
-from typing import Optional, Tuple, Union, List, Callable
+from itertools import chain
+from typing import Union, List, Callable, Tuple, Iterable
 
 import numpy as np
-from custom_inherit import doc_inherit
-from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
-from scipy.optimize import Bounds, curve_fit
 
+from .backend import BaseFitter
 # importing from files to avoid circular import
 from .chiSquare_f import ChiSquareFitter
 from .exponential_f import ExponentialFitter
@@ -21,9 +19,9 @@ from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter
 from .polynomial_f import LineFitter
 from .skewNormal_f import SkewNormalFitter
-from .utilities_f import sanity_check, _plot_fit
-from .. import (epsilon, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL,
-                GAMMA_SR, GAMMA_SS, NORMAL, HALF_NORMAL, MPL_COLORS, doc_style)
+from .utilities_f import sanity_check
+from .. import (GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL,
+                GAMMA_SR, GAMMA_SS, NORMAL, HALF_NORMAL, epsilon, MPL_COLORS)
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {CHI_SQUARE: ChiSquareFitter,
@@ -40,7 +38,7 @@ fitter_dict = {CHI_SQUARE: ChiSquareFitter,
                LINE: LineFitter}
 
 
-class MixedDataFitter:
+class MixedDataFitter(BaseFitter):
     r"""
     Class to fit a mixture of different models to data.
 
@@ -53,6 +51,7 @@ class MixedDataFitter:
     def __init__(self, x_values: Union[List, np.ndarray], y_values: Union[List, np.ndarray],
                  model_list: List[str], fitter_dictionary=None, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
+        super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
 
         self.x_values = x_values
         self.y_values = y_values
@@ -61,10 +60,13 @@ class MixedDataFitter:
         self.params = None
         self.covariance = None
 
-        self.fitter_dict = fitter_dictionary or fitter_dict
+        self.p0 = None
 
-        # self._validate_models()
+        self.fitter_dict = fitter_dictionary or fitter_dict
         self.model_function = self._create_model_function()
+
+        # placed in last because the expected parameter count cannot be obtained unless the models are instantiated.
+        self.n_par = self._expected_param_count()
 
     def __repr__(self):
         return (f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
@@ -118,30 +120,10 @@ class MixedDataFitter:
 
         return count
 
-    @staticmethod
-    def _format_param(value, t_low=0.001, t_high=10_000) -> str:
-        r"""
-        Formats the parameter value to scientific notation based on its magnitude.
+    def _n_fitter(self, x: np.ndarray, *params: Iterable) -> np.ndarray:
+        return self.model_function(x, *params)
 
-        Parameters
-        ----------
-        value: float
-            The value of the parameter to be formatted.
-        t_low: float, optional
-            The lower bound below which the formatting should be applied to the value.
-            Defaults to 0.001.
-        t_high: float, optional
-            The upper bound above which the formatting should be applied to the value.
-            Defaults to 10,000.
-
-        Returns
-        -------
-        str:
-            A formatted string of the parameter value.
-        """
-        return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
-
-    def _get_bounds(self) -> Tuple[np.ndarray, np.ndarray]:
+    def fit_boundaries(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Sets the bounds for each parameter based on the model list.
 
@@ -156,6 +138,27 @@ class MixedDataFitter:
             upper_bounds.extend(ub)
 
         return np.array(lower_bounds), np.array(upper_bounds)
+
+    def _plot_individual_fitter(self, plotter):
+        """
+        Plot the individual fitters function.
+
+        :param plotter: The plotting axis object
+        """
+        x = self.x_values
+        colors = MPL_COLORS[1:]
+        param_index = 0
+        for i, model in enumerate(self.model_list):
+            color = colors[i % len(colors)]
+            class_model, n_par = self._instantiate_fitter(model=model, return_values=['class', 'n_par'])
+            pars = self.params[param_index:param_index + n_par]
+            y_component = class_model.fitter(x=x, params=pars)
+            plot_xy(x_data=x, y_data=y_component,
+                    x_label='', y_label='', plot_title='',
+                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self._format_param(i) for i in pars)})',
+                    plot_dictionary=LinePlot(line_style='--', color=color),
+                    axis=plotter)
+            param_index += n_par
 
     def _instantiate_fitter(self, model: str, return_values: Union[str, List[str]] = 'class'):
         """
@@ -197,227 +200,37 @@ class MixedDataFitter:
 
         return result[0] if len(result) == 1 else tuple(result)
 
-    def _parameter_extractor(self, values: np.ndarray) -> dict:
+    def _fit_preprocessing(self, frozen: dict):
         """
-        Extracts the parameters for each model in the model list.
-
-        :param values: The values from which the model dictionary is to be extracted.
-
-        :return: A dictionary where the keys are model names and the values are lists of parameters/error values.
-        """
-        p_index = 0
-        param_dict = {}
-
-        for model in self.model_list:
-            if model not in param_dict:
-                param_dict[model] = []
-
-            n_pars = self._instantiate_fitter(model=model, return_values='n_par')
-            param_dict[model].extend([values[p_index:p_index + n_pars]])
-            p_index += n_pars
-
-        return param_dict
-
-    def _params(self) -> np.ndarray:
-        r"""
-        Store the fitted parameters of the fitted model.
-
-        Returns
-        -------
-        np.ndarray
-            The parameters obtained after performing the fit.
-
-        Raises
-        ------
-        RuntimeError
-            If the fit has not been performed yet (i.e., ``self.params`` is ``None``).
-
-        Notes
-        -----
-        This method assumes that the fitting process assigns values to ``self.params``.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return self.params
-
-    def _plot_individual_fitter(self, plotter):
-        """
-        Plot the individual fitters function.
-
-        :param plotter: The plotting axis object
-        """
-        x = self.x_values
-        colors = MPL_COLORS[1:]
-        param_index = 0
-        for i, model in enumerate(self.model_list):
-            color = colors[i % len(colors)]
-            class_model, n_par = self._instantiate_fitter(model=model, return_values=['class', 'n_par'])
-            pars = self.params[param_index:param_index + n_par]
-            y_component = class_model.fitter(x=x, params=pars)
-            plot_xy(x_data=x, y_data=y_component,
-                    x_label='', y_label='', plot_title='',
-                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self._format_param(i) for i in pars)})',
-                    plot_dictionary=LinePlot(line_style='--', color=color),
-                    axis=plotter)
-            param_index += n_par
-
-    def _standard_errors(self) -> np.ndarray:
-        r"""
-        Store the standard errors of the fitted parameters.
-
-        Returns
-        -------
-        np.ndarray
-            An array containing the standard errors of the fitted parameters.
-
-        Raises
-        ------
-        RuntimeError
-            If the fit has not been performed yet (i.e., ``self.covariance`` is ``None``).
-        """
-        if self.covariance is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return np.sqrt(np.diag(self.covariance))
-
-    def fit(self, p0: Union[List, np.ndarray], frozen: Union[int, List[int]] = None):
-        """
-        Fit the data.
-
-        :param p0: Initial guess for the fitted parameters.
-        :type p0: Union[List, np.ndarray]
-
-        :param frozen: Parameter number of list of parameter numbers to freeze the value of.
-        :type frozen: Union[int, List[int]]
-
-        :raises ValueError: If the length of the initial guess is not equal to the expected parameter count.
-        """
-        # flatten cannot always work here because the mixed fitter might contain variable number of parameters
-        p0 = list(itertools.chain.from_iterable(p0))
-        if len(p0) != self._expected_param_count():
-            raise ValueError(f"Initial parameters length {len(p0)} does not match expected count "
-                             f"{self._expected_param_count()}.")
-
-        lb, ub = self._get_bounds()
-
-        if frozen:
-            if isinstance(frozen, int):
-                frozen = [frozen]
-            for par_num in frozen:
-                lb[par_num - 1] = p0[par_num - 1] - epsilon
-                ub[par_num - 1] = p0[par_num - 1] + epsilon
-
-        self.params, self.covariance, *_ = curve_fit(f=self.model_function, xdata=self.x_values, ydata=self.y_values,
-                                                     p0=p0, maxfev=self.max_iterations, bounds=Bounds(lb=lb, ub=ub))
-
-    def get_fitted_curve(self) -> np.ndarray:
-        """
-        Gets the y-values from the fitted model.
-
-        :return: The y-values from the fitted model
-
-        :raises ValueError: If the model has not been fitted yet.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        return self.model_function(self.x_values, *self.params)
-
-    def get_model_parameters(self, model: Optional[str] = None, errors: bool = False):
-        """
-        Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
-
-        :param model: Model name to extract parameters for. If unspecified, extracts parameters for all models.
-            Defaults to ``None``.
-        :param errors: If ``True``, includes the errors in the returned output. Defaults to ``False``.
-
-        :return: A dictionary containing:
-
-                - "parameters": Nested dictionary of parameter values for each model if `get_errors` is True.
-                - "errors": Nested dictionary of errors for each model (if `get_errors=True`).
-
-                Otherwise, returns just the parameters directly.
-        """
-
-        parameters = self._parameter_extractor(self.params)
-        errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
-
-        if not errors:
-            return parameters if model is None else parameters.get(model, [])
-
-        if model is None:
-            # Return combined dictionary for all models
-            return {"parameters": parameters, "errors": errs}
-
-        # Prepare output for a specific model
-        output = {"parameters": {}, "errors": {}}
-
-        keys = ["parameters", "errors"]
-        n_pars = self._instantiate_fitter(model=model, return_values='n_par')
-        for temp_, key in zip([parameters, errs], keys):
-            par_dict = temp_.get(model, [])
-            if n_pars == 2:
-                output[key] = par_dict
-            else:
-                output[key] = np.array_split(ary=np.array(par_dict).flatten(), indices_or_sections=n_pars)
-
-        return output
-
-    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> np.ndarray:
-        r"""
-        Retrieve the value/error pairs for the fitted parameters.
-
-        This method provides the fitted parameter values and their corresponding standard errors as a combined array or
-        individually based on the input flags.
+        Process frozen parameters and adjust bounds.
 
         Parameters
         ----------
-        mean_values : bool, optional
-            If ``True``, return only the values of the fitted parameters.
-            Defaults to ``True``.
-        std_values : bool, optional
-            If ``True``, return only the standard errors of the fitted parameters.
-            Defaults to ``False``.
+        frozen: Dict[int, List[int]]
+            A dictionary where keys are indices of model fits (1-based), and values are lists of parameter indices
+            (1-based) to freeze.
 
         Returns
         -------
-        np.ndarray
-            - If ``mean_values`` and ``std_values`` are both ``True``: A 2D array of shape (n_parameters, 2),
-                where each row is ``[value, error]``.
-            - If ``mean_values`` is ``True`` and ``std_values`` is ``False``: A 1D array of parameter values.
-            - If ``std_values`` is ``True`` and ``mean_values`` is ``False``: A 1D array of standard errors.
-            - If both flags are ``False``: An error message.
-
-        Raises
-        ------
-        ValueError
-            If both ``mean_values`` and ``std_values`` are ``False``.
+        Tuple[np.ndarray, np.ndarray, np.ndarray]
+            Adjusted lower and upper bounds, and flattened initial guesses.
         """
-        pairs = np.column_stack([self._params(), self._standard_errors()])
+        try:
+            lb, ub = self.fit_boundaries()
+        except NotImplementedError:
+            lb = np.full(shape=self.n_fits, fill_value=-np.inf)
+            ub = np.full(shape=self.n_fits, fill_value=np.inf)
 
-        if mean_values and std_values:
-            return pairs
-        elif mean_values:
-            return pairs[:, 0]
-        elif std_values:
-            return pairs[:, 1]
-        else:
-            raise ValueError("Either 'mean_values' or 'std_values' must be True.")
+        par_count = [self.fitter_dict[i]([], []).n_par
+                     for i in self.model_list]
 
-    @doc_inherit(parent=_plot_fit, style=doc_style)
-    def plot_fit(self, show_individuals: bool = False,
-                 x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
-                 title: Optional[str] = None, axis: Optional[Axes] = None,
-                 data_color: str = MPL_COLORS[0], grid: bool = True):
-        """
-        Plot the fitted models.
+        if frozen:
+            # Process frozen parameters
+            for key, values in frozen.items():
+                values = values if isinstance(values, list) else [values]
+                for val in values:
+                    param_value = self.p0[key - 1][val - 1]
+                    lb[sum(par_count[:key - 1]) + (val - 1)] = param_value - epsilon
+                    ub[sum(par_count[:key - 1]) + (val - 1)] = param_value + epsilon
 
-        Returns
-        -------
-        plotter
-            The plotter handle for the drawn plot.
-        """
-        return _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params,
-                         n_fits=len(self.model_list), class_name=self.__class__.__name__,
-                         _n_fitter=self.model_function, _n_plotter=self._plot_individual_fitter,
-                         show_individuals=show_individuals, x_label=x_label, y_label=y_label, title=title,
-                         data_label=data_label, axis=axis, data_color=data_color, grid=grid)
+        return lb, ub, list(chain.from_iterable(self.p0))
