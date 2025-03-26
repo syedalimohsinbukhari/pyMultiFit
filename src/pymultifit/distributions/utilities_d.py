@@ -23,8 +23,7 @@ from typing import Union, Callable, Optional
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, erf, gammainc, gammaln, owens_t, gammaincc, log_ndtr, ndtr, rgamma, xlog1py, xlogy
-from scipy.special.cython_special import betaln
+from scipy.special import betainc, erf, gammainc, gammaln, owens_t, gammaincc, log_ndtr, ndtr, rgamma
 
 from .. import fArray, doc_style
 
@@ -90,7 +89,7 @@ def arc_sine_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -99,14 +98,10 @@ def arc_sine_pdf_(x: fArray,
         pdf_ = _arc_sine(y)
         pdf_ = _remove_nans(pdf_) / scale
 
-    if not scalar_input:
-        pdf_[y == 0] = np.inf
-        pdf_[y == 1] = np.inf
-
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_.item() if scalar_input else pdf_
+    return pdf_
 
 
 def _arc_sine(y: np.ndarray, un_log=True):
@@ -138,7 +133,7 @@ def arc_sine_log_pdf_(x: fArray,
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -149,7 +144,7 @@ def arc_sine_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
@@ -176,7 +171,7 @@ def arc_sine_cdf_(x: fArray,
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -186,7 +181,7 @@ def arc_sine_cdf_(x: fArray,
     cdf_ = np.where(y < 1, 0, 1).astype(float)
     cdf_[mask_] = TWO_BY_PI * np.arcsin(np.sqrt(y[mask_]))
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=arc_sine_cdf_, style=doc_style)
@@ -208,7 +203,7 @@ def arc_sine_log_cdf_(x: fArray,
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -218,7 +213,7 @@ def arc_sine_log_cdf_(x: fArray,
     log_cdf_ = np.where(y < 1, -np.inf, 0)
     log_cdf_[mask_] = LOG_TWO_BY_PI + np.log(np.arcsin(np.sqrt(y[mask_])))
 
-    return log_cdf_.item() if scalar_input else log_cdf_
+    return log_cdf_
 
 
 def beta_pdf_(x: fArray,
@@ -295,7 +290,7 @@ def beta_log_pdf_(x: fArray,
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -318,7 +313,7 @@ def beta_log_pdf_(x: fArray,
     if alpha == 1 and beta == 1:
         log_pdf_[y == 1] = 0
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=beta_pdf_, style=doc_style)
@@ -350,7 +345,7 @@ def beta_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
     if y.size == 0:
         return y
 
@@ -461,7 +456,7 @@ def chi_square_log_pdf_(x: fArray,
     The final PDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
 
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -476,7 +471,7 @@ def chi_square_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
@@ -505,7 +500,7 @@ def chi_square_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -515,7 +510,7 @@ def chi_square_cdf_(x: fArray,
     cdf_ = np.zeros(shape=y.shape, dtype=float)
     cdf_[mask_] = gammainc(degree_of_freedom / 2, y[mask_] / 2)
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=chi_square_cdf_, style=doc_style)
@@ -662,7 +657,7 @@ def exponential_log_pdf_(x: fArray,
     and :math:`\theta = \dfrac{1}{\lambda}`. The final log PDF is expressed as :math:`\ell(y) - \ln(\theta)`.
     """
     rate = 1 / lambda_
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=rate)
+    y = preprocess_input(x=x, loc=loc, scale=rate)
 
     if y.size == 0:
         return y
@@ -675,7 +670,7 @@ def exponential_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
@@ -708,7 +703,7 @@ def exponential_cdf_(x: fArray,
 
     and :math:`\theta = \dfrac{1}{\lambda}`. The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=1 / lambda_)
+    y = preprocess_input(x=x, loc=loc, scale=1 / lambda_)
     return _remove_nans(x=gammainc(1, y), nan_value=0)
 
 
@@ -784,7 +779,7 @@ def folded_normal_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    x = preprocess_input(x=x)
 
     if x.size == 0:
         return x
@@ -795,7 +790,7 @@ def folded_normal_pdf_(x: fArray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_.item() if scalar_input else pdf_
+    return pdf_
 
 
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
@@ -818,7 +813,7 @@ def folded_normal_log_pdf_(x: fArray,
 
     The final log PDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    x = preprocess_input(x=x)
 
     if x.size == 0:
         return x
@@ -831,7 +826,7 @@ def folded_normal_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
@@ -861,7 +856,7 @@ def folded_normal_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    x = preprocess_input(x=x)
 
     if x.size == 0:
         return x
@@ -869,7 +864,7 @@ def folded_normal_cdf_(x: fArray,
     mask_, cdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_cdf_)
     cdf_[mask_] -= 1
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=folded_normal_cdf_, style=doc_style)
@@ -893,7 +888,7 @@ def folded_normal_log_cdf_(x: fArray,
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=sigma)
+    y = preprocess_input(x=x, loc=loc, scale=sigma)
 
     if y.size == 0:
         return y
@@ -909,7 +904,7 @@ def folded_normal_log_cdf_(x: fArray,
         with np.errstate(divide='ignore'):
             log_cdf_[mask_] = -LOG_TWO + np.log(erf(q / SQRT_TWO) + erf(r / SQRT_TWO))
 
-    return log_cdf_.item() if scalar_input else log_cdf_
+    return log_cdf_
 
 
 def _folded(x: fArray, mean: float, loc: float, scale: float, g_func: Callable):
@@ -1032,7 +1027,7 @@ def gamma_sr_log_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`\ell(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
+    y = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
         return y
@@ -1045,7 +1040,7 @@ def gamma_sr_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=gamma_sr_pdf_, style=doc_style)
@@ -1075,14 +1070,14 @@ def gamma_sr_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
+    y = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
         return y
 
     cdf_ = gammainc(alpha, lambda_ * np.maximum(y, 0))
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=gamma_sr_cdf_, style=doc_style)
@@ -1169,7 +1164,7 @@ def gamma_ss_log_pdf_(x: fArray,
 
         The Gamma SS log PDF is calculated via :func:`gamma_sr_log_pdf_` by setting :math:`\lambda = \dfrac{1}{\theta}`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=1 / theta)
+    y = preprocess_input(x=x, loc=loc, scale=1 / theta)
 
     if y.size == 0:
         return y
@@ -1182,7 +1177,7 @@ def gamma_ss_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=gamma_ss_pdf_, style=doc_style)
@@ -1205,7 +1200,7 @@ def gamma_ss_cdf_(x: fArray,
 
         The Gamma SS CDF is calculated via :func:`gamma_sr_cdf_` by setting :math:`\lambda = \dfrac{1}{\theta}`.
     """
-    y, scale_input = preprocess_input(x=x, loc=loc, scale=1 / theta)
+    y = preprocess_input(x=x, loc=loc, scale=1 / theta)
 
     if y.size == 0:
         return y
@@ -1272,7 +1267,7 @@ def gaussian_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(x)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=mean, scale=std)
+    y = preprocess_input(x=x, loc=mean, scale=std)
 
     if y.size == 0:
         return y
@@ -1283,7 +1278,7 @@ def gaussian_pdf_(x: fArray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_.item() if scalar_input else pdf_
+    return pdf_
 
 
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
@@ -1302,7 +1297,7 @@ def gaussian_log_pdf_(x: fArray,
 
     The final log PDF is expressed as :math:`\ell(x)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=mean, scale=std)
+    y = preprocess_input(x=x, loc=mean, scale=std)
 
     if y.size == 0:
         return y
@@ -1312,7 +1307,7 @@ def gaussian_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
@@ -1413,7 +1408,7 @@ def half_normal_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=sigma)
+    y = preprocess_input(x=x, loc=loc, scale=sigma)
 
     if y.size == 0:
         return y
@@ -1427,7 +1422,7 @@ def half_normal_pdf_(x: fArray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_.item() if scalar_input else pdf_
+    return pdf_
 
 
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
@@ -1449,7 +1444,7 @@ def half_normal_log_pdf_(x: fArray,
 
     The final log PDF is expressed as :math:`\ell(y) - \ln\left(\text{scale}\right)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=sigma)
+    y = preprocess_input(x=x, loc=loc, scale=sigma)
 
     if y.size == 0:
         return y
@@ -1462,7 +1457,7 @@ def half_normal_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
@@ -1491,7 +1486,7 @@ def half_normal_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=sigma)
+    y = preprocess_input(x=x, loc=loc, scale=sigma)
 
     if y.size == 0:
         return y
@@ -1500,7 +1495,7 @@ def half_normal_cdf_(x: fArray,
     cdf_ = np.zeros(shape=y.shape, dtype=float)
     cdf_[mask_] = erf(y[mask_] / np.sqrt(2))
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=half_normal_cdf_, style=doc_style)
@@ -1575,7 +1570,7 @@ def laplace_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
+    y = preprocess_input(x=x, loc=mean, scale=diversity)
 
     if y.size == 0:
         return y
@@ -1607,7 +1602,7 @@ def laplace_log_pdf_(x: fArray,
 
     The final log PDF is expressed as :math:`\ell(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
+    y = preprocess_input(x=x, loc=mean, scale=diversity)
 
     if y.size == 0:
         return y
@@ -1651,7 +1646,7 @@ def laplace_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(x)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
+    y = preprocess_input(x=x, loc=mean, scale=diversity)
 
     if y.size == 0:
         return y
@@ -1665,7 +1660,7 @@ def laplace_cdf_(x: fArray,
     with np.errstate(over='ignore'):
         cdf_ = np.where(y > 0, _f2(y), _f1(y))
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=laplace_cdf_, style=doc_style)
@@ -1685,7 +1680,7 @@ def laplace_log_cdf_(x: fArray,
         \ln\left[1 - \dfrac{1}{2}\exp\left(-\dfrac{x-\mu}{b}\right)\right] &,&x\geq\mu
         \end{cases}
     """
-    y, scalar_input = preprocess_input(x=x, loc=mean, scale=diversity)
+    y = preprocess_input(x=x, loc=mean, scale=diversity)
 
     if y.size == 0:
         return y
@@ -1698,7 +1693,7 @@ def laplace_log_cdf_(x: fArray,
 
     log_cdf_ = np.where(y > 0, _f2(y), _f1(y))
 
-    return log_cdf_.item() if scalar_input else log_cdf_
+    return log_cdf_
 
 
 def line(x: np.ndarray, slope: Optional[float] = 1., intercept: Optional[float] = 0.) -> np.ndarray:
@@ -1804,7 +1799,7 @@ def log_normal_log_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
+    y = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
         return y
@@ -1816,7 +1811,7 @@ def log_normal_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
@@ -1945,7 +1940,7 @@ def uniform_pdf_(x: fArray,
     Where :math:`\beta = a + b` consistent with ``loc`` and ``scale`` factors and the final PDF is expressed as,
     :math:`f(x)`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    x = preprocess_input(x=x)
 
     if x.size == 0:
         return x
@@ -1962,7 +1957,7 @@ def uniform_pdf_(x: fArray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_.item() if scalar_input else pdf_
+    return pdf_
 
 
 def uniform_log_pdf_(x: fArray,
@@ -1980,7 +1975,7 @@ def uniform_log_pdf_(x: fArray,
     where :math:`\beta = a + b` is consistent with ``loc`` and ``scale`` factors, and the final logPDF is expressed as,
     :math:`\ell(x)`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    x = preprocess_input(x=x)
 
     if x.size == 0:
         return x
@@ -1993,7 +1988,7 @@ def uniform_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
@@ -2020,7 +2015,7 @@ def uniform_cdf_(x: fArray,
                         1 &,& x > b
                         \end{cases}
     """
-    x, scalar_input = preprocess_input(x=x)
+    x = preprocess_input(x=x)
 
     if x.size == 0:
         return x
@@ -2035,7 +2030,7 @@ def uniform_cdf_(x: fArray,
     cdf_[mask_] = (x[mask_] - low) / high
     cdf_[x > high_] = 1
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=uniform_cdf_, style=doc_style)
@@ -2057,7 +2052,7 @@ def uniform_log_cdf_(x: fArray,
 
     The final logCDF is expressed as, :math:`\mathcal{L}(x)`.
     """
-    x, scalar_input = preprocess_input(x=x)
+    x = preprocess_input(x=x)
 
     if x.size == 0:
         return x
@@ -2072,7 +2067,7 @@ def uniform_log_cdf_(x: fArray,
     log_cdf_[mask_] = np.log(x[mask_] - low) - np.log(high)
     log_cdf_[x > high_] = 0
 
-    return log_cdf_.item() if scalar_input else log_cdf_
+    return log_cdf_
 
 
 def scaled_inv_chi_square_pdf_(x, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0,
@@ -2119,7 +2114,7 @@ def scaled_inv_chi_square_pdf_(x, amplitude: float = 1.0, df: float = 1.0, scale
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
+    y = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
         return y
@@ -2137,7 +2132,7 @@ def scaled_inv_chi_square_pdf_(x, amplitude: float = 1.0, df: float = 1.0, scale
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_.item() if scalar_input else pdf_
+    return pdf_
 
 
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
@@ -2161,7 +2156,7 @@ def scaled_inv_chi_square_log_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`\ell(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
+    y = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
         return y
@@ -2211,7 +2206,7 @@ def scaled_inv_chi_square_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc)
+    y = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
         return y
@@ -2223,7 +2218,7 @@ def scaled_inv_chi_square_cdf_(x: fArray,
     cdf_ = np.zeros(shape=y.shape, dtype=float)
     cdf_[mask_] = gammaincc(df_half, (tau2 * df_half) / y[mask_])
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
@@ -2300,7 +2295,7 @@ def skew_normal_pdf_(x: fArray,
 
     The final PDF is expressed as :math:`f(y)/\omega`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -2313,7 +2308,7 @@ def skew_normal_pdf_(x: fArray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_.item() if scalar_input else pdf_
+    return pdf_
 
 
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
@@ -2337,7 +2332,7 @@ def skew_normal_log_pdf_(x: fArray,
 
     The final log PDF is expressed as :math:`\ell(y)/\omega`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -2350,7 +2345,7 @@ def skew_normal_log_pdf_(x: fArray,
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    return log_pdf_.item() if scalar_input else log_pdf_
+    return log_pdf_
 
 
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
@@ -2381,10 +2376,10 @@ def skew_normal_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
     cdf_ = gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 def skew_normal_log_cdf_(x: fArray,
@@ -2465,7 +2460,7 @@ def sym_gen_normal_log_pdf_(x: fArray,
 
     The final log PDF is expressed as :math:`\ell(y)/\alpha`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -2478,7 +2473,7 @@ def sym_gen_normal_log_pdf_(x: fArray,
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_.item() if scalar_input else pdf_
+    return pdf_
 
 
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
@@ -2508,7 +2503,7 @@ def sym_gen_normal_cdf_(x: fArray,
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y, scalar_input = preprocess_input(x=x, loc=loc, scale=scale)
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
@@ -2517,7 +2512,7 @@ def sym_gen_normal_cdf_(x: fArray,
 
     cdf_ = 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, np.power(np.abs(y), beta))
 
-    return cdf_.item() if scalar_input else cdf_
+    return cdf_
 
 
 @doc_inherit(parent=sym_gen_normal_cdf_, style=doc_style)
@@ -2668,14 +2663,13 @@ def preprocess_input(x, loc=0.0, scale=1.0):
     Returns
     -------
     tuple:
-        (processed array, scalar_input_flag)
+        (processed array_flag)
     """
-    scalar_input = np.isscalar(x)
     x = np.asarray(a=x, dtype=float)
 
     if x.size == 0:
-        return np.array([]), scalar_input
+        return np.array([])
 
     y = (x - loc) / scale
 
-    return y, scalar_input
+    return y
