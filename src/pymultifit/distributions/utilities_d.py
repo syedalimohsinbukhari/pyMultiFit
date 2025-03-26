@@ -23,7 +23,7 @@ from typing import Union, Callable, Optional
 
 import numpy as np
 from custom_inherit import doc_inherit
-from scipy.special import betainc, erf, gammainc, gammaln, owens_t, gammaincc, log_ndtr, ndtr, rgamma
+from scipy.special import betainc, erf, gammainc, gammaln, owens_t, gammaincc, log_ndtr, ndtr, rgamma, xlogy
 
 from .. import fArray, doc_style
 
@@ -39,14 +39,12 @@ LOG_SQRT_PI = np.log(SQRT_PI)
 
 TWO_PI = 2 * PI
 SQRT_TWO_PI = np.sqrt(TWO_PI)
-LOG_TWO_PI = np.log(TWO_PI)
 LOG_SQRT_TWO_PI = np.log(SQRT_TWO_PI)
 
 INV_PI = 1.0 / PI
 TWO_BY_PI = 2.0 * INV_PI
 SQRT_TWO_BY_PI = np.sqrt(TWO_BY_PI)
 LOG_TWO_BY_PI = np.log(TWO_BY_PI)
-LOG_SQRT_TWO_BY_PI = np.log(SQRT_TWO_BY_PI)
 
 
 def arc_sine_pdf_(x: fArray,
@@ -461,12 +459,10 @@ def chi_square_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y > 0
-
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
     df_half = degree_of_freedom / 2
-    log_pdf_[mask_] = (df_half - 1) * np.log(y[mask_]) - (y[mask_] / 2) - (df_half * np.log(2)) - gammaln(df_half)
-    log_pdf_ -= np.log(scale)
+    log_pdf_ = np.where(y >= 0,
+                        xlogy(df_half - 1, y) - (y / 2) - xlogy(df_half, 2) - gammaln(df_half),
+                        -np.inf) - np.log(scale)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -505,12 +501,9 @@ def chi_square_cdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y >= 0
-
-    cdf_ = np.zeros(shape=y.shape, dtype=float)
-    cdf_[mask_] = gammainc(degree_of_freedom / 2, y[mask_] / 2)
-
-    return cdf_
+    return np.where(y >= 0,
+                    gammainc(degree_of_freedom / 2, y / 2),
+                    0.0)
 
 
 @doc_inherit(parent=chi_square_cdf_, style=doc_style)
@@ -662,10 +655,9 @@ def exponential_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y >= 0
-
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_pdf_[mask_] = -y[mask_] - np.log(rate)
+    log_pdf_ = np.where(y >= 0,
+                        -y,
+                        -np.inf) - np.log(rate)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -893,16 +885,13 @@ def folded_normal_log_cdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y >= 0
+    q = preprocess_input(y, loc=mean, scale=SQRT_TWO)
+    r = preprocess_input(y, loc=-mean, scale=SQRT_TWO)
 
-    log_cdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-
-    if np.any(mask_):
-        y_valid = y[mask_]
-        q = y_valid + mean
-        r = y_valid - mean
-        with np.errstate(divide='ignore'):
-            log_cdf_[mask_] = -LOG_TWO + np.log(erf(q / SQRT_TWO) + erf(r / SQRT_TWO))
+    with np.errstate(divide='ignore'):
+        log_cdf_ = np.where(y >= 0,
+                            -LOG_TWO + np.log(erf(q) + erf(r)),
+                            -np.inf)
 
     return log_cdf_
 
@@ -1032,10 +1021,9 @@ def gamma_sr_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y >= 0
-
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_pdf_[mask_] = alpha * np.log(lambda_) + (alpha - 1) * np.log(y[mask_]) - (lambda_ * y[mask_]) - gammaln(alpha)
+    log_pdf_ = np.where(y >= 0,
+                        xlogy(alpha, lambda_) + xlogy(alpha - 1, y) - (lambda_ * y) - gammaln(alpha),
+                        -np.inf)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1169,10 +1157,9 @@ def gamma_ss_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y >= 0
-
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_pdf_[mask_] = (alpha - 1) * np.log(y[mask_]) - y[mask_] - gammaln(alpha) + np.log(theta)
+    log_pdf_ = np.where(y >= 0,
+                        xlogy(alpha - 1, y) - y - gammaln(alpha) + np.log(theta),
+                        -np.inf)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1413,11 +1400,9 @@ def half_normal_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y >= 0
-
-    pdf_ = np.zeros_like(a=y, dtype=float)
-    pdf_[mask_] = SQRT_TWO_BY_PI * np.exp(-0.5 * y[mask_]**2)
-    pdf_ = _remove_nans(pdf_) / sigma
+    pdf_ = np.where(y >= 0,
+                    SQRT_TWO_BY_PI * np.exp(-0.5 * y**2),
+                    0) / sigma
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1449,10 +1434,9 @@ def half_normal_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y >= 0
-
-    log_pdf_ = np.full(shape=y.shape, fill_value=-np.inf)
-    log_pdf_[mask_] = 0.5 * np.log(2 / PI) - 0.5 * y[mask_]**2 - np.log(sigma)
+    log_pdf_ = np.where(y >= 0,
+                        0.5 * LOG_TWO_BY_PI - 0.5 * y**2,
+                        -np.inf) - np.log(sigma)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1491,11 +1475,7 @@ def half_normal_cdf_(x: fArray,
     if y.size == 0:
         return y
 
-    mask_ = y >= 0
-    cdf_ = np.zeros(shape=y.shape, dtype=float)
-    cdf_[mask_] = erf(y[mask_] / np.sqrt(2))
-
-    return cdf_
+    return np.where(y >= 0, erf(y / SQRT_TWO), 0.0)
 
 
 @doc_inherit(parent=half_normal_cdf_, style=doc_style)
@@ -1804,7 +1784,8 @@ def log_normal_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    q = (np.log(y) - mean) / std
+    q = preprocess_input(x=np.log(y), loc=mean, scale=std)
+
     log_pdf_ = - np.log(y) - q**2 / 2.0 - np.log(std) - LOG_SQRT_TWO_PI
     log_pdf_ = _remove_nans(x=log_pdf_, nan_value=-np.inf)
 
@@ -1846,7 +1827,7 @@ def log_normal_cdf_(x: fArray,
 
         .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
     """
-    y = (np.log(x - loc) - mean) / std
+    y = preprocess_input(np.log(x - loc), loc=mean, scale=std)
     return _remove_nans(x=ndtr(y))
 
 
@@ -1870,7 +1851,7 @@ def log_normal_log_cdf_(x: fArray,
 
         .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
     """
-    y = (np.log(x - loc) - mean) / std
+    y = preprocess_input(np.log(x - loc), loc=mean, scale=std)
     return _remove_nans(x=log_ndtr(y), nan_value=-np.inf)
 
 
