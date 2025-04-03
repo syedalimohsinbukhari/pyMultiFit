@@ -1555,12 +1555,12 @@ def laplace_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    pdf_ = _laplace(y, loc=mean, scale=diversity, un_log=True)
+    pdf_ = _laplace(y, loc=mean, scale=diversity, un_log=True) / diversity
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_ / diversity
+    return pdf_
 
 
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
@@ -1587,12 +1587,12 @@ def laplace_log_pdf_(x: fArray,
     if y.size == 0:
         return y
 
-    pdf_ = _laplace(y, loc=mean, scale=diversity, un_log=False)
+    pdf_ = _laplace(y, loc=mean, scale=diversity, un_log=False) - np.log(diversity)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return pdf_ - np.log(diversity)
+    return pdf_
 
 
 @doc_inherit(parent=laplace_pdf_, style=doc_style)

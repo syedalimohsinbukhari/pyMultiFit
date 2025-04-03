@@ -1,5 +1,6 @@
 """Created on Jul 18 00:16:01 2024"""
 
+import itertools
 from itertools import chain
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
@@ -266,16 +267,15 @@ class BaseFitter:
         None
             Performs the fitting process with the given constraints.
         """
+        c_name = self.__class__.__name__
         self.p0 = p0
 
         # int -> list converter check
         if isinstance(p0[0], int | float):
             self.p0 = [p0]
 
-        self.n_fits = len(self.p0)
+        self.n_fits = len(self.p0) if c_name != 'MixedDataFitter' else 1
         len_guess = len(list(chain(*self.p0)))
-
-        c_name = self.__class__.__name__
 
         if not c_name == 'MixedDataFitter':
             total_pars = self.n_par * self.n_fits
@@ -287,8 +287,10 @@ class BaseFitter:
         if len(lb) != total_pars and c_name != 'MixedDataFitter':
             self.p0 = self._adjust_parameters(self.p0)
 
-        if ub.shape[0] != len(self.p0[0]) * self.n_fits:
-            raise BoundaryInconsistentWithGuess(f"{ub.shape[0]} != {len(self.p0[0]) * self.n_fits}.")
+        length_ = len(self.p0[0]) if c_name != 'MixedDataFitter' else self._expected_param_count()
+
+        if ub.shape[0] != length_ * self.n_fits:
+            raise BoundaryInconsistentWithGuess(f"{ub.shape[0]} != {length_ * self.n_fits}.")
 
         # remove the Bound parameter for the library to work with previous version of `scipy`
         self.params, self.covariance, *_ = curve_fit(f=self._n_fitter,
@@ -326,7 +328,8 @@ class BaseFitter:
         """
         if self.params is None:
             raise RuntimeError('Fit not performed yet. Call fit() first.')
-        return self._n_fitter(self.x_values, self.params)
+        return self._n_fitter(self.x_values,
+                              *self.params if self.__class__.__name__ == 'MixedDataFitter' else self.params)
 
     def get_model_parameters(self, select: Tuple[int, Any] = None, errors: bool = False):
         r"""
@@ -420,7 +423,7 @@ class BaseFitter:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
     @doc_inherit(parent=_plot_fit, style=doc_style)
-    def plot_fit(self, show_individuals: bool = False,
+    def plot_fit(self, show_individuals: bool = False, ci: Union[int, list[int]] = None,
                  x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
                  title: Optional[str] = None, axis: Optional[Axes] = None,
                  data_color: str = MPL_COLORS[0], grid: bool = True):
@@ -432,11 +435,15 @@ class BaseFitter:
         plotter
             The plotter handle for the drawn plot.
         """
-        return _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params, n_fits=self.n_fits,
+        axes = _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params, n_fits=self.n_fits,
                          class_name=self.__class__.__name__, _n_fitter=self._n_fitter,
                          _n_plotter=self._plot_individual_fitter, show_individuals=show_individuals, x_label=x_label,
                          y_label=y_label, title=title, data_label=data_label, axis=axis,
                          data_color=data_color, grid=grid)
+        if ci:
+            self.ci_bounds(ci_level=ci, individual_ci=show_individuals, overall_ci=True, plot_it=True, axis=axes)
+
+        return axes
 
     def residuals(self):
         return self.y_values - self.get_fitted_curve()
@@ -445,6 +452,93 @@ class BaseFitter:
         residuals = self.y_values - self.get_fitted_curve()
 
         mse = np.mean(residuals**2)  # Mean squared error
-        rmse = np.sqrt(mse)  # Root mean squared error
+        r_mse = np.sqrt(mse)  # Root mean squared error
 
-        return mse, rmse
+        return mse, r_mse
+
+    def ci_bounds(self, ci_level: Union[int, list[int]] = 3, plot_it: bool = False, overall_ci: bool = False,
+                  individual_ci: bool = False, axis=None):
+        """
+        Compute confidence interval (CI) bounds for fitted data.
+
+        Parameters:
+        - ci_level (int or list of int, optional): Confidence interval multiplier(s) (default: 3σ).
+        - plot_it (bool, optional): If True, plots the fitted curve and shaded CI regions.
+        - overall_ci (bool, optional): If True, compute CI bounds for the summed fitted curve.
+        - individual_ci (bool, optional): If True, compute CI bounds for each individual fitter.
+
+        Returns:
+        - Dict with either or both:
+          - 'summed_fit': Confidence intervals for summed fits (if overall_ci=True).
+          - 'individual_fits': Confidence intervals for individual fitters (if individual_ci=True).
+        """
+        if not overall_ci and not individual_ci:
+            raise ValueError("At least one of `overall_ci` or `individual_ci` must be True.")
+
+        ci_levels = [ci_level] if isinstance(ci_level, int) else ci_level
+        num_samples = 50
+        num_x = len(self.x_values)
+
+        mc_iter_values = np.zeros((num_samples, num_x))
+        mc_individual_values = np.zeros((num_samples, self.n_fits, num_x))
+
+        # Monte Carlo sampling loop
+        for i in range(num_samples):
+            sampled_params = np.array([np.random.normal(*p)
+                                       for p in self.get_value_error_pair(std_values=True)])
+            sampled_params = sampled_params.reshape(self.n_fits, self.n_par)
+
+            # Compute individual fits
+            individual_fits = np.array([self.fitter(self.x_values, params)
+                                        for params in sampled_params])
+
+            # Store summed fits if requested
+            if overall_ci:
+                mc_iter_values[i, :] = np.sum(individual_fits, axis=0)
+
+            # Store individual fits if requested
+            if individual_ci:
+                mc_individual_values[i, :, :] = individual_fits  # Shape: (num_samples, n_fits, num_x)
+
+        # Compute results
+        results = {}
+
+        fitted_curve = self.get_fitted_curve()
+        mean_fit = np.mean(mc_iter_values, axis=0)
+        std_fit = np.std(mc_iter_values, axis=0)
+
+        mean_ind_fit = np.mean(mc_individual_values, axis=0)
+        std_ind_fit = np.std(mc_individual_values, axis=0)
+
+        # Compute overall CI bounds
+        if overall_ci:
+            results["summed_fit"] = [[fitted_curve, mean_fit - (level * std_fit), mean_fit + (level * std_fit)]
+                                     for level in ci_levels]
+
+        # Compute individual fitter CI bounds
+        if individual_ci:
+            individual_ci_results = []
+            for fitter_idx in range(self.n_fits):
+                mean_individual = np.mean(mc_individual_values[:, fitter_idx, :], axis=0)
+                std_individual = np.std(mc_individual_values[:, fitter_idx, :], axis=0)
+                individual_ci_results.append([
+                    [mean_individual - (level * std_individual),
+                     mean_individual + (level * std_individual)]
+                    for level in ci_levels
+                ])
+            results["individual_fits"] = individual_ci_results
+
+        if plot_it:
+            if overall_ci:
+                for level in ci_levels:
+                    lower, upper = mean_fit - level * std_fit, mean_fit + level * std_fit
+                    axis.fill_between(self.x_values, lower, upper, color='k', alpha=0.25)
+
+            if individual_ci:
+                for level, fitter_idx in zip(ci_levels, range(self.n_fits)):
+                    color_cycle = itertools.cycle(MPL_COLORS[1:])
+                    lower, upper = mean_ind_fit - level * std_ind_fit, mean_ind_fit + level * std_ind_fit
+                    [axis.fill_between(self.x_values, i, j, color=next(color_cycle), alpha=0.25)
+                     for i, j in zip(lower, upper)]
+
+        return results

@@ -128,7 +128,7 @@ def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n
         raise ValueError()
 
     plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis,
-                      plot_dictionary=LinePlot(color=data_color, alpha=0.75))
+                      plot_dictionary=LinePlot(color=data_color, alpha=0.5))
 
     plot_xy(x_data=x_values, y_data=_n_fitter(x_values, *parameters),
             x_label=x_label, y_label=y_label, plot_title=title, data_label=tt,

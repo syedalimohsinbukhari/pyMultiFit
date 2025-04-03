@@ -23,6 +23,6 @@ fitter = MixedDataFitter(x_values=x, y_values=y,
 fitter.fit(guess)
 
 f, ax = plt.subplots(1, 1, figsize=(8, 6))
-plotter = fitter.plot_fit(show_individuals=True, x_label='X_data', y_label='Y_data', title='XY_plot',
-                          data_label='XY_data', axis=ax)
+plotter = fitter.plot_fit(show_individuals=True, x_label='X_data', y_label='Y_data', data_label='XY_data',
+                          title='XY_plot', axis=ax, ci=3)
 plt.show()

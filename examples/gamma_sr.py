@@ -19,5 +19,5 @@ guess = [(2, 2, 1, 3), (3, 2, 1, 1), (1, 2, 1, 6)]
 
 fitter.fit(p0=guess)
 
-fitter.plot_fit(show_individuals=True, x_label='X_data', y_label='Y_data', title='XY_plot', data_label='XY_data')
+fitter.plot_fit(show_individuals=True, x_label='X_data', y_label='Y_data', data_label='XY_data', title='XY_plot')
 plt.show()
