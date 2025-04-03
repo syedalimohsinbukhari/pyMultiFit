@@ -1,3 +1,4 @@
+![image](./pymultifit-banner-edited.png)
 # `pyMultiFit`
 
 - [`pyMultiFit`](#pymultifit)
