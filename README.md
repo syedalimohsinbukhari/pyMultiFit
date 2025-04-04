@@ -4,10 +4,14 @@ A python multi-fit library for fitting the data with multiple `N` fitters.
 
 ![GitHub-licence](https://img.shields.io/github/license/syedalimohsinbukhari/pymultifit?style=for-the-badge&color=darkblue)
 ![GitHub top language](https://img.shields.io/github/languages/top/syedalimohsinbukhari/pymultifit?color=lightgreen&style=for-the-badge)
+![PyPI - Version](https://img.shields.io/pypi/v/pymultifit?style=for-the-badge&color=teal)
+![Website](https://img.shields.io/website?url=https://pymultifit.readthedocs.io&style=for-the-badge&link=https://pymultifit.readthedocs.io)
 ![GitHub contributors](https://img.shields.io/github/contributors/syedalimohsinbukhari/pymultifit?color=gold&style=for-the-badge)
+
 ![Github Issues](https://img.shields.io/github/issues/syedalimohsinbukhari/pymultifit?color=orange&style=for-the-badge)
 ![GitHub OPEN PRs](https://img.shields.io/github/issues-pr/syedalimohsinbukhari/pymultifit?color=darkred&style=for-the-badge)
 ![GitHub CLOSED PRs](https://img.shields.io/github/issues-pr-closed/syedalimohsinbukhari/pymultifit?color=darkgreen&style=for-the-badge)
+![Codecov (with branch)](https://img.shields.io/codecov/c/github/syedalimohsinbukhari/pymultifit/dev?style=for-the-badge)
 
 ## What is `pymultifit`
 
