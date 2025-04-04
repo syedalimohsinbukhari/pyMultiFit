@@ -1,12 +1,7 @@
 ![image](./pymultifit-banner-edited.png)
 # `pyMultiFit`
 
-- [`pyMultiFit`](#pymultifit)
-  - [What is `pymultifit`](#what-is-pymultifit)
-  - [How to install](#how-to-install)
-  - [Documentation](#documentation)
-
-A python multi-fit library for fitting the data with multiple `X` fitters.
+A python multi-fit library for fitting the data with multiple `N` fitters.
 
 ![GitHub-licence](https://img.shields.io/github/license/syedalimohsinbukhari/pymultifit?style=for-the-badge&color=darkblue)
 ![GitHub top language](https://img.shields.io/github/languages/top/syedalimohsinbukhari/pymultifit?color=lightgreen&style=for-the-badge)
@@ -36,4 +31,4 @@ Using pip: `pip install pymultifit`
 
 ## Documentation
 
-The documentation can be found on [readthedocs](https://pymultifit.readthedocs.io/latest/)
+The documentation can be found on [readthedocs](https://pymultifit.readthedocs.io/latest/).
