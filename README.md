@@ -1,4 +1,3 @@
-![image](./pymultifit-banner-edited.png)
 # `pyMultiFit`
 
 A python multi-fit library for fitting the data with multiple `N` fitters.
