@@ -476,29 +476,15 @@ class BaseFitter:
             raise ValueError("At least one of `overall_ci` or `individual_ci` must be True.")
 
         ci_levels = [ci_level] if isinstance(ci_level, int) else ci_level
-        num_samples = 50
+        num_samples = 5
         num_x = len(self.x_values)
+        n_fits = self.n_fits if self.__class__.__name__ != 'MixedDataFitter' else len(self.model_list)
+        is_mixed = False if self.__class__.__name__ != 'MixedDataFitter' else True
 
-        mc_iter_values = np.zeros((num_samples, num_x))
-        mc_individual_values = np.zeros((num_samples, self.n_fits, num_x))
-
-        # Monte Carlo sampling loop
-        for i in range(num_samples):
-            sampled_params = np.array([np.random.normal(*p)
-                                       for p in self.get_value_error_pair(std_values=True)])
-            sampled_params = sampled_params.reshape(self.n_fits, self.n_par)
-
-            # Compute individual fits
-            individual_fits = np.array([self.fitter(self.x_values, params)
-                                        for params in sampled_params])
-
-            # Store summed fits if requested
-            if overall_ci:
-                mc_iter_values[i, :] = np.sum(individual_fits, axis=0)
-
-            # Store individual fits if requested
-            if individual_ci:
-                mc_individual_values[i, :, :] = individual_fits  # Shape: (num_samples, n_fits, num_x)
+        mc_iter_values, mc_individual_values = self.run_mc_sampling(num_samples, num_x,
+                                                                    n_fits, overall_ci,
+                                                                    individual_ci,
+                                                                    is_mixed)
 
         # Compute results
         results = {}
@@ -518,9 +504,10 @@ class BaseFitter:
         # Compute individual fitter CI bounds
         if individual_ci:
             individual_ci_results = []
-            for fitter_idx in range(self.n_fits):
+            for fitter_idx in range(n_fits):
                 mean_individual = np.mean(mc_individual_values[:, fitter_idx, :], axis=0)
                 std_individual = np.std(mc_individual_values[:, fitter_idx, :], axis=0)
+                print(mc_individual_values[:, fitter_idx, :])
                 individual_ci_results.append([
                     [mean_individual - (level * std_individual),
                      mean_individual + (level * std_individual)]
@@ -535,10 +522,47 @@ class BaseFitter:
                     axis.fill_between(self.x_values, lower, upper, color='k', alpha=0.25)
 
             if individual_ci:
-                for level, fitter_idx in zip(ci_levels, range(self.n_fits)):
+                for level, fitter_idx in zip(ci_levels, range(n_fits)):
                     color_cycle = itertools.cycle(MPL_COLORS[1:])
-                    lower, upper = mean_ind_fit - level * std_ind_fit, mean_ind_fit + level * std_ind_fit
+                    lower, upper = mean_ind_fit - (level * std_ind_fit), mean_ind_fit + (level * std_ind_fit)
                     [axis.fill_between(self.x_values, i, j, color=next(color_cycle), alpha=0.25)
                      for i, j in zip(lower, upper)]
 
         return results
+
+    def run_mc_sampling(self, num_samples, num_x, n_fits, overall_ci=True,
+                        individual_ci=True, is_mixed_model=False):
+        mc_iter_values = np.zeros((num_samples, num_x))
+        mc_individual_values = np.zeros((num_samples, n_fits, num_x))
+
+        for i in range(num_samples):
+            sampled_params = np.array([np.random.normal(*p)
+                                       for p in self.get_value_error_pair(std_values=True)])
+
+            if is_mixed_model:
+                individual_fits = 0
+                par_count = 0
+
+                for model_idx, model in enumerate(self.model_list):
+                    model_class, n_par = self._instantiate_fitter(model=model, return_values=['class', 'n_par'])
+                    part_fit = model_class.fitter(self.x_values, sampled_params[par_count:par_count + n_par])
+                    individual_fits += part_fit
+                    par_count += n_par
+
+                    if individual_ci:
+                        mc_individual_values[i, model_idx, :] = part_fit
+
+                if overall_ci:
+                    mc_iter_values[i, :] = individual_fits
+            else:
+                sampled_params = sampled_params.reshape(self.n_fits, self.n_par)
+                individual_fits = np.array([self.fitter(self.x_values, params)
+                                            for params in sampled_params])
+
+                if overall_ci:
+                    mc_iter_values[i, :] = np.sum(individual_fits, axis=0)
+
+                if individual_ci:
+                    mc_individual_values[i, :, :] = individual_fits
+
+        return mc_iter_values, mc_individual_values

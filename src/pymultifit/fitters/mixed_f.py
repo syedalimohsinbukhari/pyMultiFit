@@ -1,9 +1,7 @@
 """Created on Aug 10 23:08:38 2024"""
-
 from itertools import chain
 from typing import Union, List, Callable, Tuple, Iterable
 
-import matplotlib.pyplot as plt
 import numpy as np
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
@@ -237,53 +235,3 @@ class MixedDataFitter(BaseFitter):
                     ub[sum(par_count[:key - 1]) + (val - 1)] = param_value + epsilon
 
         return lb, ub, list(chain.from_iterable(self.p0))
-
-    def ci_bounds(self, ci_level: Union[int, list[int]] = 3, plot_it: bool = False, overall_ci: bool = False,
-                  individual_ci: bool = False, axis=None):
-        if not overall_ci and not individual_ci:
-            raise ValueError("At least one of `overall_ci` or `individual_ci` must be True.")
-
-        def tuplize_list(lst, sizes):
-            it = iter(lst)
-            return tuple(tuple(next(it) for _ in range(size)) for size in sizes)
-
-        ci_levels = [ci_level] if isinstance(ci_level, int) else ci_level
-        num_samples = 50
-        num_x = len(self.x_values)
-
-        n_par_list = []
-        for model in self.model_list:
-            n_par_list.append(self._instantiate_fitter(model=model, return_values='n_par'))
-
-        mc_iter_values = np.zeros((num_samples, num_x))
-        mc_individual_values = np.zeros((num_samples, self.n_fits, num_x))
-
-        for i in range(num_samples):
-            par_count = 0
-            sampled_params = np.array([np.random.normal(*p)
-                                       for p in self.get_value_error_pair(std_values=True)])
-
-            for model in self.model_list:
-                model_class, n_par = self._instantiate_fitter(model=model, return_values=['class', 'n_par'])
-                individual_fits = model_class.fitter(self.x_values,
-                                                     sampled_params[par_count:par_count + n_par])
-                par_count += n_par
-
-                if overall_ci:
-                    mc_iter_values[i, :] = np.sum(individual_fits, axis=0)
-
-                if individual_ci:
-                    mc_individual_values[i, :, :] = individual_fits
-
-        # results = {}
-        #
-        plt.figure()
-        fitted_curve = self.get_fitted_curve()
-        plt.plot(self.x_values, fitted_curve)
-        plt.show()
-        # individual_fits = [[self.fitter(self.x_values,
-        #                                 params[par_count:par_count + n_par[j]])
-        #                     for params in sampled_params] for j in range(len(self.model_list))]
-        #
-        # print(len(individual_fits))
-        # print(range(len(self.model_list)))
