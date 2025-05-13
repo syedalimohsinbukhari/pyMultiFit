@@ -2,8 +2,9 @@ numpy<2.1.0
 scipy
 matplotlib
 mpyez
-statsmodels
 custom-inherit
+ruff
+statsmodels
 pytest
 pandas
 seaborn

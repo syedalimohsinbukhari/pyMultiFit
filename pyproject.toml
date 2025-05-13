@@ -1,4 +1,41 @@
 [build-system]
-requires = ["setuptools", "numpy<2.1.0", "matplotlib", "scipy", "mpyez", "custom-inherit"]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
-build-backend = "setuptools.build_meta:__legacy__"
+[project]
+name = "pymultifit"
+description = "A library to fit data with multiple fitters."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Syed Ali Mohsin Bukhari", email = "syedali.b@outlook.com" },
+]
+
+urls = { Homepage = "https://github.com/syedalimohsinbukhari/pyMultiFit/" }
+
+dependencies = [
+    "numpy<2.1.0",
+    "matplotlib",
+    "scipy",
+    "mpyez",
+    "custom-inherit",
+    "ruff",
+]
+
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["examples", "*tests*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pymultifit.version.__version__" }

@@ -271,7 +271,7 @@ class BaseFitter:
         self.p0 = p0
 
         # int -> list converter check
-        if isinstance(p0[0], int | float):
+        if isinstance(p0[0], int or float):
             self.p0 = [p0]
 
         self.n_fits = len(self.p0) if c_name != 'MixedDataFitter' else 1
@@ -476,7 +476,7 @@ class BaseFitter:
             raise ValueError("At least one of `overall_ci` or `individual_ci` must be True.")
 
         ci_levels = [ci_level] if isinstance(ci_level, int) else ci_level
-        num_samples = 5
+        num_samples = 100
         num_x = len(self.x_values)
         n_fits = self.n_fits if self.__class__.__name__ != 'MixedDataFitter' else len(self.model_list)
         is_mixed = False if self.__class__.__name__ != 'MixedDataFitter' else True
@@ -507,7 +507,6 @@ class BaseFitter:
             for fitter_idx in range(n_fits):
                 mean_individual = np.mean(mc_individual_values[:, fitter_idx, :], axis=0)
                 std_individual = np.std(mc_individual_values[:, fitter_idx, :], axis=0)
-                print(mc_individual_values[:, fitter_idx, :])
                 individual_ci_results.append([
                     [mean_individual - (level * std_individual),
                      mean_individual + (level * std_individual)]
