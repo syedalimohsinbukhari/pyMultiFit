@@ -3,4 +3,3 @@ matplotlib
 scipy
 mpyez
 custom-inherit
-ruff
