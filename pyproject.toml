@@ -1,4 +1,64 @@
 [build-system]
-requires = ["setuptools", "numpy<2.1.0", "matplotlib", "scipy", "mpyez", "custom-inherit"]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
-build-backend = "setuptools.build_meta:__legacy__"
+[project]
+name = "pymultifit"
+description = "A library to fit data with multiple fitters."
+authors = [{ name = "Syed Ali Mohsin Bukhari", email = "syedali.b@outlook.com" }]
+
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+license = { text = "MIT" }
+version = "1.0.7"
+dependencies = ["numpy<2.1.0", "matplotlib", "scipy", "custom-inherit", "mpyez"]
+keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
+classifiers = [
+    "Classifier: Development Status :: 5 - Production/Stable",
+    "Classifier: Intended Audience :: Science/Research",
+    "Classifier: License :: OSI Approved :: MIT License",
+    "Classifier: Operating System :: OS Independent",
+    "Classifier: Programming Language :: Python :: 3.9",
+    "Classifier: Programming Language :: Python :: 3.10",
+    "Classifier: Programming Language :: Python :: 3.11",
+    "Classifier: Topic :: Scientific/Engineering :: Astronomy",
+    "Classifier: Topic :: Scientific/Engineering :: Mathematics",
+    "Classifier: Topic :: Scientific/Engineering :: Physics"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "seaborn",
+    "pandas",
+    "statsmodels",
+    "astropy",
+    "jupyter",
+    "notebook",
+    "build",
+    "memory_profiler",
+    "sphinx",
+    "sphinx-rtd-theme",
+    "pydata-sphinx-theme",
+    "sphinx-copybutton",
+    "sphinxcontrib-napoleon",
+    "numpydoc",
+    "nbsphinx",
+    "nbsphinx-link",
+    "sphinx-gallery",
+    "sphinx-autobuild",
+    "ruff"
+]
+
+[project.urls]
+Homepage = "https://readthedocs.pymultifit.com"
+Issues = "https://github.com/syedalimohsinbukhari/pymultifit/issues"
+Repository = "https://github.com/syedalimohsinbukhari/pyMultiFit/"
+
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["examples", "*tests*"]
