@@ -27,8 +27,8 @@ jobs:
 
       - name: Analysing the code with Pylint
         run: |
-          pylint --rcfile=./.pylintrc --fail-under=7 $(git ls-files '*.py')
+          pylint --rcfile=./.pylintrc --fail-under=7 $(git ls-files 'src/pymultifit/**/*.py')
 
       - name: Linting the code with Ruff
         run: |
-          ruff check ./src/pymultifit/ --fix
+          ruff check src/pymultifit/ --fix
