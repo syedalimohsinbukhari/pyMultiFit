@@ -74,8 +74,13 @@ class HalfNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0,
-                 normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        scale: float = 1.0,
+        loc: float = 0.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         if scale < 0:
@@ -103,23 +108,47 @@ class HalfNormalDistribution(BaseDistribution):
         HalfNormalDistribution
             An instance of normalized HalfNormalDistribution.
         """
-        return cls(loc=loc, scale=scale, normalize=True)
+        return cls(
+            loc=loc,
+            scale=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return half_normal_pdf_(x,
-                                amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
+        return half_normal_pdf_(
+            x,
+            amplitude=self.amplitude,
+            sigma=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return half_normal_log_pdf_(x,
-                                    amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
+        return half_normal_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            sigma=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return half_normal_cdf_(x,
-                                amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
+        return half_normal_cdf_(
+            x,
+            amplitude=self.amplitude,
+            sigma=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return half_normal_log_cdf_(x,
-                                    amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
+        return half_normal_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            sigma=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def stats(self):
         s_, l_ = self.scale, self.loc
@@ -127,10 +156,12 @@ class HalfNormalDistribution(BaseDistribution):
         mean_ = np.sqrt(2 / np.pi)
         mode_ = 0
 
-        variance_ = (1 - (2 / np.pi))
+        variance_ = 1 - (2 / np.pi)
         variance_ *= s_**2
 
-        return {'mean': (s_ * mean_) + l_,
-                'mode': mode_,
-                'variance': variance_,
-                'std': np.sqrt(variance_)}
+        return {
+            "mean": (s_ * mean_) + l_,
+            "mode": mode_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

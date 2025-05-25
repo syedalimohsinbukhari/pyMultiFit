@@ -5,6 +5,7 @@ neg_message = "cannot be negative."
 
 class BaseDistributionError(Exception):
     """Base class for distribution-related errors."""
+
     pass
 
 
@@ -53,7 +54,7 @@ class NegativeRateError(BaseDistributionError):
 class NegativeScaleError(BaseDistributionError):
     """Raised when the value of scale parameter is negative."""
 
-    def __init__(self, parameter='scale'):
+    def __init__(self, parameter="scale"):
         super().__init__(f"{parameter.capitalize()} {neg_message}")
 
 

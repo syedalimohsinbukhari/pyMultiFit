@@ -1,5 +1,7 @@
 """Created on Aug 03 21:12:13 2024"""
 
+import numpy as np
+
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_pdf_, laplace_log_pdf_, laplace_log_cdf_
 
@@ -72,12 +74,18 @@ class LaplaceDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        mean: float = 0,
+        diversity: float = 1,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif diversity <= 0:
-            raise erH.NegativeScaleError('diversity')
-        self.amplitude = 1. if normalize else amplitude
+            raise erH.NegativeScaleError("diversity")
+        self.amplitude = 1.0 if normalize else amplitude
         self.mu = mean
         self.b = diversity
 
@@ -100,31 +108,57 @@ class LaplaceDistribution(BaseDistribution):
         LaplaceDistribution
             An instance of normalized LaplaceDistribution.
         """
-        return cls(mean=loc, diversity=scale, normalize=True)
+        return cls(
+            mean=loc,
+            diversity=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return laplace_pdf_(x,
-                            amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        return laplace_pdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            diversity=self.b,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return laplace_log_pdf_(x,
-                                amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        return laplace_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            diversity=self.b,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return laplace_cdf_(x,
-                            amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        return laplace_cdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            diversity=self.b,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return laplace_log_cdf_(x,
-                                amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        return laplace_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            diversity=self.b,
+            normalize=self.norm,
+        )
 
     def stats(self):
         m, b = self.mu, self.b
 
         variance_ = 2 * b**2
 
-        return {'mean': m,
-                'median': m,
-                'mode': m,
-                'variance': variance_,
-                'std': variance_**0.5}
+        return {
+            "mean": m,
+            "median": m,
+            "mode": m,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

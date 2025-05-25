@@ -78,11 +78,17 @@ class SkewNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, shape: float = 1., location: float = 0., scale: float = 1.,
-                 normalize: bool = False):
-        if not normalize and amplitude < 0.:
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        shape: float = 1.0,
+        location: float = 0.0,
+        scale: float = 1.0,
+        normalize: bool = False,
+    ):
+        if not normalize and amplitude < 0.0:
             raise NegativeAmplitudeError()
-        if scale <= 0.:
+        if scale <= 0.0:
             raise NegativeScaleError()
 
         self.amplitude = 1 if normalize else amplitude
@@ -111,17 +117,32 @@ class SkewNormalDistribution(BaseDistribution):
         SkewNormalDistribution
             An instance of normalized SkewNormalDistribution.
         """
-        return cls(shape=a, location=loc, scale=scale, normalize=True)
+        return cls(
+            shape=a,
+            location=loc,
+            scale=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return skew_normal_pdf_(x,
-                                amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
-                                normalize=self.norm)
+        return skew_normal_pdf_(
+            x,
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.location,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return skew_normal_cdf_(x,
-                                amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
-                                normalize=self.norm)
+        return skew_normal_cdf_(
+            x,
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.location,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def stats(self):
         alpha, omega, epsilon = self.shape, self.scale, self.location
@@ -139,8 +160,10 @@ class SkewNormalDistribution(BaseDistribution):
         variance_ = omega**2 * (1 - (2 * delta**2 / np.pi))
         std_ = np.sqrt(variance_)
 
-        return {'mean': mean_,
-                'mode': mode_,
-                'median': None,
-                'variance': variance_,
-                'std': std_}
+        return {
+            "mean": mean_,
+            "mode": mode_,
+            "median": None,
+            "variance": variance_,
+            "std": std_,
+        }

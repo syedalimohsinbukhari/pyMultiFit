@@ -1,5 +1,6 @@
 """Created on Aug 14 00:45:37 2024"""
 
+import numpy as np
 from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
@@ -81,16 +82,22 @@ class BetaDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self,
-                 amplitude: float = 1.0, alpha: float = 1.0, beta: float = 1.0,
-                 loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        alpha: float = 1.0,
+        beta: float = 1.0,
+        loc: float = 0.0,
+        scale: float = 1.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif alpha <= 0:
             raise erH.NegativeAlphaError()
         elif beta <= 0:
             raise erH.NegativeBetaError()
-        self.amplitude = 1. if normalize else amplitude
+        self.amplitude = 1.0 if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
         self.loc = loc
@@ -119,27 +126,57 @@ class BetaDistribution(BaseDistribution):
         BetaDistribution
             An instance of normalized BetaDistribution.
         """
-        return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
+        return cls(
+            alpha=a,
+            beta=b,
+            loc=loc,
+            scale=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return beta_pdf_(x,
-                         amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale,
-                         normalize=self.norm)
+        return beta_pdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.alpha,
+            beta=self.beta,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return beta_log_pdf_(x,
-                             amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale,
-                             normalize=self.norm)
+        return beta_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.alpha,
+            beta=self.beta,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return beta_cdf_(x,
-                         amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale,
-                         normalize=self.norm)
+        return beta_cdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.alpha,
+            beta=self.beta,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return beta_log_cdf_(x,
-                             amplitude=self.amplitude, alpha=self.alpha, beta=self.beta, loc=self.loc, scale=self.scale,
-                             normalize=self.norm)
+        return beta_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.alpha,
+            beta=self.beta,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def stats(self):
         a, b = self.alpha, self.beta
@@ -156,8 +193,10 @@ class BetaDistribution(BaseDistribution):
 
         variance_ = s**2 * (num_ / den_)
 
-        return {'mean': mean_,
-                'median': median_,
-                'mode': None,
-                'variance': variance_,
-                'std': variance_**0.5}
+        return {
+            "mean": mean_,
+            "median": median_,
+            "mode": None,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

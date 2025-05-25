@@ -1,8 +1,9 @@
 """Created on Dec 04 03:42:42 2024"""
 
-from math import erf
+from typing import Dict
 
 import numpy as np
+from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import folded_normal_cdf_, folded_normal_pdf_, folded_normal_log_pdf_, folded_normal_log_cdf_
@@ -80,11 +81,17 @@ class FoldedNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, mu: float = 0.0, sigma: float = 1., loc: float = 0.0,
-                 normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        mu: float = 0.0,
+        sigma: float = 1.0,
+        loc: float = 0.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        self.amplitude = 1. if normalize else amplitude
+        self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu
         self.sigma = sigma
         self.loc = loc
@@ -110,29 +117,54 @@ class FoldedNormalDistribution(BaseDistribution):
         FoldedNormalDistribution
             An instance of normalized FoldedNormalDistribution.
         """
-        return cls(mu=c, sigma=scale, loc=loc, normalize=True)
+        return cls(
+            mu=c,
+            sigma=scale,
+            loc=loc,
+            normalize=True,
+        )
 
-    def pdf(self, x):
-        return folded_normal_pdf_(x,
-                                  amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
-                                  normalize=self.norm)
+    def pdf(self, x: np.array) -> np.array:
+        return folded_normal_pdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            sigma=self.sigma,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
-    def logpdf(self, x):
-        return folded_normal_log_pdf_(x,
-                                      amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
-                                      normalize=self.norm)
+    def logpdf(self, x: np.array) -> np.array:
+        return folded_normal_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            sigma=self.sigma,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
-    def cdf(self, x):
-        return folded_normal_cdf_(x,
-                                  amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
-                                  normalize=self.norm)
+    def cdf(self, x: np.array) -> np.array:
+        return folded_normal_cdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            sigma=self.sigma,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
-    def logcdf(self, x):
-        return folded_normal_log_cdf_(x,
-                                      amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc,
-                                      normalize=self.norm)
+    def logcdf(self, x: np.array) -> np.array:
+        return folded_normal_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            sigma=self.sigma,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         mean_, std_ = self.mu, self.sigma
 
         sqrt_ = (2 / np.pi)**0.5
@@ -143,6 +175,8 @@ class FoldedNormalDistribution(BaseDistribution):
         mu_y = f1 + f2
         var_y = mean_**2 + 1 - mu_y**2
 
-        return {'mean': (std_ * mu_y) + self.loc,
-                'variance': var_y * std_**2,
-                'std': np.sqrt(var_y * std_**2)}
+        return {
+            "mean": (std_ * mu_y) + self.loc,
+            "variance": var_y * std_**2,
+            "std": np.sqrt(var_y * std_**2),
+        }

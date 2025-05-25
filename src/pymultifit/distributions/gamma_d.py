@@ -1,8 +1,18 @@
 """Created on Aug 14 01:28:13 2024"""
 
+import numpy as np
+
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import (gamma_sr_pdf_, gamma_sr_log_pdf_, gamma_sr_cdf_, gamma_sr_log_cdf_,
-                          gamma_ss_pdf_, gamma_ss_log_pdf_, gamma_ss_cdf_, gamma_ss_log_cdf_)
+from .utilities_d import (
+    gamma_sr_pdf_,
+    gamma_sr_log_pdf_,
+    gamma_sr_cdf_,
+    gamma_sr_log_cdf_,
+    gamma_ss_pdf_,
+    gamma_ss_log_pdf_,
+    gamma_ss_cdf_,
+    gamma_ss_log_cdf_,
+)
 
 
 class GammaDistributionSR(BaseDistribution):
@@ -77,16 +87,21 @@ class GammaDistributionSR(BaseDistribution):
        :align: center
     """
 
-    def __init__(self,
-                 amplitude: float = 1.0, shape: float = 1.0, rate: float = 1.0,
-                 loc: float = 0.0, normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        shape: float = 1.0,
+        rate: float = 1.0,
+        loc: float = 0.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif shape <= 0:
             raise erH.NegativeShapeError()
         elif rate <= 0:
             raise erH.NegativeRateError()
-        self.amplitude = 1. if normalize else amplitude
+        self.amplitude = 1.0 if normalize else amplitude
         self.shape = shape
         self.rate = rate
         self.loc = loc
@@ -112,27 +127,52 @@ class GammaDistributionSR(BaseDistribution):
         "GammaDistributionSR"
             An instance of normalized GammaDistributionSR.
         """
-        return cls(shape=a, loc=loc, rate=1 / scale, normalize=True)
+        return cls(
+            shape=a,
+            loc=loc,
+            rate=1 / scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return gamma_sr_pdf_(x,
-                             amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
-                             normalize=self.norm)
+        return gamma_sr_pdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.shape,
+            lambda_=self.rate,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return gamma_sr_log_pdf_(x,
-                                 amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
-                                 normalize=self.norm)
+        return gamma_sr_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.shape,
+            lambda_=self.rate,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return gamma_sr_cdf_(x,
-                             amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
-                             normalize=self.norm)
+        return gamma_sr_cdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.shape,
+            lambda_=self.rate,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return gamma_sr_log_cdf_(x,
-                                 amplitude=self.amplitude, alpha=self.shape, lambda_=self.rate, loc=self.loc,
-                                 normalize=self.norm)
+        return gamma_sr_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.shape,
+            lambda_=self.rate,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def stats(self):
         s, r, l_ = self.shape, self.rate, self.loc
@@ -141,11 +181,12 @@ class GammaDistributionSR(BaseDistribution):
         variance_ = s / r**2
         mode_ = (s - 1) / r + l_ if s >= 1 else 0
 
-        return {'mean': mean_,
-                'mode': mode_,
-                'median': None,
-                'variance': variance_,
-                'std': variance_**0.5}
+        return {
+            "mean": mean_,
+            "mode": mode_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }
 
 
 class GammaDistributionSS(BaseDistribution):
@@ -220,16 +261,21 @@ class GammaDistributionSS(BaseDistribution):
        :align: center
     """
 
-    def __init__(self,
-                 amplitude: float = 1.0, shape: float = 1.0, scale: float = 1.0, loc: float = 0.0,
-                 normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        shape: float = 1.0,
+        scale: float = 1.0,
+        loc: float = 0.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif shape <= 0:
             raise erH.NegativeShapeError()
         elif scale <= 0:
             raise erH.NegativeScaleError()
-        self.amplitude = 1. if normalize else amplitude
+        self.amplitude = 1.0 if normalize else amplitude
         self.shape = shape
         self.scale = 1 / scale
         self.loc = loc
@@ -255,28 +301,58 @@ class GammaDistributionSS(BaseDistribution):
         GammaDistributionSS
             An instance of normalized GammaDistributionSS.
         """
-        return cls(shape=a, loc=loc, scale=scale, normalize=True)
+        return cls(
+            shape=a,
+            loc=loc,
+            scale=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return gamma_ss_pdf_(x,
-                             amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
-                             normalize=self.norm)
+        return gamma_ss_pdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.shape,
+            theta=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return gamma_ss_log_pdf_(x,
-                                 amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
-                                 normalize=self.norm)
+        return gamma_ss_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.shape,
+            theta=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return gamma_ss_cdf_(x,
-                             amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
-                             normalize=self.norm)
+        return gamma_ss_cdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.shape,
+            theta=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return gamma_ss_log_cdf_(x,
-                                 amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
-                                 normalize=self.norm)
+        return gamma_ss_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            alpha=self.shape,
+            theta=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def stats(self):
-        return GammaDistributionSR(amplitude=self.amplitude, shape=self.shape, loc=self.loc, rate=self.scale,
-                                   normalize=self.norm).stats()
+        return GammaDistributionSR(
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.loc,
+            rate=self.scale,
+            normalize=self.norm,
+        ).stats()

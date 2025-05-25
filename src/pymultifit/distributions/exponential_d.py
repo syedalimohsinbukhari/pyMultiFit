@@ -75,7 +75,13 @@ class ExponentialDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        scale: float = 1.0,
+        loc: float = 0.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif scale <= 0:
@@ -103,27 +109,47 @@ class ExponentialDistribution(BaseDistribution):
         ExponentialDistribution
             A instance of normalized ExponentialDistribution.
         """
-        return cls(loc=loc, scale=scale, normalize=True)
+        return cls(
+            loc=loc,
+            scale=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return exponential_pdf_(x,
-                                amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
-                                normalize=self.norm)
+        return exponential_pdf_(
+            x,
+            amplitude=self.amplitude,
+            lambda_=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return exponential_log_pdf_(x,
-                                    amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
-                                    normalize=self.norm)
+        return exponential_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            lambda_=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return exponential_cdf_(x,
-                                amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
-                                normalize=self.norm)
+        return exponential_cdf_(
+            x,
+            amplitude=self.amplitude,
+            lambda_=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return exponential_log_cdf_(x,
-                                    amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
-                                    normalize=self.norm)
+        return exponential_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            lambda_=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
     def stats(self):
         s, l_ = self.scale, self.loc
@@ -132,8 +158,10 @@ class ExponentialDistribution(BaseDistribution):
         median_ = (np.log(2) / s) + l_
         mode_ = 0
         variance_ = 1 / s**2
-        return {'mean': mean_,
-                'median': median_,
-                'mode': mode_,
-                'variance': variance_,
-                'std': variance_**0.5}
+        return {
+            "mean": mean_,
+            "median": median_,
+            "mode": mode_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

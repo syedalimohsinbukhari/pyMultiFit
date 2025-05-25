@@ -2,6 +2,8 @@
 
 from typing import Union
 
+import numpy as np
+
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import chi_square_cdf_, chi_square_pdf_, chi_square_log_pdf_, chi_square_log_cdf_
 
@@ -79,9 +81,14 @@ class ChiSquareDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self,
-                 amplitude: float = 1.0, degree_of_freedom: Union[int, float] = 1,
-                 loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        degree_of_freedom: Union[int, float] = 1,
+        loc: float = 0.0,
+        scale: float = 1.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         self.amplitude = 1 if normalize else amplitude
@@ -110,27 +117,52 @@ class ChiSquareDistribution(BaseDistribution):
         ChiSquareDistribution
             An instance of normalized ChiSquareDistribution.
         """
-        return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
+        return cls(
+            degree_of_freedom=df,
+            loc=loc,
+            scale=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return chi_square_pdf_(x,
-                               amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
-                               normalize=self.norm)
+        return chi_square_pdf_(
+            x,
+            amplitude=self.amplitude,
+            degree_of_freedom=self.dof,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return chi_square_log_pdf_(x,
-                                   amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc,
-                                   scale=self.scale, normalize=self.norm)
+        return chi_square_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            degree_of_freedom=self.dof,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return chi_square_cdf_(x,
-                               amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
-                               normalize=self.norm)
+        return chi_square_cdf_(
+            x,
+            amplitude=self.amplitude,
+            degree_of_freedom=self.dof,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return chi_square_log_cdf_(x,
-                                   amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc,
-                                   scale=self.scale, normalize=self.norm)
+        return chi_square_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            degree_of_freedom=self.dof,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def stats(self):
         df = self.dof
@@ -140,8 +172,10 @@ class ChiSquareDistribution(BaseDistribution):
         mode_ = max(df - 2, 0)
         variance_ = 2 * df * s**2
 
-        return {'mean': mean_,
-                'median': None,
-                'mode': mode_,
-                'variance': variance_,
-                'std': variance_**0.5}
+        return {
+            "mean": mean_,
+            "median": None,
+            "mode": mode_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

@@ -99,38 +99,61 @@ class UniformDistribution(BaseDistribution):
         UniformDistribution
             An instance of normalized UniformDistribution.
         """
-        return cls(low=loc, high=scale, normalize=True)
+        return cls(
+            low=loc,
+            high=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return uniform_pdf_(x,
-                            amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        return uniform_pdf_(
+            x,
+            amplitude=self.amplitude,
+            low=self.low,
+            high=self.high,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return uniform_log_pdf_(x,
-                                amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        return uniform_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            low=self.low,
+            high=self.high,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return uniform_cdf_(x,
-                            amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        return uniform_cdf_(
+            x,
+            amplitude=self.amplitude,
+            low=self.low,
+            high=self.high,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return uniform_log_cdf_(x,
-                                amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        return uniform_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            low=self.low,
+            high=self.high,
+            normalize=self.norm,
+        )
 
     def stats(self):
         low, high = self.low, self.low + self.high
 
         if low == high:
-            return {'mean': np.nan,
-                    'median': np.nan,
-                    'variance': np.nan,
-                    'std': np.nan}
+            return {"mean": np.nan, "median": np.nan, "variance": np.nan, "std": np.nan}
 
         mean_ = 0.5 * (low + high)
         median_ = mean_
-        variance_ = (1 / 12.) * (high - low)**2
+        variance_ = (1 / 12.0) * (high - low)**2
 
-        return {'mean': mean_,
-                'median': median_,
-                'variance': variance_,
-                'std': np.sqrt(variance_)}
+        return {
+            "mean": mean_,
+            "median": median_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

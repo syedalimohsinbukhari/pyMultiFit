@@ -72,13 +72,19 @@ class GaussianDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, mu: float = 0., std: float = 1., normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        mu: float = 0.0,
+        std: float = 1.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         elif std <= 0:
             raise erH.NegativeStandardDeviationError()
 
-        self.amplitude = 1. if normalize else amplitude
+        self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu
         self.std_ = std
         self.norm = normalize
@@ -100,25 +106,55 @@ class GaussianDistribution(BaseDistribution):
         GaussianDistribution
             An instance of normalized GaussianDistribution.
         """
-        return cls(mu=loc, std=scale, normalize=True)
+        return cls(
+            mu=loc,
+            std=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return gaussian_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
+        return gaussian_pdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            std=self.std_,
+            normalize=self.norm,
+        )
 
     def logpdf(self, x):
-        return gaussian_log_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
+        return gaussian_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            std=self.std_,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return gaussian_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
+        return gaussian_cdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            std=self.std_,
+            normalize=self.norm,
+        )
 
     def logcdf(self, x):
-        return gaussian_log_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
+        return gaussian_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            std=self.std_,
+            normalize=self.norm,
+        )
 
     def stats(self):
         m, s = self.mu, self.std_
 
-        return {'mean': m,
-                'median': m,
-                'mode': m,
-                'variance': s**2,
-                'std': s}
+        return {
+            "mean": m,
+            "median": m,
+            "mode": m,
+            "variance": s**2,
+            "std": s,
+        }

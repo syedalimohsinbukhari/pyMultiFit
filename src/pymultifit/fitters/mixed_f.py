@@ -22,22 +22,37 @@ from .logNormal_f import LogNormalFitter
 from .polynomial_f import LineFitter
 from .skewNormal_f import SkewNormalFitter
 from .utilities_f import sanity_check, _plot_fit
-from .. import (epsilon, GAUSSIAN, LAPLACE, LINE, LOG_NORMAL, SKEW_NORMAL, CHI_SQUARE, EXPONENTIAL, FOLDED_NORMAL,
-                GAMMA_SR, GAMMA_SS, NORMAL, HALF_NORMAL)
+from .. import (
+    epsilon,
+    GAUSSIAN,
+    LAPLACE,
+    LINE,
+    LOG_NORMAL,
+    SKEW_NORMAL,
+    CHI_SQUARE,
+    EXPONENTIAL,
+    FOLDED_NORMAL,
+    GAMMA_SR,
+    GAMMA_SS,
+    NORMAL,
+    HALF_NORMAL,
+)
 
 # mock initialize the internal classes for auto MixedDataFitter class
-fitter_dict = {CHI_SQUARE: ChiSquareFitter,
-               EXPONENTIAL: ExponentialFitter,
-               FOLDED_NORMAL: FoldedNormalFitter,
-               GAMMA_SR: GammaFitterSR,
-               GAMMA_SS: GammaFitterSS,
-               GAUSSIAN: GaussianFitter,
-               NORMAL: GaussianFitter,
-               HALF_NORMAL: HalfNormalFitter,
-               LAPLACE: LaplaceFitter,
-               LOG_NORMAL: LogNormalFitter,
-               SKEW_NORMAL: SkewNormalFitter,
-               LINE: LineFitter}
+fitter_dict = {
+    CHI_SQUARE: ChiSquareFitter,
+    EXPONENTIAL: ExponentialFitter,
+    FOLDED_NORMAL: FoldedNormalFitter,
+    GAMMA_SR: GammaFitterSR,
+    GAMMA_SS: GammaFitterSS,
+    GAUSSIAN: GaussianFitter,
+    NORMAL: GaussianFitter,
+    HALF_NORMAL: HalfNormalFitter,
+    LAPLACE: LaplaceFitter,
+    LOG_NORMAL: LogNormalFitter,
+    SKEW_NORMAL: SkewNormalFitter,
+    LINE: LineFitter,
+}
 
 
 class MixedDataFitter:
@@ -50,8 +65,14 @@ class MixedDataFitter:
     :param max_iterations: The maximum number of iterations for fitting procedure.
     """
 
-    def __init__(self, x_values: Union[List, np.ndarray], y_values: Union[List, np.ndarray],
-                 model_list: List[str], fitter_dictionary=None, max_iterations: int = 1000):
+    def __init__(
+        self,
+        x_values: np.array,
+        y_values: np.array,
+        model_list: List[str],
+        fitter_dictionary=None,
+        max_iterations: int = 1000,
+    ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
 
         self.x_values = x_values
@@ -67,8 +88,10 @@ class MixedDataFitter:
         self.model_function = self._create_model_function()
 
     def __repr__(self):
-        return (f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
-                f"model_list={self.model_list}, max_iterations={self.max_iterations})")
+        return (
+            f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
+            f"model_list={self.model_list}, max_iterations={self.max_iterations})"
+        )
 
     def _create_model_function(self) -> Callable:
         """
@@ -97,8 +120,8 @@ class MixedDataFitter:
             param_index = 0
 
             for model in self.model_list:
-                model_class, n_par = self._instantiate_fitter(model=model, return_values=['class', 'n_par'])
-                y += model_class.fitter(x=x, params=params[param_index:param_index + n_par])
+                model_class, n_par = self._instantiate_fitter(model=model, return_values=["class", "n_par"])
+                y += model_class.fitter(x=x, params=params[param_index: param_index + n_par])
                 param_index += n_par
 
             return y
@@ -113,7 +136,7 @@ class MixedDataFitter:
         """
         count = 0
         for model in self.model_list:
-            n_par = self._instantiate_fitter(model=model, return_values='n_par')
+            n_par = self._instantiate_fitter(model=model, return_values="n_par")
             count += n_par
 
         return count
@@ -139,7 +162,7 @@ class MixedDataFitter:
         str:
             A formatted string of the parameter value.
         """
-        return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
+        return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
     def _get_bounds(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -151,13 +174,13 @@ class MixedDataFitter:
         upper_bounds = []
 
         for model in self.model_list:
-            lb, ub = self._instantiate_fitter(model=model, return_values='bounds')
+            lb, ub = self._instantiate_fitter(model=model, return_values="bounds")
             lower_bounds.extend(lb)
             upper_bounds.extend(ub)
 
         return np.array(lower_bounds), np.array(upper_bounds)
 
-    def _instantiate_fitter(self, model: str, return_values: Union[str, List[str]] = 'class'):
+    def _instantiate_fitter(self, model: str, return_values: Union[str, List[str]] = "class"):
         """
         Instantiate the fitter for the specified model and return requested values.
 
@@ -173,7 +196,7 @@ class MixedDataFitter:
         except KeyError:
             raise ValueError(f"Model '{model}' not recognized. Ensure it is defined in the fitter dictionary.")
 
-        valid_options = {'class', 'n_par', 'bounds'}
+        valid_options = {"class", "n_par", "bounds"}
         if isinstance(return_values, str):
             return_values = [return_values]  # Convert to list for uniform processing
 
@@ -183,11 +206,11 @@ class MixedDataFitter:
 
         result = []
         for val in return_values:
-            if val == 'class':
+            if val == "class":
                 result.append(fitter_instance)
-            elif val == 'n_par':
+            elif val == "n_par":
                 result.append(fitter_instance.n_par)
-            elif val == 'bounds':
+            elif val == "bounds":
                 try:
                     result.append(fitter_instance.fit_boundaries())
                 except NotImplementedError:
@@ -212,8 +235,8 @@ class MixedDataFitter:
             if model not in param_dict:
                 param_dict[model] = []
 
-            n_pars = self._instantiate_fitter(model=model, return_values='n_par')
-            param_dict[model].extend([values[p_index:p_index + n_pars]])
+            n_pars = self._instantiate_fitter(model=model, return_values="n_par")
+            param_dict[model].extend([values[p_index: p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
@@ -247,18 +270,23 @@ class MixedDataFitter:
         :param plotter: The plotting axis object
         """
         x = self.x_values
-        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
+        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
         param_index = 0
         for i, model in enumerate(self.model_list):
             color = colors[i % len(colors)]
-            class_model, n_par = self._instantiate_fitter(model=model, return_values=['class', 'n_par'])
-            pars = self.params[param_index:param_index + n_par]
+            class_model, n_par = self._instantiate_fitter(model=model, return_values=["class", "n_par"])
+            pars = self.params[param_index: param_index + n_par]
             y_component = class_model.fitter(x=x, params=pars)
-            plot_xy(x_data=x, y_data=y_component,
-                    x_label='', y_label='', plot_title='',
-                    data_label=f'{model.capitalize()} {i + 1}({", ".join(self._format_param(i) for i in pars)})',
-                    plot_dictionary=LinePlot(line_style='--', color=color),
-                    axis=plotter)
+            plot_xy(
+                x_data=x,
+                y_data=y_component,
+                x_label="",
+                y_label="",
+                plot_title="",
+                data_label=f"{model.capitalize()} {i + 1}({', '.join(self._format_param(i) for i in pars)})",
+                plot_dictionary=LinePlot(line_style="--", color=color),
+                axis=plotter,
+            )
             param_index += n_par
 
     def _standard_errors(self) -> np.ndarray:
@@ -279,12 +307,12 @@ class MixedDataFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return np.sqrt(np.diag(self.covariance))
 
-    def fit(self, p0: Union[List, np.ndarray], frozen: Union[int, List[int]] = None):
+    def fit(self, p0: np.array, frozen: Union[int, List[int]] = None):
         """
         Fit the data.
 
         :param p0: Initial guess for the fitted parameters.
-        :type p0: Union[List, np.ndarray]
+        :type p0: np.array
 
         :param frozen: Parameter number of list of parameter numbers to freeze the value of.
         :type frozen: Union[int, List[int]]
@@ -294,8 +322,9 @@ class MixedDataFitter:
         # flatten cannot always work here because the mixed fitter might contain variable number of parameters
         p0 = list(itertools.chain.from_iterable(p0))
         if len(p0) != self._expected_param_count():
-            raise ValueError(f"Initial parameters length {len(p0)} does not match expected count "
-                             f"{self._expected_param_count()}.")
+            raise ValueError(
+                f"Initial parameters length {len(p0)} does not match expected count {self._expected_param_count()}."
+            )
 
         lb, ub = self._get_bounds()
 
@@ -306,8 +335,14 @@ class MixedDataFitter:
                 lb[par_num - 1] = p0[par_num - 1] - epsilon
                 ub[par_num - 1] = p0[par_num - 1] + epsilon
 
-        self.params, self.covariance, *_ = curve_fit(f=self.model_function, xdata=self.x_values, ydata=self.y_values,
-                                                     p0=p0, maxfev=self.max_iterations, bounds=Bounds(lb=lb, ub=ub))
+        self.params, self.covariance, *_ = curve_fit(
+            f=self.model_function,
+            xdata=self.x_values,
+            ydata=self.y_values,
+            p0=p0,
+            maxfev=self.max_iterations,
+            bounds=Bounds(lb=lb, ub=ub),
+        )
 
     def get_fitted_curve(self) -> np.ndarray:
         """
@@ -352,7 +387,7 @@ class MixedDataFitter:
         output = {"parameters": {}, "errors": {}}
 
         keys = ["parameters", "errors"]
-        n_pars = self._instantiate_fitter(model=model, return_values='n_par')
+        n_pars = self._instantiate_fitter(model=model, return_values="n_par")
         for temp_, key in zip([parameters, errs], keys):
             par_dict = temp_.get(model, [])
             if n_pars == 2:
@@ -403,9 +438,15 @@ class MixedDataFitter:
         else:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
-    def plot_fit(self, show_individuals: bool = False,
-                 x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
-                 title: Optional[str] = None, axis: Optional[Axes] = None):
+    def plot_fit(
+        self,
+        show_individuals: bool = False,
+        x_label: Optional[str] = None,
+        y_label: Optional[str] = None,
+        data_label: Union[list[str], str] = None,
+        title: Optional[str] = None,
+        axis: Optional[Axes] = None,
+    ):
         """
         Plot the fitted models.
 
@@ -429,8 +470,18 @@ class MixedDataFitter:
         plotter
             The plotter handle for the drawn plot.
         """
-        return _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params,
-                         n_fits=len(self.model_list), class_name=self.__class__.__name__,
-                         _n_fitter=self.model_function, _n_plotter=self._plot_individual_fitter,
-                         show_individuals=show_individuals, x_label=x_label, y_label=y_label, title=title,
-                         data_label=data_label, axis=axis)
+        return _plot_fit(
+            x_values=self.x_values,
+            y_values=self.y_values,
+            parameters=self.params,
+            n_fits=len(self.model_list),
+            class_name=self.__class__.__name__,
+            _n_fitter=self.model_function,
+            _n_plotter=self._plot_individual_fitter,
+            show_individuals=show_individuals,
+            x_label=x_label,
+            y_label=y_label,
+            title=title,
+            data_label=data_label,
+            axis=axis,
+        )

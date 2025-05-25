@@ -2,7 +2,7 @@
 
 from typing import Dict
 
-from ... import fArray
+import numpy as np
 
 
 class BaseDistribution:
@@ -13,7 +13,7 @@ class BaseDistribution:
     for probability density function (PDF), cumulative distribution function (CDF), and statistics.
     """
 
-    def pdf(self, x: fArray) -> fArray:
+    def pdf(self, x: np.array) -> np.array:
         r"""
         Compute the probability density function (PDF) for the distribution.
 
@@ -21,7 +21,7 @@ class BaseDistribution:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def logpdf(self, x: fArray) -> fArray:
+    def logpdf(self, x: np.array) -> np.array:
         r"""
         Compute the log probability density function (logPDF) for the distribution.
 
@@ -29,7 +29,7 @@ class BaseDistribution:
         """
         pass
 
-    def cdf(self, x: fArray) -> fArray:
+    def cdf(self, x: np.array) -> np.array:
         """
         Compute the cumulative density function (CDF) for the distribution.
 
@@ -37,7 +37,7 @@ class BaseDistribution:
         """
         pass
 
-    def logcdf(self, x: fArray) -> fArray:
+    def logcdf(self, x: np.array) -> np.array:
         r"""
         Compute the log cumulative density function (logCDF) for the distribution.
 
@@ -66,24 +66,24 @@ class BaseDistribution:
     @property
     def mean(self):
         """The mean of the distribution."""
-        return self.stats().get('mean', None)
+        return self.stats().get("mean", None)
 
     @property
     def median(self):
         """The median of the distribution."""
-        return self.stats().get('median', None)
+        return self.stats().get("median", None)
 
     @property
     def mode(self):
         """The mode of the distribution."""
-        return self.stats().get('mode', None)
+        return self.stats().get("mode", None)
 
     @property
     def variance(self):
         """The variance of the distribution."""
-        return self.stats().get('variance', None)
+        return self.stats().get("variance", None)
 
     @property
     def stddev(self):
         """The standard deviation of the distribution."""
-        return self.stats().get('std', None)
+        return self.stats().get("std", None)

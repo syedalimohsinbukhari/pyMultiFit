@@ -80,13 +80,19 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0,
-                 normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        shape: float = 1.0,
+        loc: float = 0.0,
+        scale: float = 1.0,
+        normalize: bool = False,
+    ):
         if amplitude < 0 and not normalize:
             raise erH.NegativeAmplitudeError()
         if shape < 0:
             raise erH.NegativeShapeError()
-        self.amplitude = 1. if normalize else amplitude
+        self.amplitude = 1.0 if normalize else amplitude
         self.loc = loc
         self.scale = scale
         self.shape = shape
@@ -112,15 +118,32 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         SymmetricGeneralizedNormalDistribution
             An instance of normalized SymmetricGeneralizedNormalDistribution.
         """
-        return cls(shape=beta, loc=loc, scale=scale, normalize=True)
+        return cls(
+            shape=beta,
+            loc=loc,
+            scale=scale,
+            normalize=True,
+        )
 
     def pdf(self, x):
-        return sym_gen_normal_pdf_(x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale,
-                                   normalize=self.norm)
+        return sym_gen_normal_pdf_(
+            x,
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def cdf(self, x):
-        return sym_gen_normal_cdf_(x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale,
-                                   normalize=self.norm)
+        return sym_gen_normal_cdf_(
+            x,
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
     def stats(self):
         mean_ = self.loc
@@ -130,8 +153,10 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         variance_ = 2 * np.log(self.scale) + gammaln(3 / self.shape) - gammaln(1 / self.shape)
         variance_ = np.exp(variance_)
 
-        return {'mean': mean_,
-                'median': median_,
-                'mode': mode_,
-                'variance': variance_,
-                'std': np.sqrt(variance_)}
+        return {
+            "mean": mean_,
+            "median": median_,
+            "mode": mode_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }
