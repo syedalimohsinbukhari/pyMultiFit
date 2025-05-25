@@ -31,4 +31,4 @@ jobs:
 
       - name: Linting the code with Ruff
         run: |
-          ruff format ./src/pymultifit/
+          ruff format ./src/pymultifit/ --fix
