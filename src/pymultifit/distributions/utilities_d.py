@@ -2704,7 +2704,7 @@ def sym_gen_normal_pdf_(
     if y.size == 0:
         return y
 
-    mu, alpha, beta = loc, scale, shape
+    _, _, beta = loc, scale, shape
 
     log_pdf_ = beta / 2 / gamma(1 / beta) * np.exp(-np.power(np.abs(y), beta))
     log_pdf_ /= scale
@@ -2745,7 +2745,7 @@ def sym_gen_normal_log_pdf_(
     if y.size == 0:
         return y
 
-    mu, alpha, beta = loc, scale, shape
+    _, _, beta = loc, scale, shape
 
     log_pdf_ = LOG(beta) - LOG_TWO - gammaln(1 / beta) - np.power(np.abs(y), beta)
     log_pdf_ -= LOG(scale)
@@ -2793,7 +2793,7 @@ def sym_gen_normal_cdf_(
     if y.size == 0:
         return y
 
-    mu, alpha, beta = loc, scale, shape
+    _, _, beta = loc, scale, shape
 
     return 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, np.power(np.abs(y), beta))
 
