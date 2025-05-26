@@ -3,6 +3,7 @@
 from typing import List
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .backend import BaseDistribution
 from .utilities_d import line, quadratic, cubic, nth_polynomial
@@ -54,7 +55,7 @@ class Quadratic(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: np.array) -> np.array:
+    def pdf(self, x: NDArray) -> NDArray:
         return quadratic(
             x,
             a=self.a,
@@ -79,7 +80,7 @@ class Cubic(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: np.array):
+    def pdf(self, x: NDArray):
         return cubic(
             x,
             a=self.a,
@@ -90,12 +91,12 @@ class Cubic(BaseDistribution):
 
 
 class Polynomial(BaseDistribution):
-    def __init__(self, degree: List[int], normalize: bool = False):
+    def __init__(self, degree: List[float], normalize: bool = False):
         self.degree = degree
 
         self.norm = normalize
 
-    def pdf(self, x: np.array):
+    def pdf(self, x: NDArray):
         return nth_polynomial(
             x,
             coefficients=self.degree,

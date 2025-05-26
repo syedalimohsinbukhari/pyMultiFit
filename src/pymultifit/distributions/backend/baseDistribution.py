@@ -1,8 +1,8 @@
 """Created on Aug 03 22:06:29 2024"""
 
-from typing import Dict
+from typing import Dict, Optional
 
-import numpy as np
+from numpy.typing import NDArray
 
 
 class BaseDistribution:
@@ -13,7 +13,7 @@ class BaseDistribution:
     for probability density function (PDF), cumulative distribution function (CDF), and statistics.
     """
 
-    def pdf(self, x: np.array) -> np.array:
+    def pdf(self, x: NDArray) -> NDArray:
         r"""
         Compute the probability density function (PDF) for the distribution.
 
@@ -21,7 +21,7 @@ class BaseDistribution:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def logpdf(self, x: np.array) -> np.array:
+    def logpdf(self, x: NDArray) -> Optional[NDArray]:
         r"""
         Compute the log probability density function (logPDF) for the distribution.
 
@@ -29,7 +29,7 @@ class BaseDistribution:
         """
         pass
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: NDArray) -> Optional[NDArray]:
         """
         Compute the cumulative density function (CDF) for the distribution.
 
@@ -37,7 +37,7 @@ class BaseDistribution:
         """
         pass
 
-    def logcdf(self, x: np.array) -> np.array:
+    def logcdf(self, x: NDArray) -> Optional[NDArray]:
         r"""
         Compute the log cumulative density function (logCDF) for the distribution.
 
@@ -45,7 +45,7 @@ class BaseDistribution:
         """
         pass
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> Optional[Dict[str, float]]:
         r"""
         Computes and returns the statistical properties of the distribution, including,
 
@@ -63,27 +63,31 @@ class BaseDistribution:
         """
         pass
 
+    def _get_stats(self, key: str) -> Optional[float]:
+        stats = self.stats()
+        return stats.get(key) if stats else None
+
     @property
     def mean(self):
         """The mean of the distribution."""
-        return self.stats().get("mean", None)
+        return self._get_stats("mean")
 
     @property
     def median(self):
         """The median of the distribution."""
-        return self.stats().get("median", None)
+        return self._get_stats("median")
 
     @property
     def mode(self):
         """The mode of the distribution."""
-        return self.stats().get("mode", None)
+        return self._get_stats("mode")
 
     @property
     def variance(self):
         """The variance of the distribution."""
-        return self.stats().get("variance", None)
+        return self._get_stats("variance")
 
     @property
     def stddev(self):
         """The standard deviation of the distribution."""
-        return self.stats().get("std", None)
+        return self._get_stats("std")

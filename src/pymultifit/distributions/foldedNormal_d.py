@@ -3,6 +3,7 @@
 from typing import Dict
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
@@ -124,7 +125,7 @@ class FoldedNormalDistribution(BaseDistribution):
             normalize=True,
         )
 
-    def pdf(self, x: np.array) -> np.array:
+    def pdf(self, x: NDArray) -> NDArray:
         return folded_normal_pdf_(
             x,
             amplitude=self.amplitude,
@@ -134,7 +135,7 @@ class FoldedNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x: np.array) -> np.array:
+    def logpdf(self, x: NDArray) -> NDArray:
         return folded_normal_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -144,7 +145,7 @@ class FoldedNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x: np.array) -> np.array:
+    def cdf(self, x: NDArray) -> NDArray:
         return folded_normal_cdf_(
             x,
             amplitude=self.amplitude,
@@ -154,7 +155,7 @@ class FoldedNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x: np.array) -> np.array:
+    def logcdf(self, x: NDArray) -> NDArray:
         return folded_normal_log_cdf_(
             x,
             amplitude=self.amplitude,

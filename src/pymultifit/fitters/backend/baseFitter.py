@@ -8,6 +8,7 @@ import numpy as np
 from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
+from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, _plot_fit
@@ -19,8 +20,8 @@ class BaseFitter:
 
     def __init__(
         self,
-        x_values: np.array,
-        y_values: np.array,
+        x_values: NDArray,
+        y_values: NDArray,
         max_iterations: int = 1000,
     ):
         self.x_values = x_values
@@ -107,8 +108,8 @@ class BaseFitter:
             lb, ub = self.fit_boundaries()
         except NotImplementedError:
             # if they're not implemented, self impose -inf + inf boundaries
-            lb = [-np.inf] * self.n_fits
-            ub = [np.inf] * self.n_fits
+            lb = np.repeat(a=-np.inf, repeats=self.n_fits)
+            ub = np.repeat(a=np.inf, repeats=self.n_fits)
 
         # Resize bounds to match total parameters
         lb = np.resize(a=lb, new_shape=self.n_par * self.n_fits)
@@ -259,7 +260,7 @@ class BaseFitter:
 
         Parameters
         ----------
-        axis:
+        axis
             The axis to plot the data on.
         """
         plot_xy(x_data=self.x_values, y_data=self.y_values, axis=axis)

@@ -320,7 +320,7 @@ def multiple_models(
             _instance = model_mapping[model]
             if isfunction(_instance):
                 y += _instance(x, *params[par_index])
-            elif issubclass(_instance, BaseDistribution):
+            else:
                 y += _instance(*params[par_index], normalize=normalize).pdf(x)
 
     if noise_level > 0:

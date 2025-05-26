@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
+from numpy.typing import NDArray
 
 # SAFEGUARD:
 xy_values = Union[List[float], np.ndarray]
@@ -47,10 +48,10 @@ def sanity_check(
 
 
 def parameter_logic(
-    par_array: np.ndarray,
+    par_array: NDArray,
     n_par: int,
-    selected_models: indexType,
-) -> np.ndarray:
+    selected_models,
+) -> NDArray:
     """
     Extract parameter values from a given function based on the number of parameters per fit and selected indices.
 
