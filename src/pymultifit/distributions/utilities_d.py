@@ -70,6 +70,7 @@ __all__ = [
     "nth_polynomial",
 ]
 
+import functools
 from typing import Union, Callable
 
 import numpy as np
@@ -104,6 +105,26 @@ LOG_TWO_BY_PI = LOG(TWO_BY_PI)
 LOG_SQRT_TWO_BY_PI = 0.5 * LOG_TWO_BY_PI
 
 
+def suppress_numpy_warnings(divide="ignore", over="ignore", under="ignore", invalid="ignore"):
+    """
+    A decorator that suppresses NumPy warnings using np.errstate.
+
+    Parameters (all optional):
+        divide, over, under, invalid: Can be 'ignore', 'warn', 'raise', 'call', 'print', or 'log'
+    """
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with np.errstate(divide=divide, over=over, under=under, invalid=invalid):
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+@suppress_numpy_warnings()
 def arc_sine_pdf_(x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> NDArray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
@@ -160,6 +181,7 @@ def arc_sine_pdf_(x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_log_pdf_(
     x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
@@ -197,6 +219,7 @@ def arc_sine_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_cdf_(
     x,
@@ -216,6 +239,7 @@ def arc_sine_cdf_(
     return np.select(condlist=[c1, c2], choicelist=[TWO_BY_PI * np.arcsin(np.sqrt(y)), 0.0], default=1.0)
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_cdf_, style=doc_style)
 def arc_sine_log_cdf_(
     x,
@@ -250,6 +274,7 @@ def arc_sine_log_cdf_(
     return np.select(condlist=[c1, c2], choicelist=[LOG_TWO_BY_PI + LOG(np.arcsin(np.sqrt(y))), 0], default=-INF)
 
 
+@suppress_numpy_warnings()
 def beta_pdf_(
     x,
     amplitude: float = 1.0,
@@ -303,7 +328,6 @@ def beta_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    # evaluating log_pdf_ for Beta distribution is safer than evaluating direct pdf_ due to less over/under flow issues
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -311,7 +335,8 @@ def beta_pdf_(
 
     conditions, main = _beta_expr(y=y, alpha=alpha, beta=beta, un_log=True)
 
-    pdf_ = np.select(condlist=conditions, choicelist=[1, np.nan, main / scale], default=0)
+    pdf_ = np.select(condlist=conditions, choicelist=[1, np.nan, main], default=0)
+    pdf_ /= scale
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -319,6 +344,7 @@ def beta_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_log_pdf_(
     x,
@@ -351,7 +377,8 @@ def beta_log_pdf_(
 
     conditions, main = _beta_expr(y=y, alpha=alpha, beta=beta)
 
-    log_pdf_ = np.select(condlist=conditions, choicelist=[0.0, np.nan, main - LOG(scale)], default=-INF)
+    log_pdf_ = np.select(condlist=conditions, choicelist=[0.0, np.nan, main], default=-INF)
+    log_pdf_ -= LOG(scale)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -359,6 +386,7 @@ def beta_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_cdf_(
     x,
@@ -395,6 +423,7 @@ def beta_cdf_(
     The final CDF is expressed as :math:`F(y)`.
     """
     y = preprocess_input(x=x, loc=loc, scale=scale)
+
     if y.size == 0:
         return y
 
@@ -404,6 +433,7 @@ def beta_cdf_(
     return np.select(condlist=[c1, c2], choicelist=[betainc(alpha, beta, y), 0], default=1)
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=beta_cdf_, style=doc_style)
 def beta_log_cdf_(
     x,
@@ -431,6 +461,7 @@ def beta_log_cdf_(
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
     y = preprocess_input(x=x, loc=loc, scale=scale)
+
     if y.size == 0:
         return y
 
@@ -440,6 +471,7 @@ def beta_log_cdf_(
     return np.select(condlist=[c1, c2], choicelist=[LOG(betainc(alpha, beta, y)), -INF], default=0)
 
 
+@suppress_numpy_warnings()
 def chi_square_pdf_(
     x,
     amplitude: float = 1.0,
@@ -504,6 +536,7 @@ def chi_square_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_log_pdf_(
     x,
@@ -546,6 +579,7 @@ def chi_square_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_cdf_(
     x,
@@ -585,6 +619,7 @@ def chi_square_cdf_(
     return np.where(y > 0, gammainc(degree_of_freedom / 2, y / 2), 0)
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_cdf_, style=doc_style)
 def chi_square_log_cdf_(
     x,
@@ -618,6 +653,7 @@ def chi_square_log_cdf_(
     return np.where(y > 0, LOG(gammainc(degree_of_freedom / 2, y / 2)), -INF)
 
 
+@suppress_numpy_warnings()
 def cubic(
     x,
     a: float = 1.0,
@@ -657,6 +693,7 @@ def cubic(
     return a * x**3 + b * x**2 + c * x + d
 
 
+@suppress_numpy_warnings()
 def exponential_pdf_(
     x,
     amplitude: float = 1.0,
@@ -721,6 +758,7 @@ def exponential_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_log_pdf_(
     x,
@@ -771,6 +809,7 @@ def exponential_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_cdf_(
     x,
@@ -813,6 +852,7 @@ def exponential_cdf_(
     return np.where(y >= 0, gammainc(1, y), 0)
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=exponential_cdf_, style=doc_style)
 def exponential_log_cdf_(
     x,
@@ -848,6 +888,7 @@ def exponential_log_cdf_(
     return np.where(y >= 0, LOG(gammainc(1, y)), -INF)
 
 
+@suppress_numpy_warnings()
 def folded_normal_pdf_(
     x,
     amplitude: float = 1.0,
@@ -911,6 +952,7 @@ def folded_normal_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_log_pdf_(
     x,
@@ -942,9 +984,7 @@ def folded_normal_log_pdf_(
         return x
 
     _, pdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_pdf_)
-
-    with np.errstate(divide="ignore"):
-        log_pdf_ = LOG(pdf_) - LOG(sigma)
+    log_pdf_ = LOG(pdf_) - LOG(sigma)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -952,6 +992,7 @@ def folded_normal_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_cdf_(
     x,
@@ -995,6 +1036,7 @@ def folded_normal_cdf_(
     return cdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_cdf_, style=doc_style)
 def folded_normal_log_cdf_(
     x,
@@ -1032,6 +1074,7 @@ def folded_normal_log_cdf_(
     return np.where(y >= 0, -LOG_TWO + LOG(erf(q) + erf(r)), -INF)
 
 
+@suppress_numpy_warnings()
 def _folded(
     x,
     mean: float,
@@ -1063,10 +1106,13 @@ def _folded(
     np.ndarray
         The additive gaussian part of the folded normal distribution.
     """
+    y = preprocess_input(x=x, loc=loc, scale=scale)
+
+    if y.size == 0:
+        return y
+
     if scale <= 0 or mean < 0:
         return np.full(shape=x.size, fill_value=np.nan)
-
-    y = (x - loc) / scale
 
     g1 = g_func(x=y, mean=mean, normalize=True)
     g2 = g_func(x=y, mean=-mean, normalize=True)
@@ -1074,6 +1120,7 @@ def _folded(
     return y >= 0, np.where(y >= 0, g1 + g2, 0)
 
 
+@suppress_numpy_warnings()
 def gamma_sr_pdf_(
     x,
     amplitude: float = 1.0,
@@ -1128,22 +1175,22 @@ def gamma_sr_pdf_(
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    # evaluating log_pdf_ for Gamma distribution is safer than evaluating direct pdf_ due to less over/under flow issues
-    y = preprocess_input(x=x, loc=loc)
+    scale = 1 / lambda_
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
 
-    log_pdf_ = np.where(
-        y > 0, np.power(lambda_, alpha) * np.power(y, alpha - 1) * np.exp(-lambda_ * y) / gamma(alpha), 0
-    )
+    pdf_ = np.where(y >= 0, np.power(y, alpha - 1) * np.exp(-y) / gamma(alpha), 0)
+    pdf_ /= scale
 
     if not normalize:
-        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return log_pdf_
+    return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_sr_pdf_, style=doc_style)
 def gamma_sr_log_pdf_(
     x,
@@ -1174,12 +1221,14 @@ def gamma_sr_log_pdf_(
 
     The final PDF is expressed as :math:`\ell(y)`.
     """
-    y = preprocess_input(x=x, loc=loc)
+    scale = 1 / lambda_
+    y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
 
-    log_pdf_ = np.where(y >= 0, xlogy(alpha, lambda_) + xlogy(alpha - 1, y) - (lambda_ * y) - gammaln(alpha), -INF)
+    log_pdf_ = np.where(y >= 0, xlogy(alpha - 1, y) - y - gammaln(alpha), -INF)
+    log_pdf_ -= LOG(scale)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1187,6 +1236,7 @@ def gamma_sr_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_sr_pdf_, style=doc_style)
 def gamma_sr_cdf_(
     x,
@@ -1227,6 +1277,7 @@ def gamma_sr_cdf_(
     return gammainc(alpha, lambda_ * np.maximum(y, 0))
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_sr_cdf_, style=doc_style)
 def gamma_sr_log_cdf_(
     x,
@@ -1260,6 +1311,7 @@ def gamma_sr_log_cdf_(
     return LOG(gammainc(alpha, lambda_ * np.maximum(y, 0)))
 
 
+@suppress_numpy_warnings()
 def gamma_ss_pdf_(
     x,
     amplitude: float = 1.0,
@@ -1308,7 +1360,8 @@ def gamma_ss_pdf_(
     if y.size == 0:
         return y
 
-    pdf_ = np.where(y >= 0, np.power(y, alpha - 1) * np.exp(-y) / gamma(alpha), 0) * theta
+    pdf_ = np.where(y >= 0, np.power(y, alpha - 1) * np.exp(-y) / gamma(alpha), 0)
+    pdf_ *= theta
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1316,6 +1369,7 @@ def gamma_ss_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_ss_pdf_, style=doc_style)
 def gamma_ss_log_pdf_(
     x,
@@ -1339,7 +1393,8 @@ def gamma_ss_log_pdf_(
     if y.size == 0:
         return y
 
-    log_pdf_ = np.where(y >= 0, xlogy(alpha - 1, y) - y - gammaln(alpha), -INF) + LOG(theta)
+    log_pdf_ = np.where(y >= 0, xlogy(alpha - 1, y) - y - gammaln(alpha), -INF)
+    log_pdf_ += LOG(theta)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1347,6 +1402,7 @@ def gamma_ss_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_ss_pdf_, style=doc_style)
 def gamma_ss_cdf_(
     x,
@@ -1380,6 +1436,7 @@ def gamma_ss_cdf_(
     return gammainc(alpha, np.maximum(y, 0))
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_ss_cdf_, style=doc_style)
 def gamma_ss_log_cdf_(
     x,
@@ -1407,6 +1464,7 @@ def gamma_ss_log_cdf_(
     return LOG(gammainc(alpha, np.maximum(y, 0)))
 
 
+@suppress_numpy_warnings()
 def gaussian_pdf_(
     x,
     amplitude: float = 1.0,
@@ -1462,6 +1520,7 @@ def gaussian_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
 def gaussian_log_pdf_(
     x,
@@ -1495,6 +1554,7 @@ def gaussian_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
 def gaussian_cdf_(
     x,
@@ -1530,6 +1590,7 @@ def gaussian_cdf_(
     return ndtr((x - mean) / std)
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_cdf_, style=doc_style)
 def gaussian_log_cdf_(
     x,
@@ -1557,6 +1618,7 @@ def gaussian_log_cdf_(
     return log_ndtr((x - mean) / std)
 
 
+@suppress_numpy_warnings()
 def half_normal_pdf_(
     x,
     amplitude: float = 1.0,
@@ -1620,6 +1682,7 @@ def half_normal_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_log_pdf_(
     x,
@@ -1657,6 +1720,7 @@ def half_normal_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_cdf_(
     x,
@@ -1695,6 +1759,7 @@ def half_normal_cdf_(
     return np.where(y >= 0, erf(y / SQRT_TWO), 0)
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_cdf_, style=doc_style)
 def half_normal_log_cdf_(
     x,
@@ -1726,6 +1791,7 @@ def half_normal_log_cdf_(
     return np.where(y >= 0, LOG(erf(y / SQRT_TWO)), -INF)
 
 
+@suppress_numpy_warnings()
 def laplace_pdf_(
     x,
     amplitude: float = 1.0,
@@ -1784,6 +1850,7 @@ def laplace_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_log_pdf_(
     x,
@@ -1821,6 +1888,7 @@ def laplace_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_cdf_(
     x,
@@ -1867,6 +1935,7 @@ def laplace_cdf_(
     return cdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=laplace_cdf_, style=doc_style)
 def laplace_log_cdf_(
     x,
@@ -1896,6 +1965,7 @@ def laplace_log_cdf_(
     return np.where(y > 0, np.log1p(-0.5 * np.exp(-y)), -LOG_TWO + y)
 
 
+@suppress_numpy_warnings()
 def line(
     x: np.ndarray,
     slope: float = 1.0,
@@ -1932,6 +2002,7 @@ def line(
 linear = line
 
 
+@suppress_numpy_warnings()
 def log_normal_pdf_(
     x,
     amplitude: float = 1.0,
@@ -1998,6 +2069,7 @@ def log_normal_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_log_pdf_(
     x,
@@ -2039,6 +2111,7 @@ def log_normal_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_cdf_(
     x,
@@ -2080,6 +2153,7 @@ def log_normal_cdf_(
     return _remove_nans(x=ndtr(y))
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_cdf_, style=doc_style)
 def log_normal_log_cdf_(
     x,
@@ -2109,6 +2183,7 @@ def log_normal_log_cdf_(
     return _remove_nans(x=log_ndtr(y), nan_value=-INF)
 
 
+@suppress_numpy_warnings()
 def nth_polynomial(
     x: np.ndarray,
     coefficients: list[float],
@@ -2140,6 +2215,7 @@ def nth_polynomial(
     return np.polyval(p=coefficients, x=x)
 
 
+@suppress_numpy_warnings()
 def uniform_pdf_(
     x,
     amplitude: float = 1.0,
@@ -2200,6 +2276,7 @@ def uniform_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 def uniform_log_pdf_(
     x,
     amplitude: float = 1.0,
@@ -2234,6 +2311,7 @@ def uniform_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
 def uniform_cdf_(
     x,
@@ -2275,6 +2353,7 @@ def uniform_cdf_(
     return np.select(condlist=[y < 0, y > 1], choicelist=[0, 1], default=y)
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=uniform_cdf_, style=doc_style)
 def uniform_log_cdf_(
     x,
@@ -2311,6 +2390,7 @@ def uniform_log_cdf_(
     return np.select(condlist=[y < 0, y > 1], choicelist=[-INF, 0], default=LOG(y))
 
 
+@suppress_numpy_warnings()
 def scaled_inv_chi_square_pdf_(
     x,
     amplitude: float = 1.0,
@@ -2380,6 +2460,7 @@ def scaled_inv_chi_square_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_log_pdf_(
     x,
@@ -2425,6 +2506,7 @@ def scaled_inv_chi_square_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_cdf_(
     x,
@@ -2469,6 +2551,7 @@ def scaled_inv_chi_square_cdf_(
     return np.where(y > 0, gammaincc(df_half, (tau2 * df_half) / y), 0)
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_log_cdf_(
     x,
@@ -2506,6 +2589,7 @@ def scaled_inv_chi_square_log_cdf_(
     return np.where(y > 0, LOG(gammaincc(df_half, (tau2 * df_half) / y)), -INF)
 
 
+@suppress_numpy_warnings()
 def skew_normal_pdf_(
     x,
     amplitude: float = 1.0,
@@ -2572,6 +2656,7 @@ def skew_normal_pdf_(
     return pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_log_pdf_(
     x,
@@ -2612,6 +2697,7 @@ def skew_normal_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_cdf_(
     x,
@@ -2650,6 +2736,7 @@ def skew_normal_cdf_(
     return gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
 
 
+@suppress_numpy_warnings()
 def sym_gen_normal_pdf_(
     x,
     amplitude: float = 1.0,
@@ -2716,6 +2803,7 @@ def sym_gen_normal_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(sym_gen_normal_pdf_, style=doc_style)
 def sym_gen_normal_log_pdf_(
     x,
@@ -2757,6 +2845,7 @@ def sym_gen_normal_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
 def sym_gen_normal_cdf_(
     x,
@@ -2799,6 +2888,7 @@ def sym_gen_normal_cdf_(
     return 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, np.power(np.abs(y), beta))
 
 
+@suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_cdf_, style=doc_style)
 def sym_gen_normal_log_cdf_(
     x,
@@ -2831,6 +2921,7 @@ def sym_gen_normal_log_cdf_(
     return LOG(cdf_)
 
 
+@suppress_numpy_warnings()
 def quadratic(
     x: np.ndarray,
     a: float = 1.0,
@@ -2867,6 +2958,7 @@ def quadratic(
     return a * x**2 + b * x + c
 
 
+@suppress_numpy_warnings()
 def _beta_expr(
     y,
     alpha,
@@ -2884,6 +2976,7 @@ def _beta_expr(
     return [special_case, undefined_0 | undefined_1, in_range], np.exp(expr) if un_log else expr
 
 
+@suppress_numpy_warnings()
 def _pdf_scaling(
     pdf_,
     amplitude: float,
@@ -2907,6 +3000,7 @@ def _pdf_scaling(
         return amplitude * (pdf_ / np.max(pdf_))
 
 
+@suppress_numpy_warnings()
 def _log_pdf_scaling(
     log_pdf_,
     amplitude: float,
@@ -2915,6 +3009,7 @@ def _log_pdf_scaling(
         return log_pdf_ + LOG(amplitude) - np.max(log_pdf_)
 
 
+@suppress_numpy_warnings()
 def _remove_nans(
     x,
     nan_value=None,
@@ -2937,6 +3032,7 @@ def _remove_nans(
     return np.nan_to_num(x=np.asarray(x), copy=False, nan=nan_value, posinf=INF, neginf=-INF)
 
 
+@suppress_numpy_warnings()
 def preprocess_input(
     x,
     loc=0.0,
