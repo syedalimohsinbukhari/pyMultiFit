@@ -12,6 +12,7 @@ dependencies:
   - seaborn
   - pandas
   - pytest
+  - pytest-cov
   - astropy
   - jupyter
   - notebook
@@ -31,3 +32,6 @@ dependencies:
   - pip:
       - mpyez
       - ruff
+      - pylint
+      - nox
+      - pyright

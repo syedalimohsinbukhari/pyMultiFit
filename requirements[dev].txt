@@ -5,6 +5,7 @@ mpyez
 statsmodels
 custom-inherit
 pytest
+pytest-cov
 pandas
 seaborn
 astropy
@@ -22,3 +23,6 @@ nbsphinx
 nbsphinx_link
 sphinx_autobuild
 ruff
+pyright
+pylint
+nox

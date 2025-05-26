@@ -9,7 +9,7 @@ authors = [{ name = "Syed Ali Mohsin Bukhari", email = "syedali.b@outlook.com" }
 
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
-license = { text = "MIT" }
+license-files = ["LICENSE"]
 version = "1.0.7"
 dependencies = ["numpy<2.1.0", "matplotlib", "scipy", "custom-inherit", "mpyez"]
 keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
