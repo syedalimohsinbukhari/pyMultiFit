@@ -14,8 +14,7 @@ from .. import (
     doc_style,
     EXPONENTIAL,
     FOLDED_NORMAL,
-    GAMMA_SR,
-    GAMMA_SS,
+    GAMMA,
     GAUSSIAN,
     HALF_NORMAL,
     LAPLACE,
@@ -32,8 +31,7 @@ model_map = {
     CHI_SQUARE: dist.ChiSquareDistribution,
     EXPONENTIAL: dist.ExponentialDistribution,
     FOLDED_NORMAL: dist.FoldedNormalDistribution,
-    GAMMA_SS: dist.GammaDistributionSS,
-    GAMMA_SR: dist.GammaDistributionSR,
+    GAMMA: dist.GammaDistribution,
     GAUSSIAN: dist.GaussianDistribution,
     HALF_NORMAL: dist.HalfNormalDistribution,
     LAPLACE: dist.LaplaceDistribution,
@@ -122,33 +120,16 @@ def multi_chi_squared(
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gamma_sr(
+def multi_gamma(
     x: np.ndarray,
     params: Sequences_,
     noise_level: float = 0.0,
     normalize: bool = False,
 ) -> np.ndarray:
-    r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistributionSR` data with optional noise."""
+    r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistribution` data with optional noise."""
     return multi_base(
         x,
-        distribution_func=dist.GammaDistributionSR,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
-    )
-
-
-@doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gamma_ss(
-    x: np.ndarray,
-    params: Sequences_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
-    r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistributionSS` data with optional noise."""
-    return multi_base(
-        x,
-        distribution_func=dist.GammaDistributionSS,
+        distribution_func=dist.GammaDistribution,
         params=params,
         noise_level=noise_level,
         normalize=normalize,

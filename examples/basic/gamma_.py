@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gamma
 
-from pymultifit.distributions import GammaDistributionSS
+from pymultifit.distributions import GammaDistribution
 
 x_values = np.linspace(start=0, stop=5, num=500)
 
-y_multifit = GammaDistributionSS(shape=1.5, normalize=True)
+y_multifit = GammaDistribution(shape=1.5, normalize=True)
 y_scipy = gamma
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
@@ -29,7 +29,7 @@ for i in ax:
 plt.tight_layout()
 plt.savefig('./../../images/gammaSS_example1.png')
 
-y_multifit = GammaDistributionSS(shape=1.5, scale=0.2, loc=3, normalize=True)
+y_multifit = GammaDistribution(shape=1.5, scale=0.2, loc=3, normalize=True)
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
 
@@ -48,3 +48,5 @@ for i in ax:
     i.legend()
 plt.tight_layout()
 plt.savefig('./../../images/gammaSS_example2.png')
+
+# plt.show()

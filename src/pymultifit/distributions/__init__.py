@@ -7,7 +7,7 @@ from .beta_d import BetaDistribution
 from .chiSquare_d import ChiSquareDistribution
 from .exponential_d import ExponentialDistribution
 from .foldedNormal_d import FoldedNormalDistribution
-from .gamma_d import GammaDistributionSR, GammaDistributionSS
+from .gamma_d import GammaDistribution
 from .gaussian_d import GaussianDistribution
 from .generalized import SymmetricGeneralizedNormalDistribution, ScaledInverseChiSquareDistribution
 from .halfNormal_d import HalfNormalDistribution

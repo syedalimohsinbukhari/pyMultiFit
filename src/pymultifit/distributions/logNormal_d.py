@@ -77,7 +77,7 @@ class LogNormalDistribution(BaseDistribution):
     def __init__(
         self,
         amplitude: float = 1.0,
-        mu: float = 0.0,
+        mu: float = 1.0,
         std: float = 1.0,
         loc: float = 0.0,
         normalize: bool = False,
@@ -121,42 +121,22 @@ class LogNormalDistribution(BaseDistribution):
 
     def pdf(self, x):
         return log_normal_pdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            std=self.std,
-            loc=self.loc,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
     def logpdf(self, x):
         return log_normal_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            std=self.std,
-            loc=self.loc,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
     def cdf(self, x):
         return log_normal_cdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            std=self.std,
-            loc=self.loc,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
     def logcdf(self, x):
         return log_normal_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            std=self.std,
-            loc=self.loc,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
     def stats(self):

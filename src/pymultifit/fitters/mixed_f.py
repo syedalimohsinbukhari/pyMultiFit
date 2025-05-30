@@ -14,7 +14,7 @@ from scipy.optimize import Bounds, curve_fit
 from .chiSquare_f import ChiSquareFitter
 from .exponential_f import ExponentialFitter
 from .foldedNormal_f import FoldedNormalFitter
-from .gamma_f import GammaFitterSR, GammaFitterSS
+from .gamma_f import GammaFitter
 from .gaussian_f import GaussianFitter
 from .halfNormal_f import HalfNormalFitter
 from .laplace_f import LaplaceFitter
@@ -32,8 +32,7 @@ from .. import (
     CHI_SQUARE,
     EXPONENTIAL,
     FOLDED_NORMAL,
-    GAMMA_SR,
-    GAMMA_SS,
+    GAMMA,
     NORMAL,
     HALF_NORMAL,
 )
@@ -43,8 +42,7 @@ fitter_dict = {
     CHI_SQUARE: ChiSquareFitter,
     EXPONENTIAL: ExponentialFitter,
     FOLDED_NORMAL: FoldedNormalFitter,
-    GAMMA_SR: GammaFitterSR,
-    GAMMA_SS: GammaFitterSS,
+    GAMMA: GammaFitter,
     GAUSSIAN: GaussianFitter,
     NORMAL: GaussianFitter,
     HALF_NORMAL: HalfNormalFitter,
