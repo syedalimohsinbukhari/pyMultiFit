@@ -439,7 +439,9 @@ def beta_cdf_(
     if y.size == 0:
         return y
 
-    return betainc(alpha, beta, y)
+    cdf_ = np.where(y > 1, 1, betainc(alpha, beta, y))
+
+    return _remove_nans(x=cdf_, nan_value=0)
 
 
 @suppress_numpy_warnings()
@@ -474,7 +476,9 @@ def beta_log_cdf_(
     if y.size == 0:
         return y
 
-    return LOG(betainc(alpha, beta, y))
+    log_cdf_ = np.where(y > 1, 0, LOG(betainc(alpha, beta, y)))
+
+    return _remove_nans(x=log_cdf_, nan_value=-np.inf)
 
 
 @suppress_numpy_warnings()
