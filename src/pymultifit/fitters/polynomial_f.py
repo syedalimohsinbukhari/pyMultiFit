@@ -1,12 +1,10 @@
 """Created on Mar 10 12:30:37 2025"""
 
-from typing import Tuple, Any
-
-import numpy as np
+from numpy.typing import NDArray
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import SeqFloat
+from .. import Sequences_, lArray
 from ..distributions.utilities_d import line, nth_polynomial
 
 
@@ -15,8 +13,8 @@ class LineFitter(BaseFitter):
 
     def __init__(
         self,
-        x_values,
-        y_values,
+        x_values: lArray,
+        y_values: lArray,
         max_iterations: int = 1000,
     ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -24,7 +22,7 @@ class LineFitter(BaseFitter):
         self.n_par = 2
 
     @staticmethod
-    def fitter(x: np.ndarray, params: SeqFloat):
+    def fitter(x: NDArray, params: Sequences_):
         return line(x, *params)
 
 
@@ -33,8 +31,8 @@ class PolynomialFitter(BaseFitter):
 
     def __init__(
         self,
-        x_values,
-        y_values,
+        x_values: lArray,
+        y_values: lArray,
         order,
         max_iterations=1000,
     ):
@@ -43,5 +41,5 @@ class PolynomialFitter(BaseFitter):
         self.n_par = order
 
     @staticmethod
-    def fitter(x: np.ndarray, params: Tuple[float, Any]):
+    def fitter(x: NDArray, params: Sequences_):
         return nth_polynomial(x, coefficients=list(params))

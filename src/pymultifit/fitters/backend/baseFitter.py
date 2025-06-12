@@ -1,7 +1,7 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,7 +12,7 @@ from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, _plot_fit
-from ... import Sequences_, epsilon, SeqFloat
+from ... import Sequences_, epsilon, lArray
 
 
 class BaseFitter:
@@ -20,8 +20,8 @@ class BaseFitter:
 
     def __init__(
         self,
-        x_values: NDArray,
-        y_values: NDArray,
+        x_values: lArray,
+        y_values: lArray,
         max_iterations: int = 1000,
     ):
         self.x_values = x_values
@@ -159,7 +159,7 @@ class BaseFitter:
         """
         return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
-    def _n_fitter(self, x: np.ndarray, *params: Iterable) -> np.ndarray:
+    def _n_fitter(self, x: NDArray, *params: Sequences_) -> NDArray:
         r"""
         Perform N-fitting by summing over multiple parameter sets.
 
@@ -183,7 +183,7 @@ class BaseFitter:
             y += self.fitter(x=x, params=par)
         return y
 
-    def _params(self) -> np.ndarray:
+    def _params(self) -> NDArray:
         r"""
         Store the fitted parameters of the fitted model.
 
@@ -236,7 +236,7 @@ class BaseFitter:
                 plot_title="",
             )
 
-    def _standard_errors(self) -> np.ndarray:
+    def _standard_errors(self) -> NDArray:
         r"""
         Store the standard errors of the fitted parameters.
 
@@ -302,7 +302,7 @@ class BaseFitter:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     @staticmethod
-    def fitter(x: np.ndarray, params: SeqFloat):
+    def fitter(x: NDArray, params: Sequences_):
         """
         Fitter function for multi-fitting.
 
@@ -310,12 +310,12 @@ class BaseFitter:
         ----------
         x: np.ndarray
             The x-array on which the fitting is to be performed.
-        params: List[float]
-            A list of parameters to fit.
+        params: Sequences_
+            An array of parameters to fit.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def get_fitted_curve(self) -> np.ndarray:
+    def get_fitted_curve(self) -> NDArray:
         """
         Get the fitted values of the model.
 
@@ -390,7 +390,7 @@ class BaseFitter:
 
             return mean[:, range(self.n_par)].T, std_[:, range(self.n_par)].T
 
-    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> np.ndarray:
+    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> NDArray:
         r"""
         Retrieve the value/error pairs for the fitted parameters.
 
@@ -436,7 +436,7 @@ class BaseFitter:
         show_individuals: bool = False,
         x_label: Optional[str] = None,
         y_label: Optional[str] = None,
-        data_label: Union[list[str], str] = None,
+        data_label: Optional[Union[list[str], str]] = None,
         title: Optional[str] = None,
         axis: Optional[Axes] = None,
     ):

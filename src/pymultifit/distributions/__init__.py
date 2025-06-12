@@ -17,4 +17,4 @@ from .polynomials import Line, Quadratic, Cubic, Polynomial
 from .skewNormal_d import SkewNormalDistribution
 from .uniform_d import UniformDistribution
 
-oFloat = Optional[float]
+OptionalFloat = Optional[float]

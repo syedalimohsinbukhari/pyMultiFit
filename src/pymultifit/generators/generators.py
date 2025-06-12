@@ -43,7 +43,7 @@ model_map = {
 
 def multi_base(
     x: np.ndarray,
-    distribution_func: Type[BaseDistribution],
+    distribution_func: Callable,
     params: Sequences_,
     noise_level: float = 0.0,
     normalize: bool = False,

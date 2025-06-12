@@ -87,7 +87,7 @@ def _plot_fit(
     x_label: Optional[str] = None,
     y_label: Optional[str] = None,
     title: Optional[str] = None,
-    data_label: Union[list[str], str] = None,
+    data_label: Optional[Union[list[str], str]] = None,
     axis: Optional[Axes] = None,
 ):
     """

@@ -3,7 +3,7 @@
 from typing import Union, Sequence
 
 import numpy as np
-from numpy._typing import NDArray
+from numpy.typing import NDArray
 
 from .version import (
     __author__,
@@ -17,13 +17,16 @@ from .version import (
 
 doc_style = "numpy_napoleon_with_merge"
 
-fArray = Union[float, NDArray[np.floating]]
+INF = np.inf
+LOG = np.log
+
 # taken from https://stackoverflow.com/a/19141711
 EPSILON = np.finfo(float).eps
 epsilon = np.sqrt(EPSILON)
 
-SeqFloat = Sequence[Sequence[float]]
-Sequences_ = Union[NDArray[np.floating], SeqFloat]
+lArray = Union[Sequence[float], Sequence[int], NDArray[np.floating], NDArray[np.integer]]
+
+Sequences_ = Union[NDArray[np.floating], Sequence[Sequence[float]]]
 
 GAUSSIAN = "gaussian"
 NORMAL = GAUSSIAN

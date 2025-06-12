@@ -89,10 +89,7 @@ from scipy.special import (
     beta,
 )
 
-from .. import doc_style
-
-INF = np.inf
-LOG = np.log
+from .. import doc_style, LOG, INF
 
 TWO = 2.0
 SQRT_TWO = np.sqrt(TWO)
@@ -116,7 +113,7 @@ LOG_TWO_BY_PI = LOG(TWO_BY_PI)
 LOG_SQRT_TWO_BY_PI = xlogy(0.5, TWO_BY_PI)
 
 
-def suppress_numpy_warnings(divide="ignore", over="ignore", under="ignore", invalid="ignore"):
+def suppress_numpy_warnings():
     """
     A decorator that suppresses NumPy warnings using np.errstate.
 
@@ -127,7 +124,7 @@ def suppress_numpy_warnings(divide="ignore", over="ignore", under="ignore", inva
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            with np.errstate(divide=divide, over=over, under=under, invalid=invalid):
+            with np.errstate(all='ignore'):
                 return func(*args, **kwargs)
 
         return wrapper
@@ -1876,9 +1873,20 @@ def log_normal_pdf_(
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    log_pdf_ = log_normal_log_pdf_(x, amplitude=amplitude, mean=mean, loc=loc, std=std, normalize=normalize)
+    y = preprocess_input(x=x, loc=loc)
 
-    return np.exp(log_pdf_)
+    if y.size == 0:
+        return y
+
+    q = (LOG(y) - mean) / std
+
+    pdf_ = np.where(y > 0, (1 / y) * np.exp(-(q**2) / 2) / SQRT_TWO_PI, 0)
+    pdf_ /= std
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
 
 
 @suppress_numpy_warnings()
@@ -1907,13 +1915,15 @@ def log_normal_log_pdf_(
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=mean)
+    y = preprocess_input(x=x, loc=loc)
 
     if y.size == 0:
         return y
 
-    log_pdf_ = np.where(y > 0, -(y**2) / (2 * std**2) - y - LOG(std) - LOG_SQRT_TWO_PI, -INF)
-    log_pdf_ -= LOG(mean)
+    q = (LOG(y) - mean) / std
+
+    log_pdf_ = np.where(y > 0, -LOG(y) - (q**2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
+    log_pdf_ -= LOG(std)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1961,7 +1971,7 @@ def log_normal_cdf_(
     """
     y = preprocess_input(x=x, loc=loc, scale=np.exp(mean))
 
-    return ndtr(LOG(y) / std)
+    return _remove_nans(ndtr(LOG(y) / std))
 
 
 @suppress_numpy_warnings()
@@ -1992,7 +2002,7 @@ def log_normal_log_cdf_(
     """
     y = preprocess_input(x=x, loc=loc, scale=np.exp(mean))
 
-    return log_ndtr(LOG(y) / std)
+    return _remove_nans(log_ndtr(LOG(y) / std), -INF)
 
 
 @suppress_numpy_warnings()

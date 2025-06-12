@@ -8,6 +8,7 @@ import numpy as np
 from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
+from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 # importing from files to avoid circular import
@@ -34,7 +35,7 @@ from .. import (
     FOLDED_NORMAL,
     GAMMA,
     NORMAL,
-    HALF_NORMAL,
+    HALF_NORMAL, Sequences_,
 )
 
 # mock initialize the internal classes for auto MixedDataFitter class
@@ -65,8 +66,8 @@ class MixedDataFitter:
 
     def __init__(
         self,
-        x_values: np.array,
-        y_values: np.array,
+        x_values: NDArray,
+        y_values: NDArray,
         model_list: List[str],
         fitter_dictionary=None,
         max_iterations: int = 1000,
@@ -190,7 +191,7 @@ class MixedDataFitter:
         :raises ValueError: If the model is not recognized or return_values are invalid.
         """
         try:
-            fitter_instance = self.fitter_dict[model](x_values=[], y_values=[])
+            fitter_instance = self.fitter_dict[model](x_values=np.array([]), y_values=np.array([]))
         except KeyError:
             raise ValueError(f"Model '{model}' not recognized. Ensure it is defined in the fitter dictionary.")
 
@@ -305,12 +306,12 @@ class MixedDataFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return np.sqrt(np.diag(self.covariance))
 
-    def fit(self, p0: np.array, frozen: Union[int, List[int]] = None):
+    def fit(self, p0: Sequences_, frozen: Union[int, List[int]] = None):
         """
         Fit the data.
 
         :param p0: Initial guess for the fitted parameters.
-        :type p0: np.array
+        :type p0: Sequences_
 
         :param frozen: Parameter number of list of parameter numbers to freeze the value of.
         :type frozen: Union[int, List[int]]

@@ -1,10 +1,11 @@
 """Created on Dec 04 23:24:55 2024"""
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import SeqFloat
+from .. import Sequences_, lArray
 from ..distributions.utilities_d import folded_normal_pdf_
 
 
@@ -13,8 +14,8 @@ class FoldedNormalFitter(BaseFitter):
 
     def __init__(
         self,
-        x_values,
-        y_values,
+        x_values: lArray,
+        y_values: lArray,
         max_iterations: int = 1000,
     ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -28,5 +29,5 @@ class FoldedNormalFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x: np.ndarray, params: SeqFloat):
+    def fitter(x: NDArray, params: Sequences_):
         return folded_normal_pdf_(x, *params)
