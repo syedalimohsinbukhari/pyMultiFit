@@ -3,7 +3,6 @@
 __all__ = [
     "_beta_expr",
     "_pdf_scaling",
-    "_remove_nans",
     "preprocess_input",
     "arc_sine_pdf_",
     "arc_sine_cdf_",
@@ -439,9 +438,7 @@ def beta_cdf_(
     if y.size == 0:
         return y
 
-    cdf_ = np.where(y > 1, 1, betainc(alpha, beta, y))
-
-    return _remove_nans(x=cdf_, nan_value=0)
+    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=betainc(alpha, beta, y))
 
 
 @suppress_numpy_warnings()
@@ -476,9 +473,7 @@ def beta_log_cdf_(
     if y.size == 0:
         return y
 
-    log_cdf_ = np.where(y > 1, 0, LOG(betainc(alpha, beta, y)))
-
-    return _remove_nans(x=log_cdf_, nan_value=-np.inf)
+    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(betainc(alpha, beta, y)))
 
 
 @suppress_numpy_warnings()
@@ -537,7 +532,7 @@ def chi_square_pdf_(
 
     df_half = degree_of_freedom / 2
 
-    pdf_ = np.where(y > 0, np.power(y, df_half - 1) * np.exp(-y / 2) / np.power(2, df_half) / gamma(df_half), 0)
+    pdf_ = np.where(y > 0, np.power(y, df_half - 1) / np.exp(y / 2) / np.power(2, df_half) / gamma(df_half), 0)
     pdf_ /= scale
 
     if not normalize:
@@ -954,7 +949,7 @@ def folded_normal_pdf_(
         return x
 
     _, pdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_pdf_)
-    pdf_ = _remove_nans(pdf_) / sigma
+    pdf_ = np.where(_, pdf_, 0) / sigma
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1753,10 +1748,7 @@ def laplace_cdf_(
     if y.size == 0:
         return y
 
-    with np.errstate(over="ignore"):
-        cdf_ = np.where(y > 0, 1.0 - 0.5 * np.exp(-y), 0.5 * np.exp(y))
-
-    return cdf_
+    return np.where(y > 0, 1.0 - 0.5 * np.exp(-y), 0.5 * np.exp(y))
 
 
 @suppress_numpy_warnings()
@@ -1884,7 +1876,7 @@ def log_normal_pdf_(
 
     q = (LOG(y) - mean) / std
 
-    pdf_ = np.where(y > 0, (1 / y) * np.exp(-(q**2) / 2) / SQRT_TWO_PI, 0)
+    pdf_ = np.where(y > 0, 1 / y / np.exp(q**2 / 2) / SQRT_TWO_PI, 0)
     pdf_ /= std
 
     if not normalize:
@@ -1975,7 +1967,7 @@ def log_normal_cdf_(
     """
     y = preprocess_input(x=x, loc=loc, scale=np.exp(mean))
 
-    return _remove_nans(ndtr(LOG(y) / std))
+    return np.where(y > 0, ndtr(LOG(y) / std), 0)
 
 
 @suppress_numpy_warnings()
@@ -2006,7 +1998,7 @@ def log_normal_log_cdf_(
     """
     y = preprocess_input(x=x, loc=loc, scale=np.exp(mean))
 
-    return _remove_nans(log_ndtr(LOG(y) / std), -INF)
+    return np.where(y > 0, log_ndtr(LOG(y) / std), -INF)
 
 
 @suppress_numpy_warnings()
@@ -2834,29 +2826,6 @@ def _log_pdf_scaling(
 ) -> NDArray:
     with np.errstate(all="ignore"):
         return log_pdf_ + LOG(amplitude) - np.max(log_pdf_)
-
-
-@suppress_numpy_warnings()
-def _remove_nans(
-    x,
-    nan_value=None,
-) -> NDArray:
-    """
-    Replaces NaN, positive infinity, and negative infinity values in an array.
-
-    Parameters
-    ----------
-    x : NDArray
-        Input array that may contain NaN, positive infinity, or negative infinity values.
-
-    Returns
-    -------
-    np.ndarray
-        Array with NaN replaced by 0, positive infinity replaced by `INF`, and negative
-    infinity replaced by `-INF`.
-    """
-    nan_value = 0 if nan_value is None else nan_value
-    return np.nan_to_num(x=np.asarray(x), copy=False, nan=nan_value, posinf=INF, neginf=-INF)
 
 
 @suppress_numpy_warnings()
