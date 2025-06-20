@@ -11,16 +11,17 @@ from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
 from numpy.typing import NDArray
 
+from pymultifit import lArray
+
 # SAFEGUARD:
-xy_values = Union[List[float], np.ndarray]
 xy_tuple = Tuple[np.ndarray, np.ndarray]
 indexType = Union[int, List[int], None]
 
 
 def sanity_check(
-    x_values: xy_values,
-    y_values: xy_values,
-) -> xy_tuple:
+    x_values: lArray,
+    y_values: lArray,
+) -> Tuple[lArray, lArray]:
     """
     Convert input lists to NumPy arrays if necessary.
 
@@ -76,9 +77,9 @@ def parameter_logic(
 
 
 def _plot_fit(
-    x_values: xy_values,
-    y_values: xy_values,
-    parameters: xy_values,
+    x_values: NDArray,
+    y_values: NDArray,
+    parameters: lArray,
     n_fits: int,
     class_name: str,
     _n_fitter: Callable,
@@ -87,7 +88,7 @@ def _plot_fit(
     x_label: Optional[str] = None,
     y_label: Optional[str] = None,
     title: Optional[str] = None,
-    data_label: Optional[Union[list[str], str]] = None,
+    data_label: Optional[str] = None,
     axis: Optional[Axes] = None,
 ):
     """
@@ -153,7 +154,7 @@ def _plot_fit(
         x_label=x_label,
         y_label=y_label,
         plot_title=title,
-        data_label=tt,
+        data_label=tt[0],
         plot_dictionary=LinePlot(color="k"),
         axis=plotter,
     )

@@ -1,11 +1,10 @@
 """Created on Jul 18 13:54:03 2024"""
 
 import numpy as np
-from numpy.typing import NDArray
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import Sequences_, lArray
+from .. import lArray, Params_
 from ..distributions.utilities_d import skew_normal_pdf_
 
 
@@ -29,5 +28,5 @@ class SkewNormalFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x: NDArray, params: Sequences_):
+    def fitter(x: lArray, params: Params_):
         return skew_normal_pdf_(x, *params)

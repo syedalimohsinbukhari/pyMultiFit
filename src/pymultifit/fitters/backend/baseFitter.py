@@ -12,7 +12,7 @@ from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, _plot_fit
-from ... import Sequences_, epsilon, lArray
+from ... import Sequences_, epsilon, lArray, Params_
 
 
 class BaseFitter:
@@ -180,7 +180,7 @@ class BaseFitter:
         y = np.zeros_like(a=x, dtype=float)
         params = np.reshape(a=np.array(params), newshape=(self.n_fits, self.n_par))
         for par in params:
-            y += self.fitter(x=x, params=par)
+            y += self.fitter(x=x, params=par.tolist())
         return y
 
     def _params(self) -> NDArray:
@@ -302,7 +302,7 @@ class BaseFitter:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     @staticmethod
-    def fitter(x: NDArray, params: Sequences_):
+    def fitter(x: lArray, params: Params_):
         """
         Fitter function for multi-fitting.
 
@@ -310,8 +310,10 @@ class BaseFitter:
         ----------
         x: np.ndarray
             The x-array on which the fitting is to be performed.
-        params: Sequences_
+        params: Params_
             An array of parameters to fit.
+        normalize: bool
+            Whether to normalize the fit or not.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 

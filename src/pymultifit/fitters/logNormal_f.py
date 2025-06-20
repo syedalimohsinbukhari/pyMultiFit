@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import Sequences_, lArray
+from .. import lArray, Params_
 from ..distributions.utilities_d import log_normal_pdf_
 
 
@@ -36,5 +36,5 @@ class LogNormalFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x: NDArray, params: Sequences_):
+    def fitter(x: NDArray, params: Params_):
         return log_normal_pdf_(x, *params)

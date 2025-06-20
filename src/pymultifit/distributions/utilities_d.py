@@ -123,7 +123,7 @@ def suppress_numpy_warnings():
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            with np.errstate(all='ignore'):
+            with np.errstate(all="ignore"):
                 return func(*args, **kwargs)
 
         return wrapper
@@ -1286,10 +1286,10 @@ def gamma_log_cdf_(
 @suppress_numpy_warnings()
 def gaussian_pdf_(
     x,
-    amplitude: float = 1.0,
-    mean: float = 0.0,
-    std: float = 1.0,
-    normalize: bool = False,
+    amplitude=1.0,
+    mean=0.0,
+    std=1.0,
+    normalize=False,
 ) -> NDArray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`

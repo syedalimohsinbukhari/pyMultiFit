@@ -1,6 +1,6 @@
 """Created on Jul 18 00:15:42 2024"""
 
-from typing import Union, Sequence
+from typing import Union, Sequence, Iterable
 
 import numpy as np
 from numpy.typing import NDArray
@@ -24,9 +24,10 @@ LOG = np.log
 EPSILON = np.finfo(float).eps
 epsilon = np.sqrt(EPSILON)
 
-lArray = Union[Sequence[float], Sequence[int], NDArray[np.floating], NDArray[np.integer]]
+lArray = Union[Sequence[float], Sequence[int], NDArray[np.number]]
 
 Sequences_ = Union[NDArray[np.floating], Sequence[Sequence[float]]]
+Params_ = Union[NDArray[np.number], Iterable[Union[int, float]]]
 
 GAUSSIAN = "gaussian"
 NORMAL = GAUSSIAN

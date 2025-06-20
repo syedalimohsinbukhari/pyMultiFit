@@ -8,7 +8,6 @@ import numpy as np
 from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot
 from mpyez.ezPlotting import plot_xy
-from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 # importing from files to avoid circular import
@@ -35,7 +34,7 @@ from .. import (
     FOLDED_NORMAL,
     GAMMA,
     NORMAL,
-    HALF_NORMAL, Sequences_,
+    HALF_NORMAL, Sequences_, lArray,
 )
 
 # mock initialize the internal classes for auto MixedDataFitter class
@@ -66,8 +65,8 @@ class MixedDataFitter:
 
     def __init__(
         self,
-        x_values: NDArray,
-        y_values: NDArray,
+        x_values: lArray,
+        y_values: lArray,
         model_list: List[str],
         fitter_dictionary=None,
         max_iterations: int = 1000,

@@ -1,11 +1,10 @@
 """Created on Dec 27 11:31:54 2024"""
 
 import numpy as np
-from numpy.typing import NDArray
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import Sequences_, lArray
+from .. import lArray, Params_
 from ..distributions.utilities_d import gamma_pdf_
 
 
@@ -31,5 +30,5 @@ class GammaFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x: NDArray, params: Sequences_):
+    def fitter(x: lArray, params: Params_):
         return gamma_pdf_(x, *params)

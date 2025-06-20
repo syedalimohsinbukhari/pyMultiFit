@@ -1,10 +1,8 @@
 """Created on Mar 10 12:30:37 2025"""
 
-from numpy.typing import NDArray
-
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import Sequences_, lArray
+from .. import lArray, Params_
 from ..distributions.utilities_d import line, nth_polynomial
 
 
@@ -22,7 +20,7 @@ class LineFitter(BaseFitter):
         self.n_par = 2
 
     @staticmethod
-    def fitter(x: NDArray, params: Sequences_):
+    def fitter(x: lArray, params: Params_):
         return line(x, *params)
 
 
@@ -41,5 +39,5 @@ class PolynomialFitter(BaseFitter):
         self.n_par = order
 
     @staticmethod
-    def fitter(x: NDArray, params: Sequences_):
+    def fitter(x: lArray, params: Params_):
         return nth_polynomial(x, coefficients=list(params))
