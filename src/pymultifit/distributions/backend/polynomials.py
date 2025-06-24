@@ -5,11 +5,11 @@ from typing import List
 import numpy as np
 from numpy.typing import NDArray
 
-from .backend import BaseDistribution
-from .utilities_d import line, quadratic, cubic, nth_polynomial
+from . import BaseDistribution
+from ..utilities_d import line, quadratic, cubic, nth_polynomial
 
 
-class Line(BaseDistribution):
+class LineFitter(BaseDistribution):
     def __init__(
         self,
         slope: float = 1.0,
@@ -34,14 +34,10 @@ class Line(BaseDistribution):
         np.ndarray
             Array of the same shape as :math:`x`, containing the evaluated values.
         """
-        return line(
-            x,
-            slope=self.slope,
-            intercept=self.intercept,
-        )
+        return line(x, slope=self.slope, intercept=self.intercept)
 
 
-class Quadratic(BaseDistribution):
+class QuadraticFitter(BaseDistribution):
     def __init__(
         self,
         a: float = 1.0,
@@ -56,15 +52,10 @@ class Quadratic(BaseDistribution):
         self.norm = normalize
 
     def pdf(self, x: NDArray) -> NDArray:
-        return quadratic(
-            x,
-            a=self.a,
-            b=self.b,
-            c=self.c,
-        )
+        return quadratic(x, a=self.a, b=self.b, c=self.c)
 
 
-class Cubic(BaseDistribution):
+class CubicFitter(BaseDistribution):
     def __init__(
         self,
         a: float = 1.0,
@@ -81,23 +72,14 @@ class Cubic(BaseDistribution):
         self.norm = normalize
 
     def pdf(self, x: NDArray):
-        return cubic(
-            x,
-            a=self.a,
-            b=self.b,
-            c=self.c,
-            d=self.d,
-        )
+        return cubic(x, a=self.a, b=self.b, c=self.c, d=self.d)
 
 
-class Polynomial(BaseDistribution):
+class PolynomialFitter(BaseDistribution):
     def __init__(self, degree: List[float], normalize: bool = False):
         self.degree = degree
 
         self.norm = normalize
 
     def pdf(self, x: NDArray):
-        return nth_polynomial(
-            x,
-            coefficients=self.degree,
-        )
+        return nth_polynomial(x, coefficients=self.degree)

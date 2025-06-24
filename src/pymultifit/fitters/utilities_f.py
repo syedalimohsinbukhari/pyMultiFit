@@ -21,7 +21,7 @@ indexType = Union[int, List[int], None]
 def sanity_check(
     x_values: lArray,
     y_values: lArray,
-) -> Tuple[lArray, lArray]:
+) -> Tuple[NDArray, NDArray]:
     """
     Convert input lists to NumPy arrays if necessary.
 

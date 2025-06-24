@@ -37,7 +37,7 @@ model_map = {
     LAPLACE: dist.LaplaceDistribution,
     LOG_NORMAL: dist.LogNormalDistribution,
     SKEW_NORMAL: dist.SkewNormalDistribution,
-    LINE: dist.Line,
+    LINE: dist.LineFitter,
 }
 
 

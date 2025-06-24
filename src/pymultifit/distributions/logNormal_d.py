@@ -3,7 +3,8 @@
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_
+from .utilities_d import (log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_,
+                          suppress_numpy_warnings)
 
 
 class LogNormalDistribution(BaseDistribution):
@@ -139,6 +140,7 @@ class LogNormalDistribution(BaseDistribution):
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
+    @suppress_numpy_warnings()
     def stats(self):
         m, s, l_ = np.exp(self.mu), self.std, self.loc
 

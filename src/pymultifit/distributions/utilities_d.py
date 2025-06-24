@@ -2003,9 +2003,9 @@ def log_normal_log_cdf_(
 
 @suppress_numpy_warnings()
 def nth_polynomial(
-    x: np.ndarray,
+    x,
     coefficients: list[float],
-) -> np.ndarray:
+) -> NDArray:
     r"""
     Evaluate a polynomial at given points.
 
@@ -2745,7 +2745,7 @@ def quadratic(
     a: float = 1.0,
     b: float = 1.0,
     c: float = 1.0,
-) -> np.ndarray:
+) -> NDArray:
     r"""
     Computes the y-values of a quadratic function given x-values.
 
