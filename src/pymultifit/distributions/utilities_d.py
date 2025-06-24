@@ -59,7 +59,6 @@ __all__ = [
     "uniform_log_pdf_",
     "uniform_log_cdf_",
     "line",
-    "linear",
     "quadratic",
     "cubic",
     "nth_polynomial",
@@ -290,7 +289,7 @@ def beta_pdf_(
     x,
     amplitude: float = 1.0,
     alpha: float = 1.0,
-    beta: float = 1.0,
+    beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
@@ -300,6 +299,7 @@ def beta_pdf_(
 
     Parameters
     ----------
+    beta_
     x : NDArray
         Input array of values where PDF is evaluated.
     amplitude : float, optional
@@ -344,7 +344,7 @@ def beta_pdf_(
     if y.size == 0:
         return y
 
-    conditions, main = _beta_expr(y=y, a=alpha, b=beta, un_log=True)
+    conditions, main = _beta_expr(y=y, a=alpha, b=beta_, un_log=True)
 
     pdf_ = np.select(condlist=conditions, choicelist=[1, np.nan, main], default=0)
     pdf_ /= scale
@@ -1783,7 +1783,7 @@ def laplace_log_cdf_(
 
 @suppress_numpy_warnings()
 def line(
-    x: np.ndarray,
+    x,
     slope: float = 1.0,
     intercept: float = 0.0,
 ) -> NDArray:
@@ -1813,9 +1813,6 @@ def line(
     where :math:`m` is the slope and :math:`c` is the intercept of the function.
     """
     return slope * x + intercept
-
-
-linear = line
 
 
 @suppress_numpy_warnings()
@@ -2741,7 +2738,7 @@ def sym_gen_normal_log_cdf_(
 
 @suppress_numpy_warnings()
 def quadratic(
-    x: np.ndarray,
+    x,
     a: float = 1.0,
     b: float = 1.0,
     c: float = 1.0,
