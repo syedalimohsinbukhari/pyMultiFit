@@ -79,7 +79,7 @@ def parameter_logic(
 def _plot_fit(
     x_values: NDArray,
     y_values: NDArray,
-    parameters: lArray,
+    parameters: NDArray,
     n_fits: int,
     class_name: str,
     _n_fitter: Callable,
@@ -88,7 +88,7 @@ def _plot_fit(
     x_label: Optional[str] = None,
     y_label: Optional[str] = None,
     title: Optional[str] = None,
-    data_label: Optional[str] = None,
+    data_label: Optional[List[str], str] = None,
     axis: Optional[Axes] = None,
 ):
     """

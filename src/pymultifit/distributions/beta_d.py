@@ -139,7 +139,7 @@ class BetaDistribution(BaseDistribution):
             x,
             amplitude=self.amplitude,
             alpha=self.alpha,
-            beta=self.beta,
+            beta_=self.beta,
             loc=self.loc,
             scale=self.scale,
             normalize=self.norm,
@@ -150,7 +150,7 @@ class BetaDistribution(BaseDistribution):
             x,
             amplitude=self.amplitude,
             alpha=self.alpha,
-            beta=self.beta,
+            beta_=self.beta,
             loc=self.loc,
             scale=self.scale,
             normalize=self.norm,
@@ -161,7 +161,7 @@ class BetaDistribution(BaseDistribution):
             x,
             amplitude=self.amplitude,
             alpha=self.alpha,
-            beta=self.beta,
+            beta_=self.beta,
             loc=self.loc,
             scale=self.scale,
             normalize=self.norm,
@@ -172,7 +172,7 @@ class BetaDistribution(BaseDistribution):
             x,
             amplitude=self.amplitude,
             alpha=self.alpha,
-            beta=self.beta,
+            beta_=self.beta,
             loc=self.loc,
             scale=self.scale,
             normalize=self.norm,
@@ -189,7 +189,7 @@ class BetaDistribution(BaseDistribution):
         median_ = (s * median_) + _l
 
         num_ = a * b
-        den_ = (a + b)**2 * (a + b + 1)
+        den_ = (a + b) ** 2 * (a + b + 1)
 
         variance_ = s**2 * (num_ / den_)
 

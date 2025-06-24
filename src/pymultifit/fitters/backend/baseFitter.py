@@ -11,8 +11,10 @@ from mpyez.ezPlotting import plot_xy
 from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
-from ..utilities_f import parameter_logic, _plot_fit
+from ..utilities_f import parameter_logic, _plot_fit, sanity_check
 from ... import Sequences_, epsilon, lArray, Params_
+
+NumericArray = NDArray[np.number]
 
 
 class BaseFitter:
@@ -24,17 +26,18 @@ class BaseFitter:
         y_values: lArray,
         max_iterations: int = 1000,
     ):
-        self.x_values = x_values
-        self.y_values = y_values
+        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
+        self.x_values: NumericArray = x_values
+        self.y_values: NumericArray = y_values
         self.max_iterations = max_iterations
 
-        self.n_par = None
-        self.pn_par = self.n_par
-        self.sn_par = {}
+        self.n_par: int = 0
+        self.pn_par: int = self.n_par
+        self.sn_par: dict = {}
 
-        self.n_fits = None
-        self.params = None
-        self.covariance = None
+        self.n_fits: int = 0
+        self.params: Optional[NumericArray] = None
+        self.covariance: Optional[NumericArray] = None
 
     def _adjust_parameters(self, p0: Sequences_):
         """
@@ -85,7 +88,7 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return self.covariance
 
-    def _fit_preprocessing(self, p0: Sequences_, frozen: List[bool]):
+    def _fit_preprocessing(self, p0, frozen):
         """
         Process frozen parameters and adjust bounds.
 
@@ -159,7 +162,7 @@ class BaseFitter:
         """
         return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
-    def _n_fitter(self, x: NDArray, *params: Sequences_) -> NDArray:
+    def _n_fitter(self, x: NDArray, *params: Params_) -> NDArray:
         r"""
         Perform N-fitting by summing over multiple parameter sets.
 
@@ -178,8 +181,8 @@ class BaseFitter:
             An array containing the composite fitted values for the input ``x``.
         """
         y = np.zeros_like(a=x, dtype=float)
-        params = np.reshape(a=np.array(params), newshape=(self.n_fits, self.n_par))
-        for par in params:
+        parameters: NDArray = np.reshape(a=np.array(params), newshape=(self.n_fits, self.n_par))
+        for par in parameters:
             y += self.fitter(x=x, params=par.tolist())
         return y
 
@@ -220,7 +223,7 @@ class BaseFitter:
         - Each plot will be labeled with the class name and the index of the fit, along with the formatted parameters.
         """
         x = self.x_values
-        params = np.reshape(a=self.params, newshape=(self.n_fits, self.n_par))
+        params: NDArray = np.reshape(a=self.params, newshape=(self.n_fits, self.n_par))
         colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
         for i, par in enumerate(params):
             color = colors[i % len(colors)]
@@ -265,7 +268,7 @@ class BaseFitter:
         """
         plot_xy(x_data=self.x_values, y_data=self.y_values, axis=axis)
 
-    def fit(self, p0: Sequences_, frozen: List[bool] = None):
+    def fit(self, p0: Sequences_, frozen: Optional[List[bool]] = None):
         """
         Fit the data.
 
@@ -330,7 +333,7 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return self._n_fitter(self.x_values, self.params)
 
-    def get_model_parameters(self, select: Tuple[int, Any] = None, errors: bool = False):
+    def get_model_parameters(self, select: Optional[Tuple[int, Any]] = None, errors: bool = False):
         r"""
         Extract specific parameter values or their uncertainties from the fitting process.
 
@@ -422,7 +425,7 @@ class BaseFitter:
         ValueError
             If both ``mean_values`` and ``std_values`` are ``False``.
         """
-        pairs = np.column_stack([self._params(), self._standard_errors()])
+        pairs: NDArray = np.column_stack([self._params(), self._standard_errors()])
 
         if mean_values and std_values:
             return pairs

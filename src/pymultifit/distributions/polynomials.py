@@ -5,8 +5,8 @@ from typing import List
 import numpy as np
 from numpy.typing import NDArray
 
-from . import BaseDistribution
-from ..utilities_d import line, quadratic, cubic, nth_polynomial
+from .backend import BaseDistribution
+from .utilities_d import line, quadratic, cubic, nth_polynomial
 
 
 class LineFitter(BaseDistribution):
