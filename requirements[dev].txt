@@ -26,3 +26,4 @@ ruff
 pyright
 pylint
 nox
+uv

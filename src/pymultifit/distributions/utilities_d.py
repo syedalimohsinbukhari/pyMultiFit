@@ -308,7 +308,7 @@ def beta_pdf_(
     alpha : float, optional
         The :math:`\alpha` parameter.
         Default is 1.0.
-    beta : float, optional
+    beta_ : float, optional
         The :math:`\beta` parameter.
         Default is 1.0.
     loc : float, optional
@@ -361,7 +361,7 @@ def beta_log_pdf_(
     x,
     amplitude: float = 1.0,
     alpha: float = 1.0,
-    beta: float = 1.0,
+    beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
@@ -386,7 +386,7 @@ def beta_log_pdf_(
     if y.size == 0:
         return y
 
-    conditions, main = _beta_expr(y=y, a=alpha, b=beta)
+    conditions, main = _beta_expr(y=y, a=alpha, b=beta_)
 
     log_pdf_ = np.select(condlist=conditions, choicelist=[0.0, np.nan, main], default=-INF)
     log_pdf_ -= LOG(scale)
@@ -403,7 +403,7 @@ def beta_cdf_(
     x,
     amplitude: float = 1.0,
     alpha: float = 1.0,
-    beta: float = 1.0,
+    beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
@@ -438,7 +438,7 @@ def beta_cdf_(
     if y.size == 0:
         return y
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=betainc(alpha, beta, y))
+    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=betainc(alpha, beta_, y))
 
 
 @suppress_numpy_warnings()
@@ -447,7 +447,7 @@ def beta_log_cdf_(
     x,
     amplitude: float = 1.0,
     alpha: float = 1.0,
-    beta: float = 1.0,
+    beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
@@ -473,7 +473,7 @@ def beta_log_cdf_(
     if y.size == 0:
         return y
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(betainc(alpha, beta, y)))
+    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(betainc(alpha, beta_, y)))
 
 
 @suppress_numpy_warnings()

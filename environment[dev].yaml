@@ -35,3 +35,4 @@ dependencies:
       - pylint
       - nox
       - pyright
+      - uv
