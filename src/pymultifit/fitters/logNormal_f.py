@@ -1,7 +1,6 @@
 """Created on Jul 18 19:01:45 2024"""
 
 import numpy as np
-from numpy.typing import NDArray
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
@@ -36,5 +35,5 @@ class LogNormalFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x: NDArray, params: Params_):
+    def fitter(x: lArray, params: Params_):
         return log_normal_pdf_(x, *params)

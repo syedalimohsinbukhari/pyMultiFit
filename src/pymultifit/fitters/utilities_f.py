@@ -39,11 +39,8 @@ def sanity_check(
     y_values : np.ndarray
         The y-values as a NumPy array.
     """
-    if isinstance(x_values, list):
-        x_values = np.array(x_values)
-
-    if isinstance(y_values, list):
-        y_values = np.array(y_values)
+    x_values = np.asarray(a=x_values, dtype=float)
+    y_values = np.asarray(a=y_values, dtype=float)
 
     return x_values, y_values
 
@@ -88,7 +85,8 @@ def _plot_fit(
     x_label: Optional[str] = None,
     y_label: Optional[str] = None,
     title: Optional[str] = None,
-    data_label: Optional[List[str], str] = None,
+    data_label: Optional[str] = None,
+    fit_label: Optional[str] = None,
     axis: Optional[Axes] = None,
 ):
     """
@@ -136,7 +134,7 @@ def _plot_fit(
     elif len(data_label) == 1 or isinstance(data_label, str):
         dl, tt = data_label, "Total fit"
     elif 1 < len(data_label) <= 2:
-        dl, tt = data_label
+        dl, tt = data_label, fit_label
     else:
         raise ValueError()
 
@@ -154,13 +152,15 @@ def _plot_fit(
         x_label=x_label,
         y_label=y_label,
         plot_title=title,
-        data_label=tt[0],
+        data_label=tt,
         plot_dictionary=LinePlot(color="k"),
         axis=plotter,
     )
 
     if show_individuals:
         _n_plotter(plotter=plotter)
+
+    plotter: Axes = plotter[0] if isinstance(plotter, list) else plotter
 
     plotter.set_xlabel(x_label if x_label else "X")
     plotter.set_ylabel(y_label if y_label else "Y")

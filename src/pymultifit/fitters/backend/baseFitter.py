@@ -14,7 +14,6 @@ from scipy.optimize import Bounds, curve_fit
 from ..utilities_f import parameter_logic, _plot_fit, sanity_check
 from ... import Sequences_, epsilon, lArray, Params_
 
-NumericArray = NDArray[np.number]
 
 
 class BaseFitter:
@@ -27,8 +26,8 @@ class BaseFitter:
         max_iterations: int = 1000,
     ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        self.x_values: NumericArray = x_values
-        self.y_values: NumericArray = y_values
+        self.x_values: NDArray = x_values
+        self.y_values: NDArray = y_values
         self.max_iterations = max_iterations
 
         self.n_par: int = 0
@@ -36,8 +35,8 @@ class BaseFitter:
         self.sn_par: dict = {}
 
         self.n_fits: int = 0
-        self.params: Optional[NumericArray] = None
-        self.covariance: Optional[NumericArray] = None
+        self.params: Optional[NDArray] = None
+        self.covariance: Optional[NDArray] = None
 
     def _adjust_parameters(self, p0: Sequences_):
         """
@@ -315,8 +314,6 @@ class BaseFitter:
             The x-array on which the fitting is to be performed.
         params: Params_
             An array of parameters to fit.
-        normalize: bool
-            Whether to normalize the fit or not.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
@@ -441,7 +438,8 @@ class BaseFitter:
         show_individuals: bool = False,
         x_label: Optional[str] = None,
         y_label: Optional[str] = None,
-        data_label: Optional[Union[list[str], str]] = None,
+        data_label: Optional[str] = None,
+        fit_label: Optional[str] = None,
         title: Optional[str] = None,
         axis: Optional[Axes] = None,
     ):
@@ -481,5 +479,6 @@ class BaseFitter:
             y_label=y_label,
             title=title,
             data_label=data_label,
+            fit_label=fit_label,
             axis=axis,
         )
