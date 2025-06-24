@@ -13,7 +13,7 @@ from .generalized import SymmetricGeneralizedNormalDistribution, ScaledInverseCh
 from .halfNormal_d import HalfNormalDistribution
 from .laplace_d import LaplaceDistribution
 from .logNormal_d import LogNormalDistribution
-from pymultifit.distributions.polynomials import LineFitter, QuadraticFitter, CubicFitter, PolynomialFitter
+from .polynomials import LineFitter, QuadraticFitter, CubicFitter, PolynomialFitter
 from .skewNormal_d import SkewNormalDistribution
 from .uniform_d import UniformDistribution
 
