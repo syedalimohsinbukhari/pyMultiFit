@@ -174,6 +174,9 @@ def arc_sine_pdf_(x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.
     if y.size == 0:
         return y
 
+    if scale < 0:
+        return np.full(y.shape, np.nan)
+
     c1 = (y > 0) & (y < 1)
     c2 = y == 0
     c3 = y == 1
@@ -243,6 +246,9 @@ def arc_sine_cdf_(
     if y.size == 0:
         return y
 
+    if scale < 0:
+        return np.full(y.shape, np.nan)
+
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
 
@@ -277,6 +283,9 @@ def arc_sine_log_cdf_(
 
     if y.size == 0:
         return y
+
+    if scale < 0:
+        return np.full(y.shape, np.nan)
 
     c1 = (y > 0) & (y < 1)
     c2 = y < 1

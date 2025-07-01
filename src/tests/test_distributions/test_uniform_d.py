@@ -42,7 +42,7 @@ class TestUniformDistribution:
     def test_stats():
         btf.stats(custom_distribution=UniformDistribution.scipy_like, scipy_distribution=uniform,
                   parameters=[btf.loc_parameter, btf.scale_parameter],
-                  median=False)
+                  median=False, equal_case=True, equal_params=np.array([1, 1]))
 
     @staticmethod
     def test_pdfs():

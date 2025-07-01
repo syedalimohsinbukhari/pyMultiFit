@@ -74,8 +74,6 @@ class ArcSineDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if scale < 0:
-            raise erH.NegativeScaleError()
 
         self.amplitude = 1 if normalize else amplitude
         self.loc = loc
@@ -145,13 +143,21 @@ class ArcSineDistribution(BaseDistribution):
     def stats(self):
         s_, l_ = self.scale, self.loc
 
-        mean_ = (s_ * 0.5) + l_
-        median_ = (s_ * 0.5) + l_
-        variance_ = (1 / 8) * s_**2
+        if s_ > 0:
+            mean_ = (s_ * 0.5) + l_
+            median_ = (s_ * 0.5) + l_
+            variance_ = (1 / 8) * s_**2
 
-        return {
-            "mean": mean_,
-            "median": median_,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+            return {
+                "mean": mean_,
+                "median": median_,
+                "variance": variance_,
+                "std": np.sqrt(variance_),
+            }
+        else:
+            return {
+                "mean": np.nan,
+                "median": np.nan,
+                "variance": np.nan,
+                "std": np.sqrt(np.nan),
+            }

@@ -5,8 +5,8 @@ import numpy as np
 from ...pymultifit import EPSILON
 
 loc_parameter = np.random.uniform(low=-100, high=100, size=500)
-scale_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
-shape_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
+scale_parameter = np.random.uniform(low=-100, high=100, size=500)
+shape_parameter = np.random.uniform(low=-100, high=100, size=500)
 
 
 def edge_cases(distribution, log_check=False):
@@ -72,14 +72,19 @@ def statistics(custom_distribution, scipy_distribution, parameters, mean_varianc
         np.testing.assert_allclose(actual=scipy_median, desired=d_stats['median'], rtol=1e-5, atol=1e-8)
 
 
-def stats(custom_distribution, scipy_distribution, parameters, mean_variance=True, median=True,
-          is_expon=False, is_scaled_inv_chi=False, is_gamma_ss=False):
+def stats(custom_distribution, scipy_distribution, parameters, equal_case=False, equal_params=None, mean_variance=True,
+          median=True, is_expon=False, is_scaled_inv_chi=False, is_gamma_ss=False):
     stack_ = np.column_stack(parameters)
 
     for stack in stack_:
         statistics(custom_distribution=custom_distribution, scipy_distribution=scipy_distribution,
                    parameters=stack, mean_variance=mean_variance, median=median,
                    is_expon=is_expon, is_scaled_inv_chi=is_scaled_inv_chi, is_gamma_ss=is_gamma_ss)
+
+    if equal_case:
+        statistics(custom_distribution=custom_distribution, scipy_distribution=scipy_distribution,
+                   parameters=equal_params, mean_variance=mean_variance, median=median, is_expon=is_expon,
+                   is_scaled_inv_chi=is_scaled_inv_chi, is_gamma_ss=is_gamma_ss)
 
 
 def value_functions(custom_distribution, scipy_distribution, parameters, n_values=10, log_check=False,
