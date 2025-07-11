@@ -86,7 +86,7 @@ class LaplaceDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif diversity <= 0:
+        if diversity <= 0:
             raise erH.NegativeScaleError("diversity")
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mean

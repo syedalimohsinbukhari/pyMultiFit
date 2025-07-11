@@ -4,7 +4,6 @@ from typing import List
 
 import numpy as np
 from numpy import ndarray
-from numpy.typing import NDArray
 
 from ..distributions.backend import BaseDistribution
 from ..distributions.utilities_d import line, quadratic, cubic, nth_polynomial

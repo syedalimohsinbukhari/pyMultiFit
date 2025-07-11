@@ -96,9 +96,9 @@ class BetaDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif alpha <= 0:
+        if alpha <= 0:
             raise erH.NegativeAlphaError()
-        elif beta <= 0:
+        if beta <= 0:
             raise erH.NegativeBetaError()
         self.amplitude = 1.0 if normalize else amplitude
         self.alpha = alpha

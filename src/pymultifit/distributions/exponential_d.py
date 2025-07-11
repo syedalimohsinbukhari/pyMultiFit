@@ -87,7 +87,7 @@ class ExponentialDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif scale <= 0:
+        if scale <= 0:
             raise erH.NegativeScaleError()
         self.amplitude = 1 if normalize else amplitude
         self.scale = scale

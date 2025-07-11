@@ -86,7 +86,7 @@ class GaussianDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif std <= 0:
+        if std <= 0:
             raise erH.NegativeStandardDeviationError()
 
         self.amplitude = 1.0 if normalize else amplitude

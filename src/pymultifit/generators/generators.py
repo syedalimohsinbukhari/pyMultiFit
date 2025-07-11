@@ -264,7 +264,7 @@ def multi_skew_normal(
 def multiple_models(
     x: lArray,
     params: Params_,
-    model_list,
+    model_list: list[str],
     noise_level=0.0,
     normalize: bool = False,
     mapping_dict: Optional[Dict[str, Callable]] = None,
@@ -303,7 +303,7 @@ def multiple_models(
             if isfunction(_instance):
                 y += _instance(x, *params[par_index])
             else:
-                y += _instance(*params[par_index], normalize=normalize).pdf(x)
+                y += _instance(*params[par_index], normalize=normalize).pdf(np.asarray(x))
 
     if noise_level > 0:
         noise = noise_level * np.random.normal(size=y.size)
