@@ -9,6 +9,7 @@ dependencies:
   - scipy
   - statsmodels
   - custom-inherit
+  - Deprecated
   - seaborn
   - pandas
   - pytest
@@ -34,5 +35,8 @@ dependencies:
       - ruff
       - pylint
       - nox
-      - pyright
+      - mypy
       - uv
+      - types-Deprecated
+      - scipy-stubs
+      - optype

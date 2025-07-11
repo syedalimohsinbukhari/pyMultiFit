@@ -32,14 +32,10 @@ Available for user
 .. autofunction:: folded_normal_log_pdf_
 .. autofunction:: folded_normal_cdf_
 .. autofunction:: folded_normal_log_cdf_
-.. autofunction:: gamma_sr_pdf_
-.. autofunction:: gamma_sr_log_pdf_
-.. autofunction:: gamma_sr_cdf_
-.. autofunction:: gamma_sr_log_cdf_
-.. autofunction:: gamma_ss_pdf_
-.. autofunction:: gamma_ss_log_pdf_
-.. autofunction:: gamma_ss_cdf_
-.. autofunction:: gamma_ss_log_cdf_
+.. autofunction:: gamma_pdf_
+.. autofunction:: gamma_log_pdf_
+.. autofunction:: gamma_cdf_
+.. autofunction:: gamma_log_cdf_
 .. autofunction:: gaussian_pdf_
 .. autofunction:: gaussian_log_pdf_
 .. autofunction:: gaussian_cdf_
@@ -53,7 +49,6 @@ Available for user
 .. autofunction:: laplace_cdf_
 .. autofunction:: laplace_log_cdf_
 .. autofunction:: line
-.. autofunction:: linear
 .. autofunction:: log_normal_pdf_
 .. autofunction:: log_normal_log_pdf_
 .. autofunction:: log_normal_cdf_
@@ -79,8 +74,7 @@ Available for user
 Internal functions
 ------------------
 
-.. autofunction:: _beta_masking
 .. autofunction:: _folded
 .. autofunction:: _pdf_scaling
-.. autofunction:: _remove_nans
+.. autofunction:: _gamma
 .. autofunction:: preprocess_input

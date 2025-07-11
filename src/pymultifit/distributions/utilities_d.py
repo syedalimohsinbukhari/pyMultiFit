@@ -68,47 +68,31 @@ import functools
 from typing import Union, Callable
 
 import numpy as np
+import scipy.special as ssp
 from custom_inherit import doc_inherit
-from numpy.typing import NDArray
-from scipy.special import (
-    betainc,
-    erf,
-    gammainc,
-    gammaln,
-    owens_t,
-    gammaincc,
-    log_ndtr,
-    ndtr,
-    rgamma,
-    xlogy,
-    gamma,
-    xlog1py,
-    betaln,
-    beta,
-)
 
 from .. import doc_style, LOG, INF
 
 TWO = 2.0
 SQRT_TWO = np.sqrt(TWO)
 LOG_TWO = LOG(TWO)
-LOG_SQRT_TWO = xlogy(0.5, TWO)
+LOG_SQRT_TWO = ssp.xlogy(0.5, TWO)
 
 PI = np.pi
 SQRT_PI = np.sqrt(PI)
 LOG_PI = LOG(PI)
-LOG_SQRT_PI = xlogy(0.5, PI)
+LOG_SQRT_PI = ssp.xlogy(0.5, PI)
 
 TWO_PI = 2 * PI
 SQRT_TWO_PI = np.sqrt(TWO_PI)
 LOG_TWO_PI = LOG(TWO_PI)
-LOG_SQRT_TWO_PI = xlogy(0.5, TWO_PI)
+LOG_SQRT_TWO_PI = ssp.xlogy(0.5, TWO_PI)
 
 INV_PI = 1.0 / PI
 TWO_BY_PI = 2.0 * INV_PI
 SQRT_TWO_BY_PI = np.sqrt(TWO_BY_PI)
 LOG_TWO_BY_PI = LOG(TWO_BY_PI)
-LOG_SQRT_TWO_BY_PI = xlogy(0.5, TWO_BY_PI)
+LOG_SQRT_TWO_BY_PI = ssp.xlogy(0.5, TWO_BY_PI)
 
 
 def suppress_numpy_warnings():
@@ -131,13 +115,14 @@ def suppress_numpy_warnings():
 
 
 @suppress_numpy_warnings()
-def arc_sine_pdf_(x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False) -> NDArray:
+def arc_sine_pdf_(x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
+                  normalize: bool = False) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values where PDF is evaluated.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -196,7 +181,7 @@ def arc_sine_pdf_(x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_log_pdf_(
     x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute logPDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
 
@@ -240,7 +225,7 @@ def arc_sine_cdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -263,7 +248,7 @@ def arc_sine_log_cdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
 
@@ -302,14 +287,14 @@ def beta_pdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
     Parameters
     ----------
     beta_
-    x : NDArray
+    x : np.ndarray
         Input array of values where PDF is evaluated.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -341,7 +326,7 @@ def beta_pdf_(
 
     .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 - y)^{\beta - 1}}{B(\alpha, \beta)}
 
-    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`scipy.special.beta`), and :math:`y` is the
+    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`ssp.beta`), and :math:`y` is the
     transformed value of :math:`x` such that:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -374,7 +359,7 @@ def beta_log_pdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
     Notes
@@ -383,7 +368,7 @@ def beta_log_pdf_(
 
     .. math:: \ell(y) = (\alpha - 1)\ln(y) + (\beta - 1)\ln(1 - y) - \ln(\text{Beta}(\alpha, \beta))
 
-    where :math:`B(\alpha, \beta)` is the :obj:`~scipy.special.beta` function, and :math:`y` is the
+    where :math:`B(\alpha, \beta)` is the :obj:`~ssp.beta` function, and :math:`y` is the
     transformed value of :math:`x` such that:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -416,13 +401,13 @@ def beta_cdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         For API consistency only.
@@ -435,7 +420,7 @@ def beta_cdf_(
 
     .. math:: F(y) = I_y(\alpha, \beta)
 
-    where :math:`I_y(\alpha, \beta)` is the :obj:`~scipy.special.betainc` function, and :math:`y` is the transformed
+    where :math:`I_y(\alpha, \beta)` is the :obj:`~ssp.betainc` function, and :math:`y` is the transformed
     value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -447,7 +432,7 @@ def beta_cdf_(
     if y.size == 0:
         return y
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=betainc(alpha, beta_, y))
+    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=ssp.betainc(alpha, beta_, y))
 
 
 @suppress_numpy_warnings()
@@ -460,7 +445,7 @@ def beta_log_cdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute logCDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
@@ -470,7 +455,7 @@ def beta_log_cdf_(
 
     .. math:: \mathcal{L}(y) = \ln I_y(\alpha, \beta)
 
-    where :math:`I_y(\alpha, \beta)` is the :obj:`~scipy.special.betainc` function, and :math:`y` is the transformed
+    where :math:`I_y(\alpha, \beta)` is the :obj:`~ssp.betainc` function, and :math:`y` is the transformed
     value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -482,7 +467,7 @@ def beta_log_cdf_(
     if y.size == 0:
         return y
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(betainc(alpha, beta_, y)))
+    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(ssp.betainc(alpha, beta_, y)))
 
 
 @suppress_numpy_warnings()
@@ -493,13 +478,13 @@ def chi_square_pdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -528,7 +513,7 @@ def chi_square_pdf_(
 
     .. math:: f(y\ |\ k) = \dfrac{y^{(k/2) - 1} e^{-y/2}}{2^{k/2} \Gamma(k/2)}
 
-    where :math:`\Gamma(\cdot)` is the :obj:`~scipy.special.gamma` function, and :math:`y` is the transformed value of :math:`x`, defined as:
+    where :math:`\Gamma(\cdot)` is the :obj:`~ssp.gamma` function, and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
 
@@ -541,7 +526,7 @@ def chi_square_pdf_(
 
     df_half = degree_of_freedom / 2
 
-    pdf_ = np.where(y > 0, np.power(y, df_half - 1) / np.exp(y / 2) / np.power(2, df_half) / gamma(df_half), 0)
+    pdf_ = np.where(y > 0, np.power(y, df_half - 1) / np.exp(y / 2) / np.power(2, df_half) / ssp.gamma(df_half), 0)
     pdf_ /= scale
 
     if not normalize:
@@ -559,7 +544,7 @@ def chi_square_log_pdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -569,7 +554,7 @@ def chi_square_log_pdf_(
 
     .. math:: \ell(y\ |\ k) = \left(\dfrac{k}{2} - 1\right)\ln(y) - \dfrac{y}{2} - \dfrac{k}{2}\ln(2) - \ln\Gamma\left(\dfrac{k}{2}\right)
 
-    where :math:`\ln\Gamma(\cdot)` is the :obj:`~scipy.special.gammaln` function,
+    where :math:`\ln\Gamma(\cdot)` is the :obj:`~ssp.gammaln` function,
     and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
@@ -584,7 +569,7 @@ def chi_square_log_pdf_(
 
     df_half = degree_of_freedom / 2
 
-    log_pdf_ = np.where(y > 0, xlogy(df_half - 1, y) - (y / 2) - xlogy(df_half, 2) - gammaln(df_half), -INF)
+    log_pdf_ = np.where(y > 0, ssp.xlogy(df_half - 1, y) - (y / 2) - ssp.xlogy(df_half, 2) - ssp.gammaln(df_half), -INF)
     log_pdf_ -= LOG(scale)
 
     if not normalize:
@@ -602,7 +587,7 @@ def chi_square_cdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -618,7 +603,7 @@ def chi_square_cdf_(
 
     .. math:: F(y) = \gamma\left(\dfrac{\nu}{2}, \dfrac{y}{2}\right)
 
-    where, :math:`\gamma\left(\cdot, \cdot\right)` is the :obj:`~scipy.special.gammainc` lower regularized incomplete
+    where, :math:`\gamma\left(\cdot, \cdot\right)` is the :obj:`~ssp.gammainc` lower regularized incomplete
     gamma function, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
@@ -630,7 +615,7 @@ def chi_square_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y > 0, gammainc(degree_of_freedom / 2, y / 2), 0)
+    return np.where(y > 0, ssp.gammainc(degree_of_freedom / 2, y / 2), 0)
 
 
 @suppress_numpy_warnings()
@@ -642,7 +627,7 @@ def chi_square_log_cdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -652,7 +637,7 @@ def chi_square_log_cdf_(
 
     .. math:: \mathcal{L}(y) = \ln\gamma\left(\dfrac{\nu}{2}, \dfrac{y}{2}\right)
 
-    where, :math:`\gamma\left(\cdot, \cdot\right)` is the :obj:`~scipy.special.gammainc` lower regularized incomplete
+    where, :math:`\gamma\left(\cdot, \cdot\right)` is the :obj:`~ssp.gammainc` lower regularized incomplete
     gamma function, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
@@ -664,7 +649,7 @@ def chi_square_log_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y > 0, LOG(gammainc(degree_of_freedom / 2, y / 2)), -INF)
+    return np.where(y > 0, LOG(ssp.gammainc(degree_of_freedom / 2, y / 2)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -674,7 +659,7 @@ def cubic(
     b: float = 1.0,
     c: float = 1.0,
     d: float = 1.0,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Computes the y-values of a cubic function given x-values.
 
@@ -714,13 +699,13 @@ def exponential_pdf_(
     lambda_: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -780,7 +765,7 @@ def exponential_log_pdf_(
     lambda_: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
@@ -831,12 +816,12 @@ def exponential_cdf_(
     lambda_: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
     .. note::
-        This function uses :obj:`scipy.special.gammainc` to calculate the CDF with
+        This function uses :obj:`ssp.gammainc` to calculate the CDF with
         :math:`a = 1` and :math:`x = \dfrac{x - \text{loc}}{\theta}`, where :math:`\theta = \dfrac{1}{\lambda}`.
 
     Parameters
@@ -863,7 +848,7 @@ def exponential_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y >= 0, gammainc(1, y), 0)
+    return np.where(y >= 0, ssp.gammainc(1, y), 0)
 
 
 @suppress_numpy_warnings()
@@ -874,12 +859,12 @@ def exponential_log_cdf_(
     lambda_: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
     .. note::
-        This function uses log transformation of :obj:`scipy.special.gammainc` to calculate the log CDF with
+        This function uses log transformation of :obj:`ssp.gammainc` to calculate the log CDF with
         :math:`a = 1` and :math:`x = \dfrac{x - \text{loc}}{\theta}`, where :math:`\theta = \dfrac{1}{\lambda}`.
 
     Notes
@@ -899,7 +884,7 @@ def exponential_log_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y >= 0, LOG(gammainc(1, y)), -INF)
+    return np.where(y >= 0, LOG(ssp.gammainc(1, y)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -910,13 +895,13 @@ def folded_normal_pdf_(
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -1015,7 +1000,7 @@ def folded_normal_cdf_(
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -1059,7 +1044,7 @@ def folded_normal_log_cdf_(
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -1070,7 +1055,7 @@ def folded_normal_log_cdf_(
     .. math:: \mathcal{L}(y) = -\ln(2) + \ln\left[\text{erf}\left(\dfrac{q}{\sqrt{2}}\right) +
               \text{erf}\left(\dfrac{r}{\sqrt{2}}\right)\right]
 
-    where :math:`q = y + \mu`, :math:`r = y - \mu`, :math:`\text{erf}` is :obj:`~scipy.special.erf` function and
+    where :math:`q = y + \mu`, :math:`r = y - \mu`, :math:`\text{erf}` is :obj:`~ssp.erf` function and
     :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\sigma}.
@@ -1085,7 +1070,7 @@ def folded_normal_log_cdf_(
     q = (y + mean) / SQRT_TWO
     r = (y - mean) / SQRT_TWO
 
-    return np.where(y >= 0, -LOG_TWO + LOG(erf(q) + erf(r)), -INF)
+    return np.where(y >= 0, -LOG_TWO + LOG(ssp.erf(q) + ssp.erf(r)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -1142,13 +1127,13 @@ def gamma_pdf_(
     theta: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -1201,7 +1186,7 @@ def gamma_log_pdf_(
     theta: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`
 
@@ -1226,7 +1211,7 @@ def gamma_log_pdf_(
 
 
 def _gamma(x, a, un_log=False):
-    value = np.where(x >= 0, xlogy(a - 1.0, x) - x - gammaln(a), -INF)
+    value = np.where(x >= 0, ssp.xlogy(a - 1.0, x) - x - ssp.gammaln(a), -INF)
     return np.exp(value) if un_log else value
 
 
@@ -1239,7 +1224,7 @@ def gamma_cdf_(
     theta: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`.
 
@@ -1261,7 +1246,7 @@ def gamma_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y >= 0, gammainc(alpha, y), 0)
+    return np.where(y >= 0, ssp.gammainc(alpha, y), 0)
 
 
 @suppress_numpy_warnings()
@@ -1273,7 +1258,7 @@ def gamma_log_cdf_(
     theta: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`.
 
@@ -1289,7 +1274,7 @@ def gamma_log_cdf_(
     if y.size == 0:
         return y
 
-    return LOG(np.where(y >= 0, gammainc(alpha, y), 0))
+    return LOG(np.where(y >= 0, ssp.gammainc(alpha, y), 0))
 
 
 @suppress_numpy_warnings()
@@ -1299,13 +1284,13 @@ def gaussian_pdf_(
     mean=0.0,
     std=1.0,
     normalize=False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -1356,7 +1341,7 @@ def gaussian_log_pdf_(
     mean: float = 0.0,
     std: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
@@ -1390,13 +1375,13 @@ def gaussian_cdf_(
     mean: float = 0.0,
     std: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
     .. important::
 
-        The calculation of gaussian CDF is done using :obj:`scipy.special.ndtr` function.
+        The calculation of gaussian CDF is done using :obj:`ssp.ndtr` function.
 
     Parameters
     ----------
@@ -1415,7 +1400,7 @@ def gaussian_cdf_(
 
     The final CDF is expressed as :math:`F(x)`.
     """
-    return ndtr((x - mean) / std)
+    return ssp.ndtr((x - mean) / std)
 
 
 @suppress_numpy_warnings()
@@ -1426,13 +1411,13 @@ def gaussian_log_cdf_(
     mean: float = 0.0,
     std: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
     .. important::
 
-        The calculation of gaussian log CDF is done using :obj:`scipy.special.log_ndtr` function.
+        The calculation of gaussian log CDF is done using :obj:`ssp.log_ndtr` function.
 
     Notes
     -----
@@ -1443,7 +1428,7 @@ def gaussian_log_cdf_(
 
     The final log CDF is expressed as :math:`\mathcal{L}(x)`.
     """
-    return log_ndtr((x - mean) / std)
+    return ssp.log_ndtr((x - mean) / std)
 
 
 @suppress_numpy_warnings()
@@ -1453,7 +1438,7 @@ def half_normal_pdf_(
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for the :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
@@ -1463,7 +1448,7 @@ def half_normal_pdf_(
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -1518,7 +1503,7 @@ def half_normal_log_pdf_(
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for the :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
@@ -1556,7 +1541,7 @@ def half_normal_cdf_(
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute the CDF for :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
@@ -1584,7 +1569,7 @@ def half_normal_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y >= 0, erf(y / SQRT_TWO), 0)
+    return np.where(y >= 0, ssp.erf(y / SQRT_TWO), 0)
 
 
 @suppress_numpy_warnings()
@@ -1595,7 +1580,7 @@ def half_normal_log_cdf_(
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute the log CDF for :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
@@ -1616,7 +1601,7 @@ def half_normal_log_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y >= 0, LOG(erf(y / SQRT_TWO)), -INF)
+    return np.where(y >= 0, LOG(ssp.erf(y / SQRT_TWO)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -1626,13 +1611,13 @@ def laplace_pdf_(
     mean: float = 0.0,
     diversity: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for the :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF. Defaults to 1.0.
@@ -1686,7 +1671,7 @@ def laplace_log_pdf_(
     mean: float = 0.0,
     diversity: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for the :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
@@ -1724,7 +1709,7 @@ def laplace_cdf_(
     mean: float = 0.0,
     diversity: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
@@ -1768,7 +1753,7 @@ def laplace_log_cdf_(
     mean: float = 0.0,
     diversity: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF for :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
@@ -1795,7 +1780,7 @@ def line(
     x,
     slope: float = 1.0,
     intercept: float = 0.0,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Computes the y-values of a line given x-values, slope, and intercept.
 
@@ -1832,13 +1817,13 @@ def log_normal_pdf_(
     std: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF.
@@ -1900,7 +1885,7 @@ def log_normal_log_pdf_(
     std: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
@@ -1942,7 +1927,7 @@ def log_normal_cdf_(
     std=1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
@@ -1966,14 +1951,14 @@ def log_normal_cdf_(
         .. math::
             F(x) = \Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)
 
-        which can be calculated via :obj:`scipy.special.ndtr` function with ``ndtr(y)``, where :math:`y` is the
+        which can be calculated via :obj:`ssp.ndtr` function with ``ndtr(y)``, where :math:`y` is the
         transformed value of :math:`x`, defined as:
 
         .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
     """
     y = preprocess_input(x=x, loc=loc, scale=np.exp(mean))
 
-    return np.where(y > 0, ndtr(LOG(y) / std), 0)
+    return np.where(y > 0, ssp.ndtr(LOG(y) / std), 0)
 
 
 @suppress_numpy_warnings()
@@ -1985,7 +1970,7 @@ def log_normal_log_cdf_(
     std: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
@@ -1997,21 +1982,21 @@ def log_normal_log_cdf_(
         .. math::
             F(x) = \ln\left[\Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)\right]
 
-        which can be calculated via :obj:`scipy.special.log_ndtr` function function with ``log_ndtr(y)``, where :math:`y`
+        which can be calculated via :obj:`ssp.log_ndtr` function function with ``log_ndtr(y)``, where :math:`y`
         is the transformed value of :math:`x`, defined as:
 
         .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
     """
     y = preprocess_input(x=x, loc=loc, scale=np.exp(mean))
 
-    return np.where(y > 0, log_ndtr(LOG(y) / std), -INF)
+    return np.where(y > 0, ssp.log_ndtr(LOG(y) / std), -INF)
 
 
 @suppress_numpy_warnings()
 def nth_polynomial(
     x,
     coefficients: list[float],
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Evaluate a polynomial at given points.
 
@@ -2046,13 +2031,13 @@ def uniform_pdf_(
     low: float = 0.0,
     high: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF.
@@ -2107,7 +2092,7 @@ def uniform_log_pdf_(
     low: float = 0.0,
     high: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
@@ -2143,7 +2128,7 @@ def uniform_cdf_(
     low: float = 0.0,
     high: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
@@ -2185,7 +2170,7 @@ def uniform_log_cdf_(
     low: float = 0.0,
     high: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
@@ -2228,7 +2213,7 @@ def scaled_inv_chi_square_pdf_(
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF.
@@ -2273,7 +2258,7 @@ def scaled_inv_chi_square_pdf_(
     tau2 = scale / df
     df_half = df / 2
 
-    f1 = np.power(tau2 * df_half, df_half) * rgamma(df_half)
+    f1 = np.power(tau2 * df_half, df_half) * ssp.rgamma(df_half)
     f2 = np.exp(-(df * tau2) / (2 * y)) / np.power(y, 1 + df_half)
 
     pdf_ = np.where(y > 0, f1 * f2, 0)
@@ -2303,7 +2288,7 @@ def scaled_inv_chi_square_log_pdf_(
 
     .. math:: \ell(y) = \ln(\tau^2\nu_2) - \ln\Gamma(\nu_2) - (1+\nu_2)\ln(\nu) - \dfrac{\nu\tau^2}{2y}
 
-    where :math:`\ln` is the natural logarithm, :math:`\ln\Gamma(\cdot)` is the :obj:`~scipy.special.gammaln` function,
+    where :math:`\ln` is the natural logarithm, :math:`\ln\Gamma(\cdot)` is the :obj:`~ssp.gammaln` function,
     :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}` and :math:`y` is the transformed value of
     :math:`x`, defined as:
 
@@ -2319,8 +2304,8 @@ def scaled_inv_chi_square_log_pdf_(
     tau2 = scale / df
     df_half = df / 2
 
-    f1 = xlogy(df_half, tau2 * df_half) - gammaln(df_half)
-    f2 = -(tau2 * df) / (2 * y) - xlogy(1 + df_half, y)
+    f1 = ssp.xlogy(df_half, tau2 * df_half) - ssp.gammaln(df_half)
+    f2 = -(tau2 * df) / (2 * y) - ssp.xlogy(1 + df_half, y)
 
     log_pdf_ = np.where(y > 0, f1 + f2, -INF)
 
@@ -2357,7 +2342,7 @@ def scaled_inv_chi_square_cdf_(
     .. math:: F(y) = \Gamma\left(\nu_2, \dfrac{\tau^2\nu_2}{y}\right)
 
     where :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}`, :math:`\Gamma(a, b)` is the regularized
-    upper gamma function, see :obj:`scipy.special.gammaincc`,and :math:`y` is the transformed value of :math:`x`,
+    upper gamma function, see :obj:`ssp.gammaincc`,and :math:`y` is the transformed value of :math:`x`,
     defined as:
 
     .. math:: y = x - \text{loc}
@@ -2372,7 +2357,7 @@ def scaled_inv_chi_square_cdf_(
     tau2 = scale / df
     df_half = df / 2
 
-    return np.where(y > 0, gammaincc(df_half, (tau2 * df_half) / y), 0)
+    return np.where(y > 0, ssp.gammaincc(df_half, (tau2 * df_half) / y), 0)
 
 
 @suppress_numpy_warnings()
@@ -2384,7 +2369,7 @@ def scaled_inv_chi_square_log_cdf_(
     scale: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`.
 
@@ -2395,7 +2380,7 @@ def scaled_inv_chi_square_log_cdf_(
     .. math:: \mathcal{L}(y) = \ln\left[\Gamma\left(\nu_2, \dfrac{\tau^2\nu_2}{y}\right)\right]
 
     where :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}`, :math:`\Gamma(a, b)` is the regularized
-    upper gamma function, see :obj:`scipy.special.gammaincc`,and :math:`y` is the transformed value of :math:`x`,
+    upper gamma function, see :obj:`ssp.gammaincc`,and :math:`y` is the transformed value of :math:`x`,
     defined as:
 
     .. math:: y = x - \text{loc}
@@ -2410,7 +2395,7 @@ def scaled_inv_chi_square_log_cdf_(
     tau2 = scale / df
     df_half = df / 2
 
-    return np.where(y > 0, LOG(gammaincc(df_half, (tau2 * df_half) / y)), -INF)
+    return np.where(y > 0, LOG(ssp.gammaincc(df_half, (tau2 * df_half) / y)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -2421,13 +2406,13 @@ def skew_normal_pdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF.
@@ -2489,7 +2474,7 @@ def skew_normal_log_pdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
 
@@ -2547,7 +2532,7 @@ def skew_normal_cdf_(
 
     .. math:: F(y) = \Phi(y) - 2T(y, \alpha)
 
-    where, :math:`T` is the Owen's T function, see :obj:`scipy.special.owens_t`, and
+    where, :math:`T` is the Owen's T function, see :obj:`ssp.owens_t`, and
     :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function, and
     :math:`y` is the transformed value of :math:`x`, defined as:
 
@@ -2557,7 +2542,7 @@ def skew_normal_cdf_(
     """
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
-    return gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
+    return gaussian_cdf_(x=y, normalize=True) - 2 * ssp.owens_t(y, shape)
 
 
 @suppress_numpy_warnings()
@@ -2568,13 +2553,13 @@ def sym_gen_normal_pdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
     Parameters
     ----------
-    x : NDArray
+    x : np.ndarray
         Input array of values.
     amplitude : float, optional
         The amplitude of the PDF.
@@ -2604,7 +2589,7 @@ def sym_gen_normal_pdf_(
 
     .. math:: f(y\ |\ \beta, \mu, \alpha) = \dfrac{\beta}{2\Gamma(1/\beta)}\exp\left(-|y|^\beta\right)
 
-    where, :math:`\Gamma` is the :obj:`scipy.special.gamma` function, and :math:`y` is the transformed value of
+    where, :math:`\Gamma` is the :obj:`ssp.gamma` function, and :math:`y` is the transformed value of
     :math:`x`, defined as:
 
     .. math:: y = \frac{x - \mu}{\alpha}
@@ -2618,7 +2603,7 @@ def sym_gen_normal_pdf_(
 
     _, _, beta = loc, scale, shape
 
-    log_pdf_ = beta / 2 / gamma(1 / beta) * np.exp(-np.power(np.abs(y), beta))
+    log_pdf_ = beta / 2 / ssp.gamma(1 / beta) * np.exp(-np.power(np.abs(y), beta))
     log_pdf_ /= scale
 
     if not normalize:
@@ -2636,7 +2621,7 @@ def sym_gen_normal_log_pdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -2646,7 +2631,7 @@ def sym_gen_normal_log_pdf_(
 
     .. math:: \ell(y\ |\ \beta, \mu, \alpha) = \ln(\beta) - \ln(2) - \ln\Gamma\left(\dfrac{1}{\beta}\right) - |y|^\beta
 
-    where, :math:`\Gamma` is the :obj:`scipy.special.gamma` function, and :math:`y` is the transformed value of
+    where, :math:`\Gamma` is the :obj:`ssp.gamma` function, and :math:`y` is the transformed value of
     :math:`x`, defined as:
 
     .. math:: y = \frac{x - \mu}{\alpha}
@@ -2660,7 +2645,7 @@ def sym_gen_normal_log_pdf_(
 
     _, _, beta = loc, scale, shape
 
-    log_pdf_ = LOG(beta) - LOG_TWO - gammaln(1 / beta) - np.power(np.abs(y), beta)
+    log_pdf_ = LOG(beta) - LOG_TWO - ssp.gammaln(1 / beta) - np.power(np.abs(y), beta)
     log_pdf_ -= LOG(scale)
 
     if not normalize:
@@ -2678,7 +2663,7 @@ def sym_gen_normal_cdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -2696,7 +2681,7 @@ def sym_gen_normal_cdf_(
     .. math:: F(y) = \dfrac{1}{2} + \dfrac{\text{sign}(y)}{2}\gamma\left(\dfrac{1}{\beta},|y|^\beta\,\right)
 
     where :math:`\gamma(\cdot,\cdot)` is the regularized lower incomplete gamma function, see
-    :obj:`~scipy.special.gammainc`, and :math:`y` is the transformed value of :math:`x`, defined as:
+    :obj:`~ssp.gammainc`, and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
 
@@ -2709,7 +2694,7 @@ def sym_gen_normal_cdf_(
 
     _, _, beta = loc, scale, shape
 
-    return 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, np.power(np.abs(y), beta))
+    return 0.5 + np.sign(y) * 0.5 * ssp.gammainc(1 / beta, np.power(np.abs(y), beta))
 
 
 @suppress_numpy_warnings()
@@ -2721,7 +2706,7 @@ def sym_gen_normal_log_cdf_(
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -2732,7 +2717,7 @@ def sym_gen_normal_log_cdf_(
     .. math:: \mathcal{L}(y) =
      \ln\left[\dfrac{1}{2} + \dfrac{\text{sign}(y)}{2}\gamma\left(\dfrac{1}{\beta},|y|^\beta\,\right)\right]
 
-    where :math:`\gamma(\cdot,\cdot)` is the lower incomplete gamma function, see :obj:`~scipy.special.gammainc`, and
+    where :math:`\gamma(\cdot,\cdot)` is the lower incomplete gamma function, see :obj:`~ssp.gammainc`, and
     :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -2751,7 +2736,7 @@ def quadratic(
     a: float = 1.0,
     b: float = 1.0,
     c: float = 1.0,
-) -> NDArray:
+) -> np.ndarray:
     r"""
     Computes the y-values of a quadratic function given x-values.
 
@@ -2784,10 +2769,10 @@ def quadratic(
 
 @suppress_numpy_warnings()
 def _beta_expr(
-    y,
-    a,
-    b,
-    un_log=False,
+    y: np.ndarray,
+    a: float,
+    b: float,
+    un_log: bool = False,
 ):
     in_range = (y > 0) & (y < 1)
 
@@ -2795,30 +2780,31 @@ def _beta_expr(
     undefined_1 = (y == 1) & (b <= 1)
     special_case = (y == 1) & (a == 1) & (b == 1)
 
-    expr = xlog1py(b - 1.0, -y) + xlogy(a - 1, y) - betaln(a, b)
-    expr2 = np.power(y, a - 1) * np.power(1.0 - y, b - 1.0) / beta(a, b)
+    expr = ssp.xlog1py(b - 1.0, -y) + ssp.xlogy(a - 1, y) - ssp.betaln(a, b)
+    expr2 = np.power(y, a - 1) * np.power(1.0 - y, b - 1.0) / ssp.beta(a, b)
 
     return [special_case, undefined_0 | undefined_1, in_range], expr2 if un_log else expr
 
 
 @suppress_numpy_warnings()
 def _pdf_scaling(
-    pdf_,
+    pdf_: np.ndarray,
     amplitude: float,
-) -> NDArray:
+) -> np.ndarray:
     """
-    Scales a probability density function (PDF) by a given amplitude.
+    Scales a probability density function (PDF) array by a specified amplitude value, normalizing it relative to its
+    maximum value.
 
     Parameters
     ----------
-    pdf_ : NDArray
-        The input PDF array to be scaled.
+    pdf_ : np.ndarray
+        The input probability density function values (not necessarily normalized).
     amplitude : float
-        The amplitude to scale the PDF.
+        The amplitude factor to scale the normalized PDF.
 
     Returns
     -------
-    np.ndarray
+    NdArray
         The scaled PDF array.
     """
     with np.errstate(all="ignore"):
@@ -2827,11 +2813,11 @@ def _pdf_scaling(
 
 @suppress_numpy_warnings()
 def _log_pdf_scaling(
-    log_pdf_,
+    log_pdf_: np.ndarray,
     amplitude: float,
-) -> NDArray:
+) -> np.ndarray:
     with np.errstate(all="ignore"):
-        return log_pdf_ + LOG(amplitude) - np.max(log_pdf_)
+        return LOG(amplitude) + (log_pdf_ - np.max(log_pdf_))
 
 
 @suppress_numpy_warnings()
@@ -2839,25 +2825,23 @@ def preprocess_input(
     x,
     loc=0.0,
     scale=1.0,
-) -> NDArray:
+) -> np.ndarray:
     """
-    Preprocess the input array by converting to float, checking for scalar input, handling empty arrays, and normalizing the data.
+    Preprocess the input array, checking for scalar input, handling empty arrays, and loc-scale normalizaing the data.
 
     Parameters
     ----------
     x : np.ndarray
         Input data.
     loc : float, optional
-        The location parameter, for shifting.
-        Defaults to 0.0.
+        The location parameter, for shifting, defaults to 0.0.
     scale: float, optional
-        The scale parameter, for scaling.
-        Defaults to 1.0,
+        The scale parameter, for scaling, defaults to 1.0,
 
     Returns
     -------
-    tuple:
-        (processed array, scalar_input_flag)
+    np.ndarray
+        loc-scale shifted numpy array.
     """
     x = np.asarray(a=x, dtype=float)
 

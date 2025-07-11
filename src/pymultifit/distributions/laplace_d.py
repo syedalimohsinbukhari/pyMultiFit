@@ -1,9 +1,12 @@
 """Created on Aug 03 21:12:13 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_pdf_, laplace_log_pdf_, laplace_log_cdf_
+from .. import md_scipy_like
 
 
 class LaplaceDistribution(BaseDistribution):
@@ -92,7 +95,8 @@ class LaplaceDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'LaplaceDistribution':
         """
         Instantiate LaplaceDistribution with scipy parametrization.
 
@@ -108,13 +112,28 @@ class LaplaceDistribution(BaseDistribution):
         LaplaceDistribution
             An instance of normalized LaplaceDistribution.
         """
-        return cls(
-            mean=loc,
-            diversity=scale,
-            normalize=True,
-        )
+        return cls(mean=loc, diversity=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'LaplaceDistribution':
+        """
+        Instantiate LaplaceDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        LaplaceDistribution
+            An instance of normalized LaplaceDistribution.
+        """
+        return cls(mean=loc, diversity=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return laplace_pdf_(
             x,
             amplitude=self.amplitude,
@@ -123,7 +142,7 @@ class LaplaceDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return laplace_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -132,7 +151,7 @@ class LaplaceDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return laplace_cdf_(
             x,
             amplitude=self.amplitude,
@@ -141,7 +160,7 @@ class LaplaceDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return laplace_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -150,7 +169,7 @@ class LaplaceDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         m, b = self.mu, self.b
 
         variance_ = 2 * b**2

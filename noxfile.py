@@ -23,12 +23,12 @@ def lint(session):
 @nox.session
 def type_check(session):
     """Type-check the code using Pyright."""
-    session.install(".", "pyright")
-    session.run("pyright", CODE_LOCATIONS[0])  # adjust path if needed
+    session.install(".", "mypy", "pip")
+    session.run("mypy", "--install-types", "--non-interactive", CODE_LOCATIONS[0])
 
 
 @nox.session
 def tests(session):
     """Run unit tests with pytest."""
-    session.install(".", "pytest")
-    session.run("pytest", "src/tests/")  # adjust path if needed
+    session.install(".", "pytest", "Deprecated")
+    session.run("pytest", "./src/tests/")  # adjust the path if needed

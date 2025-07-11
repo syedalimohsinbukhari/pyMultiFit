@@ -1,7 +1,12 @@
 """Created on Aug 03 20:07:50 2024"""
 
+from typing import Dict
+
+import numpy as np
+
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gaussian_cdf_, gaussian_pdf_, gaussian_log_pdf_, gaussian_log_cdf_
+from .. import md_scipy_like
 
 
 class GaussianDistribution(BaseDistribution):
@@ -90,7 +95,8 @@ class GaussianDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'GaussianDistribution':
         """
         Instantiate GaussianDistribution with scipy parametrization.
 
@@ -106,13 +112,28 @@ class GaussianDistribution(BaseDistribution):
         GaussianDistribution
             An instance of normalized GaussianDistribution.
         """
-        return cls(
-            mu=loc,
-            std=scale,
-            normalize=True,
-        )
+        return cls(mu=loc, std=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'GaussianDistribution':
+        """
+        Instantiate GaussianDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The mean parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        GaussianDistribution
+            An instance of normalized GaussianDistribution.
+        """
+        return cls(mu=loc, std=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return gaussian_pdf_(
             x,
             amplitude=self.amplitude,
@@ -121,7 +142,7 @@ class GaussianDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return gaussian_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -130,7 +151,7 @@ class GaussianDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return gaussian_cdf_(
             x,
             amplitude=self.amplitude,
@@ -139,7 +160,7 @@ class GaussianDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return gaussian_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -148,7 +169,7 @@ class GaussianDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         m, s = self.mu, self.std_
 
         return {

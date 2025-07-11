@@ -41,18 +41,18 @@ class TestBetaDistribution:
 
     @staticmethod
     def test_stats():
-        btf.stats(custom_distribution=BetaDistribution.scipy_like,
+        btf.stats(custom_distribution=BetaDistribution.from_scipy_params,
                   scipy_distribution=beta,
                   parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter, btf.scale_parameter])
 
     @staticmethod
     def test_pdfs():
-        btf.value_functions(custom_distribution=BetaDistribution.scipy_like, scipy_distribution=beta,
+        btf.value_functions(custom_distribution=BetaDistribution.from_scipy_params, scipy_distribution=beta,
                             parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter,
                                         btf.scale_parameter], log_check=True)
 
     @staticmethod
     def test_single_values():
-        btf.single_input_n_variables(custom_distribution=BetaDistribution.scipy_like, scipy_distribution=beta,
+        btf.single_input_n_variables(custom_distribution=BetaDistribution.from_scipy_params, scipy_distribution=beta,
                                      parameters=[btf.shape_parameter, btf.shape_parameter,
                                                  btf.loc_parameter, btf.scale_parameter], log_check=True)

@@ -47,7 +47,8 @@ dev = [
     "nbsphinx-link",
     "sphinx-gallery",
     "sphinx-autobuild",
-    "ruff"
+    "ruff",
+    "mypy"
 ]
 
 [project.urls]

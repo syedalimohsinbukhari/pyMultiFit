@@ -42,18 +42,18 @@ class TestSkewNormalDistribution:
 
     @staticmethod
     def test_stats():
-        btf.stats(custom_distribution=SkewNormalDistribution.scipy_like, scipy_distribution=skewnorm,
+        btf.stats(custom_distribution=SkewNormalDistribution.from_scipy_params, scipy_distribution=skewnorm,
                   parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
                   median=False)
 
     @staticmethod
     def test_pdfs():
-        btf.value_functions(custom_distribution=SkewNormalDistribution.scipy_like,
+        btf.value_functions(custom_distribution=SkewNormalDistribution.from_scipy_params,
                             scipy_distribution=skewnorm,
                             parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter])
 
     @staticmethod
     def test_single_values():
-        btf.single_input_n_variables(custom_distribution=SkewNormalDistribution.scipy_like,
+        btf.single_input_n_variables(custom_distribution=SkewNormalDistribution.from_scipy_params,
                                      scipy_distribution=skewnorm,
                                      parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter])

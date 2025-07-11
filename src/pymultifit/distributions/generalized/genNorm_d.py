@@ -1,10 +1,13 @@
 """Created on Jan 29 15:42:23 2025"""
 
+from typing import Dict
+
 import numpy as np
 from scipy.special import gammaln
 
 from ..backend import BaseDistribution, errorHandling as erH
 from ..utilities_d import sym_gen_normal_pdf_, sym_gen_normal_cdf_
+from ... import md_scipy_like
 
 
 class SymmetricGeneralizedNormalDistribution(BaseDistribution):
@@ -100,6 +103,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
+    @md_scipy_like('1.0.7')
     def scipy_like(cls, beta, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate SymmetricGeneralizedNormalDistribution with scipy parametrization.
@@ -118,14 +122,30 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         SymmetricGeneralizedNormalDistribution
             An instance of normalized SymmetricGeneralizedNormalDistribution.
         """
-        return cls(
-            shape=beta,
-            loc=loc,
-            scale=scale,
-            normalize=True,
-        )
+        return cls(shape=beta, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, beta, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate SymmetricGeneralizedNormalDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        beta: float
+            The shape parameter.
+        loc: float, optional
+            The mean parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        SymmetricGeneralizedNormalDistribution
+            An instance of normalized SymmetricGeneralizedNormalDistribution.
+        """
+        return cls(shape=beta, loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return sym_gen_normal_pdf_(
             x,
             amplitude=self.amplitude,
@@ -135,7 +155,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return sym_gen_normal_cdf_(
             x,
             amplitude=self.amplitude,
@@ -145,7 +165,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         mean_ = self.loc
         median_ = self.loc
         mode_ = self.loc

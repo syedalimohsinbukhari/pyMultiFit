@@ -9,5 +9,5 @@ from .halfNormal_f import HalfNormalFitter
 from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter
 from .mixed_f import MixedDataFitter
-from .polynomial_f import PolynomialFitter
+from .polynomial_f import PolynomialFitter, LineFitter, CubicFitter, QuadraticFitter
 from .skewNormal_f import SkewNormalFitter

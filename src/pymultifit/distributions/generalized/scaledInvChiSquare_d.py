@@ -1,5 +1,7 @@
 """Created on Feb 02 03:46:43 2025"""
 
+from typing import Dict
+
 import numpy as np
 
 from ..backend import BaseDistribution, errorHandling as erH
@@ -9,6 +11,7 @@ from ..utilities_d import (
     scaled_inv_chi_square_cdf_,
     scaled_inv_chi_square_log_cdf_,
 )
+from ... import md_scipy_like
 
 
 class ScaledInverseChiSquareDistribution(BaseDistribution):
@@ -34,15 +37,15 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
+    @md_scipy_like('1.0.7')
     def scipy_like(cls, a, loc: float = 0.0, scale=1.0):
-        return cls(
-            df=a,
-            loc=loc,
-            scale=scale,
-            normalize=True,
-        )
+        return cls(df=a, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, a, loc: float = 0.0, scale=1.0):
+        return cls(df=a, loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return scaled_inv_chi_square_pdf_(
             x,
             amplitude=self.amplitude,
@@ -52,7 +55,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return scaled_inv_chi_square_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -62,7 +65,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return scaled_inv_chi_square_cdf_(
             x,
             amplitude=self.amplitude,
@@ -72,7 +75,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return scaled_inv_chi_square_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -82,16 +85,14 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         v, tau2, loc = self.df, self.tau2, self.loc
         mean_ = (v * tau2) / (v - 2)
-        median_ = None
         mode_ = (v * tau2) / (v + 2)
         variance_ = (2 * v**2 * tau2**2) / ((v - 2)**2 * (v - 4))
 
         return {
             "mean": mean_ + loc if v > 2 else np.inf,
-            "median": median_,
             "mode": mode_ + loc,
             "variance": variance_ if v > 4 else np.inf,
             "std": np.sqrt(variance_) if v > 4 else np.inf,

@@ -1,9 +1,12 @@
 """Created on Nov 30 10:49:49 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import exponential_cdf_, exponential_pdf_, exponential_log_pdf_, exponential_log_cdf_
+from .. import md_scipy_like
 
 
 class ExponentialDistribution(BaseDistribution):
@@ -93,7 +96,8 @@ class ExponentialDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'ExponentialDistribution':
         r"""
         Instantiate ExponentialDistribution with scipy parameterization.
 
@@ -109,13 +113,28 @@ class ExponentialDistribution(BaseDistribution):
         ExponentialDistribution
             A instance of normalized ExponentialDistribution.
         """
-        return cls(
-            loc=loc,
-            scale=scale,
-            normalize=True,
-        )
+        return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'ExponentialDistribution':
+        r"""
+        Instantiate ExponentialDistribution with scipy parameterization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The rate parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        ExponentialDistribution
+            A instance of normalized ExponentialDistribution.
+        """
+        return cls(loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return exponential_pdf_(
             x,
             amplitude=self.amplitude,
@@ -124,7 +143,7 @@ class ExponentialDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return exponential_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -133,7 +152,7 @@ class ExponentialDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return exponential_cdf_(
             x,
             amplitude=self.amplitude,
@@ -142,7 +161,7 @@ class ExponentialDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return exponential_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -151,7 +170,7 @@ class ExponentialDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         s, l_ = self.scale, self.loc
 
         mean_ = (1 / s) + l_

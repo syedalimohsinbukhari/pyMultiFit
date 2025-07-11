@@ -1,5 +1,7 @@
 """Created on Aug 14 01:28:13 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
@@ -9,6 +11,7 @@ from .utilities_d import (
     gamma_cdf_,
     gamma_log_cdf_,
 )
+from .. import md_scipy_like
 
 
 class GammaDistribution(BaseDistribution):
@@ -105,7 +108,8 @@ class GammaDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> 'GammaDistribution':
         r"""
         Instantiate GammaDistributionSS with scipy parametrization.
 
@@ -123,30 +127,46 @@ class GammaDistribution(BaseDistribution):
         GammaDistribution
             An instance of normalized GammaDistributionSS.
         """
-        return cls(
-            shape=a,
-            loc=loc,
-            scale=scale,
-            normalize=True,
-        )
+        return cls(shape=a, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> 'GammaDistribution':
+        r"""
+        Instantiate GammaDistributionSS with scipy parametrization.
+
+        Parameters
+        ----------
+        a: float
+            The shape parameter.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scaling parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        GammaDistribution
+            An instance of normalized GammaDistributionSS.
+        """
+        return cls(shape=a, loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return gamma_pdf_(x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
                           normalize=self.norm)
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return gamma_log_pdf_(x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
                               normalize=self.norm)
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return gamma_cdf_(x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
                           normalize=self.norm)
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return gamma_log_cdf_(x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc,
                               normalize=self.norm)
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         s, r, l_ = self.shape, self.scale, self.loc
 
         mean_ = (s * r) + l_

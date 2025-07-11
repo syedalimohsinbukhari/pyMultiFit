@@ -3,3 +3,4 @@ matplotlib
 scipy
 mpyez
 custom-inherit
+Deprecated

@@ -1,10 +1,13 @@
 """Created on Aug 03 21:35:28 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
 from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
+from .. import md_scipy_like
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -99,6 +102,7 @@ class SkewNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
+    @md_scipy_like('1.0.7')
     def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate SkewNormalDistribution with scipy parametrization.
@@ -117,14 +121,30 @@ class SkewNormalDistribution(BaseDistribution):
         SkewNormalDistribution
             An instance of normalized SkewNormalDistribution.
         """
-        return cls(
-            shape=a,
-            location=loc,
-            scale=scale,
-            normalize=True,
-        )
+        return cls(shape=a, location=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, a: float, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate SkewNormalDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        a : float
+            The skewness parameter.
+        loc : float, optional
+            The location parameter. Defaults to 0.0.
+        scale : float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        SkewNormalDistribution
+            An instance of normalized SkewNormalDistribution.
+        """
+        return cls(shape=a, location=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return skew_normal_pdf_(
             x,
             amplitude=self.amplitude,
@@ -134,7 +154,7 @@ class SkewNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return skew_normal_cdf_(
             x,
             amplitude=self.amplitude,
@@ -144,7 +164,7 @@ class SkewNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location
         delta = alpha / np.sqrt(1 + alpha**2)
         delta_sqrt_2_pi = np.sqrt(2 / np.pi) * delta
@@ -163,7 +183,6 @@ class SkewNormalDistribution(BaseDistribution):
         return {
             "mean": mean_,
             "mode": mode_,
-            "median": None,
             "variance": variance_,
             "std": std_,
         }

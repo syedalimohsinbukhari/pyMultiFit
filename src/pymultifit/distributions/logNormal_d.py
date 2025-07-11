@@ -1,10 +1,13 @@
 """Created on Aug 03 21:02:45 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import (log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_,
                           suppress_numpy_warnings)
+from .. import md_scipy_like
 
 
 class LogNormalDistribution(BaseDistribution):
@@ -95,7 +98,8 @@ class LogNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, s, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, s, loc: float = 0.0, scale: float = 1.0) -> 'LogNormalDistribution':
         """
         Instantiate LogNormalDistribution with scipy parametrization.
 
@@ -113,35 +117,51 @@ class LogNormalDistribution(BaseDistribution):
         LogNormalDistribution
             An instance of normalized LogNormalDistribution.
         """
-        return cls(
-            std=s,
-            mu=scale,
-            loc=loc,
-            normalize=True,
-        )
+        return cls(std=s, mu=scale, loc=loc, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, s, loc: float = 0.0, scale: float = 1.0) -> 'LogNormalDistribution':
+        """
+        Instantiate LogNormalDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        s: float
+            The shape parameter.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        LogNormalDistribution
+            An instance of normalized LogNormalDistribution.
+        """
+        return cls(std=s, mu=scale, loc=loc, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return log_normal_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return log_normal_log_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return log_normal_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return log_normal_log_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
     @suppress_numpy_warnings()
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         m, s, l_ = np.exp(self.mu), self.std, self.loc
 
         # copied from scipy source-code,

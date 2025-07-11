@@ -1,9 +1,12 @@
 """Created on Dec 11 20:40:15 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_pdf_, uniform_log_pdf_, uniform_log_cdf_
+from .. import md_scipy_like
 
 
 class UniformDistribution(BaseDistribution):
@@ -83,6 +86,7 @@ class UniformDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
+    @md_scipy_like('1.0.7')
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate UniformDistribution with scipy parametrization.
@@ -99,13 +103,28 @@ class UniformDistribution(BaseDistribution):
         UniformDistribution
             An instance of normalized UniformDistribution.
         """
-        return cls(
-            low=loc,
-            high=scale,
-            normalize=True,
-        )
+        return cls(low=loc, high=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate UniformDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        UniformDistribution
+            An instance of normalized UniformDistribution.
+        """
+        return cls(low=loc, high=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return uniform_pdf_(
             x,
             amplitude=self.amplitude,
@@ -114,7 +133,7 @@ class UniformDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return uniform_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -123,7 +142,7 @@ class UniformDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return uniform_cdf_(
             x,
             amplitude=self.amplitude,
@@ -132,7 +151,7 @@ class UniformDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return uniform_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -141,7 +160,7 @@ class UniformDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         low, high = self.low, self.low + self.high
 
         if low == high:

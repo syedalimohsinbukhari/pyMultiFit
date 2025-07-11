@@ -1,10 +1,13 @@
 """Created on Aug 14 00:45:37 2024"""
 
+from typing import Dict
+
 import numpy as np
 from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import beta_cdf_, beta_pdf_, beta_log_pdf_, beta_log_cdf_
+from .. import md_scipy_like
 
 
 class BetaDistribution(BaseDistribution):
@@ -106,7 +109,8 @@ class BetaDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('v1.0.7')
+    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> 'BetaDistribution':
         r"""
         Instantiate BetaDistribution with scipy parameterization.
 
@@ -126,15 +130,32 @@ class BetaDistribution(BaseDistribution):
         BetaDistribution
             An instance of normalized BetaDistribution.
         """
-        return cls(
-            alpha=a,
-            beta=b,
-            loc=loc,
-            scale=scale,
-            normalize=True,
-        )
+        return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> 'BetaDistribution':
+        r"""
+        Instantiate BetaDistribution with scipy parameterization.
+
+        Parameters
+        ----------
+        a: float
+            The shape parameter, :math:`\alpha`.
+        b: float
+            The shape parameter, :math:`\beta`.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter,. Defaults to 1.0.
+
+        Returns
+        -------
+        BetaDistribution
+            An instance of normalized BetaDistribution.
+        """
+        return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return beta_pdf_(
             x,
             amplitude=self.amplitude,
@@ -145,7 +166,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return beta_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -156,7 +177,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return beta_cdf_(
             x,
             amplitude=self.amplitude,
@@ -167,7 +188,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return beta_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -178,7 +199,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         a, b = self.alpha, self.beta
         s, _l = self.scale, self.loc
 
@@ -189,14 +210,13 @@ class BetaDistribution(BaseDistribution):
         median_ = (s * median_) + _l
 
         num_ = a * b
-        den_ = (a + b) ** 2 * (a + b + 1)
+        den_ = (a + b)**2 * (a + b + 1)
 
         variance_ = s**2 * (num_ / den_)
 
         return {
             "mean": mean_,
-            "median": median_,
-            "mode": None,
+            "median": median_.astype(float),
             "variance": variance_,
             "std": np.sqrt(variance_),
         }

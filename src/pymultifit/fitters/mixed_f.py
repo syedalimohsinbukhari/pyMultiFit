@@ -1,14 +1,14 @@
 """Created on Aug 10 23:08:38 2024"""
 
 import itertools
-from typing import Optional, Tuple, Union, List, Callable
+from typing import Optional, Tuple, Union, List, Callable, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot
-from mpyez.ezPlotting import plot_xy
-from numpy.typing import NDArray
+from mpyez.backend.uPlotting import LinePlot # type: ignore
+from mpyez.ezPlotting import plot_xy # type: ignore
+from numpy.typing import NDArray # type: ignore
 from scipy.optimize import Bounds, curve_fit
 
 # importing from files to avoid circular import
@@ -78,8 +78,8 @@ class MixedDataFitter:
         self.y_values: NDArray = y_values
         self.model_list = model_list
         self.max_iterations = max_iterations
-        self.params: Optional[NDArray] = None
-        self.covariance: Optional[NDArray] = None
+        self.params: Any = None
+        self.covariance: Any = None
 
         self.fitter_dict = fitter_dictionary or fitter_dict
 
@@ -202,7 +202,7 @@ class MixedDataFitter:
         :return: A dictionary where the keys are model names and the values are lists of parameters/error values.
         """
         p_index = 0
-        param_dict = {}
+        param_dict: dict = {}
 
         for model in self.model_list:
             if model not in param_dict:
@@ -293,10 +293,16 @@ class MixedDataFitter:
 
         :raises ValueError: If the length of the initial guess is not equal to the expected parameter count.
         """
-        # flatten cannot always work here because the mixed fitter might contain variable number of parameters
-        p0 = list(itertools.chain.from_iterable(p0))
-        if len(p0) != self._expected_param_count():
-            raise ValueError(f"Initial parameters length {len(p0)} does not match expected count "
+        # flatten cannot always work here because the mixed fitter might contain a variable number of parameters
+
+        p0_chain = []
+
+        if isinstance(p0, np.ndarray):
+            p0_chain = p0.tolist()
+
+        p0_chain = list(itertools.chain.from_iterable(p0_chain))
+        if len(p0_chain) != self._expected_param_count():
+            raise ValueError(f"Initial parameters length {len(p0_chain)} does not match expected count "
                              f"{self._expected_param_count()}.")
 
         lb, ub = self._get_bounds()
@@ -305,14 +311,14 @@ class MixedDataFitter:
             if isinstance(frozen, int):
                 frozen = [frozen]
             for par_num in frozen:
-                lb[par_num - 1] = p0[par_num - 1] - epsilon
-                ub[par_num - 1] = p0[par_num - 1] + epsilon
+                lb[par_num - 1] = p0_chain[par_num - 1] - epsilon
+                ub[par_num - 1] = p0_chain[par_num - 1] + epsilon
 
         self.params, self.covariance, *_ = curve_fit(
             f=self.model_function,
             xdata=self.x_values,
             ydata=self.y_values,
-            p0=p0,
+            p0=p0_chain,
             maxfev=self.max_iterations,
             bounds=Bounds(lb=lb, ub=ub),
         )
@@ -353,11 +359,11 @@ class MixedDataFitter:
             return parameters if model is None else parameters.get(model, [])
 
         if model is None:
-            # Return combined dictionary for all models
+            # Return a combined dictionary for all models
             return {"parameters": parameters, "errors": errs}
 
         # Prepare output for a specific model
-        output = {"parameters": {}, "errors": {}}
+        output: dict = {"parameters": {}, "errors": {}}
 
         keys = ["parameters", "errors"]
         n_pars = self._instantiate_n_par(model=model)

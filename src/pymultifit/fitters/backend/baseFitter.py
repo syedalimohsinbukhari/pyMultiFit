@@ -1,19 +1,18 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot
-from mpyez.ezPlotting import plot_xy
+from mpyez.backend.uPlotting import LinePlot # type: ignore
+from mpyez.ezPlotting import plot_xy # type: ignore
 from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, _plot_fit, sanity_check
-from ... import Sequences_, epsilon, lArray, Params_
-
+from ... import epsilon, lArray, Params_
 
 
 class BaseFitter:
@@ -35,10 +34,8 @@ class BaseFitter:
         self.sn_par: dict = {}
 
         self.n_fits: int = 0
-        self.params: Optional[NDArray] = None
-        self.covariance: Optional[NDArray] = None
 
-    def _adjust_parameters(self, p0: Sequences_):
+    def _adjust_parameters(self, p0: Params_):
         """
         Adjust input parameters to include defaults for secondary parameters if missing.
 
@@ -95,10 +92,10 @@ class BaseFitter:
         ----------
         p0: Sequences_
             A list of initial guesses for the parameters of the models.
-            For example: [(1, 1, 0), (3, 3, 2)].
+            For example, [(1, 1, 0), (3, 3, 2)].
         frozen: List[bool]
             A list of booleans indicating which parameters are frozen.
-            For example: [False, False, True] for 3 parameters.
+            For example, [False, False, True] for 3 parameters.
 
         Returns
         -------
@@ -109,7 +106,7 @@ class BaseFitter:
         try:
             lb, ub = self.fit_boundaries()
         except NotImplementedError:
-            # if they're not implemented, self impose -inf + inf boundaries
+            # if they're not implemented, self-imposes -inf + inf boundaries
             lb = np.repeat(a=-np.inf, repeats=self.n_fits)
             ub = np.repeat(a=np.inf, repeats=self.n_fits)
 
@@ -222,13 +219,13 @@ class BaseFitter:
         - Each plot will be labeled with the class name and the index of the fit, along with the formatted parameters.
         """
         x = self.x_values
-        params: NDArray = np.reshape(a=self.params, newshape=(self.n_fits, self.n_par))
+        params = np.reshape(a=self.params, newshape=(self.n_fits, self.n_par))
         colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
         for i, par in enumerate(params):
             color = colors[i % len(colors)]
             plot_xy(
                 x_data=x,
-                y_data=self.fitter(x=x, params=par),
+                y_data=self.fitter(x=x, params=list(par)),
                 data_label=f"{self.__class__.__name__.replace('Fitter', '')} {i + 1}("
                            f"{', '.join(self._format_param(i) for i in par)})",
                 plot_dictionary=LinePlot(line_style="--", color=color),
@@ -267,7 +264,7 @@ class BaseFitter:
         """
         plot_xy(x_data=self.x_values, y_data=self.y_values, axis=axis)
 
-    def fit(self, p0: Sequences_, frozen: Optional[List[bool]] = None):
+    def fit(self, p0: Params_, frozen: Optional[List[bool]] = None):
         """
         Fit the data.
 
@@ -275,10 +272,10 @@ class BaseFitter:
         ----------
         p0: Sequences_
             A list of initial guesses for the parameters of the models.
-            For example: [(1, 1, 0), (3, 3, 2)].
+            For example, [(1, 1, 0), (3, 3, 2)].
         frozen: List[bool]
             A list of booleans indicating whether each parameter is frozen.
-            For example: [False, False, True] for 3 parameters.
+            For example, [False, False, True] for 3 parameters.
         """
         self.n_fits = len(p0)
         len_guess = len(list(chain(*p0)))
@@ -335,7 +332,7 @@ class BaseFitter:
         Extract specific parameter values or their uncertainties from the fitting process.
 
         This method allows for retrieving the fitted parameters or their corresponding standard errors for specific
-         sub-models, or for all sub-models if no selection is provided.
+         submodels, or for all sub-models if no selection is provided.
 
         Parameters
         ----------
@@ -401,10 +398,10 @@ class BaseFitter:
 
         Parameters
         ----------
-        mean_values : bool, optional
+        mean_values : bool, optional.
             If ``True``, return only the values of the fitted parameters.
             Defaults to ``True``.
-        std_values : bool, optional
+        std_values : bool, optional.
             If ``True``, return only the standard errors of the fitted parameters.
             Defaults to ``False``.
 
@@ -448,7 +445,7 @@ class BaseFitter:
 
         Parameters
         ----------
-        show_individuals: bool, optional
+        show_individuals: bool, optional.
             Whether to show individually fitted models or not.
         x_label: str, optional
             The label for the x-axis.

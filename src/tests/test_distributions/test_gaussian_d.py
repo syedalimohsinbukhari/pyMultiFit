@@ -42,17 +42,17 @@ class TestGaussianDistribution:
 
     @staticmethod
     def test_stats():
-        btf.stats(custom_distribution=GaussianDistribution.scipy_like, scipy_distribution=norm,
+        btf.stats(custom_distribution=GaussianDistribution.from_scipy_params, scipy_distribution=norm,
                   parameters=[btf.loc_parameter, btf.scale_parameter])
 
     @staticmethod
     def test_pdfs():
-        btf.value_functions(custom_distribution=GaussianDistribution.scipy_like, scipy_distribution=norm,
+        btf.value_functions(custom_distribution=GaussianDistribution.from_scipy_params, scipy_distribution=norm,
                             parameters=[btf.loc_parameter, btf.scale_parameter], log_check=True)
 
     @staticmethod
     def test_single_values():
-        btf.single_input_n_variables(custom_distribution=GaussianDistribution.scipy_like,
+        btf.single_input_n_variables(custom_distribution=GaussianDistribution.from_scipy_params,
                                      scipy_distribution=norm,
                                      parameters=[btf.loc_parameter, btf.scale_parameter],
                                      log_check=True)

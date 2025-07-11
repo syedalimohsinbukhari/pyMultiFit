@@ -1,9 +1,12 @@
 """Created on Dec 04 03:57:18 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import errorHandling as erH, BaseDistribution
 from .utilities_d import half_normal_pdf_, half_normal_cdf_, half_normal_log_pdf_, half_normal_log_cdf_
+from .. import md_scipy_like
 
 
 class HalfNormalDistribution(BaseDistribution):
@@ -92,7 +95,8 @@ class HalfNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'HalfNormalDistribution':
         """
         Instantiate HalfNormalDistribution with scipy parametrization.
 
@@ -108,13 +112,28 @@ class HalfNormalDistribution(BaseDistribution):
         HalfNormalDistribution
             An instance of normalized HalfNormalDistribution.
         """
-        return cls(
-            loc=loc,
-            scale=scale,
-            normalize=True,
-        )
+        return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
+    @classmethod
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'HalfNormalDistribution':
+        """
+        Instantiate HalfNormalDistribution with scipy parametrization.
+
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
+
+        Returns
+        -------
+        HalfNormalDistribution
+            An instance of normalized HalfNormalDistribution.
+        """
+        return cls(loc=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         return half_normal_pdf_(
             x,
             amplitude=self.amplitude,
@@ -123,7 +142,7 @@ class HalfNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         return half_normal_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -132,7 +151,7 @@ class HalfNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         return half_normal_cdf_(
             x,
             amplitude=self.amplitude,
@@ -141,7 +160,7 @@ class HalfNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x):
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
         return half_normal_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -150,7 +169,7 @@ class HalfNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self):
+    def stats(self) -> Dict[str, float]:
         s_, l_ = self.scale, self.loc
 
         mean_ = np.sqrt(2 / np.pi)

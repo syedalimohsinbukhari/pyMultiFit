@@ -7,11 +7,10 @@ from typing import List, Tuple, Union, Optional, Callable
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot
-from mpyez.ezPlotting import plot_xy
-from numpy.typing import NDArray
+from mpyez.backend.uPlotting import LinePlot # type: ignore
+from mpyez.ezPlotting import plot_xy # type: ignore
 
-from pymultifit import lArray
+from .. import lArray
 
 # SAFEGUARD:
 xy_tuple = Tuple[np.ndarray, np.ndarray]
@@ -21,7 +20,7 @@ indexType = Union[int, List[int], None]
 def sanity_check(
     x_values: lArray,
     y_values: lArray,
-) -> Tuple[NDArray, NDArray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Convert input lists to NumPy arrays if necessary.
 
@@ -46,10 +45,10 @@ def sanity_check(
 
 
 def parameter_logic(
-    par_array: NDArray,
+    par_array: np.ndarray,
     n_par: int,
     selected_models,
-) -> NDArray:
+) -> np.ndarray:
     """
     Extract parameter values from a given function based on the number of parameters per fit and selected indices.
 
@@ -74,9 +73,9 @@ def parameter_logic(
 
 
 def _plot_fit(
-    x_values: NDArray,
-    y_values: NDArray,
-    parameters: NDArray,
+    x_values: np.ndarray,
+    y_values: np.ndarray,
+    parameters: np.ndarray,
     n_fits: int,
     class_name: str,
     _n_fitter: Callable,
@@ -160,11 +159,11 @@ def _plot_fit(
     if show_individuals:
         _n_plotter(plotter=plotter)
 
-    plotter: Axes = plotter[0] if isinstance(plotter, list) else plotter
+    plotter2: Axes = plotter[0] if isinstance(plotter, list) else plotter
 
-    plotter.set_xlabel(x_label if x_label else "X")
-    plotter.set_ylabel(y_label if y_label else "Y")
-    plotter.set_title(title if title else f"{n_fits} {class_name} fit")
+    plotter2.set_xlabel(x_label if x_label else "X")
+    plotter2.set_ylabel(y_label if y_label else "Y")
+    plotter2.set_title(title if title else f"{n_fits} {class_name} fit")
     plt.tight_layout()
 
-    return plotter
+    return plotter2

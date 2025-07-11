@@ -1,43 +1,86 @@
-"""Created on Mar 10 12:30:37 2025"""
+"""Created on Aug 10 23:37:54 2024"""
 
-from .backend import BaseFitter
-from .utilities_f import sanity_check
-from .. import lArray, Params_
-from ..distributions.utilities_d import line, nth_polynomial
+from typing import List
+
+import numpy as np
+from numpy import ndarray
+from numpy.typing import NDArray
+
+from ..distributions.backend import BaseDistribution
+from ..distributions.utilities_d import line, quadratic, cubic, nth_polynomial
 
 
-class LineFitter(BaseFitter):
-    """A class for fitting a line to the given data."""
-
+class LineFitter(BaseDistribution):
     def __init__(
         self,
-        x_values: lArray,
-        y_values: lArray,
-        max_iterations: int = 1000,
+        slope: float = 1.0,
+        intercept: float = 1.0,
+        normalize: bool = False,
     ):
-        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
-        self.n_par = 2
+        self.slope = slope
+        self.intercept = intercept
 
-    @staticmethod
-    def fitter(x: lArray, params: Params_):
-        return line(x, *params)
+        self.norm = normalize
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        """Calculates the line function.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Input array of values.
+
+        Returns
+        -------
+        np.ndarray
+            Array of the same shape as :math:`x`, containing the evaluated values.
+        """
+        return line(x, slope=self.slope, intercept=self.intercept)
 
 
-class PolynomialFitter(BaseFitter):
-    """A class for fitting nth order polynomial to the given data."""
-
+class QuadraticFitter(BaseDistribution):
     def __init__(
         self,
-        x_values: lArray,
-        y_values: lArray,
-        order,
-        max_iterations=1000,
+        a: float = 1.0,
+        b: float = 1.0,
+        c: float = 1.0,
+        normalize: bool = False,
     ):
-        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
-        self.n_par = order
+        self.a = a
+        self.b = b
+        self.c = c
 
-    @staticmethod
-    def fitter(x: lArray, params: Params_):
-        return nth_polynomial(x, coefficients=list(params))
+        self.norm = normalize
+
+    def pdf(self, x: ndarray) -> ndarray:
+        return quadratic(x, a=self.a, b=self.b, c=self.c)
+
+
+class CubicFitter(BaseDistribution):
+    def __init__(
+        self,
+        a: float = 1.0,
+        b: float = 1.0,
+        c: float = 1.0,
+        d: float = 1.0,
+        normalize: bool = False,
+    ):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+
+        self.norm = normalize
+
+    def pdf(self, x: ndarray) -> ndarray:
+        return cubic(x, a=self.a, b=self.b, c=self.c, d=self.d)
+
+
+class PolynomialFitter(BaseDistribution):
+    def __init__(self, degree: List[float], normalize: bool = False):
+        self.degree = degree
+
+        self.norm = normalize
+
+    def pdf(self, x: ndarray) -> ndarray:
+        return nth_polynomial(x, coefficients=self.degree)

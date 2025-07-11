@@ -1,9 +1,9 @@
 """Created on Jul 18 00:15:42 2024"""
 
-from typing import Union, Sequence, Iterable
+from typing import Union, Sequence, Tuple, List
 
 import numpy as np
-from numpy.typing import NDArray
+from deprecated.sphinx import deprecated
 
 from .version import (
     __author__,
@@ -15,6 +15,32 @@ from .version import (
     __version__,
 )
 
+
+def mark_deprecated(ver_: str, new: str):
+    """Decorator that marks a scipy_like-style method as deprecated.
+
+    Automatically extracts the method name and constructs a standardized warning.
+
+    Parameters
+    ----------
+    ver_ : str
+        The version where the method is deprecated.
+    new : str
+        The name of the method to use instead.
+    """
+
+    def decorator(func):
+        method_name = func.__name__
+        reason = f"Use `{new}` instead of `{method_name}`. `{method_name}` will be removed in a future release."
+        return deprecated(version=ver_, reason=reason)(func)
+
+    return decorator
+
+
+def md_scipy_like(ver_: str, new: str = 'from_scipy_params'):
+    return mark_deprecated(ver_, new)
+
+
 doc_style = "numpy_napoleon_with_merge"
 
 INF = np.inf
@@ -24,10 +50,10 @@ LOG = np.log
 EPSILON = np.finfo(float).eps
 epsilon = np.sqrt(EPSILON)
 
-lArray = Union[Sequence[float], Sequence[int], NDArray[np.number]]
+lArray = Union[Sequence[int | float], np.ndarray]
 
-Sequences_ = Union[NDArray[np.floating], Sequence[Sequence[float]]]
-Params_ = Union[NDArray[np.number], Iterable[Union[int, float]]]
+ParamTuple = Tuple[int | float, ...]
+Params_ = Union[List[ParamTuple], np.ndarray]
 
 GAUSSIAN = "gaussian"
 NORMAL = GAUSSIAN

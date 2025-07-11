@@ -4,6 +4,7 @@ matplotlib
 mpyez
 statsmodels
 custom-inherit
+Deprecated
 pytest
 pytest-cov
 pandas
@@ -23,7 +24,10 @@ nbsphinx
 nbsphinx_link
 sphinx_autobuild
 ruff
-pyright
+mypy
 pylint
 nox
 uv
+types-Deprecated
+scipy-stubs
+optype
