@@ -6,8 +6,8 @@ import numpy as np
 
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
-from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
-from .. import md_scipy_like
+from .utilities_d import skew_normal_cdf_, skew_normal_pdf_, skew_normal_log_pdf_
+from .. import md_scipy_like, LOG
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -154,6 +154,16 @@ class SkewNormalDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
+        return skew_normal_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.location,
+            scale=self.scale,
+            normalize=self.norm,
+        )
+
     def cdf(self, x: np.ndarray) -> np.ndarray:
         return skew_normal_cdf_(
             x,
@@ -163,6 +173,9 @@ class SkewNormalDistribution(BaseDistribution):
             scale=self.scale,
             normalize=self.norm,
         )
+
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
+        return LOG(self.cdf(x))
 
     def stats(self) -> Dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location

@@ -4,7 +4,7 @@ import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import lArray, Params_
+from .. import listOrNdArray, Params_
 from ..distributions.utilities_d import half_normal_pdf_
 
 
@@ -13,8 +13,8 @@ class HalfNormalFitter(BaseFitter):
 
     def __init__(
         self,
-        x_values: lArray,
-        y_values: lArray,
+        x_values: listOrNdArray,
+        y_values: listOrNdArray,
         max_iterations: int = 1000,
     ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -30,5 +30,5 @@ class HalfNormalFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x: lArray, params: Params_):
+    def fitter(x, params: Params_):
         return half_normal_pdf_(x, *params)

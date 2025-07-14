@@ -12,7 +12,7 @@ from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, _plot_fit, sanity_check
-from ... import epsilon, lArray, Params_
+from ... import epsilon, listOrNdArray, Params_
 
 
 class BaseFitter:
@@ -20,8 +20,8 @@ class BaseFitter:
 
     def __init__(
         self,
-        x_values: lArray,
-        y_values: lArray,
+        x_values: listOrNdArray,
+        y_values: listOrNdArray,
         max_iterations: int = 1000,
     ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -301,7 +301,7 @@ class BaseFitter:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     @staticmethod
-    def fitter(x: lArray, params: Params_):
+    def fitter(x, params: Params_):
         """
         Fitter function for multi-fitting.
 

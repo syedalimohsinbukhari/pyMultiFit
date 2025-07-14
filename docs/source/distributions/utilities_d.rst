@@ -53,7 +53,6 @@ Available for user
 .. autofunction:: log_normal_log_pdf_
 .. autofunction:: log_normal_cdf_
 .. autofunction:: log_normal_log_cdf_
-.. autofunction:: nth_polynomial
 .. autofunction:: quadratic
 .. autofunction:: scaled_inv_chi_square_pdf_
 .. autofunction:: scaled_inv_chi_square_log_pdf_

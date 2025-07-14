@@ -91,9 +91,6 @@ Non-distribution function
    * - :class:`~utilities_d.cubic`
      - Cubic polynomial.
      - :math:`ax^3+bx^2+cx+d`
-   * - :class:`~utilities_d.nth_polynomial`
-     - Nth order polynomial.
-     - :math:`\sum_{i=0}^{N} a_i x^i`
 
 
 .. toctree::
@@ -110,6 +107,7 @@ Non-distribution function
    HalfNormalDistribution   <halfNormal_d>
    LaplaceDistribution      <laplace_d>
    LogNormalDistribution    <logNormal_d>
+   Non-distribution functions <polynomial_d>
    ScaledInverseChiSquareDistribution <scaledInvChiSquare_d>
    SkewNormalDistribution   <skewNormal_d>
    SymGeneralizedNormalDistribution <genNorm_d>

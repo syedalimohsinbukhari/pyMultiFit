@@ -1,14 +1,14 @@
 """Created on Aug 10 23:08:38 2024"""
 
 import itertools
+import warnings
 from typing import Optional, Tuple, Union, List, Callable, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot # type: ignore
-from mpyez.ezPlotting import plot_xy # type: ignore
-from numpy.typing import NDArray # type: ignore
+from mpyez.backend.uPlotting import LinePlot  # type: ignore
+from mpyez.ezPlotting import plot_xy  # type: ignore
 from scipy.optimize import Bounds, curve_fit
 
 # importing from files to avoid circular import
@@ -35,8 +35,9 @@ from .. import (
     FOLDED_NORMAL,
     GAMMA,
     NORMAL,
-    HALF_NORMAL, lArray, Params_,
-)
+    HALF_NORMAL,
+    listOrNdArray,
+    Params_)
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {
@@ -66,31 +67,40 @@ class MixedDataFitter:
 
     def __init__(
         self,
-        x_values: lArray,
-        y_values: lArray,
+        x_values: listOrNdArray,
+        y_values: listOrNdArray,
         model_list: List[str],
-        fitter_dictionary=None,
+        fitter_dictionary: Optional[dict] = None,
+        model_dictionary: Optional[dict] = None,
         max_iterations: int = 1000,
     ):
+        # Check if the deprecated parameter was used
+        if fitter_dictionary is not None:
+            warnings.warn(
+                message="`fitter_dictionary` is deprecated and will be removed in a future release. "
+                        "Use `model_dictionary` instead.",
+                category=DeprecationWarning,
+                stacklevel=2
+            )
+
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
 
-        self.x_values: NDArray = x_values
-        self.y_values: NDArray = y_values
+        self.x_values: np.ndarray = x_values
+        self.y_values: np.ndarray = y_values
         self.model_list = model_list
         self.max_iterations = max_iterations
         self.params: Any = None
         self.covariance: Any = None
 
         self.fitter_dict = fitter_dictionary or fitter_dict
+        self.fitter_dict = model_dictionary or fitter_dict
 
         # self._validate_models()
         self.model_function = self._create_model_function()
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
-            f"model_list={self.model_list}, max_iterations={self.max_iterations})"
-        )
+        return (f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
+                f"model_list={self.model_list}, max_iterations={self.max_iterations})")
 
     def _create_model_function(self) -> Callable:
         """
@@ -190,10 +200,10 @@ class MixedDataFitter:
     def _instantiate_n_par(self, model: str) -> int:
         return self._instantiate_class(model).n_par
 
-    def _instantiate_bounds(self, model: str) -> Tuple[NDArray, NDArray]:
+    def _instantiate_bounds(self, model: str) -> Tuple[np.ndarray, np.ndarray]:
         return self._instantiate_class(model).fit_boundaries()
 
-    def _parameter_extractor(self, values: NDArray) -> dict:
+    def _parameter_extractor(self, values: np.ndarray) -> dict:
         """
         Extracts the parameters for each model in the model list.
 
@@ -286,20 +296,16 @@ class MixedDataFitter:
         Fit the data.
 
         :param p0: Initial guess for the fitted parameters.
-        :type p0: Sequences_
+        :type p0: Union[List[Tuple[int | float, ...]], np.ndarray]
 
         :param frozen: Parameter number of list of parameter numbers to freeze the value of.
         :type frozen: Union[int, List[int]]
 
         :raises ValueError: If the length of the initial guess is not equal to the expected parameter count.
         """
+        p0_chain = p0.tolist() if isinstance(p0, np.ndarray) else p0
+
         # flatten cannot always work here because the mixed fitter might contain a variable number of parameters
-
-        p0_chain = []
-
-        if isinstance(p0, np.ndarray):
-            p0_chain = p0.tolist()
-
         p0_chain = list(itertools.chain.from_iterable(p0_chain))
         if len(p0_chain) != self._expected_param_count():
             raise ValueError(f"Initial parameters length {len(p0_chain)} does not match expected count "
@@ -318,7 +324,7 @@ class MixedDataFitter:
             f=self.model_function,
             xdata=self.x_values,
             ydata=self.y_values,
-            p0=p0_chain,
+            p0=np.array(p0_chain),
             maxfev=self.max_iterations,
             bounds=Bounds(lb=lb, ub=ub),
         )

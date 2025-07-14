@@ -50,7 +50,7 @@ LOG = np.log
 EPSILON = np.finfo(float).eps
 epsilon = np.sqrt(EPSILON)
 
-lArray = Union[Sequence[int | float], np.ndarray]
+listOrNdArray = Union[List[int | float], np.ndarray]
 
 ParamTuple = Tuple[int | float, ...]
 Params_ = Union[List[ParamTuple], np.ndarray]

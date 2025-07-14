@@ -61,7 +61,6 @@ __all__ = [
     "line",
     "quadratic",
     "cubic",
-    "nth_polynomial",
 ]
 
 import functools
@@ -115,8 +114,9 @@ def suppress_numpy_warnings():
 
 
 @suppress_numpy_warnings()
-def arc_sine_pdf_(x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0,
-                  normalize: bool = False) -> np.ndarray:
+def arc_sine_pdf_(
+    x, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
 
@@ -237,7 +237,7 @@ def arc_sine_cdf_(
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
 
-    return np.select(condlist=[c1, c2], choicelist=[2.0 / PI * np.arcsin(np.sqrt(y)), 0.0], default=1.0)
+    return np.select(condlist=[c1, c2], choicelist=[TWO_BY_PI * np.arcsin(np.sqrt(y)), 0.0], default=1.0)
 
 
 @suppress_numpy_warnings()
@@ -269,13 +269,10 @@ def arc_sine_log_cdf_(
     if y.size == 0:
         return y
 
-    if scale < 0:
-        return np.full(y.shape, np.nan)
-
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
 
-    return np.select(condlist=[c1, c2], choicelist=[LOG(2.0 / PI * np.arcsin(np.sqrt(y))), -INF], default=0.0)
+    return np.select(condlist=[c1, c2], choicelist=[LOG(TWO_BY_PI * np.arcsin(np.sqrt(y))), -INF], default=0.0)
 
 
 @suppress_numpy_warnings()
@@ -524,15 +521,19 @@ def chi_square_pdf_(
     if y.size == 0:
         return y
 
-    df_half = degree_of_freedom / 2
+    df_half = degree_of_freedom / 2.0
 
-    pdf_ = np.where(y > 0, np.power(y, df_half - 1) / np.exp(y / 2) / np.power(2, df_half) / ssp.gamma(df_half), 0)
+    pdf_ = np.where(y > 0, np.exp(_chi2(y=y, df_half=df_half)), 0)
     pdf_ /= scale
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
     return pdf_
+
+
+def _chi2(y, df_half):
+    return ssp.xlogy(df_half - 1, y) - (y / 2) - ssp.gammaln(df_half) - (LOG_TWO * df_half)
 
 
 @suppress_numpy_warnings()
@@ -567,9 +568,9 @@ def chi_square_log_pdf_(
     if y.size == 0:
         return y
 
-    df_half = degree_of_freedom / 2
+    df_half = degree_of_freedom / 2.0
 
-    log_pdf_ = np.where(y > 0, ssp.xlogy(df_half - 1, y) - (y / 2) - ssp.xlogy(df_half, 2) - ssp.gammaln(df_half), -INF)
+    log_pdf_ = np.where(y > 0, _chi2(y=y, df_half=df_half), -INF)
     log_pdf_ -= LOG(scale)
 
     if not normalize:
@@ -848,7 +849,7 @@ def exponential_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y >= 0, ssp.gammainc(1, y), 0)
+    return np.where(y >= 0, -ssp.expm1(-y), 0)
 
 
 @suppress_numpy_warnings()
@@ -884,7 +885,7 @@ def exponential_log_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y >= 0, LOG(ssp.gammainc(1, y)), -INF)
+    return np.where(y >= 0, LOG(-ssp.expm1(-y)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -937,13 +938,15 @@ def folded_normal_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    x = np.asarray(a=x, dtype=float)
+    y = preprocess_input(x=x, loc=loc, scale=sigma)
 
-    if x.size == 0:
-        return x
+    if y.size == 0:
+        return y
 
-    _, pdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_pdf_)
-    pdf_ = np.where(_, pdf_, 0) / sigma
+    pdf_ = np.where(
+        y >= 0, gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True), 0
+    )
+    pdf_ /= sigma
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -977,13 +980,15 @@ def folded_normal_log_pdf_(
 
     The final log PDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    x = np.asarray(a=x, dtype=float)
+    y = preprocess_input(x=x, loc=loc, scale=sigma)
 
-    if x.size == 0:
-        return x
+    if y.size == 0:
+        return y
 
-    _, pdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_pdf_)
-    log_pdf_ = LOG(pdf_) - LOG(sigma)
+    log_pdf_ = np.where(
+        y >= 0, LOG(gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True)), -INF
+    )
+    log_pdf_ -= LOG(sigma)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1024,15 +1029,15 @@ def folded_normal_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    x = np.asarray(a=x, dtype=float)
+    y = preprocess_input(x=x, loc=loc, scale=sigma)
 
-    if x.size == 0:
-        return x
+    if y.size == 0:
+        return y
 
-    mask_, cdf_ = _folded(x=x, mean=mean, loc=loc, scale=sigma, g_func=gaussian_cdf_)
-    cdf_[mask_] -= 1
+    q = (y + mean) / SQRT_TWO
+    r = (y - mean) / SQRT_TWO
 
-    return cdf_
+    return np.where(y >= 0, _folded_cdf(q=q, r=r), 0)
 
 
 @suppress_numpy_warnings()
@@ -1070,7 +1075,7 @@ def folded_normal_log_cdf_(
     q = (y + mean) / SQRT_TWO
     r = (y - mean) / SQRT_TWO
 
-    return np.where(y >= 0, -LOG_TWO + LOG(ssp.erf(q) + ssp.erf(r)), -INF)
+    return np.where(y >= 0, LOG(_folded_cdf(q=q, r=r)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -1246,7 +1251,7 @@ def gamma_cdf_(
     if y.size == 0:
         return y
 
-    return np.where(y >= 0, ssp.gammainc(alpha, y), 0)
+    return np.where(y > 0, ssp.gammainc(alpha, y), 0)
 
 
 @suppress_numpy_warnings()
@@ -1274,7 +1279,7 @@ def gamma_log_cdf_(
     if y.size == 0:
         return y
 
-    return LOG(np.where(y >= 0, ssp.gammainc(alpha, y), 0))
+    return LOG(np.where(y > 0, ssp.gammainc(alpha, y), 0))
 
 
 @suppress_numpy_warnings()
@@ -1990,38 +1995,6 @@ def log_normal_log_cdf_(
     y = preprocess_input(x=x, loc=loc, scale=np.exp(mean))
 
     return np.where(y > 0, ssp.log_ndtr(LOG(y) / std), -INF)
-
-
-@suppress_numpy_warnings()
-def nth_polynomial(
-    x,
-    coefficients: list[float],
-) -> np.ndarray:
-    r"""
-    Evaluate a polynomial at given points.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array of values.
-    coefficients : list of float
-        Coefficients of the polynomial in descending order of degree.
-        For example, [a, b, c] represents the polynomial ax^2 + bx + c.
-
-    Returns
-    -------
-    np.ndarray
-        Array of the same shape as :math:`x`, containing the evaluated values.
-
-    Notes
-    -----
-    The nth polynomial function is defined as:
-
-    .. math:: P(x) = \sum_{i=0}^{N}a_i x^i
-
-    where, :math:`a_i` is the :math:`i^\text{th}` coefficient of the polynomial.
-    """
-    return np.polyval(p=coefficients, x=x)
 
 
 @suppress_numpy_warnings()
@@ -2787,13 +2760,19 @@ def _beta_expr(
 
 
 @suppress_numpy_warnings()
+def _folded_cdf(
+    q: float,
+    r: float,
+) -> float:
+    return 0.5 * (ssp.erf(r) + ssp.erf(q))
+
+
+@suppress_numpy_warnings()
 def _pdf_scaling(
     pdf_: np.ndarray,
     amplitude: float,
 ) -> np.ndarray:
-    """
-    Scales a probability density function (PDF) array by a specified amplitude value, normalizing it relative to its
-    maximum value.
+    """Scales a given PDF by a specified amplitude, normalizing it relative to its maximum value.
 
     Parameters
     ----------
@@ -2823,8 +2802,8 @@ def _log_pdf_scaling(
 @suppress_numpy_warnings()
 def preprocess_input(
     x,
-    loc=0.0,
-    scale=1.0,
+    loc: float = 0.0,
+    scale: float = 1.0,
 ) -> np.ndarray:
     """
     Preprocess the input array, checking for scalar input, handling empty arrays, and loc-scale normalizaing the data.
