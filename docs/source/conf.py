@@ -52,6 +52,17 @@ intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
                        "matplotlib": ("https://matplotlib.org/stable/", None),
                        "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None), }
 
+import os
+
+# Add banner for review version
+if os.environ.get("READTHEDOCS_VERSION") == "pyopensci-review":
+    rst_prolog = """
+    .. warning::
+
+        This is a **review version** of the documentation for PyOpenSci submission.
+    """
+
+
 autosummary_generate = True
 autodoc_default_flags = ["members"]
 autodoc_typehints = "signature"
