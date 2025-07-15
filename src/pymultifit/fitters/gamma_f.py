@@ -23,8 +23,7 @@ class GammaFitter(BaseFitter):
         self.pn_par = 3
         self.sn_par = {"loc": 0.0}
 
-    @staticmethod
-    def fit_boundaries():
+    def fit_boundaries(self):
         lb = (0, 0, 0, -np.inf)
         ub = (np.inf, np.inf, np.inf, np.inf)
         return lb, ub

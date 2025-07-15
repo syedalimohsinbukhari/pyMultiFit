@@ -1,13 +1,13 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot # type: ignore
-from mpyez.ezPlotting import plot_xy # type: ignore
+from mpyez.backend.uPlotting import LinePlot  # type: ignore
+from mpyez.ezPlotting import plot_xy  # type: ignore
 from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
@@ -25,8 +25,8 @@ class BaseFitter:
         max_iterations: int = 1000,
     ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        self.x_values: NDArray = x_values
-        self.y_values: NDArray = y_values
+        self.x_values: np.ndarray = x_values
+        self.y_values: np.ndarray = y_values
         self.max_iterations = max_iterations
 
         self.n_par: int = 0
@@ -158,7 +158,7 @@ class BaseFitter:
         """
         return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
-    def _n_fitter(self, x: NDArray, *params: Params_) -> NDArray:
+    def _n_fitter(self, x: NDArray, *params: Params_) -> np.ndarray:
         r"""
         Perform N-fitting by summing over multiple parameter sets.
 
@@ -177,12 +177,12 @@ class BaseFitter:
             An array containing the composite fitted values for the input ``x``.
         """
         y = np.zeros_like(a=x, dtype=float)
-        parameters: NDArray = np.reshape(a=np.array(params), newshape=(self.n_fits, self.n_par))
+        parameters: np.ndarray = np.reshape(a=np.array(params), newshape=(self.n_fits, self.n_par))
         for par in parameters:
             y += self.fitter(x=x, params=par.tolist())
         return y
 
-    def _params(self) -> NDArray:
+    def _params(self) -> np.ndarray:
         r"""
         Store the fitted parameters of the fitted model.
 
@@ -295,13 +295,18 @@ class BaseFitter:
             bounds=Bounds(lb=lb, ub=ub),
         )
 
-    @staticmethod
-    def fit_boundaries():
+    def _fit_boundaries(self) -> Tuple[Sequence[float], Sequence[float]]:
+        """Defines the internal distribution boundaries to be used by fitter."""
+        ub = np.repeat(a=np.inf, repeats=self.n_par).tolist()
+        lb = np.repeat(a=-np.inf, repeats=self.n_par).tolist()
+        return lb, ub
+
+    def fit_boundaries(self) -> Tuple[Sequence[float], Sequence[float]]:
         """Defines the distribution boundaries to be used by fitter."""
-        raise NotImplementedError("This method should be implemented by subclasses.")
+        return self._fit_boundaries()
 
     @staticmethod
-    def fitter(x, params: Params_):
+    def fitter(x, params: Params_) -> np.ndarray:
         """
         Fitter function for multi-fitting.
 
@@ -314,7 +319,7 @@ class BaseFitter:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def get_fitted_curve(self) -> NDArray:
+    def get_fitted_curve(self) -> np.ndarray:
         """
         Get the fitted values of the model.
 
@@ -389,7 +394,7 @@ class BaseFitter:
 
             return mean[:, range(self.n_par)].T, std_[:, range(self.n_par)].T
 
-    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> NDArray:
+    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> np.ndarray:
         r"""
         Retrieve the value/error pairs for the fitted parameters.
 
@@ -419,7 +424,7 @@ class BaseFitter:
         ValueError
             If both ``mean_values`` and ``std_values`` are ``False``.
         """
-        pairs: NDArray = np.column_stack([self._params(), self._standard_errors()])
+        pairs: np.ndarray = np.column_stack([self._params(), self._standard_errors()])
 
         if mean_values and std_values:
             return pairs

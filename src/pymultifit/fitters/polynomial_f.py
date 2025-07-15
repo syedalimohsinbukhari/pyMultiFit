@@ -15,8 +15,7 @@ class LineFitter(BaseFitter):
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 2
 
-    @staticmethod
-    def fit_boundaries():
+    def fit_boundaries(self):
         lb = (-np.inf, -np.inf)
         ub = (np.inf, np.inf)
 
@@ -33,8 +32,7 @@ class QuadraticFitter(BaseFitter):
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
 
-    @staticmethod
-    def fit_boundaries():
+    def fit_boundaries(self):
         lb = (-np.inf, -np.inf, -np.inf)
         ub = (np.inf, np.inf, np.inf)
 
@@ -52,8 +50,7 @@ class CubicFitter(BaseFitter):
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 4
 
-    @staticmethod
-    def fit_boundaries():
+    def fit_boundaries(self):
         lb = (-np.inf, -np.inf, -np.inf, -np.inf)
         ub = (np.inf, np.inf, np.inf, np.inf)
 

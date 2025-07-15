@@ -21,8 +21,7 @@ class SkewNormalFitter(BaseFitter):
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 4
 
-    @staticmethod
-    def fit_boundaries():
+    def fit_boundaries(self):
         lb = (0, -np.inf, -np.inf, 0)
         ub = (np.inf, np.inf, np.inf, np.inf)
         return lb, ub
