@@ -12,7 +12,7 @@ from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, _plot_fit, sanity_check
-from ... import epsilon, listOrNdArray, Params_
+from ... import epsilon, ListOrNdArray, Params_
 
 
 class BaseFitter:
@@ -20,8 +20,8 @@ class BaseFitter:
 
     def __init__(
         self,
-        x_values: listOrNdArray,
-        y_values: listOrNdArray,
+        x_values: ListOrNdArray,
+        y_values: ListOrNdArray,
         max_iterations: int = 1000,
     ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)

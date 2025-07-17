@@ -10,7 +10,7 @@ from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot # type: ignore
 from mpyez.ezPlotting import plot_xy # type: ignore
 
-from .. import listOrNdArray
+from .. import ListOrNdArray
 
 # SAFEGUARD:
 xy_tuple = Tuple[np.ndarray, np.ndarray]
@@ -18,8 +18,8 @@ indexType = Union[int, List[int], None]
 
 
 def sanity_check(
-    x_values: listOrNdArray,
-    y_values: listOrNdArray,
+    x_values: ListOrNdArray,
+    y_values: ListOrNdArray,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Convert input lists to NumPy arrays if necessary.

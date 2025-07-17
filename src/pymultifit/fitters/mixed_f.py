@@ -36,7 +36,7 @@ from .. import (
     GAMMA,
     NORMAL,
     HALF_NORMAL,
-    listOrNdArray,
+    ListOrNdArray,
     Params_)
 
 # mock initialize the internal classes for auto MixedDataFitter class
@@ -67,8 +67,8 @@ class MixedDataFitter:
 
     def __init__(
         self,
-        x_values: listOrNdArray,
-        y_values: listOrNdArray,
+        x_values: ListOrNdArray,
+        y_values: ListOrNdArray,
         model_list: List[str],
         fitter_dictionary: Optional[dict] = None,
         model_dictionary: Optional[dict] = None,

@@ -4,7 +4,7 @@ import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import listOrNdArray, Params_
+from .. import ListOrNdArray, Params_
 from ..distributions.utilities_d import laplace_pdf_
 
 
@@ -13,8 +13,8 @@ class LaplaceFitter(BaseFitter):
 
     def __init__(
         self,
-        x_values: listOrNdArray,
-        y_values: listOrNdArray,
+        x_values: ListOrNdArray,
+        y_values: ListOrNdArray,
         max_iterations: int = 1000,
     ):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)

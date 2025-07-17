@@ -22,7 +22,7 @@ from .. import (
     LOG_NORMAL,
     SKEW_NORMAL,
     Params_,
-    listOrNdArray,
+    ListOrNdArray,
 )
 
 model_map = {
@@ -42,7 +42,7 @@ model_map = {
 
 
 def multi_base(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     distribution_func: Callable,
     params: Params_,
     noise_level: float = 0.0,
@@ -84,7 +84,7 @@ def multi_base(
 
 
 def multi_chi_squared(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -121,7 +121,7 @@ def multi_chi_squared(
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_gamma(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -138,7 +138,7 @@ def multi_gamma(
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_exponential(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -156,7 +156,7 @@ def multi_exponential(
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_folded_normal(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -174,7 +174,7 @@ def multi_folded_normal(
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_gaussian(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -191,7 +191,7 @@ def multi_gaussian(
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_half_normal(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -209,7 +209,7 @@ def multi_half_normal(
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_laplace(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -226,7 +226,7 @@ def multi_laplace(
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_log_normal(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -243,7 +243,7 @@ def multi_log_normal(
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
 def multi_skew_normal(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     noise_level: float = 0.0,
     normalize: bool = False,
@@ -260,7 +260,7 @@ def multi_skew_normal(
 
 
 def multiple_models(
-    x: listOrNdArray,
+    x: ListOrNdArray,
     params: Params_,
     model_list: list[str],
     noise_level: float = 0.0,
