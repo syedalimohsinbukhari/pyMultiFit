@@ -1,18 +1,27 @@
 # `pyMultiFit`
 
 - [`pyMultiFit`](#pymultifit)
-  - [What is `pymultifit`](#what-is-pymultifit)
-  - [How to install](#how-to-install)
-  - [Documentation](#documentation)
+    - [What is `pymultifit`](#what-is-pymultifit)
+    - [How to install](#how-to-install)
+    - [Documentation](#documentation)
 
 A python multi-fit library for fitting the data with multiple `X` fitters.
 
-![GitHub-licence](https://img.shields.io/github/license/syedalimohsinbukhari/pymultifit?style=for-the-badge&color=darkblue)
-![GitHub top language](https://img.shields.io/github/languages/top/syedalimohsinbukhari/pymultifit?color=lightgreen&style=for-the-badge)
-![GitHub contributors](https://img.shields.io/github/contributors/syedalimohsinbukhari/pymultifit?color=gold&style=for-the-badge)
-![Github Issues](https://img.shields.io/github/issues/syedalimohsinbukhari/pymultifit?color=orange&style=for-the-badge)
-![GitHub OPEN PRs](https://img.shields.io/github/issues-pr/syedalimohsinbukhari/pymultifit?color=darkred&style=for-the-badge)
-![GitHub CLOSED PRs](https://img.shields.io/github/issues-pr-closed/syedalimohsinbukhari/pymultifit?color=darkgreen&style=for-the-badge)
+<p style="text-align: center;">
+
+  <img src="https://img.shields.io/github/v/release/syedalimohsinbukhari/pymultifit?style=for-the-badge&color=magenta" alt="GitHub Release">
+  <img src="https://img.shields.io/pypi/pyversions/pymultifit?style=for-the-badge" alt="Python Versions">
+  <img src="https://img.shields.io/github/license/syedalimohsinbukhari/pymultifit?style=for-the-badge&color=darkblue" alt="License">
+  <img src="https://img.shields.io/codecov/c/github/syedalimohsinbukhari/pymultifit?style=for-the-badge&color=cyan" alt="Code Coverage">
+
+  <br>
+
+<img src="https://img.shields.io/github/languages/top/syedalimohsinbukhari/pymultifit?color=lightgreen&style=for-the-badge" alt="Top Language">
+  <img src="https://img.shields.io/github/contributors/syedalimohsinbukhari/pymultifit?color=gold&style=for-the-badge" alt="Contributors">
+  <img src="https://img.shields.io/github/issues/syedalimohsinbukhari/pymultifit?color=orange&style=for-the-badge" alt="Open Issues">
+  <img src="https://img.shields.io/github/issues-pr/syedalimohsinbukhari/pymultifit?color=darkred&style=for-the-badge" alt="Open PRs">
+  <img src="https://img.shields.io/github/issues-pr-closed/syedalimohsinbukhari/pymultifit?color=darkgreen&style=for-the-badge" alt="Closed PRs">
+</p>
 
 ## What is `pymultifit`
 

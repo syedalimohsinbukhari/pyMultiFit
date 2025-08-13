@@ -18,7 +18,6 @@ fitter = GaussianFitter(x_values=x, y_values=y)
 guess = [(10, -18, 1), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
 
 fitter.fit(guess)
-print(fitter.fit_boundaries())
 
 f, ax = plt.subplots(1, 1, figsize=(12, 6))
 plotter = fitter.plot_fit(show_individuals=True, x_label='X_data', y_label='Y_data', title='XY_plot',
