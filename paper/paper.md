@@ -144,11 +144,11 @@ ax[1].grid(True, alpha=0.5, ls='--')
 ax[1].legend(loc='best')
 
 plt.tight_layout()
-plt.savefig('./distribution_test.png')
+plt.savefig('./distribution_.png')
 
 plt.show()
 ```
-![Custom distribution implementation with and without scipy parametrization](./distribution_test.png)
+![Custom distribution implementation with and without scipy parametrization](distribution_.png)
 Figure 1: Comparison of the pdf of a Gaussian distribution with and without scipy parametrization.
 
 2. Flexible tools for generating synthetic datasets and fitting multiple models.

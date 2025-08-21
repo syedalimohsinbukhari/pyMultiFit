@@ -31,6 +31,6 @@ ax[1].grid(True, alpha=0.5, ls='--')
 ax[1].legend(loc='best')
 
 plt.tight_layout()
-plt.savefig('./distribution_test.png')
+plt.savefig('./distribution_.png')
 
 plt.show()
