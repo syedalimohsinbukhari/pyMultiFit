@@ -12,7 +12,8 @@ A python multi-fit library for fitting the data with multiple `X` fitters.
 ![GitHub-licence](https://img.shields.io/github/license/syedalimohsinbukhari/pymultifit?color=darkblue)
 ![GiHub-CodeCoverage](https://img.shields.io/codecov/c/github/syedalimohsinbukhari/pymultifit?color=cyan)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17273507.svg)](https://doi.org/10.5281/zenodo.17273507)
+[![pyOpenSci Peer-Reviewed](https://pyopensci.org/badges/peer-reviewed.svg)](https://github.com/pyOpenSci/software-submission/issues/233)
 ![GitHub top language](https://img.shields.io/github/languages/top/syedalimohsinbukhari/pymultifit?color=lightgreen)
 ![GitHub contributors](https://img.shields.io/github/contributors/syedalimohsinbukhari/pymultifit?color=gold)
 ![Github Issues](https://img.shields.io/github/issues/syedalimohsinbukhari/pymultifit?color=orange)
