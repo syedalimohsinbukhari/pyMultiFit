@@ -10,7 +10,7 @@ authors = [{ name = "Syed Ali Mohsin Bukhari", email = "syedali.b@outlook.com" }
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
 license-files = ["LICENSE"]
-version = "1.0.7"
+dynamic = ["version"]
 dependencies = ["numpy<2.1.0", "matplotlib", "scipy", "custom-inherit", "mpyez"]
 keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
 classifiers = [
@@ -25,6 +25,9 @@ classifiers = [
     "Classifier: Topic :: Scientific/Engineering :: Mathematics",
     "Classifier: Topic :: Scientific/Engineering :: Physics"
 ]
+
+[tool.setuptools.dynamic]
+version = { attr = "pymultifit.version.__version__" }
 
 [project.optional-dependencies]
 dev = [
