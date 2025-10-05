@@ -41,10 +41,8 @@ Derived Fitters
      - Exponential fitter.
    * - :class:`~pymultifit.fitters.foldedNormal_f.FoldedNormalFitter`
      - Folded Normal fitter.
-   * - :class:`~pymultifit.fitters.gamma_f.GammaFitterSR`
+   * - :class:`~pymultifit.fitters.gamma_f.GammaFitter`
      - Gamma fitter with shape and rate parametrization.
-   * - :class:`~pymultifit.fitters.gamma_f.GammaFitterSS`
-     - Gamma fitter with shape and scale parametrization.
    * - :class:`~pymultifit.fitters.gaussian_f.GaussianFitter`
      - Gaussian fitter.
    * - :class:`~pymultifit.fitters.halfNormal_f.HalfNormalFitter`
@@ -63,8 +61,7 @@ Derived Fitters
    ChiSquareFitter    <chiSquare_f>
    ExponentialFitter  <exponential_f>
    FoldedNormalFitter <foldedNormal_f>
-   GammaFitterSR      <gamma_sr_f>
-   GammaFitterSS      <gamma_ss_f>
+   GammaFitter        <gamma_f>
    GaussianFitter     <gaussian_f>
    HalfNormalFitter   <halfNormal_f>
    LaplaceFitter      <laplace_f>

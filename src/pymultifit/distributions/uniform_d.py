@@ -1,9 +1,12 @@
 """Created on Dec 11 20:40:15 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_pdf_, uniform_log_pdf_, uniform_log_cdf_
+from .. import md_scipy_like
 
 
 class UniformDistribution(BaseDistribution):
@@ -83,6 +86,7 @@ class UniformDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
+    @md_scipy_like('1.0.7')
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate UniformDistribution with scipy parametrization.
@@ -101,36 +105,74 @@ class UniformDistribution(BaseDistribution):
         """
         return cls(low=loc, high=scale, normalize=True)
 
-    def pdf(self, x):
-        return uniform_pdf_(x,
-                            amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+    @classmethod
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate UniformDistribution with scipy parametrization.
 
-    def logpdf(self, x):
-        return uniform_log_pdf_(x,
-                                amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
 
-    def cdf(self, x):
-        return uniform_cdf_(x,
-                            amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+        Returns
+        -------
+        UniformDistribution
+            An instance of normalized UniformDistribution.
+        """
+        return cls(low=loc, high=scale, normalize=True)
 
-    def logcdf(self, x):
-        return uniform_log_cdf_(x,
-                                amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return uniform_pdf_(
+            x,
+            amplitude=self.amplitude,
+            low=self.low,
+            high=self.high,
+            normalize=self.norm,
+        )
 
-    def stats(self):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
+        return uniform_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            low=self.low,
+            high=self.high,
+            normalize=self.norm,
+        )
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        return uniform_cdf_(
+            x,
+            amplitude=self.amplitude,
+            low=self.low,
+            high=self.high,
+            normalize=self.norm,
+        )
+
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
+        return uniform_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            low=self.low,
+            high=self.high,
+            normalize=self.norm,
+        )
+
+    def stats(self) -> Dict[str, float]:
         low, high = self.low, self.low + self.high
 
         if low == high:
-            return {'mean': np.nan,
-                    'median': np.nan,
-                    'variance': np.nan,
-                    'std': np.nan}
+            return {"mean": np.nan, "median": np.nan, "variance": np.nan, "std": np.nan}
 
         mean_ = 0.5 * (low + high)
         median_ = mean_
-        variance_ = (1 / 12.) * (high - low)**2
+        variance_ = (1 / 12.0) * (high - low)**2
 
-        return {'mean': mean_,
-                'median': median_,
-                'variance': variance_,
-                'std': np.sqrt(variance_)}
+        return {
+            "mean": mean_,
+            "median": median_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

@@ -54,7 +54,7 @@ class TestSymNormalDistribution:
         stack_ = np.column_stack([shape_, loc_, scale_])
 
         for shape, loc, scale in stack_:
-            _distribution = SymmetricGeneralizedNormalDistribution.scipy_like(beta=shape, loc=loc, scale=scale)
+            _distribution = SymmetricGeneralizedNormalDistribution.from_scipy_params(beta=shape, loc=loc, scale=scale)
             d_stats = _distribution.stats()
 
             # Scipy calculations
@@ -83,7 +83,7 @@ class TestSymNormalDistribution:
                 loc_ = np.random.uniform(low=-100, high=100)
                 scale_ = np.random.uniform(low=EPSILON, high=100)
                 x = np.linspace(start=loc_ - 10, stop=loc_ + 10, num=50)
-                distribution = SymmetricGeneralizedNormalDistribution.scipy_like(beta=shape_, loc=loc_, scale=scale_)
+                distribution = SymmetricGeneralizedNormalDistribution.from_scipy_params(beta=shape_, loc=loc_, scale=scale_)
                 expected = _cdf_pdf_scipy(x_=x, shape=shape_, loc=loc_, scale=scale_, what=i)
                 np.testing.assert_allclose(actual=_cdf_pdf_custom(x_=x, dist_=distribution, what=i),
                                            desired=expected, rtol=1e-5, atol=1e-8)

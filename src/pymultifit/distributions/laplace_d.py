@@ -1,7 +1,12 @@
 """Created on Aug 03 21:12:13 2024"""
 
+from typing import Dict
+
+import numpy as np
+
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_pdf_, laplace_log_pdf_, laplace_log_cdf_
+from .. import md_scipy_like
 
 
 class LaplaceDistribution(BaseDistribution):
@@ -72,19 +77,26 @@ class LaplaceDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1., mean: float = 0, diversity: float = 1, normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        mean: float = 0,
+        diversity: float = 1,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif diversity <= 0:
-            raise erH.NegativeScaleError('diversity')
-        self.amplitude = 1. if normalize else amplitude
+        if diversity <= 0:
+            raise erH.NegativeScaleError("diversity")
+        self.amplitude = 1.0 if normalize else amplitude
         self.mu = mean
         self.b = diversity
 
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'LaplaceDistribution':
         """
         Instantiate LaplaceDistribution with scipy parametrization.
 
@@ -102,29 +114,70 @@ class LaplaceDistribution(BaseDistribution):
         """
         return cls(mean=loc, diversity=scale, normalize=True)
 
-    def pdf(self, x):
-        return laplace_pdf_(x,
-                            amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+    @classmethod
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'LaplaceDistribution':
+        """
+        Instantiate LaplaceDistribution with scipy parametrization.
 
-    def logpdf(self, x):
-        return laplace_log_pdf_(x,
-                                amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
 
-    def cdf(self, x):
-        return laplace_cdf_(x,
-                            amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+        Returns
+        -------
+        LaplaceDistribution
+            An instance of normalized LaplaceDistribution.
+        """
+        return cls(mean=loc, diversity=scale, normalize=True)
 
-    def logcdf(self, x):
-        return laplace_log_cdf_(x,
-                                amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return laplace_pdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            diversity=self.b,
+            normalize=self.norm,
+        )
 
-    def stats(self):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
+        return laplace_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            diversity=self.b,
+            normalize=self.norm,
+        )
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        return laplace_cdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            diversity=self.b,
+            normalize=self.norm,
+        )
+
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
+        return laplace_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            mean=self.mu,
+            diversity=self.b,
+            normalize=self.norm,
+        )
+
+    def stats(self) -> Dict[str, float]:
         m, b = self.mu, self.b
 
         variance_ = 2 * b**2
 
-        return {'mean': m,
-                'median': m,
-                'mode': m,
-                'variance': variance_,
-                'std': variance_**0.5}
+        return {
+            "mean": m,
+            "median": m,
+            "mode": m,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

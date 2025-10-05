@@ -3,18 +3,18 @@
 from typing import Optional
 
 from .arcSine_d import ArcSineDistribution
+from .backend import LineFunction, CubicFunction, QuadraticFunction
 from .beta_d import BetaDistribution
 from .chiSquare_d import ChiSquareDistribution
 from .exponential_d import ExponentialDistribution
 from .foldedNormal_d import FoldedNormalDistribution
-from .gamma_d import GammaDistributionSR, GammaDistributionSS
+from .gamma_d import GammaDistribution
 from .gaussian_d import GaussianDistribution
 from .generalized import SymmetricGeneralizedNormalDistribution, ScaledInverseChiSquareDistribution
 from .halfNormal_d import HalfNormalDistribution
 from .laplace_d import LaplaceDistribution
 from .logNormal_d import LogNormalDistribution
-from .polynomials import Line, Quadratic, Cubic, Polynomial
 from .skewNormal_d import SkewNormalDistribution
 from .uniform_d import UniformDistribution
 
-oFloat = Optional[float]
+OptionalFloat = Optional[float]

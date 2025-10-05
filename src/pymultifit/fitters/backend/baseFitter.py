@@ -1,37 +1,41 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot
-from mpyez.ezPlotting import plot_xy
+from mpyez.backend.uPlotting import LinePlot  # type: ignore
+from mpyez.ezPlotting import plot_xy  # type: ignore
+from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
-from ..utilities_f import parameter_logic, _plot_fit
-from ... import listOfTuplesOrArray, epsilon
+from ..utilities_f import parameter_logic, _plot_fit, sanity_check
+from ... import epsilon, ListOrNdArray, Params_
 
 
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    def __init__(self, x_values: Union[list, np.ndarray], y_values: Union[list, np.ndarray],
-                 max_iterations: int = 1000):
-        self.x_values = x_values
-        self.y_values = y_values
+    def __init__(
+        self,
+        x_values: ListOrNdArray,
+        y_values: ListOrNdArray,
+        max_iterations: int = 1000,
+    ):
+        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
+        self.x_values: np.ndarray = x_values
+        self.y_values: np.ndarray = y_values
         self.max_iterations = max_iterations
 
-        self.n_par = None
-        self.pn_par = self.n_par
-        self.sn_par = {}
+        self.n_par: int = 0
+        self.pn_par: int = self.n_par
+        self.sn_par: dict = {}
 
-        self.n_fits = None
-        self.params = None
-        self.covariance = None
+        self.n_fits: int = 0
 
-    def _adjust_parameters(self, p0: List[Tuple[float, ...]]):
+    def _adjust_parameters(self, p0: Params_):
         """
         Adjust input parameters to include defaults for secondary parameters if missing.
 
@@ -51,7 +55,7 @@ class BaseFitter:
             if len(params) < self.pn_par:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
-            primary_params = params[:self.pn_par]
+            primary_params = params[: self.pn_par]
             provided_secondary_params = params[self.pn_par:]
 
             secondary_params = dict(self.sn_par)
@@ -80,18 +84,18 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return self.covariance
 
-    def _fit_preprocessing(self, p0: listOfTuplesOrArray, frozen: List[bool]):
+    def _fit_preprocessing(self, p0, frozen):
         """
         Process frozen parameters and adjust bounds.
 
         Parameters
         ----------
-        p0: listOfTuplesOrArray
+        p0: Sequences_
             A list of initial guesses for the parameters of the models.
-            For example: [(1, 1, 0), (3, 3, 2)].
+            For example, [(1, 1, 0), (3, 3, 2)].
         frozen: List[bool]
             A list of booleans indicating which parameters are frozen.
-            For example: [False, False, True] for 3 parameters.
+            For example, [False, False, True] for 3 parameters.
 
         Returns
         -------
@@ -102,9 +106,9 @@ class BaseFitter:
         try:
             lb, ub = self.fit_boundaries()
         except NotImplementedError:
-            # if they're not implemented, self impose -inf + inf boundaries
-            lb = [-np.inf] * self.n_fits
-            ub = [np.inf] * self.n_fits
+            # if they're not implemented, self-imposes -inf + inf boundaries
+            lb = np.repeat(a=-np.inf, repeats=self.n_fits)
+            ub = np.repeat(a=np.inf, repeats=self.n_fits)
 
         # Resize bounds to match total parameters
         lb = np.resize(a=lb, new_shape=self.n_par * self.n_fits)
@@ -132,7 +136,7 @@ class BaseFitter:
         return lb, ub, p0_flat
 
     @staticmethod
-    def _format_param(value, t_low=0.001, t_high=10_000) -> str:
+    def _format_param(value, t_low: float = 0.001, t_high: float = 10_000.0) -> str:
         r"""
         Formats the parameter value to scientific notation based on its magnitude.
 
@@ -152,9 +156,9 @@ class BaseFitter:
         str:
             A formatted string of the parameter value.
         """
-        return f'{value:.3E}' if t_high < abs(value) or abs(value) < t_low else f'{value:.3f}'
+        return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
-    def _n_fitter(self, x: np.ndarray, *params: Iterable) -> np.ndarray:
+    def _n_fitter(self, x: NDArray, *params: Params_) -> np.ndarray:
         r"""
         Perform N-fitting by summing over multiple parameter sets.
 
@@ -173,9 +177,9 @@ class BaseFitter:
             An array containing the composite fitted values for the input ``x``.
         """
         y = np.zeros_like(a=x, dtype=float)
-        params = np.reshape(a=np.array(params), newshape=(self.n_fits, self.n_par))
-        for par in params:
-            y += self.fitter(x=x, params=par)
+        parameters: np.ndarray = np.reshape(a=np.array(params), newshape=(self.n_fits, self.n_par))
+        for par in parameters:
+            y += self.fitter(x=x, params=par.tolist())
         return y
 
     def _params(self) -> np.ndarray:
@@ -216,16 +220,22 @@ class BaseFitter:
         """
         x = self.x_values
         params = np.reshape(a=self.params, newshape=(self.n_fits, self.n_par))
-        colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][1:]
+        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
         for i, par in enumerate(params):
             color = colors[i % len(colors)]
-            plot_xy(x_data=x, y_data=self.fitter(x=x, params=par),
-                    data_label=f'{self.__class__.__name__.replace("Fitter", "")} {i + 1}('
-                               f'{", ".join(self._format_param(i) for i in par)})',
-                    plot_dictionary=LinePlot(line_style='--', color=color), axis=plotter, x_label='', y_label='',
-                    plot_title='')
+            plot_xy(
+                x_data=x,
+                y_data=self.fitter(x=x, params=list(par)),
+                data_label=f"{self.__class__.__name__.replace('Fitter', '')} {i + 1}("
+                           f"{', '.join(self._format_param(i) for i in par)})",
+                plot_dictionary=LinePlot(line_style="--", color=color),
+                axis=plotter,
+                x_label="",
+                y_label="",
+                plot_title="",
+            )
 
-    def _standard_errors(self) -> np.ndarray:
+    def _standard_errors(self) -> NDArray:
         r"""
         Store the standard errors of the fitted parameters.
 
@@ -249,23 +259,23 @@ class BaseFitter:
 
         Parameters
         ----------
-        axis:
+        axis
             The axis to plot the data on.
         """
         plot_xy(x_data=self.x_values, y_data=self.y_values, axis=axis)
 
-    def fit(self, p0: listOfTuplesOrArray, frozen: List[bool] = None):
+    def fit(self, p0: Params_, frozen: Optional[List[bool]] = None):
         """
         Fit the data.
 
         Parameters
         ----------
-        p0: listOfTuplesOrArray
+        p0: Sequences_
             A list of initial guesses for the parameters of the models.
-            For example: [(1, 1, 0), (3, 3, 2)].
+            For example, [(1, 1, 0), (3, 3, 2)].
         frozen: List[bool]
             A list of booleans indicating whether each parameter is frozen.
-            For example: [False, False, True] for 3 parameters.
+            For example, [False, False, True] for 3 parameters.
         """
         self.n_fits = len(p0)
         len_guess = len(list(chain(*p0)))
@@ -276,18 +286,27 @@ class BaseFitter:
 
         lb, ub, p0_flat = self._fit_preprocessing(p0=p0, frozen=frozen)
 
-        self.params, self.covariance, *_ = curve_fit(f=self._n_fitter,
-                                                     xdata=self.x_values, ydata=self.y_values,
-                                                     p0=p0_flat, maxfev=self.max_iterations,
-                                                     bounds=Bounds(lb=lb, ub=ub))
+        self.params, self.covariance, *_ = curve_fit(
+            f=self._n_fitter,
+            xdata=self.x_values,
+            ydata=self.y_values,
+            p0=p0_flat,
+            maxfev=self.max_iterations,
+            bounds=Bounds(lb=lb, ub=ub),
+        )
 
-    @staticmethod
-    def fit_boundaries():
+    def _fit_boundaries(self) -> Tuple[Sequence[float], Sequence[float]]:
+        """Defines the internal distribution boundaries to be used by fitter."""
+        ub = np.repeat(a=np.inf, repeats=self.n_par).tolist()
+        lb = np.repeat(a=-np.inf, repeats=self.n_par).tolist()
+        return lb, ub
+
+    def fit_boundaries(self) -> Tuple[Sequence[float], Sequence[float]]:
         """Defines the distribution boundaries to be used by fitter."""
-        raise NotImplementedError("This method should be implemented by subclasses.")
+        return self._fit_boundaries()
 
     @staticmethod
-    def fitter(x: np.ndarray, params: Tuple[float, Any]):
+    def fitter(x, params: Params_) -> np.ndarray:
         """
         Fitter function for multi-fitting.
 
@@ -295,8 +314,8 @@ class BaseFitter:
         ----------
         x: np.ndarray
             The x-array on which the fitting is to be performed.
-        params: List[float]
-            A list of parameters to fit.
+        params: Params_
+            An array of parameters to fit.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
@@ -310,15 +329,15 @@ class BaseFitter:
             An array of fitted values.
         """
         if self.params is None:
-            raise RuntimeError('Fit not performed yet. Call fit() first.')
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
         return self._n_fitter(self.x_values, self.params)
 
-    def get_model_parameters(self, select: Tuple[int, Any] = None, errors: bool = False):
+    def get_model_parameters(self, select: Optional[Tuple[int, Any]] = None, errors: bool = False):
         r"""
         Extract specific parameter values or their uncertainties from the fitting process.
 
         This method allows for retrieving the fitted parameters or their corresponding standard errors for specific
-         sub-models, or for all sub-models if no selection is provided.
+         submodels, or for all sub-models if no selection is provided.
 
         Parameters
         ----------
@@ -353,13 +372,25 @@ class BaseFitter:
         parameter_mean = self.get_value_error_pair(mean_values=True, std_values=errors)
 
         if not errors:
-            selected = parameter_logic(par_array=parameter_mean, n_par=self.n_par, selected_models=select)
+            selected = parameter_logic(
+                par_array=parameter_mean,
+                n_par=self.n_par,
+                selected_models=select,
+            )
 
             return selected[:, range(self.n_par)].T
         else:
             par_list = parameter_mean.reshape(self.n_fits, self.n_par, 2)
-            mean = parameter_logic(par_array=par_list[:, :, 0].flatten(), n_par=self.n_par, selected_models=select)
-            std_ = parameter_logic(par_array=par_list[:, :, 1].flatten(), n_par=self.n_par, selected_models=select)
+            mean = parameter_logic(
+                par_array=par_list[:, :, 0].flatten(),
+                n_par=self.n_par,
+                selected_models=select,
+            )
+            std_ = parameter_logic(
+                par_array=par_list[:, :, 1].flatten(),
+                n_par=self.n_par,
+                selected_models=select,
+            )
 
             return mean[:, range(self.n_par)].T, std_[:, range(self.n_par)].T
 
@@ -372,10 +403,10 @@ class BaseFitter:
 
         Parameters
         ----------
-        mean_values : bool, optional
+        mean_values : bool, optional.
             If ``True``, return only the values of the fitted parameters.
             Defaults to ``True``.
-        std_values : bool, optional
+        std_values : bool, optional.
             If ``True``, return only the standard errors of the fitted parameters.
             Defaults to ``False``.
 
@@ -393,7 +424,7 @@ class BaseFitter:
         ValueError
             If both ``mean_values`` and ``std_values`` are ``False``.
         """
-        pairs = np.column_stack([self._params(), self._standard_errors()])
+        pairs: np.ndarray = np.column_stack([self._params(), self._standard_errors()])
 
         if mean_values and std_values:
             return pairs
@@ -404,15 +435,22 @@ class BaseFitter:
         else:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
-    def plot_fit(self, show_individuals: bool = False,
-                 x_label: Optional[str] = None, y_label: Optional[str] = None, data_label: Union[list[str], str] = None,
-                 title: Optional[str] = None, axis: Optional[Axes] = None):
+    def plot_fit(
+        self,
+        show_individuals: bool = False,
+        x_label: Optional[str] = None,
+        y_label: Optional[str] = None,
+        data_label: Optional[str] = None,
+        fit_label: Optional[str] = None,
+        title: Optional[str] = None,
+        axis: Optional[Axes] = None,
+    ):
         """
         Plot the fitted models.
 
         Parameters
         ----------
-        show_individuals: bool, optional
+        show_individuals: bool, optional.
             Whether to show individually fitted models or not.
         x_label: str, optional
             The label for the x-axis.
@@ -430,7 +468,19 @@ class BaseFitter:
         plotter
             The plotter handle for the drawn plot.
         """
-        return _plot_fit(x_values=self.x_values, y_values=self.y_values, parameters=self.params, n_fits=self.n_fits,
-                         class_name=self.__class__.__name__, _n_fitter=self._n_fitter,
-                         _n_plotter=self._plot_individual_fitter, show_individuals=show_individuals, x_label=x_label,
-                         y_label=y_label, title=title, data_label=data_label, axis=axis)
+        return _plot_fit(
+            x_values=self.x_values,
+            y_values=self.y_values,
+            parameters=self.params,
+            n_fits=self.n_fits,
+            class_name=self.__class__.__name__,
+            _n_fitter=self._n_fitter,
+            _n_plotter=self._plot_individual_fitter,
+            show_individuals=show_individuals,
+            x_label=x_label,
+            y_label=y_label,
+            title=title,
+            data_label=data_label,
+            fit_label=fit_label,
+            axis=axis,
+        )

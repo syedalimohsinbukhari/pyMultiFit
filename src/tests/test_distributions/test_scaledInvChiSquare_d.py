@@ -43,20 +43,20 @@ class TestScaledInvChiSquareDistribution:
 
     @staticmethod
     def test_stats():
-        btf.stats(custom_distribution=ScaledInverseChiSquareDistribution.scipy_like, scipy_distribution=invgamma,
+        btf.stats(custom_distribution=ScaledInverseChiSquareDistribution.from_scipy_params, scipy_distribution=invgamma,
                   parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
                   median=False, is_scaled_inv_chi=True)
 
     @staticmethod
     def test_pdfs():
-        btf.value_functions(custom_distribution=ScaledInverseChiSquareDistribution.scipy_like,
+        btf.value_functions(custom_distribution=ScaledInverseChiSquareDistribution.from_scipy_params,
                             scipy_distribution=invgamma,
                             parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
                             log_check=True, is_scaled_inv_chi=True)
 
     @staticmethod
     def test_single_values():
-        btf.single_input_n_variables(custom_distribution=ScaledInverseChiSquareDistribution.scipy_like,
+        btf.single_input_n_variables(custom_distribution=ScaledInverseChiSquareDistribution.from_scipy_params,
                                      scipy_distribution=invgamma,
                                      parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
                                      log_check=True, is_scaled_inv_chi=True)

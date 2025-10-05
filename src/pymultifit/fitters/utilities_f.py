@@ -1,22 +1,26 @@
 """Created on Aug 18 23:52:19 2024"""
 
-__all__ = ['parameter_logic', 'sanity_check', '_plot_fit']
+__all__ = ["parameter_logic", "sanity_check", "_plot_fit"]
 
 from typing import List, Tuple, Union, Optional, Callable
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot
-from mpyez.ezPlotting import plot_xy
+from mpyez.backend.uPlotting import LinePlot # type: ignore
+from mpyez.ezPlotting import plot_xy # type: ignore
+
+from .. import ListOrNdArray
 
 # SAFEGUARD:
-xy_values = Union[List[float], np.ndarray]
 xy_tuple = Tuple[np.ndarray, np.ndarray]
 indexType = Union[int, List[int], None]
 
 
-def sanity_check(x_values: xy_values, y_values: xy_values) -> xy_tuple:
+def sanity_check(
+    x_values: ListOrNdArray,
+    y_values: ListOrNdArray,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Convert input lists to NumPy arrays if necessary.
 
@@ -34,16 +38,17 @@ def sanity_check(x_values: xy_values, y_values: xy_values) -> xy_tuple:
     y_values : np.ndarray
         The y-values as a NumPy array.
     """
-    if isinstance(x_values, list):
-        x_values = np.array(x_values)
-
-    if isinstance(y_values, list):
-        y_values = np.array(y_values)
+    x_values = np.asarray(a=x_values, dtype=float)
+    y_values = np.asarray(a=y_values, dtype=float)
 
     return x_values, y_values
 
 
-def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexType) -> np.ndarray:
+def parameter_logic(
+    par_array: np.ndarray,
+    n_par: int,
+    selected_models,
+) -> np.ndarray:
     """
     Extract parameter values from a given function based on the number of parameters per fit and selected indices.
 
@@ -67,10 +72,22 @@ def parameter_logic(par_array: np.ndarray, n_par: int, selected_models: indexTyp
     return par_array.reshape(-1, n_par)[indices]
 
 
-def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n_fits: int, class_name: str,
-              _n_fitter: Callable, _n_plotter: Callable, show_individuals: bool = False,
-              x_label: Optional[str] = None, y_label: Optional[str] = None, title: Optional[str] = None,
-              data_label: Union[list[str], str] = None, axis: Optional[Axes] = None):
+def _plot_fit(
+    x_values: np.ndarray,
+    y_values: np.ndarray,
+    parameters: np.ndarray,
+    n_fits: int,
+    class_name: str,
+    _n_fitter: Callable,
+    _n_plotter: Callable,
+    show_individuals: bool = False,
+    x_label: Optional[str] = None,
+    y_label: Optional[str] = None,
+    title: Optional[str] = None,
+    data_label: Optional[str] = None,
+    fit_label: Optional[str] = None,
+    axis: Optional[Axes] = None,
+):
     """
     Base function to plot the fitted models.
 
@@ -112,26 +129,41 @@ def _plot_fit(x_values: xy_values, y_values: xy_values, parameters: xy_values, n
         raise RuntimeError("Fit not performed yet. Call fit() first.")
 
     if data_label is None:
-        dl, tt = 'Data', 'Total fit'
+        dl, tt = "Data", "Total fit"
     elif len(data_label) == 1 or isinstance(data_label, str):
-        dl, tt = data_label, 'Total fit'
+        dl, tt = data_label, "Total fit"
     elif 1 < len(data_label) <= 2:
-        dl, tt = data_label
+        dl, tt = data_label, fit_label
     else:
         raise ValueError()
 
-    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_dictionary=LinePlot(alpha=0.75))
+    plotter = plot_xy(
+        x_data=x_values,
+        y_data=y_values,
+        data_label=dl,
+        axis=axis,
+        plot_dictionary=LinePlot(alpha=0.75),
+    )
 
-    plot_xy(x_data=x_values, y_data=_n_fitter(x_values, *parameters),
-            x_label=x_label, y_label=y_label, plot_title=title, data_label=tt,
-            plot_dictionary=LinePlot(color='k'), axis=plotter)
+    plot_xy(
+        x_data=x_values,
+        y_data=_n_fitter(x_values, *parameters),
+        x_label=x_label,
+        y_label=y_label,
+        plot_title=title,
+        data_label=tt,
+        plot_dictionary=LinePlot(color="k"),
+        axis=plotter,
+    )
 
     if show_individuals:
         _n_plotter(plotter=plotter)
 
-    plotter.set_xlabel(x_label if x_label else 'X')
-    plotter.set_ylabel(y_label if y_label else 'Y')
-    plotter.set_title(title if title else f'{n_fits} {class_name} fit')
+    plotter2: Axes = plotter[0] if isinstance(plotter, list) else plotter
+
+    plotter2.set_xlabel(x_label if x_label else "X")
+    plotter2.set_ylabel(y_label if y_label else "Y")
+    plotter2.set_title(title if title else f"{n_fits} {class_name} fit")
     plt.tight_layout()
 
-    return plotter
+    return plotter2

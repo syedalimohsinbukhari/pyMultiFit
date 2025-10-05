@@ -1,9 +1,12 @@
 """Created on Dec 03 17:37:05 2024"""
 
-from typing import Union
+from typing import Dict, Union
+
+import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import chi_square_cdf_, chi_square_pdf_, chi_square_log_pdf_, chi_square_log_cdf_
+from .. import md_scipy_like
 
 
 class ChiSquareDistribution(BaseDistribution):
@@ -79,9 +82,14 @@ class ChiSquareDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self,
-                 amplitude: float = 1.0, degree_of_freedom: Union[int, float] = 1,
-                 loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        degree_of_freedom: Union[int, float] = 1,
+        loc: float = 0.0,
+        scale: float = 1.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         self.amplitude = 1 if normalize else amplitude
@@ -92,7 +100,8 @@ class ChiSquareDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, df: Union[int, float], loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('v1.0.7')
+    def scipy_like(cls, df: Union[int, float], loc: float = 0.0, scale: float = 1.0) -> 'ChiSquareDistribution':
         """
         Instantiate ChiSquareDistribution with scipy parameterization.
 
@@ -112,27 +121,68 @@ class ChiSquareDistribution(BaseDistribution):
         """
         return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
-        return chi_square_pdf_(x,
-                               amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
-                               normalize=self.norm)
+    @classmethod
+    def from_scipy_params(cls, df: Union[int, float], loc: float = 0.0, scale: float = 1.0) -> 'ChiSquareDistribution':
+        """
+        Instantiate ChiSquareDistribution with scipy parameterization.
 
-    def logpdf(self, x):
-        return chi_square_log_pdf_(x,
-                                   amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc,
-                                   scale=self.scale, normalize=self.norm)
+        Parameters
+        ----------
+        df: int or float
+            The degree of freedom for the ChiSquare distribution.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0
 
-    def cdf(self, x):
-        return chi_square_cdf_(x,
-                               amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale,
-                               normalize=self.norm)
+        Returns
+        -------
+        ChiSquareDistribution
+            An instance of normalized ChiSquareDistribution.
+        """
+        return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
-    def logcdf(self, x):
-        return chi_square_log_cdf_(x,
-                                   amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc,
-                                   scale=self.scale, normalize=self.norm)
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return chi_square_pdf_(
+            x,
+            amplitude=self.amplitude,
+            degree_of_freedom=self.dof,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
 
-    def stats(self):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
+        return chi_square_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            degree_of_freedom=self.dof,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        return chi_square_cdf_(
+            x,
+            amplitude=self.amplitude,
+            degree_of_freedom=self.dof,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
+
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
+        return chi_square_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            degree_of_freedom=self.dof,
+            loc=self.loc,
+            scale=self.scale,
+            normalize=self.norm,
+        )
+
+    def stats(self) -> Dict[str, float]:
         df = self.dof
         s, l_ = self.scale, self.loc
 
@@ -140,8 +190,9 @@ class ChiSquareDistribution(BaseDistribution):
         mode_ = max(df - 2, 0)
         variance_ = 2 * df * s**2
 
-        return {'mean': mean_,
-                'median': None,
-                'mode': mode_,
-                'variance': variance_,
-                'std': variance_**0.5}
+        return {
+            "mean": mean_,
+            "mode": mode_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

@@ -45,12 +45,22 @@ nbsphinx_execute = 'auto'
 source_suffix = {'.rst': 'restructuredtext', '.md': 'restructuredtext'}
 suppress_warnings = ["config.cache"]
 
-# intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
-#                        "numpy": ('https://numpy.org/devdocs', None),
-#                        'scipy': ('https://docs.scipy.org/doc/scipy/', None),
-#                        "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
-#                        "matplotlib": ("https://matplotlib.org/stable/", None),
-#                        "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None), }
+intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
+                       "numpy": ('https://numpy.org/devdocs', None),
+                       'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+                       "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
+                       "matplotlib": ("https://matplotlib.org/stable/", None),
+                       "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None), }
+
+import os
+
+# Add banner for review version
+if os.environ.get("READTHEDOCS_VERSION") == "pyopensci-review":
+    rst_prolog = """
+    .. warning::
+
+        This is a **review version** of the documentation for PyOpenSci submission.
+    """
 
 autosummary_generate = True
 autodoc_default_flags = ["members"]
@@ -138,5 +148,11 @@ html_context = {
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+# def update_installation():
+#     import subprocess
+#     subprocess.run(["python", "update_requirements_doc.py"], check=True)
+
+
 def setup(app):
+    # update_installation()
     app.add_css_file("style.css")

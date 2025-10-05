@@ -1,9 +1,12 @@
 """Created on Nov 30 10:49:49 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import exponential_cdf_, exponential_pdf_, exponential_log_pdf_, exponential_log_cdf_
+from .. import md_scipy_like
 
 
 class ExponentialDistribution(BaseDistribution):
@@ -75,10 +78,16 @@ class ExponentialDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        scale: float = 1.0,
+        loc: float = 0.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif scale <= 0:
+        if scale <= 0:
             raise erH.NegativeScaleError()
         self.amplitude = 1 if normalize else amplitude
         self.scale = scale
@@ -87,7 +96,8 @@ class ExponentialDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'ExponentialDistribution':
         r"""
         Instantiate ExponentialDistribution with scipy parameterization.
 
@@ -105,35 +115,72 @@ class ExponentialDistribution(BaseDistribution):
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
-        return exponential_pdf_(x,
-                                amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
-                                normalize=self.norm)
+    @classmethod
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'ExponentialDistribution':
+        r"""
+        Instantiate ExponentialDistribution with scipy parameterization.
 
-    def logpdf(self, x):
-        return exponential_log_pdf_(x,
-                                    amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
-                                    normalize=self.norm)
+        Parameters
+        ----------
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The rate parameter. Defaults to 1.0.
 
-    def cdf(self, x):
-        return exponential_cdf_(x,
-                                amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
-                                normalize=self.norm)
+        Returns
+        -------
+        ExponentialDistribution
+            A instance of normalized ExponentialDistribution.
+        """
+        return cls(loc=loc, scale=scale, normalize=True)
 
-    def logcdf(self, x):
-        return exponential_log_cdf_(x,
-                                    amplitude=self.amplitude, lambda_=self.scale, loc=self.loc,
-                                    normalize=self.norm)
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return exponential_pdf_(
+            x,
+            amplitude=self.amplitude,
+            lambda_=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
 
-    def stats(self):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
+        return exponential_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            lambda_=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        return exponential_cdf_(
+            x,
+            amplitude=self.amplitude,
+            lambda_=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
+
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
+        return exponential_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            lambda_=self.scale,
+            loc=self.loc,
+            normalize=self.norm,
+        )
+
+    def stats(self) -> Dict[str, float]:
         s, l_ = self.scale, self.loc
 
         mean_ = (1 / s) + l_
         median_ = (np.log(2) / s) + l_
         mode_ = 0
         variance_ = 1 / s**2
-        return {'mean': mean_,
-                'median': median_,
-                'mode': mode_,
-                'variance': variance_,
-                'std': variance_**0.5}
+        return {
+            "mean": mean_,
+            "median": median_,
+            "mode": mode_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }

@@ -4,7 +4,9 @@ matplotlib
 mpyez
 statsmodels
 custom-inherit
+Deprecated
 pytest
+pytest-cov
 pandas
 seaborn
 astropy
@@ -21,3 +23,11 @@ numpydoc
 nbsphinx
 nbsphinx_link
 sphinx_autobuild
+ruff
+mypy
+pylint
+nox
+uv
+types-Deprecated
+scipy-stubs
+optype

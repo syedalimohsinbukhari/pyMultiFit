@@ -34,21 +34,15 @@ Derived Distributions
    * - :class:`~chiSquare_d.ChiSquareDistribution`
      - ChiSquare distribution.
      - :math:`\dfrac{1}{2^{k/2}\Gamma(k/2)}x^{\frac{k}{2}-1}\exp\left[-\dfrac{x}{2}\right]`
-   * - :class:`~polynomials.Cubic`
-     - Cubic polynomial.
-     - :math:`ax^3+bx^2+cx+d`
    * - :class:`~exponential_d.ExponentialDistribution`
      - Exponential distribution.
      - :math:`\lambda\exp\left[-\lambda x\right]`
    * - :class:`~foldedNormal_d.FoldedNormalDistribution`
      - Folded Normal distribution.
      - :math:`\dfrac{1}{\sqrt{2\pi}\sigma}\exp\left[-\dfrac{(x-\mu)^2}{2\sigma^2}\right] + \dfrac{1}{\sqrt{2\pi}\sigma}\exp\left[-\dfrac{(x+\mu)^2}{2\sigma^2}\right]`
-   * - :class:`~gamma_d.GammaDistributionSS`
-     - Gamma distribution with shape-scale parameterization.
+   * - :class:`~gamma_d.GammaDistribution`
+     - Gamma distribution.
      - :math:`\dfrac{1}{\Gamma(\alpha)\theta^\alpha}x^{\alpha - 1}\exp\left[-\dfrac{x}{\theta}\right]`
-   * - :class:`~gamma_d.GammaDistributionSR`
-     - Gamma distribution with shape-rate parameterization.
-     - :math:`\dfrac{1}{\Gamma(\alpha)}\lambda^\alpha x^{\alpha - 1}\exp\left[-\lambda x\right]`
    * - :class:`~gaussian_d.GaussianDistribution`
      - Gaussian distribution.
      - :math:`\dfrac{1}{\sqrt{2\pi}\sigma}\exp\left[-\dfrac{(x-\mu)^2}{2\sigma^2}\right]`
@@ -58,18 +52,9 @@ Derived Distributions
    * - :class:`~laplace_d.LaplaceDistribution`
      - Laplace distribution.
      - :math:`\dfrac{1}{2b}\exp\left[-\dfrac{|x-\mu|}{b}\right]`
-   * - :class:`~polynomials.Line`
-     - First order polynomial.
-     - :math:`mx+c`
    * - :class:`~logNormal_d.LogNormalDistribution`
      - Log-Normal distribution.
      - :math:`\dfrac{1}{x\sigma\sqrt{2\pi}}\exp\left[-\dfrac{(\ln x-\mu)^2}{2\sigma^2}\right]`
-   * - :class:`~polynomials.Quadratic`
-     - Quadratic polynomial.
-     - :math:`ax^2+bx+c`
-   * - :class:`~polynomials.Polynomial`
-     - Nth order polynomial.
-     - :math:`\sum_{i=0}^{N} a_i x^i`
    * - :class:`~generalized.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`
      - Scaled inverse chi-squared distribution.
      - :math:`\dfrac{\tau^2(\nu/2)}{\Gamma(\nu/2)}\dfrac{1}{x^{1+(\nu/2)}}\exp\left[-\dfrac{\nu\tau^2}{2x}\right]`
@@ -83,6 +68,31 @@ Derived Distributions
      - Uniform distribution.
      - :math:`\dfrac{1}{b-a}\ \forall\ x\in[a,b]\ \text{else}\ 0`
 
+
+Non-distribution function
+-------------------------
+
+.. py:currentmodule:: pymultifit.distributions
+
+.. list-table::
+   :align: center
+   :header-rows: 1
+
+
+   * - Name
+     - Description
+     - Function
+   * - :class:`~utilities_d.line`
+     - First order polynomial.
+     - :math:`mx+c`
+   * - :class:`~utilities_d.quadratic`
+     - Quadratic polynomial.
+     - :math:`ax^2+bx+c`
+   * - :class:`~utilities_d.cubic`
+     - Cubic polynomial.
+     - :math:`ax^3+bx^2+cx+d`
+
+
 .. toctree::
    :hidden:
 
@@ -90,18 +100,14 @@ Derived Distributions
    ArcSineDistribution      <arcSine_d>
    BetaDistribution         <beta_d>
    ChiSquareDistribution    <chiSquare_d>
-   Cubic                    <cubic>
    ExponentialDistribution  <exponential_d>
    FoldedNormalDistribution <foldedNormal_d>
-   GammaDistributionSR      <gamma_sr_d>
-   GammaDistributionSS      <gamma_ss_d>
+   GammaDistribution        <gamma_d>
    GaussianDistribution     <gaussian_d>
    HalfNormalDistribution   <halfNormal_d>
    LaplaceDistribution      <laplace_d>
-   Line                     <line>
    LogNormalDistribution    <logNormal_d>
-   NthPolynomial            <polynomial>
-   Quadratic                <quadratic>
+   Non-distribution functions <polynomial_d>
    ScaledInverseChiSquareDistribution <scaledInvChiSquare_d>
    SkewNormalDistribution   <skewNormal_d>
    SymGeneralizedNormalDistribution <genNorm_d>

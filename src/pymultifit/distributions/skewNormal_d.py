@@ -1,10 +1,13 @@
 """Created on Aug 03 21:35:28 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
-from .utilities_d import skew_normal_cdf_, skew_normal_pdf_
+from .utilities_d import skew_normal_cdf_, skew_normal_pdf_, skew_normal_log_pdf_
+from .. import md_scipy_like, LOG
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -78,11 +81,17 @@ class SkewNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1.0, shape: float = 1., location: float = 0., scale: float = 1.,
-                 normalize: bool = False):
-        if not normalize and amplitude < 0.:
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        shape: float = 1.0,
+        location: float = 0.0,
+        scale: float = 1.0,
+        normalize: bool = False,
+    ):
+        if not normalize and amplitude < 0.0:
             raise NegativeAmplitudeError()
-        if scale <= 0.:
+        if scale <= 0.0:
             raise NegativeScaleError()
 
         self.amplitude = 1 if normalize else amplitude
@@ -93,6 +102,7 @@ class SkewNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
+    @md_scipy_like('1.0.7')
     def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate SkewNormalDistribution with scipy parametrization.
@@ -113,17 +123,61 @@ class SkewNormalDistribution(BaseDistribution):
         """
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
-    def pdf(self, x):
-        return skew_normal_pdf_(x,
-                                amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
-                                normalize=self.norm)
+    @classmethod
+    def from_scipy_params(cls, a: float, loc: float = 0.0, scale: float = 1.0):
+        """
+        Instantiate SkewNormalDistribution with scipy parametrization.
 
-    def cdf(self, x):
-        return skew_normal_cdf_(x,
-                                amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale,
-                                normalize=self.norm)
+        Parameters
+        ----------
+        a : float
+            The skewness parameter.
+        loc : float, optional
+            The location parameter. Defaults to 0.0.
+        scale : float, optional
+            The scale parameter. Defaults to 1.0.
 
-    def stats(self):
+        Returns
+        -------
+        SkewNormalDistribution
+            An instance of normalized SkewNormalDistribution.
+        """
+        return cls(shape=a, location=loc, scale=scale, normalize=True)
+
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return skew_normal_pdf_(
+            x,
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.location,
+            scale=self.scale,
+            normalize=self.norm,
+        )
+
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
+        return skew_normal_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.location,
+            scale=self.scale,
+            normalize=self.norm,
+        )
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        return skew_normal_cdf_(
+            x,
+            amplitude=self.amplitude,
+            shape=self.shape,
+            loc=self.location,
+            scale=self.scale,
+            normalize=self.norm,
+        )
+
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
+        return LOG(self.cdf(x))
+
+    def stats(self) -> Dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location
         delta = alpha / np.sqrt(1 + alpha**2)
         delta_sqrt_2_pi = np.sqrt(2 / np.pi) * delta
@@ -139,8 +193,9 @@ class SkewNormalDistribution(BaseDistribution):
         variance_ = omega**2 * (1 - (2 * delta**2 / np.pi))
         std_ = np.sqrt(variance_)
 
-        return {'mean': mean_,
-                'mode': mode_,
-                'median': None,
-                'variance': variance_,
-                'std': std_}
+        return {
+            "mean": mean_,
+            "mode": mode_,
+            "variance": variance_,
+            "std": std_,
+        }

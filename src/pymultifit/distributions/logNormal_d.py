@@ -1,9 +1,13 @@
 """Created on Aug 03 21:02:45 2024"""
 
+from typing import Dict
+
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_
+from .utilities_d import (log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_,
+                          suppress_numpy_warnings)
+from .. import md_scipy_like
 
 
 class LogNormalDistribution(BaseDistribution):
@@ -74,13 +78,19 @@ class LogNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(self, amplitude: float = 1., mu: float = 0.0, std: float = 1.0, loc: float = 0.0,
-                 normalize: bool = False):
+    def __init__(
+        self,
+        amplitude: float = 1.0,
+        mu: float = 1.0,
+        std: float = 1.0,
+        loc: float = 0.0,
+        normalize: bool = False,
+    ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        elif std <= 0:
+        if std <= 0:
             raise erH.NegativeStandardDeviationError()
-        self.amplitude = 1. if normalize else amplitude
+        self.amplitude = 1.0 if normalize else amplitude
         self.mu = np.log(mu)
         self.std = std
         self.loc = loc
@@ -88,7 +98,8 @@ class LogNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def scipy_like(cls, s, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like('1.0.7')
+    def scipy_like(cls, s, loc: float = 0.0, scale: float = 1.0) -> 'LogNormalDistribution':
         """
         Instantiate LogNormalDistribution with scipy parametrization.
 
@@ -108,25 +119,49 @@ class LogNormalDistribution(BaseDistribution):
         """
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 
-    def pdf(self, x):
-        return log_normal_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
-                               normalize=self.norm)
+    @classmethod
+    def from_scipy_params(cls, s, loc: float = 0.0, scale: float = 1.0) -> 'LogNormalDistribution':
+        """
+        Instantiate LogNormalDistribution with scipy parametrization.
 
-    def logpdf(self, x):
-        return log_normal_log_pdf_(x,
-                                   amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
-                                   normalize=self.norm)
+        Parameters
+        ----------
+        s: float
+            The shape parameter.
+        loc: float, optional
+            The location parameter. Defaults to 0.0.
+        scale: float, optional
+            The scale parameter. Defaults to 1.0.
 
-    def cdf(self, x):
-        return log_normal_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
-                               normalize=self.norm)
+        Returns
+        -------
+        LogNormalDistribution
+            An instance of normalized LogNormalDistribution.
+        """
+        return cls(std=s, mu=scale, loc=loc, normalize=True)
 
-    def logcdf(self, x):
-        return log_normal_log_cdf_(x,
-                                   amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc,
-                                   normalize=self.norm)
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        return log_normal_pdf_(
+            x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
+        )
 
-    def stats(self):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
+        return log_normal_log_pdf_(
+            x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
+        )
+
+    def cdf(self, x: np.ndarray) -> np.ndarray:
+        return log_normal_cdf_(
+            x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
+        )
+
+    def logcdf(self, x: np.ndarray) -> np.ndarray:
+        return log_normal_log_cdf_(
+            x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
+        )
+
+    @suppress_numpy_warnings()
+    def stats(self) -> Dict[str, float]:
         m, s, l_ = np.exp(self.mu), self.std, self.loc
 
         # copied from scipy source-code,
@@ -137,6 +172,8 @@ class LogNormalDistribution(BaseDistribution):
         variance_ = p * (p - 1)
         variance_ *= m**2
 
-        return {'mean': (m * mean_) + l_,
-                'variance': variance_,
-                'std': np.sqrt(variance_)}
+        return {
+            "mean": (m * mean_) + l_,
+            "variance": variance_,
+            "std": np.sqrt(variance_),
+        }
