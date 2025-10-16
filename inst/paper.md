@@ -1,33 +1,33 @@
 ---
 title: 'pyMultiFit: A Python library for fitting data with multiple models'
 tags:
-  - Python
-  - statistics
-  - fitting
-  - Gaussian mixtures
-  - data analysis
+    - Python
+    - statistics
+    - fitting
+    - Gaussian mixtures
+    - data analysis
 authors:
-  - name: Syed Ali Mohsin Bukhari
-    orcid: 0009-0002-5888-4163
-    corresponding: true
-    affiliation: "1, 2"
-  - name: Iqra Siddique
-    orcid: 0009-0000-2515-6616
-    affiliation: "3, 4, 5"
-  - name: Asad Ali
-    orcid: 0000-0002-5164-7942
-    affiliation: "1, 2"
+    - name: Syed Ali Mohsin Bukhari
+      orcid: 0009-0002-5888-4163
+      corresponding: true
+      affiliation: "1, 2"
+    - name: Iqra Siddique
+      orcid: 0009-0000-2515-6616
+      affiliation: "3, 4, 5"
+    - name: Asad Ali
+      orcid: 0000-0002-5164-7942
+      affiliation: "1, 2"
 affiliation:
-  - name: Department of Applied Mathematics and Statistics, Institute of Space Technology, Islamabad 44000, Pakistan
-    index: 1
-  - name: Space and Astrophysics Research Lab (SARL), National Centre of GIS and Space Applications (NCGSA), Islamabad 44000, Pakistan
-    index: 2
-  - name: Gran Sasso Science Institute (GSSI), Viale Crispi 7, I-67100 L’Aquila, Italy
-    index: 3
-  - name: Dipartimento di Fisica, Università di Trento, Via Sommarive 14 I-38123 Trento, Italy
-    index: 4
-  - name: INFN Laboratori Nazionali del Gran Sasso, Via Acitelli 22, I-67100 Assergi, L’Aquila, Italy
-    index: 5
+    - name: Department of Applied Mathematics and Statistics, Institute of Space Technology, Islamabad 44000, Pakistan
+      index: 1
+    - name: Space and Astrophysics Research Lab (SARL), National Centre of GIS and Space Applications (NCGSA), Islamabad 44000, Pakistan
+      index: 2
+    - name: Gran Sasso Science Institute (GSSI), Viale Crispi 7, I-67100 L’Aquila, Italy
+      index: 3
+    - name: Dipartimento di Fisica, Università di Trento, Via Sommarive 14 I-38123 Trento, Italy
+      index: 4
+    - name: INFN Laboratori Nazionali del Gran Sasso, Via Acitelli 22, I-67100 Assergi, L’Aquila, Italy
+      index: 5
 date: 21 August 2025
 bibliography: paper.bib
 ---
