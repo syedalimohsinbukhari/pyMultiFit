@@ -1,24 +1,22 @@
 ---
-title: "pyMultiFit: A Python library for fitting data with multiple models"
-
+title: 'pyMultiFit: A Python library for fitting data with multiple models'
 tags:
   - Python
   - statistics
   - fitting
   - Gaussian mixtures
   - data analysis
-
-author:
+authors:
   - name: Syed Ali Mohsin Bukhari
     orcid: 0009-0002-5888-4163
-    affiliation: ["1", "2"]
+    corresponding: true
+    affiliation: "1, 2"
   - name: Iqra Siddique
     orcid: 0009-0000-2515-6616
-    affiliation: ["3", "4", "5"]
+    affiliation: "3, 4, 5"
   - name: Asad Ali
     orcid: 0000-0002-5164-7942
-    affiliation: ["1", "2"]
-
+    affiliation: "1, 2"
 affiliation:
   - name: Department of Applied Mathematics and Statistics, Institute of Space Technology, Islamabad 44000, Pakistan
     index: 1
@@ -30,12 +28,9 @@ affiliation:
     index: 4
   - name: INFN Laboratori Nazionali del Gran Sasso, Via Acitelli 22, I-67100 Assergi, L’Aquila, Italy
     index: 5
-
 date: 21 August 2025
-
 bibliography: paper.bib
 ---
-
 
 # Summary
 
@@ -55,7 +50,7 @@ or **experimental datasets** where multiple overlapping components are common.
 # Statement of Need
 
 Data fitting is a cornerstone of experimental and analytical workflows across the sciences.
-Yet, widely used scientific libraries such as `numpy`[@harris2020array] and `scipy` [@virtanen2020scipy] provide only
+Yet, widely used scientific libraries such as `numpy` [@harris2020array] and `scipy` [@virtanen2020scipy] provide only
 limited functionality for fitting **multiple models or model mixtures** concurrently.
 Researchers working with multi-component fits—common in domains such as signal analysis, spectroscopy, and high-energy
 physics—are often required to implement complex and repetitive boilerplate code to manage these workflows.
@@ -125,27 +120,19 @@ custom_with_scipy = GaussianDistribution.from_scipy_params(loc=-1,
 f, ax = plt.subplots(1, 2, figsize=(15, 5))
 ax[0].plot(x, custom_distribution, 
            label='custom distribution\nw/o\nscipy parametrization')
-ax[0].plot(x, scipy_distribution, 
-           label='scipy distribution')
-ax[0].set_xlabel('x')
-ax[0].set_ylabel('pdf')
-ax[0].set_title('Gaussian Distribution')
-ax[0].grid(True, alpha=0.5, ls='--')
-ax[0].legend(loc='best')
+ax[0].plot(x, scipy_distribution, label='scipy distribution')
 
 ax[1].plot(x, custom_with_scipy, 
            label='custom distribution\nw\nscipy parametrization')
-ax[1].plot(x, scipy_distribution, 
-           label='scipy distribution')
-ax[1].set_xlabel('x')
-ax[1].set_ylabel('pdf')
-ax[1].set_title('Gaussian Distribution')
-ax[1].grid(True, alpha=0.5, ls='--')
-ax[1].legend(loc='best')
+ax[1].plot(x, scipy_distribution, label='scipy distribution')
+
+[i.set_xlabel('x') for i in ax]
+[i.set_ylabel('pdf') for i in ax]
+[i.set_title('Gaussian Distribution') for i in ax]
+[i.grid(True, alpha=0.5, ls='--') for i in ax]
+[i.legend(loc='best') for i in ax]
 
 plt.tight_layout()
-plt.savefig('./distribution_.png')
-
 plt.show()
 ```
 ![Custom distribution implementation with and without scipy parametrization](distribution_.png)
@@ -163,18 +150,13 @@ import numpy as np
 from pymultifit.fitters import GaussianFitter
 from pymultifit.generators import multi_gaussian
 
-# x-data
 x = np.linspace(-10, 10, 10_000)
 
-# parameters for the 3-component gaussian model
 amp = np.array([4, 2, 6])
 mu = np.array([-3, 0, 6])
 std = np.array([1, 1, 0.3])
-
-# stacking the parameters into a single array
 params = np.column_stack([amp, mu, std])
 
-# data generation
 mg_data = multi_gaussian(x, params, noise_level=0.2, normalize=False)
 
 # guess for the parameters
@@ -184,16 +166,9 @@ amp_guess = np.array([3, 1, 4])
 mu_guess = np.array([-2, 0, 5])
 std_guess = np.array([1, 0.5, 0.5])
 
-# stacking the parameters into a single array
 params_guess = np.column_stack([amp_guess, mu_guess, std_guess])
-
-# initializing fitter with the data
 mg_fitter = GaussianFitter(x, mg_data)
-
-# fitting the model
 mg_fitter.fit(params_guess)
-
-# plotting the fitted model
 mg_fitter.plot_fit(show_individuals=True)
 plt.show()
 ```
@@ -220,7 +195,6 @@ x = np.linspace(-10, 10, 10_000)
 gauss = (10, -1, 0.2)
 skewNorm = (3, 5, 0.2, 3)
 lineParams = (-0.2, -0.3)
-
 params = [gauss, skewNorm, lineParams]
 
 mixed_data = multiple_models(x, params,
@@ -231,7 +205,6 @@ mixed_data = multiple_models(x, params,
                              noise_level=0.2)
 
 guess = [(8, 0, 1), (8, 3, 0, 2), (1, 0)]
-
 mixed_fitter = MixedDataFitter(x, mixed_data, model_list=['G', 'Sk', 'L'],
                                model_dictionary={'G': GaussianFitter,
                                                  'Sk': SkewNormalFitter,
@@ -242,3 +215,5 @@ plt.show()
 ```
 ![MixedDataFitter for Gauss+SkewNormal+Linear model combinations](./mixed_fit_paper.png)
 Figure 3: Demonstration of the MixedDataFitter for fitting heterogeneous models.
+
+# References
