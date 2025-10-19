@@ -17,7 +17,7 @@ authors:
     - name: Asad Ali
       orcid: 0000-0002-5164-7942
       affiliation: "1, 2"
-affiliation:
+affiliations:
     - name: Department of Applied Mathematics and Statistics, Institute of Space Technology, Islamabad 44000, Pakistan
       index: 1
     - name: Space and Astrophysics Research Lab (SARL), National Centre of GIS and Space Applications (NCGSA), Islamabad 44000, Pakistan
