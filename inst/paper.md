@@ -65,6 +65,7 @@ to adapt for general multimodel curve-fitting tasks.
 `pyMultiFit` addresses this gap by providing a lightweight and extensible framework dedicated to multi-model fitting.
 It offers built-in support for combining multiple models, generating synthetic datasets, and incorporating user-defined
 models with minimal effort.
+
 By streamlining multi-component fitting workflows, `pyMultiFit` enables researchers to more rapidly explore, test, and
 refine fitting strategies without the overhead of custom infrastructure.
 
@@ -98,7 +99,7 @@ The `pyMultiFit` library is organized into three main modules:
 `pyMultiFit` provides a consistent API for custom distributions, multi-model data generation, and heterogeneous fitting workflows.  
 This section highlights key features of the library with illustrative examples and figures.
 
-1. **Custom and `scipy`-compatible distributions**  
+## Custom and `scipy`-compatible distributions  
 
 Users can define distributions by subclassing `BaseDistribution` or use the familiar `scipy.stats` parameterization. Figure 1 shows the comparison between a custom Gaussian distribution implemented in `pyMultiFit` and the equivalent `scipy.stats` distribution.
 
@@ -135,10 +136,10 @@ ax[1].plot(x, scipy_distribution, label='scipy distribution')
 plt.tight_layout()
 plt.show()
 ```
-![Custom distribution implementation with and without scipy parametrization](distribution_.png)
-Figure 1: Comparison of the pdf of a Gaussian distribution with and without scipy parametrization.
 
-2. Flexible tools for generating synthetic datasets and fitting multiple models.
+![Figure 1: Comparison of the pdf of a Gaussian distribution with and without scipy parametrization](distribution_.png)
+
+## Flexible tools for generating synthetic datasets and fitting multiple models
 
 Flexible tools allow researchers to generate synthetic datasets with multiple components and fit them with minimal boilerplate.
 Figure 2 demonstrates the fitting of a 3-component Gaussian mixture using `pyMultiFit`, with both individual components and the composite model shown.
@@ -172,10 +173,9 @@ mg_fitter.fit(params_guess)
 mg_fitter.plot_fit(show_individuals=True)
 plt.show()
 ```
-![Multiple fitter for Gaussian model combinations](./mg_fit_paper.png)
-Figure 2: Example of a 3-component Gaussian model fit using the `GaussianFitter`.
+![Figure 2: Example of a 3-component Gaussian model fit using the `GaussianFitter`](./mg_fit_paper.png)
 
-3. Flexible API for generating and fitting heterogeneous datasets.
+## Flexible API for generating and fitting heterogeneous datasets.
 
 The MixedDataFitter enables simultaneous fitting of heterogeneous models (e.g., Gaussian + SkewNormal + Linear), useful in complex workflows such as spectral modeling.
 Figure 3 illustrates a combined Gaussian, SkewNormal, and Linear model fit.
@@ -213,7 +213,6 @@ mixed_fitter.fit(guess)
 mixed_fitter.plot_fit(show_individuals=True)
 plt.show()
 ```
-![MixedDataFitter for Gauss+SkewNormal+Linear model combinations](./mixed_fit_paper.png)
-Figure 3: Demonstration of the MixedDataFitter for fitting heterogeneous models.
+![Figure 3: Demonstration of the MixedDataFitter for fitting heterogeneous models](./mixed_fit_paper.png)
 
 # References
