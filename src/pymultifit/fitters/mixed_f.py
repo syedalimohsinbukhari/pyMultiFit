@@ -2,7 +2,7 @@
 
 import itertools
 import warnings
-from typing import Optional, Tuple, Union, List, Callable, Any
+from typing import Optional, Tuple, Union, List, Callable, Any, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,8 +36,9 @@ from .. import (
     GAMMA,
     NORMAL,
     HALF_NORMAL,
-    ListOrNdArray,
-    Params_)
+    OneDArray,
+    Params_,
+)
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {
@@ -67,8 +68,8 @@ class MixedDataFitter:
 
     def __init__(
         self,
-        x_values: ListOrNdArray,
-        y_values: ListOrNdArray,
+        x_values: OneDArray,
+        y_values: OneDArray,
         model_list: List[str],
         fitter_dictionary: Optional[dict] = None,
         model_dictionary: Optional[dict] = None,
@@ -78,9 +79,9 @@ class MixedDataFitter:
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                        "Use `model_dictionary` instead.",
+                "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -99,8 +100,10 @@ class MixedDataFitter:
         self.model_function = self._create_model_function()
 
     def __repr__(self):
-        return (f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
-                f"model_list={self.model_list}, max_iterations={self.max_iterations})")
+        return (
+            f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
+            f"model_list={self.model_list}, max_iterations={self.max_iterations})"
+        )
 
     def _create_model_function(self) -> Callable:
         """
@@ -125,13 +128,13 @@ class MixedDataFitter:
             y : np.ndarray
                 The computed y-values from the composite model.
             """
-            y = np.zeros_like(a=x, dtype=float)
+            y = np.zeros_like(x, dtype=float)
             param_index = 0
 
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=params[param_index: param_index + n_par])
+                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -200,7 +203,7 @@ class MixedDataFitter:
     def _instantiate_n_par(self, model: str) -> int:
         return self._instantiate_class(model).n_par
 
-    def _instantiate_bounds(self, model: str) -> Tuple[np.ndarray, np.ndarray]:
+    def _instantiate_bounds(self, model: str) -> tuple[Sequence[float], Sequence[float]]:
         return self._instantiate_class(model).fit_boundaries()
 
     def _parameter_extractor(self, values: np.ndarray) -> dict:
@@ -219,7 +222,7 @@ class MixedDataFitter:
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index: p_index + n_pars]])
+            param_dict[model].extend([values[p_index : p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
@@ -259,7 +262,7 @@ class MixedDataFitter:
             color = colors[i % len(colors)]
             class_model = self._instantiate_class(model=model)
             n_par = self._instantiate_n_par(model=model)
-            pars = self.params[param_index: param_index + n_par]
+            pars = self.params[param_index : param_index + n_par]
             y_component = class_model.fitter(x=x, params=pars)
             plot_xy(
                 x_data=x,
@@ -308,8 +311,10 @@ class MixedDataFitter:
         # flatten cannot always work here because the mixed fitter might contain a variable number of parameters
         p0_chain = list(itertools.chain.from_iterable(p0_chain))
         if len(p0_chain) != self._expected_param_count():
-            raise ValueError(f"Initial parameters length {len(p0_chain)} does not match expected count "
-                             f"{self._expected_param_count()}.")
+            raise ValueError(
+                f"Initial parameters length {len(p0_chain)} does not match expected count "
+                f"{self._expected_param_count()}."
+            )
 
         lb, ub = self._get_bounds()
 
@@ -378,8 +383,7 @@ class MixedDataFitter:
             if n_pars == 2:
                 output[key] = par_dict
             else:
-                output[key] = np.array_split(ary=np.asarray(a=par_dict, dtype=float).flatten(),
-                                             indices_or_sections=n_pars)
+                output[key] = np.array_split(np.asarray(par_dict, dtype=float).flatten(), n_pars)
 
         return output
 

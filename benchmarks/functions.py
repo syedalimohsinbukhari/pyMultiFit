@@ -10,6 +10,7 @@ import statsmodels.api as sm
 from matplotlib import pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.ticker import FixedLocator
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from pymultifit import EPSILON
 
@@ -339,66 +340,95 @@ def heatmap(m_df, s_df, label='PDF'):
 
 
 def time_function(func, test_values, num_runs=500):
+    """Measure the average runtime for one function over multiple internal runs."""
     total_time = 0
     for _ in range(num_runs):
         start = time.perf_counter()
         func(test_values)
         end = time.perf_counter()
         total_time += (end - start)
-
-    avg_run_time = total_time / num_runs
-    return avg_run_time
+    return total_time / num_runs
 
 
-def plot_runtime_subplot(ax, functions, values, latex_annotations, n_runs=500):
-    avg_times = [time_function(func=i, test_values=values, num_runs=n_runs) for i in functions]
+def benchmark_functions(functions, values, n_repeats=9, n_runs_per_repeat=500):
+    """Run timing benchmarks n_repeats times for each function."""
+    all_times = np.zeros((n_repeats, len(functions)))
+
+    for i in range(n_repeats):
+        for j, func in enumerate(functions):
+            all_times[i, j] = time_function(func, values, num_runs=n_runs_per_repeat)
+
+    return all_times
+
+
+def plot_all_variations(distribution_name, functions, values, latex_annotations,
+                        n_repeats=20, n_runs_per_repeat=500, save_fig=True):
+    """Plot a single, combined runtime comparison with an inset scatter plot for deviations."""
+    all_times = benchmark_functions(functions,
+                                    values,
+                                    n_repeats,
+                                    n_runs_per_repeat)
+
+    # Log10 transform for better visualization
+    log_times = np.log10(all_times)
+    mean_log_times = np.median(log_times, axis=0)
+    std_log_times = np.std(log_times, axis=0)
 
     versions = [f'Version {i}' for i in range(1, len(functions) + 1)]
+    colors = ['#a3c4f3', '#b8e5b5', '#f5a8a8', '#f7b39e', '#c6a8e6', '#a0e6d7'][:len(functions)]
 
-    bars = ax.bar(x=versions, height=np.log10(avg_times),
-                  color=['#a3c4f3', '#b8e5b5', '#f5a8a8', '#f7b39e', '#c6a8e6', '#a0e6d7'])
+    # --- MAIN FIGURE ---
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    min_ = np.log10(min(avg_times))
-    ax.axhline(y=min_, color='r', ls='--', label=f'$10^{{{min_:.5f}}}$ s')
+    # --- BAR PLOT ---
+    bars = ax.bar(versions, mean_log_times, color=colors, zorder=2)
 
+    # --- HIGHLIGHT BEST VERSION ---
+    min_idx = np.argmin(mean_log_times)
+    min_val = mean_log_times[min_idx]
+    ax.scatter(x=bars[min_idx].get_x() + bars[min_idx].get_width() / 2, y=min_val,
+               color='k', marker='*', s=150, zorder=10)
+    ax.axhline(y=min_val, color='r', ls='--', label=f'$10^{{{min_val:.4f}}}$ s')
+
+    # --- FORMULA LABELS (shifted upwards) ---
     for i, bar in enumerate(bars):
         height = bar.get_height()
-        ax.text(x=bar.get_x() + bar.get_width() / 2, y=height / 2,
+        ax.text(x=bar.get_x() + bar.get_width() / 2, y=height / 4,
                 s=latex_annotations[i], ha='center', va='center',
                 color='k', rotation=90)
 
-    min_idx = np.argmin(avg_times)
-    second_min_idx = np.argsort(avg_times)[1]
+    # --- INSET SCATTER PLOT ---
+    ax_inset = inset_axes(ax, width="50%", height="100%",
+                          bbox_to_anchor=(0.62, 0.15, 0.35, 0.4),
+                          borderpad=1.5, bbox_transform=ax.transAxes)
 
-    min_val_log = np.log10(avg_times[min_idx])
-    second_val_log = np.log10(avg_times[second_min_idx])
+    for i in range(len(functions)):
+        jitter = (np.random.rand(n_repeats)) * 0.2 - 0.1  # centered jitter
+        ax_inset.scatter(np.full(n_repeats, i) + jitter, log_times[:, i],
+                         color='black', alpha=0.1, s=20, zorder=3)
+        ax_inset.errorbar(i, mean_log_times[i], yerr=std_log_times[i], color='r', fmt='o',
+                          markersize=5, zorder=4, capsize=5)
 
-    ax.scatter(x=bars[min_idx].get_x() + bars[min_idx].get_width() / 2, y=min_val_log,
-               color='k', marker='*', s=150)
-    ax.text(x=bars[min_idx].get_x() + bars[min_idx].get_width() / 2, y=min_val_log + 0.05,
-            s=f"$10^{{{min_val_log:.4f}}}$ s", ha='center', color='k')
+    ax_inset.set_xticks(range(len(functions)))
+    ax_inset.set_xticklabels([f'V{i + 1}' for i in range(len(functions))], fontsize=8)
+    ax_inset.grid(True, linestyle=':', alpha=0.4)
 
-    ax.scatter(x=bars[second_min_idx].get_x() + bars[second_min_idx].get_width() / 2,
-               y=second_val_log, color='tab:blue', marker='*', s=150)
-    ax.text(x=bars[second_min_idx].get_x() + bars[second_min_idx].get_width() / 2,
-            y=second_val_log + 0.05, s=f"$10^{{{second_val_log:.4f}}}$ s", ha='center', color='tab:blue')
+    # Adjust inset y-limits dynamically to zoom around scatter range
+    y_min = np.min(log_times)
+    y_max = np.max(log_times)
+    # ax_inset.set_ylim(y_min - 0.01, y_max + 0.01)
 
-    ax.legend(loc='upper right')
-
-
-def plot_all_variations(distribution_name, functions, values, latex_annotations, n_runs=500, save_fig=True):
-    fig, axes = plt.subplots(2, 3, figsize=(18, 12), sharex=True, sharey=True)
-    axes = axes.flatten()
-
-    for i, ax in enumerate(axes):
-        plot_runtime_subplot(ax, functions, values, latex_annotations, n_runs)
-        if i % 3 == 0:
-            ax.set_ylabel('Time (log10 seconds)')
+    # --- FINAL STYLING ---
+    ax.set_ylabel('Time (log₁₀ seconds)')
+    ax.set_title(f'Runtime Comparison ({distribution_name}) — Averaged over {n_repeats} runs')
+    ax.legend(loc='upper left')
+    ax.grid(True, axis='y', linestyle=':', alpha=0.4)
 
     fig.tight_layout()
 
+    # --- SAVE OR SHOW ---
     if save_fig:
-        plt.savefig(f'./variation_plots/{distribution_name}_variations.png', dpi=300)
+        plt.savefig(f'./variation_plots/{distribution_name}_combined_variations.png', dpi=300)
         plt.close()
     else:
         plt.show()

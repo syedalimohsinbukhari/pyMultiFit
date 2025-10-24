@@ -8,12 +8,7 @@ from ..utilities_d import line, quadratic, cubic
 
 
 class LineFunction(BaseDistribution):
-    def __init__(
-        self,
-        slope: float = 1.0,
-        intercept: float = 1.0,
-        normalize: bool = False,
-    ):
+    def __init__(self, slope: float = 1.0, intercept: float = 1.0, normalize: bool = False):
         self.slope = slope
         self.intercept = intercept
 
@@ -36,13 +31,7 @@ class LineFunction(BaseDistribution):
 
 
 class QuadraticFunction(BaseDistribution):
-    def __init__(
-        self,
-        a: float = 1.0,
-        b: float = 1.0,
-        c: float = 1.0,
-        normalize: bool = False,
-    ):
+    def __init__(self, a: float = 1.0, b: float = 1.0, c: float = 1.0, normalize: bool = False):
         self.a = a
         self.b = b
         self.c = c
@@ -66,14 +55,7 @@ class QuadraticFunction(BaseDistribution):
 
 
 class CubicFunction(BaseDistribution):
-    def __init__(
-        self,
-        a: float = 1.0,
-        b: float = 1.0,
-        c: float = 1.0,
-        d: float = 1.0,
-        normalize: bool = False,
-    ):
+    def __init__(self, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float = 1.0, normalize: bool = False):
         self.a = a
         self.b = b
         self.c = c

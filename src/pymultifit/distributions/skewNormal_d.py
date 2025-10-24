@@ -7,7 +7,7 @@ import numpy as np
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
 from .utilities_d import skew_normal_cdf_, skew_normal_pdf_, skew_normal_log_pdf_
-from .. import md_scipy_like, LOG
+from .. import md_scipy_like, LOG, OneDArray
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -102,8 +102,8 @@ class SkewNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
-    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0):
+    @md_scipy_like("1.0.7")
+    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "SkewNormalDistribution":
         """
         Instantiate SkewNormalDistribution with scipy parametrization.
 
@@ -124,7 +124,7 @@ class SkewNormalDistribution(BaseDistribution):
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, a: float, loc: float = 0.0, scale: float = 1.0):
+    def from_scipy_params(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "SkewNormalDistribution":
         """
         Instantiate SkewNormalDistribution with scipy parametrization.
 
@@ -144,37 +144,22 @@ class SkewNormalDistribution(BaseDistribution):
         """
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: OneDArray) -> OneDArray:
         return skew_normal_pdf_(
-            x,
-            amplitude=self.amplitude,
-            shape=self.shape,
-            loc=self.location,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
+    def logpdf(self, x: OneDArray) -> OneDArray:
         return skew_normal_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            shape=self.shape,
-            loc=self.location,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: OneDArray) -> OneDArray:
         return skew_normal_cdf_(
-            x,
-            amplitude=self.amplitude,
-            shape=self.shape,
-            loc=self.location,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
+    def logcdf(self, x: OneDArray) -> OneDArray:
         return LOG(self.cdf(x))
 
     def stats(self) -> Dict[str, float]:
@@ -193,9 +178,4 @@ class SkewNormalDistribution(BaseDistribution):
         variance_ = omega**2 * (1 - (2 * delta**2 / np.pi))
         std_ = np.sqrt(variance_)
 
-        return {
-            "mean": mean_,
-            "mode": mode_,
-            "variance": variance_,
-            "std": std_,
-        }
+        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": std_}

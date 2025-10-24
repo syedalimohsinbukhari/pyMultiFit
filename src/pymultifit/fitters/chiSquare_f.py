@@ -4,19 +4,14 @@ import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import ListOrNdArray, Params_
+from .. import OneDArray, Params_
 from ..distributions.utilities_d import chi_square_pdf_
 
 
 class ChiSquareFitter(BaseFitter):
     """A class for fitting multiple ChiSquare distributions to the given data."""
 
-    def __init__(
-        self,
-        x_values: ListOrNdArray,
-        y_values: ListOrNdArray,
-        max_iterations: int = 1000,
-    ):
+    def __init__(self, x_values: OneDArray, y_values: OneDArray, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3

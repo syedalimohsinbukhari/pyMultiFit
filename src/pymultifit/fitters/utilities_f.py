@@ -7,20 +7,17 @@ from typing import List, Tuple, Union, Optional, Callable
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot # type: ignore
-from mpyez.ezPlotting import plot_xy # type: ignore
+from mpyez.backend.uPlotting import LinePlot  # type: ignore
+from mpyez.ezPlotting import plot_xy  # type: ignore
 
-from .. import ListOrNdArray
+from .. import OneDArray
 
 # SAFEGUARD:
 xy_tuple = Tuple[np.ndarray, np.ndarray]
 indexType = Union[int, List[int], None]
 
 
-def sanity_check(
-    x_values: ListOrNdArray,
-    y_values: ListOrNdArray,
-) -> Tuple[np.ndarray, np.ndarray]:
+def sanity_check(x_values: OneDArray, y_values: OneDArray) -> Tuple[OneDArray, OneDArray]:
     """
     Convert input lists to NumPy arrays if necessary.
 
@@ -44,11 +41,7 @@ def sanity_check(
     return x_values, y_values
 
 
-def parameter_logic(
-    par_array: np.ndarray,
-    n_par: int,
-    selected_models,
-) -> np.ndarray:
+def parameter_logic(par_array: OneDArray, n_par: int, selected_models) -> OneDArray:
     """
     Extract parameter values from a given function based on the number of parameters per fit and selected indices.
 
@@ -73,9 +66,9 @@ def parameter_logic(
 
 
 def _plot_fit(
-    x_values: np.ndarray,
-    y_values: np.ndarray,
-    parameters: np.ndarray,
+    x_values: OneDArray,
+    y_values: OneDArray,
+    parameters: OneDArray,
     n_fits: int,
     class_name: str,
     _n_fitter: Callable,
@@ -137,13 +130,7 @@ def _plot_fit(
     else:
         raise ValueError()
 
-    plotter = plot_xy(
-        x_data=x_values,
-        y_data=y_values,
-        data_label=dl,
-        axis=axis,
-        plot_dictionary=LinePlot(alpha=0.75),
-    )
+    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_dictionary=LinePlot(alpha=0.75))
 
     plot_xy(
         x_data=x_values,

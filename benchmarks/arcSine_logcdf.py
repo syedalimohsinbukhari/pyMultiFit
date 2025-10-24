@@ -29,5 +29,5 @@ latex_annotations = [r"$\log\left(\dfrac{2}{\pi}\right) + \log(\arcsin(\sqrt{y})
                      r"$\log(2) - \log(\pi) + \log(\arcsin(\sqrt{y}))$",
                      r"$\log(2) - \log(\pi) + \log(\arcsin(y^{0.5}))$"]
 
-plot_all_variations(distribution_name='arcSine_log_cdf',
+plot_all_variations(distribution_name='arcSine_logcdf',
                     functions=func_list, values=test_values, latex_annotations=latex_annotations)

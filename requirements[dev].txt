@@ -23,7 +23,7 @@ numpydoc
 nbsphinx
 nbsphinx_link
 sphinx_autobuild
-ruff
+black
 mypy
 pylint
 nox

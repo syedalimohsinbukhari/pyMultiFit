@@ -6,7 +6,7 @@ import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_pdf_, laplace_log_pdf_, laplace_log_cdf_
-from .. import md_scipy_like
+from .. import md_scipy_like, OneDArray
 
 
 class LaplaceDistribution(BaseDistribution):
@@ -77,13 +77,7 @@ class LaplaceDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(
-        self,
-        amplitude: float = 1.0,
-        mean: float = 0,
-        diversity: float = 1,
-        normalize: bool = False,
-    ):
+    def __init__(self, amplitude: float = 1.0, mean: float = 0, diversity: float = 1, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         if diversity <= 0:
@@ -95,8 +89,8 @@ class LaplaceDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'LaplaceDistribution':
+    @md_scipy_like("1.0.7")
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "LaplaceDistribution":
         """
         Instantiate LaplaceDistribution with scipy parametrization.
 
@@ -115,7 +109,7 @@ class LaplaceDistribution(BaseDistribution):
         return cls(mean=loc, diversity=scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'LaplaceDistribution':
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "LaplaceDistribution":
         """
         Instantiate LaplaceDistribution with scipy parametrization.
 
@@ -133,51 +127,21 @@ class LaplaceDistribution(BaseDistribution):
         """
         return cls(mean=loc, diversity=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return laplace_pdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            diversity=self.b,
-            normalize=self.norm,
-        )
+    def pdf(self, x: OneDArray) -> OneDArray:
+        return laplace_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
-        return laplace_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            diversity=self.b,
-            normalize=self.norm,
-        )
+    def logpdf(self, x: OneDArray) -> OneDArray:
+        return laplace_log_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return laplace_cdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            diversity=self.b,
-            normalize=self.norm,
-        )
+    def cdf(self, x: OneDArray) -> OneDArray:
+        return laplace_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
-        return laplace_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            diversity=self.b,
-            normalize=self.norm,
-        )
+    def logcdf(self, x: OneDArray) -> OneDArray:
+        return laplace_log_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
         m, b = self.mu, self.b
 
         variance_ = 2 * b**2
 
-        return {
-            "mean": m,
-            "median": m,
-            "mode": m,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": m, "median": m, "mode": m, "variance": variance_, "std": np.sqrt(variance_)}
