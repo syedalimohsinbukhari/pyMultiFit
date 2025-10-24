@@ -137,7 +137,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-![Figure 1: Comparison of the pdf of a Gaussian distribution with and without scipy parametrization](distribution_.png)
+![Comparison of the pdf of a Gaussian distribution with and without scipy parametrization](distribution_.png)
 
 ## Flexible tools for generating synthetic datasets and fitting multiple models
 
@@ -173,7 +173,7 @@ mg_fitter.fit(params_guess)
 mg_fitter.plot_fit(show_individuals=True)
 plt.show()
 ```
-![Figure 2: Example of a 3-component Gaussian model fit using the `GaussianFitter`](./mg_fit_paper.png)
+![Example of a 3-component Gaussian model fit using the `GaussianFitter`](./mg_fit_paper.png)
 
 ## Flexible API for generating and fitting heterogeneous datasets.
 
@@ -213,6 +213,6 @@ mixed_fitter.fit(guess)
 mixed_fitter.plot_fit(show_individuals=True)
 plt.show()
 ```
-![Figure 3: Demonstration of the MixedDataFitter for fitting heterogeneous models](./mixed_fit_paper.png)
+![Demonstration of the MixedDataFitter for fitting heterogeneous models](./mixed_fit_paper.png)
 
 # References
