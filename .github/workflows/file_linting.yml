@@ -29,6 +29,6 @@ jobs:
         run: |
           pylint --rcfile=./.pylintrc --fail-under=7 $(git ls-files 'src/pymultifit/**/*.py')
 
-      - name: Linting the code with Ruff
+      - name: Linting the code with Black
         run: |
-          ruff check src/pymultifit/ --fix
+          black src/pymultifit/ -C -l 120
