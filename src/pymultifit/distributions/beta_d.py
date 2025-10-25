@@ -7,7 +7,7 @@ from scipy.special import betaincinv
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import beta_cdf_, beta_pdf_, beta_log_pdf_, beta_log_cdf_
-from .. import md_scipy_like
+from .. import md_scipy_like, OneDArray
 
 
 class BetaDistribution(BaseDistribution):
@@ -109,8 +109,8 @@ class BetaDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('v1.0.7')
-    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> 'BetaDistribution':
+    @md_scipy_like("v1.0.7")
+    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
         Instantiate BetaDistribution with scipy parameterization.
 
@@ -133,7 +133,7 @@ class BetaDistribution(BaseDistribution):
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> 'BetaDistribution':
+    def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
         Instantiate BetaDistribution with scipy parameterization.
 
@@ -155,7 +155,7 @@ class BetaDistribution(BaseDistribution):
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: OneDArray) -> OneDArray:
         return beta_pdf_(
             x,
             amplitude=self.amplitude,
@@ -166,7 +166,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
+    def logpdf(self, x: OneDArray) -> OneDArray:
         return beta_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -177,7 +177,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: OneDArray) -> OneDArray:
         return beta_cdf_(
             x,
             amplitude=self.amplitude,
@@ -188,7 +188,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
+    def logcdf(self, x: OneDArray) -> OneDArray:
         return beta_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -210,13 +210,8 @@ class BetaDistribution(BaseDistribution):
         median_ = (s * median_) + _l
 
         num_ = a * b
-        den_ = (a + b)**2 * (a + b + 1)
+        den_ = (a + b) ** 2 * (a + b + 1)
 
         variance_ = s**2 * (num_ / den_)
 
-        return {
-            "mean": mean_,
-            "median": median_.astype(float),
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": mean_, "median": median_.astype(float), "variance": variance_, "std": np.sqrt(variance_)}

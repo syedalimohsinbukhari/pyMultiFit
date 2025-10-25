@@ -32,7 +32,7 @@ dependencies:
   - pip
   - pip:
       - mpyez
-      - ruff
+      - black
       - pylint
       - nox
       - mypy
