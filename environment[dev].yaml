@@ -29,14 +29,14 @@ dependencies:
   - nbsphinx-link
   - sphinx-gallery
   - sphinx-autobuild
+  - mypy
+  - nox
+  - uv
+  - types-deprecated
+  - scipy-stubs
+  - pylint
+  - black
   - pip
   - pip:
       - mpyez
-      - black
-      - pylint
-      - nox
-      - mypy
-      - uv
-      - types-Deprecated
-      - scipy-stubs
       - optype

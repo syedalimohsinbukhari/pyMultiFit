@@ -102,7 +102,7 @@ def multi_chi_squared(x: OneDArray, params: Params_, noise_level: float = 0.0, n
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return multi_base(
-        x, distribution_func=dist.ChiSquareDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[CHI_SQUARE], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
@@ -110,7 +110,7 @@ def multi_chi_squared(x: OneDArray, params: Params_, noise_level: float = 0.0, n
 def multi_gamma(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistribution` data with optional noise."""
     return multi_base(
-        x, distribution_func=dist.GammaDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[GAMMA], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
@@ -119,7 +119,7 @@ def multi_exponential(x: OneDArray, params: Params_, noise_level: float = 0.0, n
     r"""Generate multi-:class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` data with optional
     noise."""
     return multi_base(
-        x, distribution_func=dist.ExponentialDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[EXPONENTIAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
@@ -128,7 +128,7 @@ def multi_folded_normal(x: OneDArray, params: Params_, noise_level: float = 0.0,
     r"""Generate multi-:class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x, distribution_func=dist.FoldedNormalDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[FOLDED_NORMAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
@@ -136,7 +136,7 @@ def multi_folded_normal(x: OneDArray, params: Params_, noise_level: float = 0.0,
 def multi_gaussian(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` data with optional noise."""
     return multi_base(
-        x, distribution_func=dist.GaussianDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[GAUSSIAN], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
@@ -145,7 +145,7 @@ def multi_half_normal(x: OneDArray, params: Params_, noise_level: float = 0.0, n
     r"""Generate multi-:class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x, distribution_func=dist.HalfNormalDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[HALF_NORMAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
@@ -153,7 +153,7 @@ def multi_half_normal(x: OneDArray, params: Params_, noise_level: float = 0.0, n
 def multi_laplace(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.laplace_d.LaplaceDistribution` data with optional noise."""
     return multi_base(
-        x, distribution_func=dist.LaplaceDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[LAPLACE], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
@@ -161,7 +161,7 @@ def multi_laplace(x: OneDArray, params: Params_, noise_level: float = 0.0, norma
 def multi_log_normal(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution` data with optional noise."""
     return multi_base(
-        x, distribution_func=dist.LogNormalDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[LOG_NORMAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
@@ -170,7 +170,7 @@ def multi_skew_normal(x: OneDArray, params: Params_, noise_level: float = 0.0, n
     r"""Generate multi-:class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x, distribution_func=dist.SkewNormalDistribution, params=params, noise_level=noise_level, normalize=normalize
+        x, distribution_func=model_map[SKEW_NORMAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 

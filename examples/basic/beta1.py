@@ -13,17 +13,17 @@ y_scipy = beta
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
 
-ax[0].plot(x_values, y_scipy.pdf(x=x_values, a=2, b=30), label='Scipy Beta')
-ax[0].plot(x_values, y_multifit.pdf(x_values), 'k:', label='pyMultiFit Beta')
-ax[0].set_ylabel('f(x)')
+ax[0].plot(x_values, y_scipy.pdf(x=x_values, a=2, b=30), label="Scipy Beta")
+ax[0].plot(x_values, y_multifit.pdf(x_values), "k:", label="pyMultiFit Beta")
+ax[0].set_ylabel("f(x)")
 
-ax[1].plot(x_values, y_scipy.cdf(x=x_values, a=2, b=30), label='Scipy Beta')
-ax[1].plot(x_values, y_multifit.cdf(x_values), 'k:', label='pyMultiFit Beta')
-ax[1].set_ylabel('F(x)')
+ax[1].plot(x_values, y_scipy.cdf(x=x_values, a=2, b=30), label="Scipy Beta")
+ax[1].plot(x_values, y_multifit.cdf(x_values), "k:", label="pyMultiFit Beta")
+ax[1].set_ylabel("F(x)")
 
-f.suptitle('Beta(2, 30)')
+f.suptitle("Beta(2, 30)")
 
 for i in ax:
-    i.set_xlabel('X')
+    i.set_xlabel("X")
     i.legend()
 plt.tight_layout()

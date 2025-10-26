@@ -41,9 +41,6 @@ block = "\n" + "\n".join(formatted) + "\n\n"
 # Replace block between markers
 content = INSTALL_RST.read_text()
 updated = re.sub(
-    r"(?s)(^\s*\.\. BEGIN REQUIREMENTS\s*$)(.*?)(^\s*\.\. END REQUIREMENTS\s*$)",
-    block,
-    content,
-    flags=re.DOTALL,
+    r"(?s)(^\s*\.\. BEGIN REQUIREMENTS\s*$)(.*?)(^\s*\.\. END REQUIREMENTS\s*$)", block, content, flags=re.DOTALL
 )
 INSTALL_RST.write_text(updated)

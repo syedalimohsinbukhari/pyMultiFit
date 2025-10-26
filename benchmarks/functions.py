@@ -31,7 +31,7 @@ def compare_accuracy(x, custom_dist, scipy_dist):
     pdf_scipy = scipy_dist.pdf(x)
     cdf_scipy = scipy_dist.cdf(x)
 
-    with np.errstate(invalid='ignore'):
+    with np.errstate(invalid="ignore"):
         pdf_abs_diff = np.nan_to_num(np.abs(pdf_custom - pdf_scipy), False, 0) + EPSILON
         cdf_abs_diff = np.nan_to_num(np.abs(cdf_custom - cdf_scipy), False, 0) + EPSILON
 
@@ -39,16 +39,16 @@ def compare_accuracy(x, custom_dist, scipy_dist):
     logcdf_custom = custom_dist.logcdf(x)
     logpdf_scipy = scipy_dist.logpdf(x)
     logcdf_scipy = scipy_dist.logcdf(x)
-    with np.errstate(invalid='ignore'):
-        logpdf_abs_diff = np.nan_to_num(np.abs(logpdf_custom - logpdf_scipy),
-                                        False, 0) + EPSILON
-        logcdf_abs_diff = np.nan_to_num(np.abs(logcdf_custom - logcdf_scipy),
-                                        False, 0) + EPSILON
+    with np.errstate(invalid="ignore"):
+        logpdf_abs_diff = np.nan_to_num(np.abs(logpdf_custom - logpdf_scipy), False, 0) + EPSILON
+        logcdf_abs_diff = np.nan_to_num(np.abs(logcdf_custom - logcdf_scipy), False, 0) + EPSILON
 
-    return {"pdf_abs_diff": pdf_abs_diff,
-            "log_pdf_abs_diff": logpdf_abs_diff,
-            "cdf_abs_diff": cdf_abs_diff,
-            "log_cdf_abs_diff": logcdf_abs_diff}
+    return {
+        "pdf_abs_diff": pdf_abs_diff,
+        "log_pdf_abs_diff": logpdf_abs_diff,
+        "cdf_abs_diff": cdf_abs_diff,
+        "log_cdf_abs_diff": logcdf_abs_diff,
+    }
 
 
 # Plotting Function
@@ -56,7 +56,7 @@ def plot_accuracy(x, results, title_suffix):
     plt.figure(figsize=(12, 8))
 
     plt.subplot(2, 2, 1)
-    plt.plot(x, results["pdf_abs_diff"], label="PDF Absolute Diff", marker='.')
+    plt.plot(x, results["pdf_abs_diff"], label="PDF Absolute Diff", marker=".")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("x")
@@ -68,7 +68,7 @@ def plot_accuracy(x, results, title_suffix):
 
     # if results.get('log_pdf_abs_diff') is not None:
     plt.subplot(2, 2, 2)
-    plt.plot(x, results["log_pdf_abs_diff"], label="log PDF Absolute Diff", marker='.')
+    plt.plot(x, results["log_pdf_abs_diff"], label="log PDF Absolute Diff", marker=".")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("x")
@@ -79,7 +79,7 @@ def plot_accuracy(x, results, title_suffix):
     plt.grid(True)
 
     plt.subplot(2, 2, 3)
-    plt.plot(x, results["cdf_abs_diff"], label="CDF Absolute Diff", marker='.')
+    plt.plot(x, results["cdf_abs_diff"], label="CDF Absolute Diff", marker=".")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("x")
@@ -91,7 +91,7 @@ def plot_accuracy(x, results, title_suffix):
 
     # if results.get('log_cdf_abs_diff') is not None:
     plt.subplot(2, 2, 4)
-    plt.plot(x, results["log_cdf_abs_diff"], label="log CDF Absolute Diff", marker='.')
+    plt.plot(x, results["log_cdf_abs_diff"], label="log CDF Absolute Diff", marker=".")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("x")
@@ -157,10 +157,10 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
     plt.figure(figsize=(10, 4))
 
     plt.subplot(1, 2, 1)
-    plt.plot(n_points_list, mean_c, 'o-', ms=3, label='Custom (Mean)', color='blue')
-    plt.plot(n_points_list, mean_s, 's-', ms=3, label='SciPy (Mean)', color='orange')
-    plt.xscale('log')
-    plt.yscale('log')
+    plt.plot(n_points_list, mean_c, "o-", ms=3, label="Custom (Mean)", color="blue")
+    plt.plot(n_points_list, mean_s, "s-", ms=3, label="SciPy (Mean)", color="orange")
+    plt.xscale("log")
+    plt.yscale("log")
     plt.xlabel("Number of Points")
     plt.ylabel("Execution Time (s)")
     plt.title(f"Speed Comparison: Custom vs SciPy ({title_suffix})")
@@ -171,12 +171,12 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
     x_smooth, y_smooth = lowess_results[:, 0], lowess_results[:, 1]
 
     plt.subplot(1, 2, 2)
-    plt.plot(n_points_list, ratio_means, 'x-', ms=4, label='Ratio (Mean)', color='purple')
-    plt.plot(x_smooth, y_smooth, 'r--', lw=2, alpha=0.75, label='LOESS Fit')
-    plt.xscale('log')
+    plt.plot(n_points_list, ratio_means, "x-", ms=4, label="Ratio (Mean)", color="purple")
+    plt.plot(x_smooth, y_smooth, "r--", lw=2, alpha=0.75, label="LOESS Fit")
+    plt.xscale("log")
     plt.xlabel("Number of Points")
     plt.ylabel("Speed Ratio (Custom/SciPy)")
-    plt.axhline(y=1, color='k', linestyle=':', label='Ratio = 1')
+    plt.axhline(y=1, color="k", linestyle=":", label="Ratio = 1")
     plt.title(f"Speed Ratio: Custom/SciPy ({'Example Title'})")
     plt.legend()
     plt.grid(True)
@@ -186,20 +186,16 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
 
 
 def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = 15):
-    p_times_class, p_times_scipy = evaluate_speed(custom_dist=custom_dist, scipy_dist=scipy_dist,
-                                                  n_points_list=n_points, compute_cdf=False, repetitions=repetitions)
-    plot_speed_and_ratios(n_points_list=n_points, times_class=p_times_class, times_scipy=p_times_scipy,
-                          title_suffix="PDF Computations", save_as=save_as)
+    p_times_class, p_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
+    plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF Computations", save_as)
 
-    c_times_class, c_times_scipy = evaluate_speed(custom_dist=custom_dist, scipy_dist=scipy_dist,
-                                                  n_points_list=n_points, compute_cdf=False, repetitions=repetitions)
-    plot_speed_and_ratios(n_points_list=n_points, times_class=c_times_class, times_scipy=c_times_scipy,
-                          title_suffix="CDF Computations", save_as=save_as)
+    c_times_class, c_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
+    plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF Computations", save_as)
 
     return (p_times_class, c_times_class), (p_times_scipy, c_times_scipy)
 
 
-def plot_distribution_comparison(data_dict, title_labels=('PDF', 'CDF')):
+def plot_distribution_comparison(data_dict, title_labels=("PDF", "CDF")):
     """
     Automates the plotting of PDF and CDF timing comparisons for multiple distributions.
 
@@ -229,14 +225,14 @@ def plot_distribution_comparison(data_dict, title_labels=('PDF', 'CDF')):
             pdf_or_cdf = pdf_cdf_pair[i]
             log_data.append(np.log10(pdf_or_cdf[0]))
             log_data.append(np.log10(pdf_or_cdf[1]))
-            xtick_labels.append(f'custom\n{dist_name}')
-            xtick_labels.append(f'scipy\n{dist_name}')
+            xtick_labels.append(f"custom\n{dist_name}")
+            xtick_labels.append(f"scipy\n{dist_name}")
 
         ax[i].boxplot(log_data, meanline=True, showmeans=True)
         ax[i].set_xticklabels(xtick_labels, rotation=60, ha="center")
         ax[i].set_title(title)
 
-    plt.xlabel('Log[Time] [s]')
+    plt.xlabel("Log[Time] [s]")
     plt.tight_layout()
     plt.show()
 
@@ -264,7 +260,7 @@ def generate_data_dict(data_list, label_list):
     return data_dict
 
 
-def describe_data(data_list, labels=None, caption='PDF'):
+def describe_data(data_list, labels=None, caption="PDF"):
     """
     Provides a detailed summary of the data including mean, std, quartiles (Q1, Q2, Q3, Q4), and median
     for multiple datasets.
@@ -283,25 +279,27 @@ def describe_data(data_list, labels=None, caption='PDF'):
         if not isinstance(data, pd.Series):
             data = pd.Series(data)
 
-        summary_stats = {'N': data.size,
-                         'Mean': data.mean(),
-                         'Std': data.std(),
-                         'Min': data.min(),
-                         'Q1 (25%)': data.quantile(0.25),
-                         'Q2 (Median)': data.median(),
-                         'Q3 (75%)': data.quantile(0.75),
-                         'Max': data.max()}
+        summary_stats = {
+            "N": data.size,
+            "Mean": data.mean(),
+            "Std": data.std(),
+            "Min": data.min(),
+            "Q1 (25%)": data.quantile(0.25),
+            "Q2 (Median)": data.median(),
+            "Q3 (75%)": data.quantile(0.75),
+            "Max": data.max(),
+        }
 
         summary_list.append(summary_stats)
 
     index_labels = labels if labels else [f"Dataset {i + 1}" for i in range(len(data_list))]
     summary_df = pd.DataFrame(data=summary_list, index=index_labels)
 
-    styled_summary = summary_df.style.set_caption(f"{caption} Statistics") \
-        .format({col: "{:.3E}" for col in summary_df.columns[1:]}) \
-        .set_table_styles([{'selector': 'th',
-                            'props': [('font-size', '12pt'),
-                                      ('text-align', 'center')]}])
+    styled_summary = (
+        summary_df.style.set_caption(f"{caption} Statistics")
+        .format({col: "{:.3E}" for col in summary_df.columns[1:]})
+        .set_table_styles([{"selector": "th", "props": [("font-size", "12pt"), ("text-align", "center")]}])
+    )
 
     return styled_summary
 
@@ -310,8 +308,8 @@ def boxplot_comparison(df1, df2, label, fig_size=(16, 6)):
     f, ax = plt.subplots(nrows=1, ncols=1, figsize=fig_size)
 
     pd.plotting.boxplot(data=np.log10(df1 / df2), ax=ax)
-    ax.axhline(y=np.log10(1), color='r', ls='--')
-    f.suptitle(f'Time ratio comparison between custom/scipy {label}')
+    ax.axhline(y=np.log10(1), color="r", ls="--")
+    f.suptitle(f"Time ratio comparison between custom/scipy {label}")
     ticks = [i.get_text() for i in ax.get_yticklabels()]
     float_list = [float(s.replace("−", "-")) for s in ticks]
     ax.yaxis.set_major_locator(FixedLocator(ax.get_yticks()))
@@ -321,7 +319,7 @@ def boxplot_comparison(df1, df2, label, fig_size=(16, 6)):
     plt.show()
 
 
-def heatmap(m_df, s_df, label='PDF'):
+def heatmap(m_df, s_df, label="PDF"):
     raw_ratios = m_df / s_df
     raw_ratios.index = raw_ratios.index + 1
 
@@ -330,11 +328,20 @@ def heatmap(m_df, s_df, label='PDF'):
     norm = TwoSlopeNorm(vcenter=1, vmin=v_min, vmax=v_max)
 
     plt.figure(figsize=(16, 6))
-    sns.heatmap(data=raw_ratios.T, cmap='RdYlGn_r', annot=False, cbar_kws={'label': 'multifit/scipy'},
-                yticklabels=s_df.columns, robust=True, lw=1, linecolor='k', norm=norm)
-    plt.title(f'Heatmap of execution time ratio for {label} evaluations')
-    plt.ylabel('Distributions')
-    plt.xticks(rotation=0, ha='center')
+    sns.heatmap(
+        data=raw_ratios.T,
+        cmap="RdYlGn_r",
+        annot=False,
+        cbar_kws={"label": "multifit/scipy"},
+        yticklabels=s_df.columns,
+        robust=True,
+        lw=1,
+        linecolor="k",
+        norm=norm,
+    )
+    plt.title(f"Heatmap of execution time ratio for {label} evaluations")
+    plt.ylabel("Distributions")
+    plt.xticks(rotation=0, ha="center")
     plt.tight_layout()
     plt.show()
 
@@ -346,7 +353,7 @@ def time_function(func, test_values, num_runs=500):
         start = time.perf_counter()
         func(test_values)
         end = time.perf_counter()
-        total_time += (end - start)
+        total_time += end - start
     return total_time / num_runs
 
 
@@ -361,21 +368,19 @@ def benchmark_functions(functions, values, n_repeats=9, n_runs_per_repeat=500):
     return all_times
 
 
-def plot_all_variations(distribution_name, functions, values, latex_annotations,
-                        n_repeats=20, n_runs_per_repeat=500, save_fig=True):
+def plot_all_variations(
+    distribution_name, functions, values, latex_annotations, n_repeats=20, n_runs_per_repeat=500, save_fig=True
+):
     """Plot a single, combined runtime comparison with an inset scatter plot for deviations."""
-    all_times = benchmark_functions(functions,
-                                    values,
-                                    n_repeats,
-                                    n_runs_per_repeat)
+    all_times = benchmark_functions(functions, values, n_repeats, n_runs_per_repeat)
 
     # Log10 transform for better visualization
     log_times = np.log10(all_times)
     mean_log_times = np.median(log_times, axis=0)
     std_log_times = np.std(log_times, axis=0)
 
-    versions = [f'Version {i}' for i in range(1, len(functions) + 1)]
-    colors = ['#a3c4f3', '#b8e5b5', '#f5a8a8', '#f7b39e', '#c6a8e6', '#a0e6d7'][:len(functions)]
+    versions = [f"Version {i}" for i in range(1, len(functions) + 1)]
+    colors = ["#a3c4f3", "#b8e5b5", "#f5a8a8", "#f7b39e", "#c6a8e6", "#a0e6d7"][: len(functions)]
 
     # --- MAIN FIGURE ---
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -386,32 +391,44 @@ def plot_all_variations(distribution_name, functions, values, latex_annotations,
     # --- HIGHLIGHT BEST VERSION ---
     min_idx = np.argmin(mean_log_times)
     min_val = mean_log_times[min_idx]
-    ax.scatter(x=bars[min_idx].get_x() + bars[min_idx].get_width() / 2, y=min_val,
-               color='k', marker='*', s=150, zorder=10)
-    ax.axhline(y=min_val, color='r', ls='--', label=f'$10^{{{min_val:.4f}}}$ s')
+    ax.scatter(
+        x=bars[min_idx].get_x() + bars[min_idx].get_width() / 2, y=min_val, color="k", marker="*", s=150, zorder=10
+    )
+    ax.axhline(y=min_val, color="r", ls="--", label=f"$10^{{{min_val:.4f}}}$ s")
 
     # --- FORMULA LABELS (shifted upwards) ---
     for i, bar in enumerate(bars):
         height = bar.get_height()
-        ax.text(x=bar.get_x() + bar.get_width() / 2, y=height / 4,
-                s=latex_annotations[i], ha='center', va='center',
-                color='k', rotation=90)
+        ax.text(
+            x=bar.get_x() + bar.get_width() / 2,
+            y=height / 4,
+            s=latex_annotations[i],
+            ha="center",
+            va="center",
+            color="k",
+            rotation=90,
+        )
 
     # --- INSET SCATTER PLOT ---
-    ax_inset = inset_axes(ax, width="50%", height="100%",
-                          bbox_to_anchor=(0.62, 0.15, 0.35, 0.4),
-                          borderpad=1.5, bbox_transform=ax.transAxes)
+    ax_inset = inset_axes(
+        ax,
+        width="50%",
+        height="100%",
+        bbox_to_anchor=(0.62, 0.15, 0.35, 0.4),
+        borderpad=1.5,
+        bbox_transform=ax.transAxes,
+    )
 
     for i in range(len(functions)):
         jitter = (np.random.rand(n_repeats)) * 0.2 - 0.1  # centered jitter
-        ax_inset.scatter(np.full(n_repeats, i) + jitter, log_times[:, i],
-                         color='black', alpha=0.1, s=20, zorder=3)
-        ax_inset.errorbar(i, mean_log_times[i], yerr=std_log_times[i], color='r', fmt='o',
-                          markersize=5, zorder=4, capsize=5)
+        ax_inset.scatter(np.full(n_repeats, i) + jitter, log_times[:, i], color="black", alpha=0.1, s=20, zorder=3)
+        ax_inset.errorbar(
+            i, mean_log_times[i], yerr=std_log_times[i], color="r", fmt="o", markersize=5, zorder=4, capsize=5
+        )
 
     ax_inset.set_xticks(range(len(functions)))
-    ax_inset.set_xticklabels([f'V{i + 1}' for i in range(len(functions))], fontsize=8)
-    ax_inset.grid(True, linestyle=':', alpha=0.4)
+    ax_inset.set_xticklabels([f"V{i + 1}" for i in range(len(functions))], fontsize=8)
+    ax_inset.grid(True, linestyle=":", alpha=0.4)
 
     # Adjust inset y-limits dynamically to zoom around scatter range
     y_min = np.min(log_times)
@@ -419,16 +436,16 @@ def plot_all_variations(distribution_name, functions, values, latex_annotations,
     # ax_inset.set_ylim(y_min - 0.01, y_max + 0.01)
 
     # --- FINAL STYLING ---
-    ax.set_ylabel('Time (log₁₀ seconds)')
-    ax.set_title(f'Runtime Comparison ({distribution_name}) — Averaged over {n_repeats} runs')
-    ax.legend(loc='upper left')
-    ax.grid(True, axis='y', linestyle=':', alpha=0.4)
+    ax.set_ylabel("Time (log₁₀ seconds)")
+    ax.set_title(f"Runtime Comparison ({distribution_name}) — Averaged over {n_repeats} runs")
+    ax.legend(loc="upper left")
+    ax.grid(True, axis="y", linestyle=":", alpha=0.4)
 
     fig.tight_layout()
 
     # --- SAVE OR SHOW ---
     if save_fig:
-        plt.savefig(f'./variation_plots/{distribution_name}_combined_variations.png', dpi=300)
+        plt.savefig(f"./variation_plots/{distribution_name}_combined_variations.png", dpi=300)
         plt.close()
     else:
         plt.show()
