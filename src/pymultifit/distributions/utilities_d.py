@@ -2607,14 +2607,15 @@ def quadratic(x: OneDArray, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> O
 @suppress_numpy_warnings()
 def _beta_expr(y: OneDArray, a: float, b: float, un_log: bool = False):
     in_range = (y > 0) & (y < 1)
-    if not un_log:
-        return ssp.xlog1py(b - 1.0, -y) + ssp.xlogy(a - 1, y) - ssp.betaln(a, b)
-    else:
-        undefined_0 = (y == 0) & (a <= 1)
-        undefined_1 = (y == 1) & (b <= 1)
-        special_case = (y == 1) & (a == 1) & (b == 1)
-        expr2 = y**(a - 1) * (1.0 - y)**(b - 1.0) / ssp.beta(a, b)
-        return [special_case, undefined_0 | undefined_1, in_range], expr2
+
+    undefined_0 = (y == 0) & (a <= 1)
+    undefined_1 = (y == 1) & (b <= 1)
+    special_case = (y == 1) & (a == 1) & (b == 1)
+
+    expr = ssp.xlog1py(b - 1.0, -y) + ssp.xlogy(a - 1, y) - ssp.betaln(a, b)
+    expr2 = np.power(y, a - 1) * np.power(1.0 - y, b - 1.0) / ssp.beta(a, b)
+
+    return [special_case, undefined_0 | undefined_1, in_range], expr2 if un_log else expr
 
 
 @suppress_numpy_warnings()
