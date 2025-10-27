@@ -6,13 +6,20 @@ This format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 ---
 ## [v0.1.2] — 19/08/2024
 **Release:** [v0.1.2](https://pypi.org/project/pymultifit/0.1.2)  
-**Pull Reqeust:** [#5 | [MINOR] code base enhancements - II](https://github.com/syedalimohsinbukhari/pyMultiFit/pull/5)  
+**Pull Reqeust:** https://github.com/syedalimohsinbukhari/pyMultiFit/pull/5  
 **Issues:**
+- Documentation (https://github.com/syedalimohsinbukhari/pyMultiFit/issues/2)
+- Amplitude issue (https://github.com/syedalimohsinbukhari/pyMultiFit/issues/6)
+- Additional functionalities (https://github.com/syedalimohsinbukhari/pyMultiFit/issues/8)
+- Generator functions (https://github.com/syedalimohsinbukhari/pyMultiFit/issues/9)
+
+#### OVERVIEW
 ---
 ## [v0.1.1] — 03/08/2024
 **Release:** [v0.1.1](https://pypi.org/project/pymultifit/0.1.1)  
-**Pull Reqeust:** [#4 | [MINOR] code base enhancements - I](https://github.com/syedalimohsinbukhari/pyMultiFit/pull/4)  
+**Pull Reqeust:** https://github.com/syedalimohsinbukhari/pyMultiFit/pull/4  
 **Issues:**
+- Parameter extraction (https://github.com/syedalimohsinbukhari/pyMultiFit/issues/3)
 
 #### OVERVIEW
 This release introduces minor code base enhancements.
@@ -25,10 +32,8 @@ This release introduces minor code base enhancements.
 ---
 ## [v0.1.0] — 22/07/2024
 **Release:** [v0.1.0](https://pypi.org/project/pymultifit/0.1.0)  
-**Pull Request:** [#1 | ENH: base multi-fit function](https://github.com/syedalimohsinbukhari/pyMultiFit/pull/1)
+**Pull Request:** https://github.com/syedalimohsinbukhari/pyMultiFit/pull/1  
 **Issues:**
-- [#2 | DOC: Needs documentation](https://github.com/syedalimohsinbukhari/pyMultiFit/issues/2)
-- [#3 | URG: Extracting specfic parameter values](https://github.com/syedalimohsinbukhari/pyMultiFit/issues/3)
 
 ### Overview
 This release introduces the **first stable version** of `pyMultiFit`, establishing the base framework for multi-distribution fitting and model generation.
