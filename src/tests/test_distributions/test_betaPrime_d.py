@@ -16,8 +16,11 @@ class TestBetaPrimeDistribution:
         assert dist_.beta == 1.0
         assert not dist_.norm
 
-        dist_normalized = BetaPrimeDistribution(amplitude=2.0, normalize=True)
-        assert dist_normalized.amplitude == 1.0
+        dist_normalized1 = BetaPrimeDistribution(amplitude=2.0, normalize=True)
+        assert dist_normalized1.amplitude == 1.0
+
+        dist_normalized2 = BetaPrimeDistribution(amplitude=-2.0, normalize=True)
+        assert dist_normalized2.amplitude == 1.0
 
     @staticmethod
     def test_edge_cases():
