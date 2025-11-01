@@ -15,6 +15,7 @@ notebook
 build
 memory_profiler
 sphinx>8
+docutils<0.21
 pydata_sphinx_theme
 sphinx_copybutton
 sphinx_gallery

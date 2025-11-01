@@ -1,18 +1,13 @@
-"""Created on Aug 14 00:45:37 2024"""
-
-from typing import Dict
-
-import numpy as np
-from scipy.special import betaincinv
+"""Created on Oct 31 18:28:47 2025"""
 
 from .backend import BaseDistribution
-from .utilities_d import beta_cdf_, beta_pdf_, beta_log_pdf_, beta_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .utilities_d import beta_prime_pdf_, beta_prime_log_pdf_, beta_prime_cdf_, beta_prime_log_cdf_
+from .. import OneDArray
 
 
-class BetaDistribution(BaseDistribution):
+class BetaPrimeDistribution(BaseDistribution):
     r"""
-    Class for Beta distribution.
+    Class for Beta Prime distribution.
 
     :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
     :type amplitude: float, optional
@@ -32,23 +27,19 @@ class BetaDistribution(BaseDistribution):
     :param normalize: bool, optional If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
     :type normalize: bool, optional
 
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeAlphaError: If the provided value of :math:`\alpha` is negative.
-    :raise NegativeBetaError: If the provided value of :math:`\beta` is negative.
-
     Examples
     --------
     Importing libraries
 
-    .. literalinclude:: ../../../examples/basic/beta1.py
+    .. literalinclude:: ../../../examples/basic/betaPrime.py
        :language: python
        :linenos:
        :lineno-start: 3
        :lines: 3-7
 
-    Generating a standard :math:`\text{Beta}(2, 30)` distribution with ``pyMultiFit`` and ``scipy``.
+    Generating a standard :math:`\text{BetaPrime}(2, 30)` distribution with ``pyMultiFit`` and ``scipy``.
 
-    .. literalinclude:: ../../../examples/basic/beta1.py
+    .. literalinclude:: ../../../examples/basic/betaPrime.py
        :language: python
        :linenos:
        :lineno-start: 9
@@ -56,32 +47,34 @@ class BetaDistribution(BaseDistribution):
 
     Plotting **PDF** and **CDF**
 
-    .. literalinclude:: ../../../examples/basic/beta1.py
+    .. literalinclude:: ../../../examples/basic/betaPrime.py
        :language: python
        :linenos:
        :lineno-start: 14
        :lines: 14-29
 
-    .. image:: ../../../images/beta_example1.png
-       :alt: Beta distribution (5, 30)
+    .. image:: ../../../images/beta_prime1.png
+       :alt: BetaPrime distribution (5, 30)
        :align: center
 
-    Generating a shifted and translated :math:`\text{Beta}(2, 30)` distribution.
+    Generating a shifted and translated :math:`\text{BetaPrime}(2, 30, 5, 3)` distribution.
 
-    .. literalinclude:: ../../../examples/basic/beta2.py
+    .. literalinclude:: ../../../examples/basic/betaPrime.py
        :language: python
-       :lineno-start: 9
-       :lines: 9-12
+       :linenos:
+       :lineno-start: 33
+       :lines: 33-34
 
     Plotting **PDF** and **CDF**
 
-    .. literalinclude:: ../../../examples/basic/beta2.py
+    .. literalinclude:: ../../../examples/basic/betaPrime.py
        :language: python
-       :lineno-start: 14
-       :lines: 14-29
+       :linenos:
+       :lineno-start: 36
+       :lines: 36-51
 
-    .. image:: ../../../images/beta_example2.png
-       :alt: Beta distribution (shifted and translated)
+    .. image:: ../../../images/beta_prime2.png
+       :alt: Beta Prime distribution (shifted and translated)
        :align: center
     """
 
@@ -103,31 +96,7 @@ class BetaDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("v1.0.7")
-    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
-        r"""
-        Instantiate BetaDistribution with scipy parameterization.
-
-        Parameters
-        ----------
-        a: float
-            The shape parameter, :math:`\alpha`.
-        b: float
-            The shape parameter, :math:`\beta`.
-        loc: float, optional
-            The location parameter. Defaults to 0.0.
-        scale: float, optional
-            The scale parameter,. Defaults to 1.0.
-
-        Returns
-        -------
-        BetaDistribution
-            An instance of normalized BetaDistribution.
-        """
-        return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
-
-    @classmethod
-    def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
+    def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaPrimeDistribution":
         r"""
         Instantiate BetaDistribution with scipy parameterization.
 
@@ -150,7 +119,7 @@ class BetaDistribution(BaseDistribution):
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
     def pdf(self, x: OneDArray) -> OneDArray:
-        return beta_pdf_(
+        return beta_prime_pdf_(
             x,
             amplitude=self.amplitude,
             alpha=self.alpha,
@@ -161,7 +130,7 @@ class BetaDistribution(BaseDistribution):
         )
 
     def logpdf(self, x: OneDArray) -> OneDArray:
-        return beta_log_pdf_(
+        return beta_prime_log_pdf_(
             x,
             amplitude=self.amplitude,
             alpha=self.alpha,
@@ -172,7 +141,7 @@ class BetaDistribution(BaseDistribution):
         )
 
     def cdf(self, x: OneDArray) -> OneDArray:
-        return beta_cdf_(
+        return beta_prime_cdf_(
             x,
             amplitude=self.amplitude,
             alpha=self.alpha,
@@ -183,7 +152,7 @@ class BetaDistribution(BaseDistribution):
         )
 
     def logcdf(self, x: OneDArray) -> OneDArray:
-        return beta_log_cdf_(
+        return beta_prime_log_cdf_(
             x,
             amplitude=self.amplitude,
             alpha=self.alpha,
@@ -192,20 +161,3 @@ class BetaDistribution(BaseDistribution):
             scale=self.scale,
             normalize=self.norm,
         )
-
-    def stats(self) -> Dict[str, float]:
-        a, b = self.alpha, self.beta
-        s, _l = self.scale, self.loc
-
-        mean_ = a / (a + b)
-        mean_ = (s * mean_) + _l
-
-        median_ = betaincinv(a, b, 0.5)
-        median_ = (s * median_) + _l
-
-        num_ = a * b
-        den_ = (a + b)**2 * (a + b + 1)
-
-        variance_ = s**2 * (num_ / den_)
-
-        return {"mean": mean_, "median": median_.astype(float), "variance": variance_, "std": np.sqrt(variance_)}

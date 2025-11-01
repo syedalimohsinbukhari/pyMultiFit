@@ -31,6 +31,9 @@ Derived Distributions
    * - :class:`~beta_d.BetaDistribution`
      - Beta distribution.
      - :math:`\dfrac{1}{B(\alpha,\beta)}x^{\alpha-1}(1-x)^{\beta-1}`
+   * - :class:`~betaPrime_d.BetaPrimeDistribution`
+     - Beta prime distribution.
+     - :math:`\dfrac{1}{B(\alpha,\beta)}x^{\alpha-1}(1+x)^{-\alpha-\beta}`
    * - :class:`~chiSquare_d.ChiSquareDistribution`
      - ChiSquare distribution.
      - :math:`\dfrac{1}{2^{k/2}\Gamma(k/2)}x^{\frac{k}{2}-1}\exp\left[-\dfrac{x}{2}\right]`
@@ -99,6 +102,7 @@ Non-distribution function
    BaseDistribution         <baseDistribution>
    ArcSineDistribution      <arcSine_d>
    BetaDistribution         <beta_d>
+   BetaPrimeDistribution    <betaPrime_d>
    ChiSquareDistribution    <chiSquare_d>
    ExponentialDistribution  <exponential_d>
    FoldedNormalDistribution <foldedNormal_d>

@@ -13,10 +13,10 @@ class ChiSquareDistribution(BaseDistribution):
     r"""Class for :class:`ChiSquareDistribution` distribution.
 
     .. note::
-        The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR`,
+        The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
 
-        * :math:`\alpha_\text{gammaSR} = \text{dof} / 2`,
-        * :math:`\lambda_\text{gammaSR} = 0.5`.
+        * :math:`\alpha\ (\text{shape}) = \text{dof} / 2`,
+        * :math:`\theta\ (\text{scale}) = 2`.
 
     :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     :type amplitude: float, optional
@@ -29,9 +29,6 @@ class ChiSquareDistribution(BaseDistribution):
 
     :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
     :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise DegreeOfFreedomError: If the provided value of degree of freedom is either less than or equal to 0 or not an integer.
 
     :examples:
 

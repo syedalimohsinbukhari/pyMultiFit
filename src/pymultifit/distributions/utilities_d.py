@@ -12,6 +12,10 @@ __all__ = [
     "beta_cdf_",
     "beta_log_pdf_",
     "beta_log_cdf_",
+    "beta_prime_pdf_",
+    "beta_prime_cdf_",
+    "beta_prime_log_pdf_",
+    "beta_prime_log_cdf_",
     "chi_square_pdf_",
     "chi_square_cdf_",
     "chi_square_log_pdf_",
@@ -68,7 +72,7 @@ from typing import Union, Callable
 
 import numpy as np
 import scipy.special as ssp
-from custom_inherit import doc_inherit
+from custom_inherit import doc_inherit  # type: ignore
 
 from .. import doc_style, LOG, INF, OneDArray
 
@@ -457,6 +461,205 @@ def beta_log_cdf_(
         return y
 
     return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(ssp.betainc(alpha, beta_, y)))
+
+
+@suppress_numpy_warnings()
+def beta_prime_pdf_(
+    x: OneDArray,
+    amplitude: float = 1.0,
+    alpha: float = 1.0,
+    beta_: float = 1.0,
+    loc: float = 0.0,
+    scale: float = 1.0,
+    normalize: bool = False,
+) -> OneDArray:
+    r"""
+    Compute PDF of :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
+
+    Parameters
+    ----------
+    beta_
+    x : np.ndarray
+        Input array of values where PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    alpha : float, optional
+        The :math:`\alpha` parameter.
+        Default is 1.0.
+    beta_ : float, optional
+        The :math:`\beta` parameter.
+        Default is 1.0.
+    loc : float, optional
+        The location parameter, for shifting.
+        Default is 0.0.
+    scale : float, optional
+        The scale parameter, for scaling.
+        Default is 1.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as `x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Beta-prime PDF is defined as:
+
+    .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 + y)^{-(\alpha + \beta)}}{B(\alpha, \beta)}
+
+    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`ssp.beta`), and :math:`y` is the
+    transformed value of :math:`x` such that:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final PDF is expressed as :math:`f(y)/\text{scale}`.
+    """
+    y = preprocess_input(x=x, loc=loc, scale=scale)
+
+    if y.size == 0:
+        return y
+
+    log_expr = ssp.xlogy(alpha - 1.0, y) - ssp.xlog1py(alpha + beta_, y) - ssp.betaln(alpha, beta_)
+    pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[np.exp(log_expr), np.nan], default=0.0)
+    pdf_ /= scale
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=beta_prime_pdf_, style=doc_style)
+def beta_prime_log_pdf_(
+    x: OneDArray,
+    amplitude: float = 1.0,
+    alpha: float = 1.0,
+    beta_: float = 1.0,
+    loc: float = 0.0,
+    scale: float = 1.0,
+    normalize: bool = False,
+) -> OneDArray:
+    r"""Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
+
+    Notes
+    -----
+    The Beta-prime logPDF is defined as
+
+    .. math:: \ell(y) = (\alpha - 1)\ln(y) - (\alpha + \beta)\ln(1 - y) - \ln(\text{Beta}(\alpha, \beta))
+
+    where :math:`B(\alpha, \beta)` is the :obj:`~ssp.beta` function, and :math:`y` is the
+    transformed value of :math:`x` such that:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
+    """
+    y = preprocess_input(x=x, loc=loc, scale=scale)
+
+    if y.size == 0:
+        return y
+
+    expr = ssp.xlogy(alpha - 1.0, y) - ssp.xlog1py(alpha + beta_, y) - ssp.betaln(alpha, beta_)
+    log_pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[expr, np.nan], default=-INF)
+    log_pdf_ -= LOG(scale)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=beta_prime_pdf_, style=doc_style)
+def beta_prime_cdf_(
+    x: OneDArray,
+    amplitude: float = 1.0,
+    alpha: float = 1.0,
+    beta_: float = 1.0,
+    loc: float = 0.0,
+    scale: float = 1.0,
+    normalize: bool = False,
+) -> OneDArray:
+    r"""
+    Compute CDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    amplitude : float, optional
+        For API consistency only.
+    normalize : bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The Beta-prime CDF is defined as:
+
+    .. math:: F(y) = I_{\dfrac{y}{1+y}}(\alpha, \beta)
+
+    where :math:`I_y(\alpha, \beta)` is the :obj:`~ssp.betainc` function, and :math:`y` is the transformed
+    value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final CDF is expressed as :math:`F(y)`.
+    """
+    y = preprocess_input(x=x, loc=loc, scale=scale)
+
+    if y.size == 0:
+        return y
+
+    z = y / (1 + y)
+    return np.where(y > 0, ssp.betainc(alpha, beta_, z), 0)
+
+
+def beta_prime_log_cdf_(
+    x: OneDArray,
+    amplitude: float = 1.0,
+    alpha: float = 1.0,
+    beta_: float = 1.0,
+    loc: float = 0.0,
+    scale: float = 1.0,
+    normalize: bool = False,
+) -> OneDArray:
+    r"""
+    Compute logCDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    amplitude : float, optional
+        For API consistency only.
+    normalize : bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The Beta-prime logCDF is defined as:
+
+    .. math:: F(y) = \ln\left[I_{\dfrac{y}{1+y}}(\alpha, \beta)\right]a
+
+    where :math:`I_y(\alpha, \beta)` is the :obj:`~ssp.betainc` function, and :math:`y` is the transformed
+    value of :math:`x`, defined as:
+
+    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+
+    The final logCDF is expressed as :math:`\mathcal{L}(y)`.
+    """
+    y = preprocess_input(x=x, loc=loc, scale=scale)
+
+    if y.size == 0:
+        return y
+
+    z = y / (1 + y)
+    return np.where(y > 0, LOG(ssp.betainc(alpha, beta_, z)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -2620,7 +2823,8 @@ def _beta_expr(y: OneDArray, a: float, b: float, un_log: bool = False):
 
 @suppress_numpy_warnings()
 def _folded_cdf(q: float, r: float) -> float:
-    return 0.5 * (ssp.erf(r) + ssp.erf(q))
+    _f = 0.5 * (ssp.erf(r) + ssp.erf(q))
+    return _f.astype(float)
 
 
 @suppress_numpy_warnings()
