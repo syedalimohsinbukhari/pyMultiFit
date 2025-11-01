@@ -1,4 +1,7 @@
 """Created on Oct 31 18:28:47 2025"""
+from typing import Dict
+
+import numpy as np
 
 from .backend import BaseDistribution
 from .utilities_d import beta_prime_pdf_, beta_prime_log_pdf_, beta_prime_cdf_, beta_prime_log_cdf_
@@ -161,3 +164,17 @@ class BetaPrimeDistribution(BaseDistribution):
             scale=self.scale,
             normalize=self.norm,
         )
+
+    def stats(self) -> Dict[str, float]:
+        a, b = self.alpha, self.beta
+        s, _l = self.scale, self.loc
+
+        mean_ = a / (b - 1) if b > 1 else np.inf
+        mean_ = (s * mean_) + _l
+
+        num_ = a * (a + b - 1)
+        den_ = (b - 2) * (b - 1)**2
+        variance_ = num_ / den_ if b > 2 else np.inf
+        variance_ = variance_ * s**2
+
+        return {'mean': mean_, 'variance': variance_, 'std': np.sqrt(variance_)}
