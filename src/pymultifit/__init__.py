@@ -1,19 +1,12 @@
 """Created on Jul 18 00:15:42 2024"""
 
-from typing import Union, Sequence, Tuple, List
+from typing import Union, Tuple, List, Annotated
 
 import numpy as np
 from deprecated.sphinx import deprecated
+from numpy.typing import NDArray
 
-from .version import (
-    __author__,
-    __copyright__,
-    __description__,
-    __email__,
-    __license__,
-    __url__,
-    __version__,
-)
+from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
 
 
 def mark_deprecated(ver_: str, new: str):
@@ -37,7 +30,7 @@ def mark_deprecated(ver_: str, new: str):
     return decorator
 
 
-def md_scipy_like(ver_: str, new: str = 'from_scipy_params'):
+def md_scipy_like(ver_: str, new: str = "from_scipy_params"):
     return mark_deprecated(ver_, new)
 
 
@@ -51,6 +44,7 @@ EPSILON = np.finfo(float).eps
 epsilon = np.sqrt(EPSILON)
 
 ListOrNdArray = Union[List[int | float], np.ndarray]
+OneDArray = Annotated[NDArray[np.float64], "1D array"]
 
 ParamTuple = Tuple[int | float, ...]
 Params_ = Union[List[ParamTuple], np.ndarray]

@@ -12,16 +12,18 @@ noise_level = 0.1
 
 params = [(-0.1, 5), (20, -20, 2), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
 
-y = multiple_models(x=x, params=params, model_list=[LINE, GAUSSIAN, GAUSSIAN, LAPLACE, LAPLACE, GAUSSIAN],
-                    noise_level=noise_level)
+y = multiple_models(
+    x=x, params=params, model_list=[LINE, GAUSSIAN, GAUSSIAN, LAPLACE, LAPLACE, GAUSSIAN], noise_level=noise_level
+)
 
 guess = [(0, 2), (1, -20, 1), (1, -5, 5), (3, -1, 0.5), (7, 2, 1), (1, 15, 2)]
 
-fitter = MixedDataFitter(x_values=x, y_values=y,
-                         model_list=['line'] + ['gaussian'] * 2 + ['laplace'] * 2 + ['gaussian'])
+fitter = MixedDataFitter(x, y, model_list=["line"] + ["gaussian"] * 2 + ["laplace"] * 2 + ["gaussian"])
 
 fitter.fit(guess)
 
-plotter = fitter.plot_fit(show_individuals=True, x_label='X_data', y_label='Y_data', title='XY_plot',
-                          data_label='XY_data')
+f, ax = plt.subplots(1, 1, figsize=(12, 6))
+plotter = fitter.plot_fit(
+    show_individuals=True, x_label="X_data", y_label="Y_data", title="XY_plot", data_label="XY_data", axis=ax
+)
 plt.show()

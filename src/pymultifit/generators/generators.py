@@ -22,7 +22,7 @@ from .. import (
     LOG_NORMAL,
     SKEW_NORMAL,
     Params_,
-    ListOrNdArray,
+    OneDArray,
 )
 
 model_map = {
@@ -42,12 +42,8 @@ model_map = {
 
 
 def multi_base(
-    x: ListOrNdArray,
-    distribution_func: Callable,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+    x: OneDArray, distribution_func: Callable, params: Params_, noise_level: float = 0.0, normalize: bool = False
+) -> OneDArray:
     """Generate data based on a combination of distributions with optional noise.
 
     Parameters
@@ -70,7 +66,7 @@ def multi_base(
     np.array
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
-    y = np.zeros_like(a=x, dtype=float)
+    y = np.zeros_like(x, dtype=float)
 
     for param_set in params:
         if isinstance(param_set, float):
@@ -83,12 +79,7 @@ def multi_base(
     return y
 
 
-def multi_chi_squared(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_chi_squared(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""
     Generate multi-:class:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution` data with optional noise.
 
@@ -111,162 +102,86 @@ def multi_chi_squared(
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return multi_base(
-        x,
-        distribution_func=dist.ChiSquareDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[CHI_SQUARE], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gamma(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_gamma(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistribution` data with optional noise."""
     return multi_base(
-        x,
-        distribution_func=dist.GammaDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[GAMMA], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_exponential(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_exponential(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` data with optional
     noise."""
     return multi_base(
-        x,
-        distribution_func=dist.ExponentialDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[EXPONENTIAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_folded_normal(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_folded_normal(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x,
-        distribution_func=dist.FoldedNormalDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[FOLDED_NORMAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gaussian(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_gaussian(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` data with optional noise."""
     return multi_base(
-        x,
-        distribution_func=dist.GaussianDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[GAUSSIAN], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_half_normal(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_half_normal(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x,
-        distribution_func=dist.HalfNormalDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[HALF_NORMAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_laplace(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_laplace(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.laplace_d.LaplaceDistribution` data with optional noise."""
     return multi_base(
-        x,
-        distribution_func=dist.LaplaceDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[LAPLACE], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_log_normal(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_log_normal(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution` data with optional noise."""
     return multi_base(
-        x,
-        distribution_func=dist.LogNormalDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[LOG_NORMAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_skew_normal(
-    x: ListOrNdArray,
-    params: Params_,
-    noise_level: float = 0.0,
-    normalize: bool = False,
-) -> np.ndarray:
+def multi_skew_normal(x: OneDArray, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> OneDArray:
     r"""Generate multi-:class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x,
-        distribution_func=dist.SkewNormalDistribution,
-        params=params,
-        noise_level=noise_level,
-        normalize=normalize,
+        x, distribution_func=model_map[SKEW_NORMAL], params=params, noise_level=noise_level, normalize=normalize
     )
 
 
 def multiple_models(
-    x: ListOrNdArray,
+    x: OneDArray,
     params: Params_,
     model_list: list[str],
     noise_level: float = 0.0,
     normalize: bool = False,
     mapping_dict: Optional[Dict[str, Callable]] = None,
-) -> np.ndarray:
+) -> OneDArray:
     """
     Generate data based on a combination of different models with optional noise.
 
@@ -291,7 +206,7 @@ def multiple_models(
     np.array
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
-    y = np.zeros_like(a=x, dtype=float)
+    y = np.zeros_like(x, dtype=float)
 
     model_mapping = model_map if mapping_dict is None else mapping_dict
 

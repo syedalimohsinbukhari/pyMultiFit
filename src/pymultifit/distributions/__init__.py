@@ -4,6 +4,7 @@ from typing import Optional
 
 from .arcSine_d import ArcSineDistribution
 from .backend import LineFunction, CubicFunction, QuadraticFunction
+from .betaPrime_d import BetaPrimeDistribution
 from .beta_d import BetaDistribution
 from .chiSquare_d import ChiSquareDistribution
 from .exponential_d import ExponentialDistribution

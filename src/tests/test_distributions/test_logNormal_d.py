@@ -42,17 +42,27 @@ class TestLogNormalDistribution:
 
     @staticmethod
     def test_stats():
-        btf.stats(custom_distribution=LogNormalDistribution.from_scipy_params, scipy_distribution=lognorm,
-                  parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], median=False)
+        btf.stats(
+            custom_distribution=LogNormalDistribution.from_scipy_params,
+            scipy_distribution=lognorm,
+            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            median=False,
+        )
 
     @staticmethod
     def test_pdfs():
-        btf.value_functions(custom_distribution=LogNormalDistribution.from_scipy_params, scipy_distribution=lognorm,
-                            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], log_check=True)
+        btf.value_functions(
+            custom_distribution=LogNormalDistribution.from_scipy_params,
+            scipy_distribution=lognorm,
+            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            log_check=True,
+        )
 
     @staticmethod
     def test_single_values():
-        btf.single_input_n_variables(custom_distribution=LogNormalDistribution.from_scipy_params,
-                                     scipy_distribution=lognorm,
-                                     parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
-                                     log_check=True)
+        btf.single_input_n_variables(
+            custom_distribution=LogNormalDistribution.from_scipy_params,
+            scipy_distribution=lognorm,
+            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            log_check=True,
+        )
