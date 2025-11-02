@@ -7,7 +7,7 @@ import numpy as np
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
 from .utilities_d import skew_normal_cdf_, skew_normal_pdf_, skew_normal_log_pdf_
-from .. import md_scipy_like, LOG, OneDArray
+from .. import md_scipy_like, LOG, OneDArray, TWO_PI, TWO_BY_PI, SQRT_TWO_BY_PI
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -165,15 +165,15 @@ class SkewNormalDistribution(BaseDistribution):
     def stats(self) -> Dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location
         delta = alpha / np.sqrt(1 + alpha**2)
-        delta_sqrt_2_pi = np.sqrt(2 / np.pi) * delta
+        sqrt_2_pi_delta = SQRT_TWO_BY_PI * delta
 
         def _m0(alpha_):
-            term2 = (1 - np.pi / 4) * delta_sqrt_2_pi**3 / (1 - (2 / np.pi) * delta**2)
-            term3 = (2 * np.pi / abs(alpha_)) * np.exp(-(2 * np.pi / abs(alpha_))) * np.sign(alpha_)
-            return delta_sqrt_2_pi - term2 - term3
+            term2 = (1 - np.pi / 4) * sqrt_2_pi_delta**3 / (1 - TWO_BY_PI * delta**2)
+            term3 = (TWO_PI / abs(alpha_)) * np.exp(-TWO_PI / abs(alpha_)) * np.sign(alpha_)
+            return sqrt_2_pi_delta - term2 - term3
 
         # Calculating mean, mode, variance, and std
-        mean_ = epsilon + omega * delta_sqrt_2_pi
+        mean_ = epsilon + omega * sqrt_2_pi_delta
         mode_ = epsilon + omega * _m0(alpha)
         variance_ = omega**2 * (1 - (2 * delta**2 / np.pi))
         std_ = np.sqrt(variance_)

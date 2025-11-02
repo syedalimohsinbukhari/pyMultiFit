@@ -7,7 +7,7 @@ from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import folded_normal_cdf_, folded_normal_pdf_, folded_normal_log_pdf_, folded_normal_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .. import md_scipy_like, OneDArray, SQRT_TWO_BY_PI, SQRT_TWO
 
 
 class FoldedNormalDistribution(BaseDistribution):
@@ -160,10 +160,8 @@ class FoldedNormalDistribution(BaseDistribution):
     def stats(self) -> Dict[str, float]:
         mean_, std_ = self.mu, self.sigma
 
-        sqrt_ = (2 / np.pi) ** 0.5
-
-        f1 = sqrt_ * np.exp(-0.5 * mean_**2)
-        f2 = mean_ * erf(mean_ / np.sqrt(2))
+        f1 = SQRT_TWO_BY_PI * np.exp(-0.5 * mean_**2)
+        f2 = mean_ * erf(mean_ / SQRT_TWO)
 
         mu_y = f1 + f2
         var_y = mean_**2 + 1 - mu_y**2

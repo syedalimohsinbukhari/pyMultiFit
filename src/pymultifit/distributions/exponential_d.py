@@ -6,7 +6,7 @@ import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import exponential_cdf_, exponential_pdf_, exponential_log_pdf_, exponential_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .. import md_scipy_like, OneDArray, LOG_TWO
 
 
 class ExponentialDistribution(BaseDistribution):
@@ -144,7 +144,7 @@ class ExponentialDistribution(BaseDistribution):
         s, l_ = self.scale, self.loc
 
         mean_ = (1 / s) + l_
-        median_ = (np.log(2) / s) + l_
-        mode_ = 0
+        median_ = (LOG_TWO / s) + l_
         variance_ = 1 / s**2
-        return {"mean": mean_, "median": median_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}
+
+        return {"mean": mean_, "median": median_, "variance": variance_, "std": np.sqrt(variance_)}

@@ -6,7 +6,7 @@ import numpy as np
 
 from .backend import errorHandling as erH, BaseDistribution
 from .utilities_d import half_normal_pdf_, half_normal_cdf_, half_normal_log_pdf_, half_normal_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .. import md_scipy_like, OneDArray, SQRT_TWO_BY_PI, TWO_BY_PI
 
 
 class HalfNormalDistribution(BaseDistribution):
@@ -142,10 +142,10 @@ class HalfNormalDistribution(BaseDistribution):
     def stats(self) -> Dict[str, float]:
         s_, l_ = self.scale, self.loc
 
-        mean_ = np.sqrt(2 / np.pi)
+        mean_ = SQRT_TWO_BY_PI
         mode_ = 0
 
-        variance_ = 1 - (2 / np.pi)
+        variance_ = 1 - TWO_BY_PI
         variance_ *= s_**2
 
         return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}

@@ -204,7 +204,7 @@ class BetaDistribution(BaseDistribution):
         median_ = (s * median_) + _l
 
         num_ = a * b
-        den_ = (a + b)**2 * (a + b + 1)
+        den_ = (a + b) ** 2 * (a + b + 1)
 
         variance_ = s**2 * (num_ / den_)
 
