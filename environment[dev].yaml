@@ -19,7 +19,8 @@ dependencies:
   - notebook
   - build
   - memory_profiler
-  - sphinx
+  - sphinx>8
+  - docutils<0.21
   - sphinx-rtd-theme
   - pydata-sphinx-theme
   - sphinx-copybutton

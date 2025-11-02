@@ -27,7 +27,6 @@ class BaseDistribution:
 
         :param x: Input array at which to evaluate the logPDF.
         """
-        pass
 
     def cdf(self, x: OneDArray) -> OneDArray:  # type: ignore[empty-body]
         """
@@ -35,7 +34,6 @@ class BaseDistribution:
 
         :param x: Input array at which to evaluate the CDF.
         """
-        pass
 
     def logcdf(self, x: OneDArray) -> OneDArray:  # type: ignore[empty-body]
         r"""
@@ -43,7 +41,6 @@ class BaseDistribution:
 
         :param x: Input array at which to evaluate the logCDF.
         """
-        pass
 
     def stats(self) -> Dict[str, float]:  # type: ignore[empty-body]
         r"""
@@ -59,9 +56,8 @@ class BaseDistribution:
 
         Notes
         -----
-        If any of the parameter is not computable for a distribution, this method returns None.
+        If any of the parameters is not computable for a distribution, this method returns None.
         """
-        pass
 
     def _get_stats(self, key: str) -> Optional[float]:
         stats = self.stats()
