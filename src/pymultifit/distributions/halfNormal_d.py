@@ -6,7 +6,7 @@ import numpy as np
 
 from .backend import errorHandling as erH, BaseDistribution
 from .utilities_d import half_normal_pdf_, half_normal_cdf_, half_normal_log_pdf_, half_normal_log_cdf_
-from .. import md_scipy_like
+from .. import md_scipy_like, OneDArray, SQRT_TWO_BY_PI, TWO_BY_PI
 
 
 class HalfNormalDistribution(BaseDistribution):
@@ -77,13 +77,7 @@ class HalfNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(
-        self,
-        amplitude: float = 1.0,
-        scale: float = 1.0,
-        loc: float = 0.0,
-        normalize: bool = False,
-    ):
+    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
         if scale < 0:
@@ -95,8 +89,8 @@ class HalfNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'HalfNormalDistribution':
+    @md_scipy_like("1.0.7")
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":
         """
         Instantiate HalfNormalDistribution with scipy parametrization.
 
@@ -115,7 +109,7 @@ class HalfNormalDistribution(BaseDistribution):
         return cls(loc=loc, scale=scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'HalfNormalDistribution':
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":
         """
         Instantiate HalfNormalDistribution with scipy parametrization.
 
@@ -133,54 +127,25 @@ class HalfNormalDistribution(BaseDistribution):
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return half_normal_pdf_(
-            x,
-            amplitude=self.amplitude,
-            sigma=self.scale,
-            loc=self.loc,
-            normalize=self.norm,
-        )
+    def pdf(self, x: OneDArray) -> OneDArray:
+        return half_normal_pdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
-        return half_normal_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            sigma=self.scale,
-            loc=self.loc,
-            normalize=self.norm,
-        )
+    def logpdf(self, x: OneDArray) -> OneDArray:
+        return half_normal_log_pdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return half_normal_cdf_(
-            x,
-            amplitude=self.amplitude,
-            sigma=self.scale,
-            loc=self.loc,
-            normalize=self.norm,
-        )
+    def cdf(self, x: OneDArray) -> OneDArray:
+        return half_normal_cdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
-        return half_normal_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            sigma=self.scale,
-            loc=self.loc,
-            normalize=self.norm,
-        )
+    def logcdf(self, x: OneDArray) -> OneDArray:
+        return half_normal_log_cdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
         s_, l_ = self.scale, self.loc
 
-        mean_ = np.sqrt(2 / np.pi)
+        mean_ = SQRT_TWO_BY_PI
         mode_ = 0
 
-        variance_ = 1 - (2 / np.pi)
+        variance_ = 1 - TWO_BY_PI
         variance_ *= s_**2
 
-        return {
-            "mean": (s_ * mean_) + l_,
-            "mode": mode_,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}

@@ -22,13 +22,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pylint ruff
+          pip install pylint black
           pip install -r requirements.txt
 
       - name: Analysing the code with Pylint
         run: |
           pylint --rcfile=./.pylintrc --fail-under=7 $(git ls-files 'src/pymultifit/**/*.py')
 
-      - name: Linting the code with Ruff
+      - name: Linting the code with Black
         run: |
-          ruff check src/pymultifit/ --fix
+          black src/pymultifit/ -C -l 120
