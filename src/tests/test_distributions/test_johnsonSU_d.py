@@ -9,7 +9,7 @@ from ...pymultifit.distributions import JohnsonSUDistribution
 np.random.seed(42)
 
 
-class TestHalfNormalDistribution:
+class TestJohnsonSUDistribution:
 
     @staticmethod
     def test_initialization():
@@ -30,7 +30,7 @@ class TestHalfNormalDistribution:
         btf.stats(
             custom_distribution=JohnsonSUDistribution.from_scipy_params,
             scipy_distribution=johnsonsu,
-            parameters=[btf.shape1_parameter, btf.shape2_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.shape2_parameter, btf.loc2_parameter, btf.scale_parameter],
             median=False,
         )
 
@@ -39,8 +39,8 @@ class TestHalfNormalDistribution:
         btf.value_functions(
             custom_distribution=JohnsonSUDistribution.from_scipy_params,
             scipy_distribution=johnsonsu,
-            parameters=[btf.shape1_parameter, btf.shape2_parameter, btf.loc_parameter, btf.scale_parameter],
-            log_check=True,
+            parameters=[btf.loc1_parameter, btf.shape2_parameter, btf.loc2_parameter, btf.scale_parameter],
+            log_check=False,
         )
 
     @staticmethod
@@ -48,6 +48,6 @@ class TestHalfNormalDistribution:
         btf.single_input_n_variables(
             custom_distribution=JohnsonSUDistribution.from_scipy_params,
             scipy_distribution=johnsonsu,
-            parameters=[btf.shape1_parameter, btf.shape2_parameter, btf.loc_parameter, btf.scale_parameter],
-            log_check=True,
+            parameters=[btf.loc1_parameter, btf.shape2_parameter, btf.loc2_parameter, btf.scale_parameter],
+            log_check=False,
         )

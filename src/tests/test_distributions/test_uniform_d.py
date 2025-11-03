@@ -43,7 +43,7 @@ class TestUniformDistribution:
         btf.stats(
             custom_distribution=UniformDistribution.from_scipy_params,
             scipy_distribution=uniform,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             median=False,
             equal_case=True,
             equal_params=np.array([1, 1]),
@@ -54,7 +54,7 @@ class TestUniformDistribution:
         btf.value_functions(
             custom_distribution=UniformDistribution.from_scipy_params,
             scipy_distribution=uniform,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             log_check=True,
         )
 
@@ -63,6 +63,6 @@ class TestUniformDistribution:
         btf.single_input_n_variables(
             custom_distribution=UniformDistribution.from_scipy_params,
             scipy_distribution=uniform,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             log_check=True,
         )

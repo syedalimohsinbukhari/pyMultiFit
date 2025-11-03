@@ -45,7 +45,7 @@ class TestGaussianDistribution:
         btf.stats(
             custom_distribution=GaussianDistribution.from_scipy_params,
             scipy_distribution=norm,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
         )
 
     @staticmethod
@@ -53,7 +53,7 @@ class TestGaussianDistribution:
         btf.value_functions(
             custom_distribution=GaussianDistribution.from_scipy_params,
             scipy_distribution=norm,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             log_check=True,
         )
 
@@ -62,6 +62,6 @@ class TestGaussianDistribution:
         btf.single_input_n_variables(
             custom_distribution=GaussianDistribution.from_scipy_params,
             scipy_distribution=norm,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             log_check=True,
         )

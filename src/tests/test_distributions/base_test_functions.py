@@ -4,7 +4,8 @@ import numpy as np
 
 from ...pymultifit import EPSILON
 
-loc_parameter = np.random.uniform(low=-100, high=100, size=500)
+loc1_parameter = np.random.uniform(low=-100, high=100, size=500)
+loc2_parameter = np.random.uniform(low=-100, high=100, size=500)
 scale_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
 shape1_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
 shape2_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
@@ -63,16 +64,12 @@ def statistics(
     median=False,
     is_expon=False,
     is_scaled_inv_chi=False,
-    is_gamma_ss=False,
 ):
     d_stats = custom_distribution(*parameters).stats()
 
     # make an exception for exponential distribution which gets scale = 1/scale
     if is_expon:
         parameters[1] = 1 / parameters[1]
-
-    if is_gamma_ss:
-        parameters[1] = 1 / parameters[2]
 
     if is_scaled_inv_chi:
         parameters[0] = parameters[0] / 2
@@ -100,7 +97,6 @@ def stats(
     median=True,
     is_expon=False,
     is_scaled_inv_chi=False,
-    is_gamma_ss=False,
 ):
     stack_ = np.column_stack(parameters)
 
@@ -113,7 +109,6 @@ def stats(
             median=median,
             is_expon=is_expon,
             is_scaled_inv_chi=is_scaled_inv_chi,
-            is_gamma_ss=is_gamma_ss,
         )
 
     if equal_case:
@@ -125,7 +120,6 @@ def stats(
             median=median,
             is_expon=is_expon,
             is_scaled_inv_chi=is_scaled_inv_chi,
-            is_gamma_ss=is_gamma_ss,
         )
 
 
@@ -145,7 +139,6 @@ def value_functions(
     stack_ = np.column_stack(parameters)
 
     for params in stack_:
-        print(x, params)
         scaled_distributions(
             custom_distribution=custom_distribution,
             scipy_distribution=scipy_distribution,
@@ -196,9 +189,9 @@ def single_input_n_variables(
     for value, pars in zip(rand_, param_array):
         p2 = custom_distribution(*pars)
 
-        # make an exception for exponential distribution which gets scale = 1/scale
         if is_expon:
             pars[1] = 1 / pars[1]
+
         if is_scaled_inv_chi:
             pars[0] = pars[0] / 2
             pars[-1] = pars[-1] / 2

@@ -41,7 +41,7 @@ class TestHalfNormalDistribution:
         btf.stats(
             custom_distribution=HalfNormalDistribution.from_scipy_params,
             scipy_distribution=halfnorm,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             median=False,
         )
 
@@ -50,7 +50,7 @@ class TestHalfNormalDistribution:
         btf.value_functions(
             custom_distribution=HalfNormalDistribution.from_scipy_params,
             scipy_distribution=halfnorm,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             log_check=True,
         )
 
@@ -59,6 +59,6 @@ class TestHalfNormalDistribution:
         btf.single_input_n_variables(
             custom_distribution=HalfNormalDistribution.from_scipy_params,
             scipy_distribution=halfnorm,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             log_check=True,
         )
