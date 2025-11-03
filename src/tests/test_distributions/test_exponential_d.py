@@ -41,7 +41,7 @@ class TestChiSquareDistribution:
         btf.stats(
             custom_distribution=ExponentialDistribution.from_scipy_params,
             scipy_distribution=expon,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             is_expon=True,
         )
 
@@ -50,7 +50,7 @@ class TestChiSquareDistribution:
         btf.value_functions(
             custom_distribution=ExponentialDistribution.from_scipy_params,
             scipy_distribution=expon,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             log_check=True,
             is_expon=True,
         )
@@ -60,7 +60,7 @@ class TestChiSquareDistribution:
         btf.single_input_n_variables(
             custom_distribution=ExponentialDistribution.from_scipy_params,
             scipy_distribution=expon,
-            parameters=[btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.loc1_parameter, btf.scale_parameter],
             log_check=True,
             is_expon=True,
         )

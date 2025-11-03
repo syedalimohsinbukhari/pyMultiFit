@@ -13,6 +13,7 @@ from .gamma_d import GammaDistribution
 from .gaussian_d import GaussianDistribution
 from .generalized import SymmetricGeneralizedNormalDistribution, ScaledInverseChiSquareDistribution
 from .halfNormal_d import HalfNormalDistribution
+from .johnsonSU_d import JohnsonSUDistribution
 from .laplace_d import LaplaceDistribution
 from .logNormal_d import LogNormalDistribution
 from .skewNormal_d import SkewNormalDistribution
