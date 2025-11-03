@@ -85,7 +85,7 @@ class JohnsonSUDistribution(BaseDistribution):
         median_ = l_ + s * np.sinh(-a / b)
 
         v1 = np.exp(b**-2) * np.cosh(2 * a / b) + 1
-        v2 = np.exp(b**-2) - 1
+        v2 = np.expm1(b**-2)
         variance_ = s**2 / 2 * v1 * v2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": np.sqrt(variance_)}

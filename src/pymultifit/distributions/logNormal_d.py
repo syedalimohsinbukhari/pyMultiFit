@@ -5,14 +5,8 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import (
-    log_normal_cdf_,
-    log_normal_pdf_,
-    log_normal_log_pdf_,
-    log_normal_log_cdf_,
-    suppress_numpy_warnings,
-)
-from .. import md_scipy_like, OneDArray
+from .utilities_d import log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_
+from .. import md_scipy_like, OneDArray, suppress_numpy_warnings
 
 
 class LogNormalDistribution(BaseDistribution):

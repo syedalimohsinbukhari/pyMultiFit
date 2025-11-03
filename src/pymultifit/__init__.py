@@ -1,5 +1,6 @@
 """Created on Jul 18 00:15:42 2024"""
 
+import functools
 from typing import Union, Tuple, List, Annotated
 
 import numpy as np
@@ -8,6 +9,28 @@ from deprecated.sphinx import deprecated
 from numpy.typing import NDArray
 
 from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
+
+
+def check_scale_positive(func):
+    """Decorator that returns NaN array if scale < 0."""
+
+    def wrapper(x, *args, **kwargs):
+        # Extract scale whether positional or keyword
+        if "scale" in kwargs:
+            scale = kwargs["scale"]
+        else:
+            try:
+                scale = args[-2]
+            except IndexError:
+                scale = None
+
+        if scale is not None and scale < 0:
+            # Return NaNs of the same shape as x
+            return np.full_like(x, np.nan, dtype=float)
+
+        return func(x, *args, **kwargs)
+
+    return wrapper
 
 
 def mark_deprecated(ver_: str, new: str):
@@ -33,6 +56,25 @@ def mark_deprecated(ver_: str, new: str):
 
 def md_scipy_like(ver_: str, new: str = "from_scipy_params"):
     return mark_deprecated(ver_, new)
+
+
+def suppress_numpy_warnings():
+    """
+    A decorator that suppresses NumPy warnings using np.errstate.
+
+    Parameters (all optional):
+        divide, over, under, invalid: Can be 'ignore', 'warn', 'raise', 'call', 'print', or 'log'
+    """
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with np.errstate(all="ignore"):
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 doc_style = "numpy_napoleon_with_merge"

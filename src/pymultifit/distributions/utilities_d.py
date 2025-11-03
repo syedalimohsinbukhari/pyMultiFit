@@ -32,6 +32,10 @@ __all__ = [
     "gamma_log_pdf_",
     "gamma_cdf_",
     "gamma_log_cdf_",
+    "gumbel_pdf_",
+    "gumbel_log_pdf_",
+    "gumbel_cdf_",
+    "gumbel_log_cdf_",
     "sym_gen_normal_pdf_",
     "sym_gen_normal_cdf_",
     "sym_gen_normal_log_pdf_",
@@ -71,7 +75,6 @@ __all__ = [
     "cubic",
 ]
 
-import functools
 from typing import Union, Callable
 
 import numpy as np
@@ -79,40 +82,23 @@ import scipy.special as ssp
 from custom_inherit import doc_inherit  # type: ignore
 
 from .. import (
+    check_scale_positive,
     doc_style,
     LOG,
     INF,
     OneDArray,
     SQRT_TWO,
     LOG_TWO,
-    PI,
     SQRT_TWO_PI,
     LOG_SQRT_TWO_PI,
     TWO_BY_PI,
     SQRT_TWO_BY_PI,
     LOG_SQRT_TWO_BY_PI,
+    suppress_numpy_warnings,
 )
 
 
-def suppress_numpy_warnings():
-    """
-    A decorator that suppresses NumPy warnings using np.errstate.
-
-    Parameters (all optional):
-        divide, over, under, invalid: Can be 'ignore', 'warn', 'raise', 'call', 'print', or 'log'
-    """
-
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            with np.errstate(all="ignore"):
-                return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
+@check_scale_positive
 @suppress_numpy_warnings()
 def arc_sine_pdf_(
     x: OneDArray, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
@@ -159,9 +145,6 @@ def arc_sine_pdf_(
     if y.size == 0:
         return y
 
-    if scale < 0:
-        return np.full(y.shape, np.nan)
-
     c1 = (y > 0) & (y < 1)
     c2 = y == 0
     c3 = y == 1
@@ -177,6 +160,7 @@ def arc_sine_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_log_pdf_(
@@ -217,6 +201,7 @@ def arc_sine_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_cdf_(
@@ -227,15 +212,13 @@ def arc_sine_cdf_(
     if y.size == 0:
         return y
 
-    if scale < 0:
-        return np.full(y.shape, np.nan)
-
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
 
     return np.select(condlist=[c1, c2], choicelist=[TWO_BY_PI * np.arcsin(np.sqrt(y)), 0.0], default=1.0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_cdf_, style=doc_style)
 def arc_sine_log_cdf_(
@@ -267,6 +250,7 @@ def arc_sine_log_cdf_(
     return np.select(condlist=[c1, c2], choicelist=[LOG(TWO_BY_PI * np.arcsin(np.sqrt(y))), -INF], default=0.0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def beta_pdf_(
     x: OneDArray,
@@ -338,6 +322,7 @@ def beta_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_log_pdf_(
@@ -380,6 +365,7 @@ def beta_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_cdf_(
@@ -424,6 +410,7 @@ def beta_cdf_(
     return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=ssp.betainc(alpha, beta_, y))
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_cdf_, style=doc_style)
 def beta_log_cdf_(
@@ -459,6 +446,7 @@ def beta_log_cdf_(
     return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(ssp.betainc(alpha, beta_, y)))
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def beta_prime_pdf_(
     x: OneDArray,
@@ -529,6 +517,7 @@ def beta_prime_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_prime_pdf_, style=doc_style)
 def beta_prime_log_pdf_(
@@ -570,6 +559,7 @@ def beta_prime_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_prime_pdf_, style=doc_style)
 def beta_prime_cdf_(
@@ -615,6 +605,7 @@ def beta_prime_cdf_(
     return np.where(y > 0, ssp.betainc(alpha, beta_, z), 0)
 
 
+@check_scale_positive
 def beta_prime_log_cdf_(
     x: OneDArray,
     amplitude: float = 1.0,
@@ -658,6 +649,7 @@ def beta_prime_log_cdf_(
     return np.where(y > 0, LOG(ssp.betainc(alpha, beta_, z)), -INF)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def chi_square_pdf_(
     x: OneDArray,
@@ -727,6 +719,7 @@ def _chi2(y, df_half):
     return ssp.xlogy(df_half - 1, y) - (y / 2) - ssp.gammaln(df_half) - (LOG_TWO * df_half)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_log_pdf_(
@@ -770,6 +763,7 @@ def chi_square_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_cdf_(
@@ -810,6 +804,7 @@ def chi_square_cdf_(
     return np.where(y > 0, ssp.gammainc(degree_of_freedom / 2, y / 2), 0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_cdf_, style=doc_style)
 def chi_square_log_cdf_(
@@ -844,6 +839,7 @@ def chi_square_log_cdf_(
     return np.where(y > 0, LOG(ssp.gammainc(degree_of_freedom / 2, y / 2)), -INF)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def cubic(x: OneDArray, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float = 1.0) -> OneDArray:
     r"""
@@ -878,6 +874,7 @@ def cubic(x: OneDArray, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float
     return a * x**3 + b * x**2 + c * x + d
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def exponential_pdf_(
     x: OneDArray, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -939,6 +936,7 @@ def exponential_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_log_pdf_(
@@ -986,6 +984,7 @@ def exponential_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_cdf_(
@@ -1025,6 +1024,7 @@ def exponential_cdf_(
     return np.where(y >= 0, -ssp.expm1(-y), 0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=exponential_cdf_, style=doc_style)
 def exponential_log_cdf_(
@@ -1057,6 +1057,7 @@ def exponential_log_cdf_(
     return np.where(y >= 0, LOG(-ssp.expm1(-y)), -INF)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def folded_normal_pdf_(
     x: OneDArray,
@@ -1123,6 +1124,7 @@ def folded_normal_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_log_pdf_(
@@ -1165,6 +1167,7 @@ def folded_normal_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_cdf_(
@@ -1209,6 +1212,7 @@ def folded_normal_cdf_(
     return np.where(y >= 0, _folded_cdf(q=q, r=r), 0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_cdf_, style=doc_style)
 def folded_normal_log_cdf_(
@@ -1247,6 +1251,7 @@ def folded_normal_log_cdf_(
     return np.where(y >= 0, LOG(_folded_cdf(q=q, r=r)), -INF)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def _folded(x: OneDArray, mean: float, loc: float, scale: float, g_func: Callable):
     r"""
@@ -1287,6 +1292,7 @@ def _folded(x: OneDArray, mean: float, loc: float, scale: float, g_func: Callabl
     return y >= 0, np.where(y >= 0, g1 + g2, 0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def gamma_pdf_(
     x: OneDArray,
@@ -1345,6 +1351,7 @@ def gamma_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=gamma_pdf_, style=doc_style)
 def gamma_log_pdf_(
@@ -1378,11 +1385,13 @@ def gamma_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 def _gamma(x, a, un_log=False):
     value = np.where(x >= 0, ssp.xlogy(a - 1.0, x) - x - ssp.gammaln(a), -INF)
     return np.exp(value) if un_log else value
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=gamma_pdf_, style=doc_style)
 def gamma_cdf_(
@@ -1417,6 +1426,7 @@ def gamma_cdf_(
     return np.where(y > 0, ssp.gammainc(alpha, y), 0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=gamma_cdf_, style=doc_style)
 def gamma_log_cdf_(
@@ -1445,6 +1455,7 @@ def gamma_log_cdf_(
     return LOG(np.where(y > 0, ssp.gammainc(alpha, y), 0))
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def gaussian_pdf_(x: OneDArray, amplitude=1.0, mean=0.0, std=1.0, normalize=False) -> OneDArray:
     r"""
@@ -1495,6 +1506,7 @@ def gaussian_pdf_(x: OneDArray, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
 def gaussian_log_pdf_(
@@ -1525,6 +1537,7 @@ def gaussian_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
 def gaussian_cdf_(
@@ -1557,6 +1570,7 @@ def gaussian_cdf_(
     return ssp.ndtr((x - mean) / std)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_cdf_, style=doc_style)
 def gaussian_log_cdf_(
@@ -1581,6 +1595,59 @@ def gaussian_log_cdf_(
     return ssp.log_ndtr((x - mean) / std)
 
 
+@check_scale_positive
+def gumbel_pdf_(x, amplitude, loc, scale, normalize: bool = False):
+    y = preprocess_input(x, loc, scale)
+
+    if y.size == 0:
+        return y
+
+    pdf_ = np.exp(-y - np.exp(-y))
+    pdf_ /= scale
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_, amplitude)
+
+    return pdf_
+
+
+@check_scale_positive
+def gumbel_log_pdf_(x, amplitude, loc, scale, normalize: bool = False):
+    y = preprocess_input(x, loc, scale)
+
+    if y.size == 0:
+        return y
+
+    log_pdf_ = -y - np.exp(-y)
+    log_pdf_ -= LOG(scale)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_, amplitude)
+
+    return log_pdf_
+
+
+@check_scale_positive
+def gumbel_cdf_(x, amplitude, loc, scale, normalize: bool = False):
+    y = preprocess_input(x, loc, scale)
+
+    if y.size == 0:
+        return y
+
+    return np.exp(-np.exp(-y))
+
+
+@check_scale_positive
+def gumbel_log_cdf_(x, amplitude, loc, scale, normalize: bool = False):
+    y = preprocess_input(x, loc, scale)
+
+    if y.size == 0:
+        return y
+
+    return -np.exp(-y)
+
+
+@check_scale_positive
 @suppress_numpy_warnings()
 def half_normal_pdf_(
     x: OneDArray, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -1641,6 +1708,7 @@ def half_normal_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_log_pdf_(
@@ -1675,6 +1743,7 @@ def half_normal_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_cdf_(
@@ -1710,6 +1779,7 @@ def half_normal_cdf_(
     return np.where(y >= 0, ssp.erf(y / SQRT_TWO), 0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_cdf_, style=doc_style)
 def half_normal_log_cdf_(
@@ -1738,6 +1808,7 @@ def half_normal_log_cdf_(
     return np.where(y >= 0, LOG(ssp.erf(y / SQRT_TWO)), -INF)
 
 
+@check_scale_positive
 def johnsonSU_pdf(
     x,
     amplitude: float = 1.0,
@@ -1754,7 +1825,7 @@ def johnsonSU_pdf(
 
     f1 = delta / SQRT_TWO_PI
     f2 = np.sqrt(1 + y**2)
-    f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
+    f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y))**2)
 
     pdf_ = f1 / f2 * f3
     pdf_ /= lambda_
@@ -1765,6 +1836,7 @@ def johnsonSU_pdf(
     return pdf_
 
 
+@check_scale_positive
 def johnsonSU_log_pdf_(
     x,
     amplitude: float = 1.0,
@@ -1781,7 +1853,7 @@ def johnsonSU_log_pdf_(
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
     f2 = -0.5 * np.log1p(y**2)
-    f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
+    f3 = -0.5 * (gamma + delta * np.arcsinh(y))**2
 
     log_pdf_ = f1 + f2 + f3
     log_pdf_ -= LOG(lambda_)
@@ -1792,6 +1864,7 @@ def johnsonSU_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 def johnsonSU_cdf_(
     x,
     amplitude: float = 1.0,
@@ -1810,6 +1883,7 @@ def johnsonSU_cdf_(
     return gaussian_cdf_(x=y_new, normalize=True)
 
 
+@check_scale_positive
 def johnsonSU_log_cdf_(
     x,
     amplitude: float = 1.0,
@@ -1828,6 +1902,7 @@ def johnsonSU_log_cdf_(
     return gaussian_log_cdf_(x=y_new, normalize=True)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def laplace_pdf_(
     x: OneDArray, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
@@ -1883,6 +1958,7 @@ def laplace_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_log_pdf_(
@@ -1917,6 +1993,7 @@ def laplace_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_cdf_(
@@ -1957,6 +2034,7 @@ def laplace_cdf_(
     return np.where(y > 0, 1.0 - 0.5 * np.exp(-y), 0.5 * np.exp(y))
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=laplace_cdf_, style=doc_style)
 def laplace_log_cdf_(
@@ -1983,6 +2061,7 @@ def laplace_log_cdf_(
     return np.where(y > 0, np.log1p(-0.5 * np.exp(-y)), -LOG_TWO + y)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def line(x: OneDArray, slope: float = 1.0, intercept: float = 0.0) -> OneDArray:
     r"""
@@ -2013,6 +2092,7 @@ def line(x: OneDArray, slope: float = 1.0, intercept: float = 0.0) -> OneDArray:
     return slope * x + intercept
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def log_normal_pdf_(
     x: OneDArray, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2075,6 +2155,7 @@ def log_normal_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_log_pdf_(
@@ -2112,6 +2193,7 @@ def log_normal_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_cdf_(
@@ -2150,6 +2232,7 @@ def log_normal_cdf_(
     return np.where(y > 0, ssp.ndtr(LOG(y) / std), 0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_cdf_, style=doc_style)
 def log_normal_log_cdf_(
@@ -2176,6 +2259,7 @@ def log_normal_log_cdf_(
     return np.where(y > 0, ssp.log_ndtr(LOG(y) / std), -INF)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def uniform_pdf_(
     x: OneDArray, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
@@ -2233,6 +2317,7 @@ def uniform_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def uniform_log_pdf_(
     x: OneDArray, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
@@ -2264,6 +2349,7 @@ def uniform_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
 def uniform_cdf_(
@@ -2302,6 +2388,7 @@ def uniform_cdf_(
     return np.select(condlist=[y < 0, y > 1], choicelist=[0, 1], default=y)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=uniform_cdf_, style=doc_style)
 def uniform_log_cdf_(
@@ -2335,6 +2422,7 @@ def uniform_log_cdf_(
     return np.select(condlist=[y < 0, y > 1], choicelist=[-INF, 0], default=LOG(y))
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def scaled_inv_chi_square_pdf_(
     x: OneDArray, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2400,6 +2488,7 @@ def scaled_inv_chi_square_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_log_pdf_(
@@ -2446,6 +2535,7 @@ def scaled_inv_chi_square_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_cdf_(
@@ -2491,6 +2581,7 @@ def scaled_inv_chi_square_cdf_(
     return np.where(y > 0, ssp.gammaincc(df_half, (tau2 * df_half) / y), 0)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_log_cdf_(
@@ -2529,6 +2620,7 @@ def scaled_inv_chi_square_log_cdf_(
     return np.where(y > 0, LOG(ssp.gammaincc(df_half, (tau2 * df_half) / y)), -INF)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def skew_normal_pdf_(
     x: OneDArray,
@@ -2596,6 +2688,7 @@ def skew_normal_pdf_(
     return pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_log_pdf_(
@@ -2637,6 +2730,7 @@ def skew_normal_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_cdf_(
@@ -2676,6 +2770,7 @@ def skew_normal_cdf_(
     return gaussian_cdf_(x=y, normalize=True) - 2 * ssp.owens_t(y, shape)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def sym_gen_normal_pdf_(
     x: OneDArray,
@@ -2743,6 +2838,7 @@ def sym_gen_normal_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
 def sym_gen_normal_log_pdf_(
@@ -2785,6 +2881,7 @@ def sym_gen_normal_log_pdf_(
     return log_pdf_
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
 def sym_gen_normal_cdf_(
@@ -2828,6 +2925,7 @@ def sym_gen_normal_cdf_(
     return 0.5 + np.sign(y) * 0.5 * ssp.gammainc(1 / beta, np.power(np.abs(y), beta))
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_cdf_, style=doc_style)
 def sym_gen_normal_log_cdf_(
@@ -2861,6 +2959,7 @@ def sym_gen_normal_log_cdf_(
     return LOG(cdf_)
 
 
+@check_scale_positive
 @suppress_numpy_warnings()
 def quadratic(x: OneDArray, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> OneDArray:
     r"""

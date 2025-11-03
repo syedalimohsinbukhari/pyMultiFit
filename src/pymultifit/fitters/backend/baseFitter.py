@@ -301,7 +301,7 @@ class BaseFitter:
         return self._fit_boundaries()
 
     @staticmethod
-    def fitter(x, params: Params_) -> np.ndarray:
+    def fitter(x, params: Params_) -> OneDArray:
         """
         Fitter function for multi-fitting.
 
@@ -314,7 +314,7 @@ class BaseFitter:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def get_fitted_curve(self) -> np.ndarray:
+    def get_fitted_curve(self) -> OneDArray:
         """
         Get the fitted values of the model.
 
