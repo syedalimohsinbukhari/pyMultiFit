@@ -31,7 +31,7 @@ class TestBetaPrimeDistribution:
         btf.stats(
             custom_distribution=BetaPrimeDistribution.from_scipy_params,
             scipy_distribution=betaprime,
-            parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             median=False,
         )
 
@@ -40,7 +40,7 @@ class TestBetaPrimeDistribution:
         btf.value_functions(
             custom_distribution=BetaPrimeDistribution.from_scipy_params,
             scipy_distribution=betaprime,
-            parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             log_check=True,
         )
 
@@ -49,6 +49,6 @@ class TestBetaPrimeDistribution:
         btf.single_input_n_variables(
             custom_distribution=BetaPrimeDistribution.from_scipy_params,
             scipy_distribution=betaprime,
-            parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             log_check=True,
         )

@@ -46,7 +46,7 @@ class TestScaledInvChiSquareDistribution:
         btf.stats(
             custom_distribution=ScaledInverseChiSquareDistribution.from_scipy_params,
             scipy_distribution=invgamma,
-            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             median=False,
             is_scaled_inv_chi=True,
         )
@@ -56,7 +56,7 @@ class TestScaledInvChiSquareDistribution:
         btf.value_functions(
             custom_distribution=ScaledInverseChiSquareDistribution.from_scipy_params,
             scipy_distribution=invgamma,
-            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             log_check=True,
             is_scaled_inv_chi=True,
         )
@@ -66,7 +66,7 @@ class TestScaledInvChiSquareDistribution:
         btf.single_input_n_variables(
             custom_distribution=ScaledInverseChiSquareDistribution.from_scipy_params,
             scipy_distribution=invgamma,
-            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             log_check=True,
             is_scaled_inv_chi=True,
         )

@@ -28,7 +28,7 @@ class TestBetaDistribution:
         btf.stats(
             custom_distribution=BetaDistribution.from_scipy_params,
             scipy_distribution=beta,
-            parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.shape2_parameter, btf.loc_parameter, btf.scale_parameter],
         )
 
     @staticmethod
@@ -36,7 +36,7 @@ class TestBetaDistribution:
         btf.value_functions(
             custom_distribution=BetaDistribution.from_scipy_params,
             scipy_distribution=beta,
-            parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.shape2_parameter, btf.loc_parameter, btf.scale_parameter],
             log_check=True,
         )
 
@@ -45,6 +45,6 @@ class TestBetaDistribution:
         btf.single_input_n_variables(
             custom_distribution=BetaDistribution.from_scipy_params,
             scipy_distribution=beta,
-            parameters=[btf.shape_parameter, btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.shape2_parameter, btf.loc_parameter, btf.scale_parameter],
             log_check=True,
         )

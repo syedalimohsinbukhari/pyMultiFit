@@ -49,7 +49,7 @@ class TestGammaDistribution:
         btf.stats(
             custom_distribution=GammaDistribution.from_scipy_params,
             scipy_distribution=gamma,
-            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             median=False,
         )
 
@@ -58,7 +58,7 @@ class TestGammaDistribution:
         btf.value_functions(
             custom_distribution=GammaDistribution.from_scipy_params,
             scipy_distribution=gamma,
-            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             log_check=True,
         )
 
@@ -67,6 +67,6 @@ class TestGammaDistribution:
         btf.single_input_n_variables(
             custom_distribution=GammaDistribution.from_scipy_params,
             scipy_distribution=gamma,
-            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
+            parameters=[btf.shape1_parameter, btf.loc_parameter, btf.scale_parameter],
             log_check=True,
         )

@@ -6,7 +6,8 @@ from ...pymultifit import EPSILON
 
 loc_parameter = np.random.uniform(low=-100, high=100, size=500)
 scale_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
-shape_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
+shape1_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
+shape2_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
 
 
 def edge_cases(distribution, log_check=False):
@@ -144,6 +145,7 @@ def value_functions(
     stack_ = np.column_stack(parameters)
 
     for params in stack_:
+        print(x, params)
         scaled_distributions(
             custom_distribution=custom_distribution,
             scipy_distribution=scipy_distribution,

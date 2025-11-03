@@ -44,6 +44,10 @@ __all__ = [
     "half_normal_cdf_",
     "half_normal_log_pdf_",
     "half_normal_log_cdf_",
+    "johnsonSU_pdf",
+    "johnsonSU_log_pdf_",
+    "johnsonSU_cdf_",
+    "johnsonSU_log_cdf_",
     "laplace_pdf_",
     "laplace_cdf_",
     "laplace_log_pdf_",
@@ -1732,6 +1736,96 @@ def half_normal_log_cdf_(
         return y
 
     return np.where(y >= 0, LOG(ssp.erf(y / SQRT_TWO)), -INF)
+
+
+def johnsonSU_pdf(
+    x,
+    amplitude: float = 1.0,
+    gamma: float = 1.0,
+    delta: float = 1.0,
+    xi: float = 0.0,
+    lambda_: float = 1.0,
+    normalize: bool = False,
+):
+    y = preprocess_input(x=x, loc=xi, scale=lambda_)
+
+    if y.size == 0:
+        return y
+
+    f1 = delta / SQRT_TWO_PI
+    f2 = np.sqrt(1 + y**2)
+    f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
+
+    pdf_ = f1 / f2 * f3
+    pdf_ /= lambda_
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
+
+
+def johnsonSU_log_pdf_(
+    x,
+    amplitude: float = 1.0,
+    gamma: float = 1.0,
+    delta: float = 1.0,
+    xi: float = 0.0,
+    lambda_: float = 1.0,
+    normalize: bool = False,
+):
+    y = preprocess_input(x=x, loc=xi, scale=lambda_)
+
+    if y.size == 0:
+        return y
+
+    f1 = LOG(delta) - LOG_SQRT_TWO_PI
+    f2 = -0.5 * np.log1p(y**2)
+    f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
+
+    log_pdf_ = f1 + f2 + f3
+    log_pdf_ -= LOG(lambda_)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_
+
+
+def johnsonSU_cdf_(
+    x,
+    amplitude: float = 1.0,
+    gamma: float = 1.0,
+    delta: float = 1.0,
+    xi: float = 0.0,
+    lambda_: float = 1.0,
+    normalize: bool = False,
+):
+    y = preprocess_input(x=x, loc=xi, scale=lambda_)
+
+    if y.size == 0:
+        return y
+
+    y_new = gamma + delta * np.arcsinh(y)
+    return gaussian_cdf_(x=y_new, normalize=True)
+
+
+def johnsonSU_log_cdf_(
+    x,
+    amplitude: float = 1.0,
+    gamma: float = 1.0,
+    delta: float = 1.0,
+    xi: float = 0.0,
+    lambda_: float = 1.0,
+    normalize: bool = False,
+):
+    y = preprocess_input(x=x, loc=xi, scale=lambda_)
+
+    if y.size == 0:
+        return y
+
+    y_new = gamma + delta * np.arcsinh(y)
+    return gaussian_log_cdf_(x=y_new, normalize=True)
 
 
 @suppress_numpy_warnings()
