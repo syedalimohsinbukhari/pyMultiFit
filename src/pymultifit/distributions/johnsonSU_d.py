@@ -5,7 +5,7 @@ from typing import Dict
 import numpy as np
 
 from .backend import BaseDistribution
-from .utilities_d import johnsonSU_pdf, johnsonSU_log_pdf_, johnsonSU_cdf_, johnsonSU_log_cdf_
+from .utilities_d import johnsonSU_pdf_, johnsonSU_log_pdf_, johnsonSU_cdf_, johnsonSU_log_cdf_
 from .. import OneDArray
 
 
@@ -33,7 +33,7 @@ class JohnsonSUDistribution(BaseDistribution):
         return cls(gamma=a, delta=b, xi=loc, lambda_=scale, normalize=True)
 
     def pdf(self, x: OneDArray) -> OneDArray:
-        return johnsonSU_pdf(
+        return johnsonSU_pdf_(
             x,
             amplitude=self.amplitude,
             gamma=self.gamma,

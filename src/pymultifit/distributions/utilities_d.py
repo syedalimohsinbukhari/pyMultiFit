@@ -48,7 +48,7 @@ __all__ = [
     "half_normal_cdf_",
     "half_normal_log_pdf_",
     "half_normal_log_cdf_",
-    "johnsonSU_pdf",
+    "johnsonSU_pdf_",
     "johnsonSU_log_pdf_",
     "johnsonSU_cdf_",
     "johnsonSU_log_cdf_",
@@ -1385,7 +1385,6 @@ def gamma_log_pdf_(
     return log_pdf_
 
 
-@check_scale_positive
 def _gamma(x, a, un_log=False):
     value = np.where(x >= 0, ssp.xlogy(a - 1.0, x) - x - ssp.gammaln(a), -INF)
     return np.exp(value) if un_log else value
@@ -1596,39 +1595,114 @@ def gaussian_log_cdf_(
 
 
 @check_scale_positive
-def gumbel_pdf_(x, amplitude, loc, scale, normalize: bool = False):
-    y = preprocess_input(x, loc, scale)
+@suppress_numpy_warnings()
+def gumbel_pdf_(
+    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> OneDArray:
+    r"""
+    Compute PDF for Gumbel distribution`
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    mu : float, optional
+        The location parameter, :math:`\text{loc}`.
+        Defaults to 0.0.
+    beta_ : float, optional
+        The scale parameter, :math:`\text{scale}`.
+        Defaults to 1.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    OneDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Gumbel PDF is defined as:
+
+    .. math::
+        f(y; \mu, \beta) = \exp\left(-y - \exp(-y)\right)
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\beta}.
+
+    The final PDF is expressed as :math:`f(y)/\beta`.
+    """
+    y = preprocess_input(x=x, loc=mu, scale=beta_)
 
     if y.size == 0:
         return y
 
-    pdf_ = np.exp(-y - np.exp(-y))
-    pdf_ /= scale
+    pdf_ = np.exp(-y - np.exp(-y)) / beta_
 
     if not normalize:
-        pdf_ = _pdf_scaling(pdf_, amplitude)
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
     return pdf_
 
 
 @check_scale_positive
-def gumbel_log_pdf_(x, amplitude, loc, scale, normalize: bool = False):
-    y = preprocess_input(x, loc, scale)
+@suppress_numpy_warnings()
+@doc_inherit(parent=gumbel_pdf_, style=doc_style)
+def gumbel_log_pdf_(x, amplitude, mu, beta_, normalize: bool = False):
+    r"""
+    Compute log PDF for Gumbel distribution`
+
+    Notes
+    -----
+    The Gumbel log PDF is defined as:
+
+    .. math::
+        \ell(y; \mu, \beta) = -y - \exp(-y)
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\beta}.
+
+    The final log PDF is expressed as :math:`\ell(y) - \ln\beta`.
+    """
+    y = preprocess_input(x=x, loc=mu, scale=beta_)
 
     if y.size == 0:
         return y
 
-    log_pdf_ = -y - np.exp(-y)
-    log_pdf_ -= LOG(scale)
+    log_pdf_ = -y - np.exp(-y) - LOG(beta_)
 
     if not normalize:
-        log_pdf_ = _log_pdf_scaling(log_pdf_, amplitude)
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     return log_pdf_
 
 
 @check_scale_positive
+@suppress_numpy_warnings()
+@doc_inherit(parent=gumbel_pdf_, style=doc_style)
 def gumbel_cdf_(x, amplitude, loc, scale, normalize: bool = False):
+    r"""
+    Compute CDF for Gumbel distribution`
+
+    Notes
+    -----
+    The Gumbel CDF is defined as:
+
+    .. math::
+        F(y; \mu, \beta) = \exp(-\exp(-y))
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\beta}.
+
+    The final CDF is expressed as :math:`F(y)`.
+    """
     y = preprocess_input(x, loc, scale)
 
     if y.size == 0:
@@ -1638,7 +1712,25 @@ def gumbel_cdf_(x, amplitude, loc, scale, normalize: bool = False):
 
 
 @check_scale_positive
+@suppress_numpy_warnings()
+@doc_inherit(parent=gumbel_cdf_, style=doc_style)
 def gumbel_log_cdf_(x, amplitude, loc, scale, normalize: bool = False):
+    r"""
+    Compute log CDF for Gumbel distribution`
+
+    Notes
+    -----
+    The Gumbel log CDF is defined as:
+
+    .. math::
+        \mathcal{L}(y; \mu, \beta) = -\exp(-y)
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\beta}.
+
+    The final CDF is expressed as :math:`\mathcal{L}(y)`.
+    """
     y = preprocess_input(x, loc, scale)
 
     if y.size == 0:
@@ -1809,7 +1901,8 @@ def half_normal_log_cdf_(
 
 
 @check_scale_positive
-def johnsonSU_pdf(
+@suppress_numpy_warnings()
+def johnsonSU_pdf_(
     x,
     amplitude: float = 1.0,
     gamma: float = 1.0,
@@ -1825,7 +1918,7 @@ def johnsonSU_pdf(
 
     f1 = delta / SQRT_TWO_PI
     f2 = np.sqrt(1 + y**2)
-    f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y))**2)
+    f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
 
     pdf_ = f1 / f2 * f3
     pdf_ /= lambda_
@@ -1853,7 +1946,7 @@ def johnsonSU_log_pdf_(
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
     f2 = -0.5 * np.log1p(y**2)
-    f3 = -0.5 * (gamma + delta * np.arcsinh(y))**2
+    f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
 
     log_pdf_ = f1 + f2 + f3
     log_pdf_ -= LOG(lambda_)
@@ -1879,8 +1972,7 @@ def johnsonSU_cdf_(
     if y.size == 0:
         return y
 
-    y_new = gamma + delta * np.arcsinh(y)
-    return gaussian_cdf_(x=y_new, normalize=True)
+    return ssp.ndtr(gamma + delta * np.arcsinh(y))
 
 
 @check_scale_positive
@@ -1898,8 +1990,7 @@ def johnsonSU_log_cdf_(
     if y.size == 0:
         return y
 
-    y_new = gamma + delta * np.arcsinh(y)
-    return gaussian_log_cdf_(x=y_new, normalize=True)
+    return ssp.log_ndtr(gamma + delta * np.arcsinh(y))
 
 
 @check_scale_positive

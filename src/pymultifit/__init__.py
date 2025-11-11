@@ -1,6 +1,7 @@
 """Created on Jul 18 00:15:42 2024"""
 
 import functools
+from functools import wraps
 from typing import Union, Tuple, List, Annotated
 
 import numpy as np
@@ -14,20 +15,12 @@ from .version import __author__, __copyright__, __description__, __email__, __li
 def check_scale_positive(func):
     """Decorator that returns NaN array if scale < 0."""
 
+    @wraps(func)
     def wrapper(x, *args, **kwargs):
-        # Extract scale whether positional or keyword
-        if "scale" in kwargs:
-            scale = kwargs["scale"]
-        else:
-            try:
-                scale = args[-2]
-            except IndexError:
-                scale = None
-
+        scale = args[-2]
         if scale is not None and scale < 0:
             # Return NaNs of the same shape as x
             return np.full_like(x, np.nan, dtype=float)
-
         return func(x, *args, **kwargs)
 
     return wrapper
@@ -81,29 +74,30 @@ doc_style = "numpy_napoleon_with_merge"
 
 INF = np.inf
 LOG = np.log
+SQRT = np.sqrt
 
 # taken from https://stackoverflow.com/a/19141711
 EPSILON = np.finfo(float).eps
-epsilon = np.sqrt(EPSILON)
+epsilon = SQRT(EPSILON)
 
 TWO = 2.0
-SQRT_TWO = np.sqrt(TWO)
+SQRT_TWO = SQRT(TWO)
 LOG_TWO = LOG(TWO)
 LOG_SQRT_TWO = ssp.xlogy(0.5, TWO)
 
 PI = np.pi
-SQRT_PI = np.sqrt(PI)
+SQRT_PI = SQRT(PI)
 LOG_PI = LOG(PI)
 LOG_SQRT_PI = ssp.xlogy(0.5, PI)
 
 TWO_PI = 2 * PI
-SQRT_TWO_PI = np.sqrt(TWO_PI)
+SQRT_TWO_PI = SQRT(TWO_PI)
 LOG_TWO_PI = LOG(TWO_PI)
 LOG_SQRT_TWO_PI = ssp.xlogy(0.5, TWO_PI)
 
 INV_PI = 1.0 / PI
 TWO_BY_PI = 2.0 * INV_PI
-SQRT_TWO_BY_PI = np.sqrt(TWO_BY_PI)
+SQRT_TWO_BY_PI = SQRT(TWO_BY_PI)
 LOG_TWO_BY_PI = LOG(TWO_BY_PI)
 LOG_SQRT_TWO_BY_PI = ssp.xlogy(0.5, TWO_BY_PI)
 
