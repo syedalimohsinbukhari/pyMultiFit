@@ -2,7 +2,7 @@
 
 __all__ = ["parameter_logic", "sanity_check", "_plot_fit"]
 
-from typing import List, Tuple, Union, Optional, Callable
+from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -66,6 +66,8 @@ def parameter_logic(par_array: OneDArray, n_par: int, selected_models) -> OneDAr
 
 
 def _plot_fit(
+    plot_type,
+    /,
     x_values: OneDArray,
     y_values: OneDArray,
     parameters: OneDArray,
@@ -121,6 +123,8 @@ def _plot_fit(
     if parameters is None:
         raise RuntimeError("Fit not performed yet. Call fit() first.")
 
+    label_dict = {"x_label": "X", "y_label": "Y", "title": f"{n_fits} {class_name} fit"}
+
     if data_label is None:
         dl, tt = "Data", "Total fit"
     elif len(data_label) == 1 or isinstance(data_label, str):
@@ -130,7 +134,14 @@ def _plot_fit(
     else:
         raise ValueError()
 
-    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_dictionary=LinePlot(alpha=0.75))
+    plotter = plot_xy(
+        x_data=x_values,
+        y_data=y_values,
+        data_label=dl,
+        axis=axis,
+        plot_dictionary=LinePlot(alpha=0.75),
+        is_scatter=True if plot_type == "s" else False,
+    )
 
     plot_xy(
         x_data=x_values,
@@ -148,9 +159,10 @@ def _plot_fit(
 
     plotter2: Axes = plotter[0] if isinstance(plotter, list) else plotter
 
-    plotter2.set_xlabel(x_label if x_label else "X")
-    plotter2.set_ylabel(y_label if y_label else "Y")
-    plotter2.set_title(title if title else f"{n_fits} {class_name} fit")
+    plotter2.set_xlabel(label_dict.get("x_label", x_label))
+    plotter2.set_ylabel(label_dict.get("y_label", y_label))
+    plotter2.set_title(label_dict.get("title", title))
+    plt.grid(ls="--", alpha=0.25, color="grey")
     plt.tight_layout()
 
     return plotter2

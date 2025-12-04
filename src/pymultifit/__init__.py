@@ -101,10 +101,10 @@ SQRT_TWO_BY_PI = SQRT(TWO_BY_PI)
 LOG_TWO_BY_PI = LOG(TWO_BY_PI)
 LOG_SQRT_TWO_BY_PI = ssp.xlogy(0.5, TWO_BY_PI)
 
-ListOrNdArray = Union[List[int | float], np.ndarray]
+ListOrNdArray = Union[List[int or float], np.ndarray]
 OneDArray = Annotated[NDArray[np.float64], "1D array"]
 
-ParamTuple = Tuple[int | float, ...]
+ParamTuple = Tuple[int or float, ...]
 Params_ = Union[List[ParamTuple], np.ndarray]
 
 GAUSSIAN = "gaussian"
