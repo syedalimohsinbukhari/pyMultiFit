@@ -315,7 +315,7 @@ def beta_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    ret_ = reject_values(x.shape, alpha, beta, scale)
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
 
     if ret_:
         return np.full(x.shape, np.nan)
@@ -362,7 +362,7 @@ def beta_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    ret_ = reject_values(x.shape, alpha, beta, scale)
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
 
     if ret_:
         return np.full(x.shape, np.nan)
@@ -419,7 +419,7 @@ def beta_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    ret_ = reject_values(x.shape, alpha, beta, scale)
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
 
     if ret_:
         return np.full(x.shape, np.nan)
@@ -459,7 +459,7 @@ def beta_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    ret_ = reject_values(x.shape, alpha, beta, scale)
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
 
     if ret_:
         return np.full(x.shape, np.nan)
@@ -527,7 +527,7 @@ def beta_prime_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    ret_ = reject_values(x.shape, alpha, beta, scale)
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
 
     if ret_:
         return np.full(x.shape, np.nan)
@@ -573,7 +573,7 @@ def beta_prime_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    ret_ = reject_values(x.shape, alpha, beta, scale)
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
 
     if ret_:
         return np.full(x.shape, np.nan)

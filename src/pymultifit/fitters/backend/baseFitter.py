@@ -1,7 +1,7 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Any, List, Optional, Tuple, Sequence
+from typing import Any, List, Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,7 +11,7 @@ from mpyez.ezPlotting import plot_xy  # type: ignore
 from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
-from ..utilities_f import parameter_logic, _plot_fit, sanity_check
+from ..utilities_f import _plot_fit, parameter_logic, sanity_check
 from ... import epsilon, OneDArray, Params_
 
 
@@ -51,7 +51,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par :]
+            provided_secondary_params = params[self.pn_par:]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -222,7 +222,7 @@ class BaseFitter:
                 x_data=x,
                 y_data=self.fitter(x=x, params=list(par)),
                 data_label=f"{self.__class__.__name__.replace('Fitter', '')} {i + 1}("
-                f"{', '.join(self._format_param(i) for i in par)})",
+                           f"{', '.join(self._format_param(i) for i in par)})",
                 plot_dictionary=LinePlot(line_style="--", color=color),
                 axis=plotter,
                 x_label="",
@@ -419,14 +419,16 @@ class BaseFitter:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
     def plot_fit(
-        self,
-        show_individuals: bool = False,
-        x_label: Optional[str] = None,
-        y_label: Optional[str] = None,
-        data_label: Optional[str] = None,
-        fit_label: Optional[str] = None,
-        title: Optional[str] = None,
-        axis: Optional[Axes] = None,
+            self,
+            plot_type='l',
+            /,
+            show_individuals: bool = False,
+            x_label: Optional[str] = None,
+            y_label: Optional[str] = None,
+            data_label: Optional[str] = None,
+            fit_label: Optional[str] = None,
+            title: Optional[str] = None,
+            axis: Optional[Axes] = None,
     ):
         """
         Plot the fitted models.
@@ -452,6 +454,7 @@ class BaseFitter:
             The plotter handle for the drawn plot.
         """
         return _plot_fit(
+            plot_type,
             x_values=self.x_values,
             y_values=self.y_values,
             parameters=self.params,

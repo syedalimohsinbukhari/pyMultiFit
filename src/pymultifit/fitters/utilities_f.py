@@ -162,7 +162,7 @@ def _plot_fit(
     plotter2.set_xlabel(label_dict.get("x_label", x_label))
     plotter2.set_ylabel(label_dict.get("y_label", y_label))
     plotter2.set_title(label_dict.get("title", title))
-    plt.grid(ls="--", alpha=0.25, color="grey")
-    plt.tight_layout()
+    plotter2.grid(ls="--", alpha=0.25, color="k")
+    # plt.tight_layout()
 
     return plotter2
