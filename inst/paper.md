@@ -8,7 +8,7 @@ tags:
     - data analysis
 authors:
     - name: Syed Ali Mohsin Bukhari
-      orcid: 0009-0002-5888-4163
+      orcid: 0000-0002-4232-3874
       corresponding: true
       affiliation: "1, 2"
     - name: Iqra Siddique
