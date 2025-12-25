@@ -12,18 +12,13 @@ from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, _plot_fit, sanity_check
-from ... import epsilon, ListOrNdArray, Params_
+from ... import epsilon, OneDArray, Params_
 
 
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    def __init__(
-        self,
-        x_values: ListOrNdArray,
-        y_values: ListOrNdArray,
-        max_iterations: int = 1000,
-    ):
+    def __init__(self, x_values: OneDArray, y_values: OneDArray, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         self.x_values: np.ndarray = x_values
         self.y_values: np.ndarray = y_values
@@ -56,7 +51,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par:]
+            provided_secondary_params = params[self.pn_par :]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -107,12 +102,12 @@ class BaseFitter:
             lb, ub = self.fit_boundaries()
         except NotImplementedError:
             # if they're not implemented, self-imposes -inf + inf boundaries
-            lb = np.repeat(a=-np.inf, repeats=self.n_fits)
-            ub = np.repeat(a=np.inf, repeats=self.n_fits)
+            lb = np.repeat(-np.inf, self.n_fits)
+            ub = np.repeat(np.inf, self.n_fits)
 
         # Resize bounds to match total parameters
-        lb = np.resize(a=lb, new_shape=self.n_par * self.n_fits)
-        ub = np.resize(a=ub, new_shape=self.n_par * self.n_fits)
+        lb = np.resize(lb, self.n_par * self.n_fits)
+        ub = np.resize(ub, self.n_par * self.n_fits)
 
         # Validate frozen length
         if frozen is None:
@@ -176,8 +171,8 @@ class BaseFitter:
         np.ndarray
             An array containing the composite fitted values for the input ``x``.
         """
-        y = np.zeros_like(a=x, dtype=float)
-        parameters: np.ndarray = np.reshape(a=np.array(params), newshape=(self.n_fits, self.n_par))
+        y = np.zeros_like(x, dtype=float)
+        parameters: np.ndarray = np.reshape(np.array(params), newshape=(self.n_fits, self.n_par))
         for par in parameters:
             y += self.fitter(x=x, params=par.tolist())
         return y
@@ -219,7 +214,7 @@ class BaseFitter:
         - Each plot will be labeled with the class name and the index of the fit, along with the formatted parameters.
         """
         x = self.x_values
-        params = np.reshape(a=self.params, newshape=(self.n_fits, self.n_par))
+        params = np.reshape(self.params, (self.n_fits, self.n_par))
         colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
         for i, par in enumerate(params):
             color = colors[i % len(colors)]
@@ -227,7 +222,7 @@ class BaseFitter:
                 x_data=x,
                 y_data=self.fitter(x=x, params=list(par)),
                 data_label=f"{self.__class__.__name__.replace('Fitter', '')} {i + 1}("
-                           f"{', '.join(self._format_param(i) for i in par)})",
+                f"{', '.join(self._format_param(i) for i in par)})",
                 plot_dictionary=LinePlot(line_style="--", color=color),
                 axis=plotter,
                 x_label="",
@@ -297,8 +292,8 @@ class BaseFitter:
 
     def _fit_boundaries(self) -> Tuple[Sequence[float], Sequence[float]]:
         """Defines the internal distribution boundaries to be used by fitter."""
-        ub = np.repeat(a=np.inf, repeats=self.n_par).tolist()
-        lb = np.repeat(a=-np.inf, repeats=self.n_par).tolist()
+        ub = np.repeat(np.inf, self.n_par).tolist()
+        lb = np.repeat(-np.inf, self.n_par).tolist()
         return lb, ub
 
     def fit_boundaries(self) -> Tuple[Sequence[float], Sequence[float]]:
@@ -372,25 +367,13 @@ class BaseFitter:
         parameter_mean = self.get_value_error_pair(mean_values=True, std_values=errors)
 
         if not errors:
-            selected = parameter_logic(
-                par_array=parameter_mean,
-                n_par=self.n_par,
-                selected_models=select,
-            )
+            selected = parameter_logic(par_array=parameter_mean, n_par=self.n_par, selected_models=select)
 
             return selected[:, range(self.n_par)].T
         else:
             par_list = parameter_mean.reshape(self.n_fits, self.n_par, 2)
-            mean = parameter_logic(
-                par_array=par_list[:, :, 0].flatten(),
-                n_par=self.n_par,
-                selected_models=select,
-            )
-            std_ = parameter_logic(
-                par_array=par_list[:, :, 1].flatten(),
-                n_par=self.n_par,
-                selected_models=select,
-            )
+            mean = parameter_logic(par_array=par_list[:, :, 0].flatten(), n_par=self.n_par, selected_models=select)
+            std_ = parameter_logic(par_array=par_list[:, :, 1].flatten(), n_par=self.n_par, selected_models=select)
 
             return mean[:, range(self.n_par)].T, std_[:, range(self.n_par)].T
 

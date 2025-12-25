@@ -1,19 +1,13 @@
 """Created on Jul 18 00:15:42 2024"""
 
-from typing import Union, Sequence, Tuple, List
+from typing import Union, Tuple, List, Annotated
 
 import numpy as np
+import scipy.special as ssp
 from deprecated.sphinx import deprecated
+from numpy.typing import NDArray
 
-from .version import (
-    __author__,
-    __copyright__,
-    __description__,
-    __email__,
-    __license__,
-    __url__,
-    __version__,
-)
+from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
 
 
 def mark_deprecated(ver_: str, new: str):
@@ -37,7 +31,7 @@ def mark_deprecated(ver_: str, new: str):
     return decorator
 
 
-def md_scipy_like(ver_: str, new: str = 'from_scipy_params'):
+def md_scipy_like(ver_: str, new: str = "from_scipy_params"):
     return mark_deprecated(ver_, new)
 
 
@@ -50,7 +44,29 @@ LOG = np.log
 EPSILON = np.finfo(float).eps
 epsilon = np.sqrt(EPSILON)
 
+TWO = 2.0
+SQRT_TWO = np.sqrt(TWO)
+LOG_TWO = LOG(TWO)
+LOG_SQRT_TWO = ssp.xlogy(0.5, TWO)
+
+PI = np.pi
+SQRT_PI = np.sqrt(PI)
+LOG_PI = LOG(PI)
+LOG_SQRT_PI = ssp.xlogy(0.5, PI)
+
+TWO_PI = 2 * PI
+SQRT_TWO_PI = np.sqrt(TWO_PI)
+LOG_TWO_PI = LOG(TWO_PI)
+LOG_SQRT_TWO_PI = ssp.xlogy(0.5, TWO_PI)
+
+INV_PI = 1.0 / PI
+TWO_BY_PI = 2.0 * INV_PI
+SQRT_TWO_BY_PI = np.sqrt(TWO_BY_PI)
+LOG_TWO_BY_PI = LOG(TWO_BY_PI)
+LOG_SQRT_TWO_BY_PI = ssp.xlogy(0.5, TWO_BY_PI)
+
 ListOrNdArray = Union[List[int | float], np.ndarray]
+OneDArray = Annotated[NDArray[np.float64], "1D array"]
 
 ParamTuple = Tuple[int | float, ...]
 Params_ = Union[List[ParamTuple], np.ndarray]

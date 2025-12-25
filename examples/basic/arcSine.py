@@ -13,16 +13,16 @@ y_scipy = arcsine
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
 
-ax[0].plot(x_values, y_scipy.pdf(x_values), label='Scipy ArcSine')
-ax[0].plot(x_values, y_multifit.pdf(x_values), 'k:', label='pyMultiFit ArcSine')
-ax[0].set_ylabel('f(x)')
+ax[0].plot(x_values, y_scipy.pdf(x_values), label="Scipy ArcSine")
+ax[0].plot(x_values, y_multifit.pdf(x_values), "k:", label="pyMultiFit ArcSine")
+ax[0].set_ylabel("f(x)")
 
-ax[1].plot(x_values, y_scipy.cdf(x_values), label='Scipy ArcSine')
-ax[1].plot(x_values, y_multifit.cdf(x_values), 'k:', label='pyMultiFit ArcSine')
-ax[1].set_ylabel('F(x)')
+ax[1].plot(x_values, y_scipy.cdf(x_values), label="Scipy ArcSine")
+ax[1].plot(x_values, y_multifit.cdf(x_values), "k:", label="pyMultiFit ArcSine")
+ax[1].set_ylabel("F(x)")
 
 for i in ax:
-    i.set_xlabel('X')
+    i.set_xlabel("X")
     i.legend()
 plt.tight_layout()
-plt.savefig('./../../images/arcsine_example.png')
+plt.savefig("./../../images/arcsine_example.png")
