@@ -1,4 +1,4 @@
-numpy<2.1.0
+numpy<2.0.0
 scipy
 matplotlib
 mpyez
@@ -30,5 +30,3 @@ pylint
 nox
 uv
 types-Deprecated
-scipy-stubs
-optype

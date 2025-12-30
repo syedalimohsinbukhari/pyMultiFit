@@ -2,7 +2,7 @@
 
 import itertools
 import warnings
-from typing import Optional, Tuple, Union, List, Callable, Any, Sequence
+from typing import Any, Callable, List, Optional, Sequence, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,22 +22,22 @@ from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter
 from .polynomial_f import LineFitter
 from .skewNormal_f import SkewNormalFitter
-from .utilities_f import sanity_check, _plot_fit
+from .utilities_f import _plot_fit, sanity_check
 from .. import (
-    epsilon,
-    GAUSSIAN,
-    LAPLACE,
-    LINE,
-    LOG_NORMAL,
-    SKEW_NORMAL,
     CHI_SQUARE,
+    epsilon,
     EXPONENTIAL,
     FOLDED_NORMAL,
     GAMMA,
-    NORMAL,
+    GAUSSIAN,
     HALF_NORMAL,
+    LAPLACE,
+    LINE,
+    LOG_NORMAL,
+    NORMAL,
     OneDArray,
     Params_,
+    SKEW_NORMAL,
 )
 
 # mock initialize the internal classes for auto MixedDataFitter class

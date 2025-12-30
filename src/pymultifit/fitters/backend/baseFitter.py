@@ -1,7 +1,7 @@
 """Created on Jul 18 00:16:01 2024"""
 
 from itertools import chain
-from typing import Any, List, Optional, Tuple, Sequence
+from typing import Any, List, Optional, Sequence, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,7 +11,7 @@ from mpyez.ezPlotting import plot_xy  # type: ignore
 from numpy.typing import NDArray
 from scipy.optimize import Bounds, curve_fit
 
-from ..utilities_f import parameter_logic, _plot_fit, sanity_check
+from ..utilities_f import _plot_fit, parameter_logic, sanity_check
 from ... import epsilon, OneDArray, Params_
 
 
@@ -301,7 +301,7 @@ class BaseFitter:
         return self._fit_boundaries()
 
     @staticmethod
-    def fitter(x, params: Params_) -> np.ndarray:
+    def fitter(x, params: Params_) -> OneDArray:
         """
         Fitter function for multi-fitting.
 
@@ -314,7 +314,7 @@ class BaseFitter:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def get_fitted_curve(self) -> np.ndarray:
+    def get_fitted_curve(self) -> OneDArray:
         """
         Get the fitted values of the model.
 
@@ -452,6 +452,7 @@ class BaseFitter:
             The plotter handle for the drawn plot.
         """
         return _plot_fit(
+            plot_type,
             x_values=self.x_values,
             y_values=self.y_values,
             parameters=self.params,

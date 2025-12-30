@@ -32,6 +32,10 @@ __all__ = [
     "gamma_log_pdf_",
     "gamma_cdf_",
     "gamma_log_cdf_",
+    "gumbel_pdf_",
+    "gumbel_log_pdf_",
+    "gumbel_cdf_",
+    "gumbel_log_cdf_",
     "sym_gen_normal_pdf_",
     "sym_gen_normal_cdf_",
     "sym_gen_normal_log_pdf_",
@@ -44,7 +48,7 @@ __all__ = [
     "half_normal_cdf_",
     "half_normal_log_pdf_",
     "half_normal_log_cdf_",
-    "johnsonSU_pdf",
+    "johnsonSU_pdf_",
     "johnsonSU_log_pdf_",
     "johnsonSU_cdf_",
     "johnsonSU_log_cdf_",
@@ -71,8 +75,7 @@ __all__ = [
     "cubic",
 ]
 
-import functools
-from typing import Union, Callable
+from typing import Callable, Union
 
 import numpy as np
 import scipy.special as ssp
@@ -80,37 +83,26 @@ from custom_inherit import doc_inherit  # type: ignore
 
 from .. import (
     doc_style,
-    LOG,
     INF,
-    OneDArray,
-    SQRT_TWO,
-    LOG_TWO,
-    PI,
-    SQRT_TWO_PI,
-    LOG_SQRT_TWO_PI,
-    TWO_BY_PI,
-    SQRT_TWO_BY_PI,
+    LOG,
     LOG_SQRT_TWO_BY_PI,
+    LOG_SQRT_TWO_PI,
+    LOG_TWO,
+    OneDArray,
+    PI,
+    SQRT_TWO,
+    SQRT_TWO_BY_PI,
+    SQRT_TWO_PI,
+    suppress_numpy_warnings,
+    TWO_BY_PI,
 )
 
 
-def suppress_numpy_warnings():
-    """
-    A decorator that suppresses NumPy warnings using np.errstate.
-
-    Parameters (all optional):
-        divide, over, under, invalid: Can be 'ignore', 'warn', 'raise', 'call', 'print', or 'log'
-    """
-
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            with np.errstate(all="ignore"):
-                return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
+def reject_values(x_shp, a=None, b=None, c=None):
+    for val in (a, b, c):
+        if val is not None and val <= 0:
+            return True
+    return False
 
 
 @suppress_numpy_warnings()
@@ -154,13 +146,15 @@ def arc_sine_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
+    ret_ = reject_values(x.shape, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
-
-    if scale < 0:
-        return np.full(y.shape, np.nan)
 
     c1 = (y > 0) & (y < 1)
     c2 = y == 0
@@ -197,6 +191,11 @@ def arc_sine_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
+    ret_ = reject_values(x.shape, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -222,13 +221,15 @@ def arc_sine_log_pdf_(
 def arc_sine_cdf_(
     x: OneDArray, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
 ) -> OneDArray:
+    ret_ = reject_values(x.shape, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
         return y
-
-    if scale < 0:
-        return np.full(y.shape, np.nan)
 
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
@@ -256,6 +257,11 @@ def arc_sine_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
+    ret_ = reject_values(x.shape, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -322,6 +328,11 @@ def beta_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -364,6 +375,11 @@ def beta_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -416,6 +432,11 @@ def beta_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -451,6 +472,11 @@ def beta_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -514,6 +540,11 @@ def beta_prime_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -555,6 +586,11 @@ def beta_prime_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
+    ret_ = reject_values(x.shape, alpha, beta_, scale)
+
+    if ret_:
+        return np.full(x.shape, np.nan)
+
     y = preprocess_input(x=x, loc=loc, scale=scale)
 
     if y.size == 0:
@@ -565,7 +601,7 @@ def beta_prime_log_pdf_(
     log_pdf_ -= LOG(scale)
 
     if not normalize:
-        log_pdf_ = _log_pdf_scaling(pdf_=log_pdf_, amplitude=amplitude)
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     return log_pdf_
 
@@ -640,7 +676,7 @@ def beta_prime_log_cdf_(
     -----
     The Beta-prime logCDF is defined as:
 
-    .. math:: F(y) = \ln\left[I_{\dfrac{y}{1+y}}(\alpha, \beta)\right]a
+    .. math:: \mathcal{L}(y) = \ln\left[I_{\dfrac{y}{1+y}}(\alpha, \beta)\right]a
 
     where :math:`I_y(\alpha, \beta)` is the :obj:`~ssp.betainc` function, and :math:`y` is the transformed
     value of :math:`x`, defined as:
@@ -1103,7 +1139,7 @@ def folded_normal_pdf_(
     where :math:`\phi` is the PDF of :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`,
     and :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
+    .. math:: y = \dfrac{x - \text{loc}}{\sigma}
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
@@ -1582,6 +1618,153 @@ def gaussian_log_cdf_(
 
 
 @suppress_numpy_warnings()
+def gumbel_pdf_(
+    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> OneDArray:
+    r"""
+    Compute PDF for Gumbel distribution`
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    mu : float, optional
+        The location parameter, :math:`\text{loc}`.
+        Defaults to 0.0.
+    beta_ : float, optional
+        The scale parameter, :math:`\text{scale}`.
+        Defaults to 1.0.
+    normalize : bool, optional
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    OneDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Gumbel PDF is defined as:
+
+    .. math::
+        f(y; \mu, \beta) = \exp\left(-y - \exp(-y)\right)
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\beta}.
+
+    The final PDF is expressed as :math:`f(y)/\beta`.
+    """
+    y = preprocess_input(x=x, loc=mu, scale=beta_)
+
+    if y.size == 0:
+        return y
+
+    pdf_ = np.exp(-y - np.exp(-y)) / beta_
+
+    if not normalize:
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
+
+    return pdf_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=gumbel_pdf_, style=doc_style)
+def gumbel_log_pdf_(
+    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> OneDArray:
+    r"""
+    Compute log PDF for Gumbel distribution`
+
+    Notes
+    -----
+    The Gumbel log PDF is defined as:
+
+    .. math::
+        \ell(y; \mu, \beta) = -y - \exp(-y)
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\beta}.
+
+    The final log PDF is expressed as :math:`\ell(y) - \ln\beta`.
+    """
+    y = preprocess_input(x=x, loc=mu, scale=beta_)
+
+    if y.size == 0:
+        return y
+
+    log_pdf_ = -y - np.exp(-y) - LOG(beta_)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=gumbel_pdf_, style=doc_style)
+def gumbel_cdf_(
+    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> OneDArray:
+    r"""
+    Compute CDF for Gumbel distribution`
+
+    Notes
+    -----
+    The Gumbel CDF is defined as:
+
+    .. math::
+        F(y; \mu, \beta) = \exp(-\exp(-y))
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\beta}.
+
+    The final CDF is expressed as :math:`F(y)`.
+    """
+    y = preprocess_input(x, loc, scale)
+
+    if y.size == 0:
+        return y
+
+    return np.exp(-np.exp(-y))
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=gumbel_cdf_, style=doc_style)
+def gumbel_log_cdf_(
+    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> OneDArray:
+    r"""
+    Compute log CDF for Gumbel distribution`
+
+    Notes
+    -----
+    The Gumbel log CDF is defined as:
+
+    .. math::
+        \mathcal{L}(y; \mu, \beta) = -\exp(-y)
+
+    where :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\beta}.
+
+    The final CDF is expressed as :math:`\mathcal{L}(y)`.
+    """
+    y = preprocess_input(x, loc, scale)
+
+    if y.size == 0:
+        return y
+
+    return -np.exp(-y)
+
+
+@suppress_numpy_warnings()
 def half_normal_pdf_(
     x: OneDArray, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
 ) -> OneDArray:
@@ -1738,15 +1921,57 @@ def half_normal_log_cdf_(
     return np.where(y >= 0, LOG(ssp.erf(y / SQRT_TWO)), -INF)
 
 
-def johnsonSU_pdf(
-    x,
+@suppress_numpy_warnings()
+def johnsonSU_pdf_(
+    x: OneDArray,
     amplitude: float = 1.0,
     gamma: float = 1.0,
     delta: float = 1.0,
     xi: float = 0.0,
     lambda_: float = 1.0,
     normalize: bool = False,
-):
+) -> OneDArray:
+    r"""
+    Compute PDF for the Johnson SU distribution.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input array of values where PDF is evaluated.
+    amplitude : float, optional
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if ``normalize`` is True.
+    gamma : float, optional
+        The location parameter in the transformed z-space.
+        Defaults to 1.0.
+    delta : float, optional
+        The shape parameter that scales the asinh transform.
+        Defaults to 1.0.
+    xi : float, optional
+        The location parameter for the original variable (shift).
+        Defaults to 0.0.
+    lambda_ : float, optional
+        The scale parameter for the original variable.
+        Defaults to 1.0.
+    normalize : bool, optional
+        If True, the distribution is normalized so the total area under the PDF equals 1.
+        Defaults to False.
+
+    Returns
+    -------
+    np.ndarray
+        Array of the same shape as ``x`` with evaluated PDF values.
+
+    Notes
+    -----
+    The Johnson SU PDF (in y-space) is:
+
+    .. math:: f(y) = \dfrac{\delta}{\sqrt{2\pi}\sqrt{1+y^2}}
+              \exp\left(-\dfrac{1}{2}\left(\gamma + \delta\,\operatorname{asinh}(y)\right)^2\right)
+
+    where :math:`y = \dfrac{x - \xi}{\lambda}` is the loc-scale transformed variable.
+    The final PDF is expressed as :math:`f(y)/\lambda`.
+    """
     y = preprocess_input(x=x, loc=xi, scale=lambda_)
 
     if y.size == 0:
@@ -1765,15 +1990,30 @@ def johnsonSU_pdf(
     return pdf_
 
 
+@suppress_numpy_warnings()
+@doc_inherit(parent=johnsonSU_pdf_, style=doc_style)
 def johnsonSU_log_pdf_(
-    x,
+    x: OneDArray,
     amplitude: float = 1.0,
     gamma: float = 1.0,
     delta: float = 1.0,
     xi: float = 0.0,
     lambda_: float = 1.0,
     normalize: bool = False,
-):
+) -> OneDArray:
+    r"""
+    Compute log-PDF for the Johnson SU distribution.
+
+    Notes
+    -----
+    The Johnson SU log-PDF (in y-space) is:
+
+    .. math:: \ell(y) = \ln\delta - \tfrac{1}{2}\ln(2\pi) - \tfrac{1}{2}\ln(1+y^2)
+             - \tfrac{1}{2}\left(\gamma + \delta\,\operatorname{asinh}(y)\right)^2
+
+    where :math:`y = \dfrac{x - \xi}{\lambda}`. The final log-PDF is
+    :math:`\ell(y) - \ln(\lambda)`.
+    """
     y = preprocess_input(x=x, loc=xi, scale=lambda_)
 
     if y.size == 0:
@@ -1792,40 +2032,71 @@ def johnsonSU_log_pdf_(
     return log_pdf_
 
 
+@suppress_numpy_warnings()
+@doc_inherit(parent=johnsonSU_pdf_, style=doc_style)
 def johnsonSU_cdf_(
-    x,
+    x: OneDArray,
     amplitude: float = 1.0,
     gamma: float = 1.0,
     delta: float = 1.0,
     xi: float = 0.0,
     lambda_: float = 1.0,
     normalize: bool = False,
-):
+) -> OneDArray:
+    r"""
+    Compute CDF for the Johnson SU distribution.
+
+    Parameters
+    ----------
+    amplitude : float, optional
+        For API consistency only.
+    normalize : bool, optional
+        For API consistency only.
+
+    Notes
+    -----
+    The CDF of Johnson SU is given by the standard normal CDF applied to the transformed variable:
+
+    .. math:: F(x) = \Phi\left(\gamma + \delta\,\operatorname{asinh}\left(\dfrac{x - \xi}{\lambda}\right)\right),
+
+    where :math:`\Phi` is the standard normal CDF.
+    """
     y = preprocess_input(x=x, loc=xi, scale=lambda_)
 
     if y.size == 0:
         return y
 
-    y_new = gamma + delta * np.arcsinh(y)
-    return gaussian_cdf_(x=y_new, normalize=True)
+    return ssp.ndtr(gamma + delta * np.arcsinh(y))
 
 
+@suppress_numpy_warnings()
+@doc_inherit(parent=johnsonSU_cdf_, style=doc_style)
 def johnsonSU_log_cdf_(
-    x,
+    x: OneDArray,
     amplitude: float = 1.0,
     gamma: float = 1.0,
     delta: float = 1.0,
     xi: float = 0.0,
     lambda_: float = 1.0,
     normalize: bool = False,
-):
+) -> OneDArray:
+    r"""
+    Compute log-CDF for the Johnson SU distribution.
+
+    Notes
+    -----
+    The log-CDF is the natural logarithm of the standard normal CDF evaluated at the transformed variable:
+
+    .. math:: \mathcal{L}(x) = \ln\Phi\left(\gamma + \delta\,\operatorname{asinh}\left(\dfrac{x - \xi}{\lambda}\right)\right).
+
+    This function uses :obj:`ssp.log_ndtr` for numerically stable evaluation.
+    """
     y = preprocess_input(x=x, loc=xi, scale=lambda_)
 
     if y.size == 0:
         return y
 
-    y_new = gamma + delta * np.arcsinh(y)
-    return gaussian_log_cdf_(x=y_new, normalize=True)
+    return ssp.log_ndtr(gamma + delta * np.arcsinh(y))
 
 
 @suppress_numpy_warnings()
@@ -2115,7 +2386,7 @@ def log_normal_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 1.0, std=1.0, loc: float = 0.0, normalize: bool = False
+    x: OneDArray, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
 ) -> OneDArray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
@@ -2806,7 +3077,7 @@ def sym_gen_normal_cdf_(
         For API consistency only.
 
     Notes
-    -----
+    ------
     The SymmetricGeneralizedNormalDistribution CDF is defined as:
 
     .. math:: F(y) = \dfrac{1}{2} + \dfrac{\text{sign}(y)}{2}\gamma\left(\dfrac{1}{\beta},|y|^\beta\,\right)
@@ -2962,5 +3233,8 @@ def preprocess_input(x: OneDArray, loc: float = 0.0, scale: float = 1.0) -> OneD
 
     if x.size == 0:
         return np.array([])
+
+    if scale <= 0:
+        return np.full(shape=x.shape, fill_value=np.nan)
 
     return (x - loc) / scale
