@@ -1,14 +1,14 @@
 name: multifit
 channels:
-  - defaults
-  - conda-forge
+    - conda-forge
+    - nodefaults
 dependencies:
-  - python==3.10.*
-  - numpy<2.1.0
-  - matplotlib
-  - scipy
-  - custom-inherit
-  - Deprecated
-  - pip
-  - pip:
-      - mpyez
+    - python==3.10.*
+    - numpy<2.0.0
+    - matplotlib
+    - scipy
+    - custom-inherit
+    - Deprecated
+    - pip
+    -   pip:
+            - mpyez

@@ -24,10 +24,13 @@ def log_cdf_version4(y):
 test_values = np.linspace(start=0.001, stop=0.999, num=10**5)
 func_list = [log_cdf_version1, log_cdf_version2, log_cdf_version3, log_cdf_version4]
 
-latex_annotations = [r"$\log\left(\dfrac{2}{\pi}\right) + \log(\arcsin(\sqrt{y}))$",
-                     r"$\log\left(\dfrac{2}{\pi}\right) + \log(\arcsin(y^{0.5}))$",
-                     r"$\log(2) - \log(\pi) + \log(\arcsin(\sqrt{y}))$",
-                     r"$\log(2) - \log(\pi) + \log(\arcsin(y^{0.5}))$"]
+latex_annotations = [
+    r"$\log\left(\dfrac{2}{\pi}\right) + \log(\arcsin(\sqrt{y}))$",
+    r"$\log\left(\dfrac{2}{\pi}\right) + \log(\arcsin(y^{0.5}))$",
+    r"$\log(2) - \log(\pi) + \log(\arcsin(\sqrt{y}))$",
+    r"$\log(2) - \log(\pi) + \log(\arcsin(y^{0.5}))$",
+]
 
-plot_all_variations(distribution_name='arcSine_log_cdf',
-                    functions=func_list, values=test_values, latex_annotations=latex_annotations)
+plot_all_variations(
+    distribution_name="arcSine_logcdf", functions=func_list, values=test_values, latex_annotations=latex_annotations
+)

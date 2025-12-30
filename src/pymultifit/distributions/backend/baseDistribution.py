@@ -2,7 +2,7 @@
 
 from typing import Dict, Optional
 
-import numpy as np
+from ... import OneDArray
 
 
 class BaseDistribution:
@@ -13,7 +13,7 @@ class BaseDistribution:
     for probability density function (PDF), cumulative distribution function (CDF), and statistics.
     """
 
-    def pdf(self, x: np.ndarray) -> np.ndarray: # type: ignore[empty-body]
+    def pdf(self, x: OneDArray) -> OneDArray:  # type: ignore[empty-body]
         r"""
         Compute the probability density function (PDF) for the distribution.
 
@@ -21,31 +21,28 @@ class BaseDistribution:
         """
         raise NotImplementedError("Subclasses should implement this method.")
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray: # type: ignore[empty-body]
+    def logpdf(self, x: OneDArray) -> OneDArray:  # type: ignore[empty-body]
         r"""
         Compute the log probability density function (logPDF) for the distribution.
 
         :param x: Input array at which to evaluate the logPDF.
         """
-        pass
 
-    def cdf(self, x: np.ndarray) -> np.ndarray: # type: ignore[empty-body]
+    def cdf(self, x: OneDArray) -> OneDArray:  # type: ignore[empty-body]
         """
         Compute the cumulative density function (CDF) for the distribution.
 
         :param x: Input array at which to evaluate the CDF.
         """
-        pass
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray: # type: ignore[empty-body]
+    def logcdf(self, x: OneDArray) -> OneDArray:  # type: ignore[empty-body]
         r"""
         Compute the log cumulative density function (logCDF) for the distribution.
 
         :param x: Input array at which to evaluate the logCDF.
         """
-        pass
 
-    def stats(self) -> Dict[str, float]: # type: ignore[empty-body]
+    def stats(self) -> Dict[str, float]:  # type: ignore[empty-body]
         r"""
         Computes and returns the statistical properties of the distribution, including,
 
@@ -59,9 +56,8 @@ class BaseDistribution:
 
         Notes
         -----
-        If any of the parameter is not computable for a distribution, this method returns None.
+        If any of the parameters is not computable for a distribution, this method returns None.
         """
-        pass
 
     def _get_stats(self, key: str) -> Optional[float]:
         stats = self.stats()

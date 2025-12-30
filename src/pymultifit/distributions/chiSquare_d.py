@@ -6,17 +6,17 @@ import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import chi_square_cdf_, chi_square_pdf_, chi_square_log_pdf_, chi_square_log_cdf_
-from .. import md_scipy_like
+from .. import md_scipy_like, OneDArray
 
 
 class ChiSquareDistribution(BaseDistribution):
     r"""Class for :class:`ChiSquareDistribution` distribution.
 
     .. note::
-        The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistributionSR`,
+        The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
 
-        * :math:`\alpha_\text{gammaSR} = \text{dof} / 2`,
-        * :math:`\lambda_\text{gammaSR} = 0.5`.
+        * :math:`\alpha\ (\text{shape}) = \text{dof} / 2`,
+        * :math:`\theta\ (\text{scale}) = 2`.
 
     :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     :type amplitude: float, optional
@@ -29,9 +29,6 @@ class ChiSquareDistribution(BaseDistribution):
 
     :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
     :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise DegreeOfFreedomError: If the provided value of degree of freedom is either less than or equal to 0 or not an integer.
 
     :examples:
 
@@ -100,8 +97,8 @@ class ChiSquareDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('v1.0.7')
-    def scipy_like(cls, df: Union[int, float], loc: float = 0.0, scale: float = 1.0) -> 'ChiSquareDistribution':
+    @md_scipy_like("v1.0.7")
+    def scipy_like(cls, df: Union[int, float], loc: float = 0.0, scale: float = 1.0) -> "ChiSquareDistribution":
         """
         Instantiate ChiSquareDistribution with scipy parameterization.
 
@@ -122,7 +119,7 @@ class ChiSquareDistribution(BaseDistribution):
         return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, df: Union[int, float], loc: float = 0.0, scale: float = 1.0) -> 'ChiSquareDistribution':
+    def from_scipy_params(cls, df: Union[int, float], loc: float = 0.0, scale: float = 1.0) -> "ChiSquareDistribution":
         """
         Instantiate ChiSquareDistribution with scipy parameterization.
 
@@ -142,44 +139,24 @@ class ChiSquareDistribution(BaseDistribution):
         """
         return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: OneDArray) -> OneDArray:
         return chi_square_pdf_(
-            x,
-            amplitude=self.amplitude,
-            degree_of_freedom=self.dof,
-            loc=self.loc,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
+    def logpdf(self, x: OneDArray) -> OneDArray:
         return chi_square_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            degree_of_freedom=self.dof,
-            loc=self.loc,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: OneDArray) -> OneDArray:
         return chi_square_cdf_(
-            x,
-            amplitude=self.amplitude,
-            degree_of_freedom=self.dof,
-            loc=self.loc,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
+    def logcdf(self, x: OneDArray) -> OneDArray:
         return chi_square_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            degree_of_freedom=self.dof,
-            loc=self.loc,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
     def stats(self) -> Dict[str, float]:
@@ -190,9 +167,4 @@ class ChiSquareDistribution(BaseDistribution):
         mode_ = max(df - 2, 0)
         variance_ = 2 * df * s**2
 
-        return {
-            "mean": mean_,
-            "mode": mode_,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}

@@ -1,4 +1,4 @@
-numpy<2.1.0
+numpy<2.0.0
 scipy
 matplotlib
 mpyez
@@ -15,6 +15,7 @@ notebook
 build
 memory_profiler
 sphinx>8
+docutils<0.21
 pydata_sphinx_theme
 sphinx_copybutton
 sphinx_gallery
@@ -23,11 +24,9 @@ numpydoc
 nbsphinx
 nbsphinx_link
 sphinx_autobuild
-ruff
+black
 mypy
 pylint
 nox
 uv
 types-Deprecated
-scipy-stubs
-optype

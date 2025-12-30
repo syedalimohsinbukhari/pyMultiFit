@@ -6,7 +6,7 @@ import numpy as np
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_pdf_, uniform_log_pdf_, uniform_log_cdf_
-from .. import md_scipy_like
+from .. import md_scipy_like, OneDArray
 
 
 class UniformDistribution(BaseDistribution):
@@ -86,7 +86,7 @@ class UniformDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
+    @md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate UniformDistribution with scipy parametrization.
@@ -124,41 +124,17 @@ class UniformDistribution(BaseDistribution):
         """
         return cls(low=loc, high=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_pdf_(
-            x,
-            amplitude=self.amplitude,
-            low=self.low,
-            high=self.high,
-            normalize=self.norm,
-        )
+    def pdf(self, x: OneDArray) -> OneDArray:
+        return uniform_pdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            low=self.low,
-            high=self.high,
-            normalize=self.norm,
-        )
+    def logpdf(self, x: OneDArray) -> OneDArray:
+        return uniform_log_pdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_cdf_(
-            x,
-            amplitude=self.amplitude,
-            low=self.low,
-            high=self.high,
-            normalize=self.norm,
-        )
+    def cdf(self, x: OneDArray) -> OneDArray:
+        return uniform_cdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            low=self.low,
-            high=self.high,
-            normalize=self.norm,
-        )
+    def logcdf(self, x: OneDArray) -> OneDArray:
+        return uniform_log_cdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
     def stats(self) -> Dict[str, float]:
         low, high = self.low, self.low + self.high
@@ -168,11 +144,6 @@ class UniformDistribution(BaseDistribution):
 
         mean_ = 0.5 * (low + high)
         median_ = mean_
-        variance_ = (1 / 12.0) * (high - low)**2
+        variance_ = (1 / 12.0) * (high - low) ** 2
 
-        return {
-            "mean": mean_,
-            "median": median_,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": mean_, "median": median_, "variance": variance_, "std": np.sqrt(variance_)}

@@ -31,15 +31,17 @@ def log_pdf_version6(y):
 
 
 test_values = np.linspace(start=np.sqrt(EPSILON), stop=1 - np.sqrt(EPSILON), num=10**4)
-func_list = [log_pdf_version1, log_pdf_version2, log_pdf_version3, log_pdf_version4,
-             log_pdf_version5, log_pdf_version6]
+func_list = [log_pdf_version1, log_pdf_version2, log_pdf_version3, log_pdf_version4, log_pdf_version5, log_pdf_version6]
 
-latex_annotations = [r"$-\ln(\pi \sqrt{y(1 - y)})$",
-                     r"$-\ln(\pi) - \ln(\sqrt{y(1 - y)})$",
-                     r"$-\ln(\pi) - 0.5 (\ln(y) + \log(1 - y))$",
-                     r"$-\ln(\pi) - \ln(\sqrt{y - y^2})$",
-                     r"$-\ln(\pi) - 0.5 (\ln(y - y^2))$",
-                     r"$-(\ln(\pi) + 0.5 \ln(y - y^2))$"]
+latex_annotations = [
+    r"$-\ln(\pi \sqrt{y(1 - y)})$",
+    r"$-\ln(\pi) - \ln(\sqrt{y(1 - y)})$",
+    r"$-\ln(\pi) - 0.5 (\ln(y) + \log(1 - y))$",
+    r"$-\ln(\pi) - \ln(\sqrt{y - y^2})$",
+    r"$-\ln(\pi) - 0.5 (\ln(y - y^2))$",
+    r"$-(\ln(\pi) + 0.5 \ln(y - y^2))$",
+]
 
-plot_all_variations(distribution_name='arcSine_logpdf',
-                    functions=func_list, values=test_values, latex_annotations=latex_annotations)
+plot_all_variations(
+    distribution_name="arcSine_logpdf", functions=func_list, values=test_values, latex_annotations=latex_annotations
+)

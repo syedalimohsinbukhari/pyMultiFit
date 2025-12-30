@@ -84,12 +84,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     """
 
     def __init__(
-        self,
-        amplitude: float = 1.0,
-        shape: float = 1.0,
-        loc: float = 0.0,
-        scale: float = 1.0,
-        normalize: bool = False,
+        self, amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
     ):
         if amplitude < 0 and not normalize:
             raise erH.NegativeAmplitudeError()
@@ -103,7 +98,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
+    @md_scipy_like("1.0.7")
     def scipy_like(cls, beta, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate SymmetricGeneralizedNormalDistribution with scipy parametrization.
@@ -147,22 +142,12 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
         return sym_gen_normal_pdf_(
-            x,
-            amplitude=self.amplitude,
-            shape=self.shape,
-            loc=self.loc,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
     def cdf(self, x: np.ndarray) -> np.ndarray:
         return sym_gen_normal_cdf_(
-            x,
-            amplitude=self.amplitude,
-            shape=self.shape,
-            loc=self.loc,
-            scale=self.scale,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
     def stats(self) -> Dict[str, float]:
@@ -173,10 +158,4 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         variance_ = 2 * np.log(self.scale) + gammaln(3 / self.shape) - gammaln(1 / self.shape)
         variance_ = np.exp(variance_)
 
-        return {
-            "mean": mean_,
-            "median": median_,
-            "mode": mode_,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": mean_, "median": median_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}

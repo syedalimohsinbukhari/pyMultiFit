@@ -13,44 +13,48 @@ import sys
 # General information about the project
 year = datetime.date.today().year
 
-project = 'pymultifit'
-copyright = f'2024-{year}, Syed Ali Mohsin Bukhari'
-author = 'Syed Ali Mohsin Bukhari'
-release = 'v1.0.6'
+project = "pymultifit"
+copyright = f"2024-{year}, Syed Ali Mohsin Bukhari"
+author = "Syed Ali Mohsin Bukhari"
+release = "v1.0.6"
 
-sys.path.insert(0, os.path.abspath('./../../'))
+sys.path.insert(0, os.path.abspath("./../../"))
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 ## COPIED from PYLOPS
 sys.path.insert(0, os.path.abspath("../../src"))
-extensions = ["sphinx.ext.autodoc",
-              "sphinx.ext.autosummary",
-              "sphinx.ext.coverage",
-              "sphinx.ext.mathjax",
-              "sphinx.ext.doctest",
-              "sphinx.ext.extlinks",
-              "sphinx.ext.intersphinx",
-              # "sphinx_gallery.gen_gallery", # have to work on gallery later
-              "sphinx_copybutton",
-              "numpydoc",
-              "nbsphinx",
-              "nbsphinx_link",
-              "sphinx.ext.viewcode",
-              # 'sphinx.ext.napoleon',
-              "matplotlib.sphinxext.plot_directive"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.doctest",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
+    # "sphinx_gallery.gen_gallery", # have to work on gallery later
+    "sphinx_copybutton",
+    "numpydoc",
+    "nbsphinx",
+    "nbsphinx_link",
+    "sphinx.ext.viewcode",
+    # 'sphinx.ext.napoleon',
+    "matplotlib.sphinxext.plot_directive",
+]
 
-nbsphinx_execute = 'auto'
-source_suffix = {'.rst': 'restructuredtext', '.md': 'restructuredtext'}
+nbsphinx_execute = "auto"
+source_suffix = {".rst": "restructuredtext", ".md": "restructuredtext"}
 suppress_warnings = ["config.cache"]
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3/", None),
-                       "numpy": ('https://numpy.org/devdocs', None),
-                       'scipy': ('https://docs.scipy.org/doc/scipy/', None),
-                       "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
-                       "matplotlib": ("https://matplotlib.org/stable/", None),
-                       "numpydoc": ('https://numpydoc.readthedocs.io/en/latest', None), }
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "numpy": ("https://numpy.org/devdocs", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "numpydoc": ("https://numpydoc.readthedocs.io/en/latest", None),
+}
 
 import os
 
@@ -92,15 +96,17 @@ numpydoc_class_members_toctree = False
 plot_include_source = True
 plot_formats = ["png"]
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 exclude_patterns = ["_build", "**.ipynb_checkpoints", "**.ipynb", "**.md5"]
 
 # These enable substitutions using |variable| in the rst files
 rst_epilog = """
 .. |year| replace:: {year}
-""".format(year=year)
+""".format(
+    year=year
+)
 html_static_path = ["_static"]
-html_css_files = ['custom.css']
+html_css_files = ["custom.css"]
 html_last_updated_fmt = "%b %d, %Y"
 html_title = "pyMultiFit"
 html_short_title = "pyMultiFit"
@@ -116,21 +122,14 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "show_toc_level": 3,
     "github_url": "https://github.com/syedalimohsinbukhari/pyMultiFit",
-    "navbar_end": [
-        "search-button",
-        "theme-switcher",
-        "navbar-icon-links"
-    ],
+    "navbar_end": ["search-button", "theme-switcher", "navbar-icon-links"],
     "back_to_top_button": "True",
 }
 
 html_context = {
     "menu_links_name": "Repository",
     "menu_links": [
-        (
-            '<i class="fa fa-github fa-fw"></i> Source Code',
-            "https://github.com/syedalimohsinbukhari/pyMultiFit",
-        ),
+        ('<i class="fa fa-github fa-fw"></i> Source Code', "https://github.com/syedalimohsinbukhari/pyMultiFit")
     ],
     # Custom variables to enable "Improve this page"" and "Download notebook"
     # links
