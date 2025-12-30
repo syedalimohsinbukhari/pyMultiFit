@@ -430,8 +430,6 @@ class MixedDataFitter:
 
     def plot_fit(
         self,
-        plot_type,
-        /,
         show_individuals: bool = False,
         x_label: Optional[str] = None,
         y_label: Optional[str] = None,
@@ -466,7 +464,6 @@ class MixedDataFitter:
             The plotter handle for the drawn plot.
         """
         return _plot_fit(
-            plot_type,
             x_values=self.x_values,
             y_values=self.y_values,
             parameters=self.params,

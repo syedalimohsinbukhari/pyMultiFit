@@ -23,7 +23,7 @@ fitter = MixedDataFitter(x, y, model_list=["line"] + ["gaussian"] * 2 + ["laplac
 fitter.fit(guess)
 
 f, ax = plt.subplots(1, 1, figsize=(12, 6))
-plotter = fitter.plot_fit('s',
+plotter = fitter.plot_fit(
     show_individuals=True, x_label="X_data", y_label="Y_data", title="XY_plot", data_label="XY_data", axis=ax
 )
 plt.show()

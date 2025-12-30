@@ -51,7 +51,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par:]
+            provided_secondary_params = params[self.pn_par :]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -222,7 +222,7 @@ class BaseFitter:
                 x_data=x,
                 y_data=self.fitter(x=x, params=list(par)),
                 data_label=f"{self.__class__.__name__.replace('Fitter', '')} {i + 1}("
-                           f"{', '.join(self._format_param(i) for i in par)})",
+                f"{', '.join(self._format_param(i) for i in par)})",
                 plot_dictionary=LinePlot(line_style="--", color=color),
                 axis=plotter,
                 x_label="",
@@ -419,16 +419,14 @@ class BaseFitter:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
     def plot_fit(
-            self,
-            plot_type='l',
-            /,
-            show_individuals: bool = False,
-            x_label: Optional[str] = None,
-            y_label: Optional[str] = None,
-            data_label: Optional[str] = None,
-            fit_label: Optional[str] = None,
-            title: Optional[str] = None,
-            axis: Optional[Axes] = None,
+        self,
+        show_individuals: bool = False,
+        x_label: Optional[str] = None,
+        y_label: Optional[str] = None,
+        data_label: Optional[str] = None,
+        fit_label: Optional[str] = None,
+        title: Optional[str] = None,
+        axis: Optional[Axes] = None,
     ):
         """
         Plot the fitted models.

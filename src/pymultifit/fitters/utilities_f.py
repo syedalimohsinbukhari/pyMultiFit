@@ -66,8 +66,6 @@ def parameter_logic(par_array: OneDArray, n_par: int, selected_models) -> OneDAr
 
 
 def _plot_fit(
-    plot_type,
-    /,
     x_values: OneDArray,
     y_values: OneDArray,
     parameters: OneDArray,
@@ -140,7 +138,6 @@ def _plot_fit(
         data_label=dl,
         axis=axis,
         plot_dictionary=LinePlot(alpha=0.75),
-        is_scatter=True if plot_type == "s" else False,
     )
 
     plot_xy(

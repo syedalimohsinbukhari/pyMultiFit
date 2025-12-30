@@ -1,10 +1,10 @@
 name: multifit
 channels:
-    - defaults
     - conda-forge
+    - nodefaults
 dependencies:
-    - python==3.9.*
-    - numpy<2.1.0
+    - python==3.10.*
+    - numpy<2.0.0
     - matplotlib
     - scipy
     - statsmodels
@@ -17,7 +17,6 @@ dependencies:
     - astropy
     - jupyter
     - notebook
-    - build
     - memory_profiler
     - sphinx>8
     - docutils<0.21
@@ -34,10 +33,9 @@ dependencies:
     - nox
     - uv
     - types-deprecated
-    - scipy-stubs
     - pylint
     - black
+    - python-build
     - pip
     -   pip:
             - mpyez
-            - optype
