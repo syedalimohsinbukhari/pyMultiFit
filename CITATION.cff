@@ -2,7 +2,7 @@ cff-version: "1.2.0"
 authors:
 - family-names: Bukhari
   given-names: Syed Ali Mohsin
-  orcid: "https://orcid.org/0009-0002-5888-4163"
+  orcid: "https://orcid.org/0000-0002-4232-3874"
 - family-names: Siddique
   given-names: Iqra
   orcid: "https://orcid.org/0009-0000-2515-6616"
@@ -12,15 +12,14 @@ authors:
 contact:
 - family-names: Bukhari
   given-names: Syed Ali Mohsin
-  orcid: "https://orcid.org/0009-0002-5888-4163"
+  orcid: "https://orcid.org/0000-0002-4232-3874"
 doi: 10.5281/zenodo.17273507
-message: If you use this software, please cite our article in the
-  Journal of Open Source Software.
+message: If you use this software, please cite our article in the Journal of Open Source Software.
 preferred-citation:
   authors:
   - family-names: Bukhari
     given-names: Syed Ali Mohsin
-    orcid: "https://orcid.org/0009-0002-5888-4163"
+    orcid: "https://orcid.org/0000-0002-4232-3874"
   - family-names: Siddique
     given-names: Iqra
     orcid: "https://orcid.org/0009-0000-2515-6616"
@@ -35,10 +34,8 @@ preferred-citation:
   publisher:
     name: Open Journals
   start: 9295
-  title: "pyMultiFit: A Python library for fitting data with multiple
-    models"
+  title: "pyMultiFit: A Python library for fitting data with multiple models"
   type: article
   url: "https://joss.theoj.org/papers/10.21105/joss.09295"
   volume: 10
-title: "pyMultiFit: A Python library for fitting data with multiple
-  models"
+title: "pyMultiFit: A Python library for fitting data with multiple models"
