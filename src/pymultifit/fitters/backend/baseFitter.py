@@ -588,7 +588,7 @@ class BaseFitter:
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True, 
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True,
                                        gridspec_kw={'height_ratios': [3, 1]})
 
         # Plot the fit
