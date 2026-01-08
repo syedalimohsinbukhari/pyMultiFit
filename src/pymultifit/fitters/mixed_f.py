@@ -342,6 +342,25 @@ class MixedDataFitter:
 
         return self.model_function(self.x_values, *self.params)
 
+    def get_residuals(self) -> np.ndarray:
+        """
+        Get the residuals (difference between data and fitted model).
+
+        Returns
+        -------
+        np.ndarray
+            An array of residual values (y_data - y_fitted).
+
+        Raises
+        ------
+        RuntimeError
+            If the fit has not been performed yet.
+        """
+        if self.params is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
+        fitted_curve = self.get_fitted_curve()
+        return self.y_values - fitted_curve
+
     def get_model_parameters(self, model: Optional[str] = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
@@ -475,3 +494,112 @@ class MixedDataFitter:
             fit_label=fit_label,
             axis=axis,
         )
+
+    def plot_residuals(
+        self,
+        x_label: Optional[str] = None,
+        y_label: Optional[str] = None,
+        title: Optional[str] = None,
+        axis: Optional[Axes] = None,
+    ):
+        """
+        Plot the residuals (data - fitted model).
+
+        Parameters
+        ----------
+        x_label: str, optional
+            The label for the x-axis.
+        y_label: str, optional
+            The label for the y-axis.
+        title: str, optional
+            The title for the plot.
+        axis: Axes, optional
+            Axes to plot instead of the entire figure. Defaults to None.
+
+        Returns
+        -------
+        plotter
+            The plotter handle for the drawn plot.
+        """
+        if self.params is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
+
+        residuals = self.get_residuals()
+
+        plotter = plot_xy(
+            x_data=self.x_values,
+            y_data=residuals,
+            data_label="Residuals",
+            axis=axis,
+            plot_dictionary=LinePlot(alpha=0.75),
+        )
+
+        # Add a horizontal line at y=0
+        plotter2: Axes = plotter[0] if isinstance(plotter, list) else plotter
+        plotter2.axhline(y=0, color='k', linestyle='--', linewidth=1, alpha=0.5)
+        plotter2.set_xlabel(x_label if x_label else "X")
+        plotter2.set_ylabel(y_label if y_label else "Residuals")
+        plotter2.set_title(title if title else f"{len(self.model_list)} {self.__class__.__name__} residuals")
+        plt.tight_layout()
+
+        return plotter2
+
+    def plot_fit_and_residuals(
+        self,
+        show_individuals: bool = False,
+        x_label: Optional[str] = None,
+        y_label: Optional[str] = None,
+        data_label: Optional[str] = None,
+        fit_label: Optional[str] = None,
+        title: Optional[str] = None,
+    ):
+        """
+        Plot the fitted model and residuals in a 2-panel figure.
+
+        Parameters
+        ----------
+        show_individuals: bool, optional
+            Whether to show individually fitted models or not.
+        x_label: str, optional
+            The label for the x-axis.
+        y_label: str, optional
+            The label for the y-axis for the fit plot.
+        title: str, optional
+            The overall title for the figure.
+        data_label: str, optional
+            The label for the data.
+        fit_label: str, optional
+            The label for the fitted model.
+
+        Returns
+        -------
+        tuple
+            A tuple of (figure, (ax1, ax2)) where ax1 is the fit plot and ax2 is the residuals plot.
+        """
+        if self.params is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True,
+                                       gridspec_kw={'height_ratios': [3, 1]})
+
+        # Plot the fit
+        self.plot_fit(
+            show_individuals=show_individuals,
+            x_label="",
+            y_label=y_label,
+            data_label=data_label,
+            fit_label=fit_label,
+            title=title,
+            axis=ax1,
+        )
+
+        # Plot the residuals
+        self.plot_residuals(
+            x_label=x_label,
+            y_label="Residuals",
+            title="",
+            axis=ax2,
+        )
+
+        plt.tight_layout()
+        return fig, (ax1, ax2)
