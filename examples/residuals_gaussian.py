@@ -9,8 +9,8 @@ This example shows how to use the new residual functions:
 import numpy as np
 from matplotlib import pyplot as plt
 
-from pymultifit.fitters import GaussianFitter
-from pymultifit.generators import multi_gaussian
+from src.pymultifit.fitters import GaussianFitter
+from src.pymultifit.generators import multi_gaussian
 
 # Generate multi-modal Gaussian data with noise
 params = [(20, -20, 2), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]

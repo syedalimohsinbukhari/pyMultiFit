@@ -9,9 +9,9 @@ This example shows how to use the new residual functions with mixed models:
 import numpy as np
 from matplotlib import pyplot as plt
 
-from pymultifit import GAUSSIAN, LAPLACE, LINE
-from pymultifit.fitters import MixedDataFitter
-from pymultifit.generators import multiple_models
+from src.pymultifit import GAUSSIAN, LAPLACE, LINE
+from src.pymultifit.fitters import MixedDataFitter
+from src.pymultifit.generators import multiple_models
 
 # Generate data from multiple different model types
 x = np.linspace(start=-50, stop=50, num=10_000)
