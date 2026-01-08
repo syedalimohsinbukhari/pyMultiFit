@@ -34,6 +34,8 @@ class BaseFitter:
         self.sn_par: dict = {}
 
         self.n_fits: int = 0
+        self.params = None
+        self.covariance = None
 
     def _adjust_parameters(self, p0: Params_):
         """
