@@ -1,8 +1,6 @@
 """Created on Jul 18 00:16:01 2024"""
 
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from itertools import chain
-from multiprocessing import cpu_count
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -600,96 +598,38 @@ class BaseFitter:
         plt.tight_layout()
         return fig, (ax1, ax2)
 
-    @staticmethod
-    def _bootstrap_single_sample(args):
-        """
-        Helper function for parallel bootstrap computation.
-
-        Parameters
-        ----------
-        args : tuple
-            Contains (bootstrap_indices, x_values, y_values, original_x, fitter_class,
-                     original_params, max_iterations, n_fits, n_par, overall_ci, individual_ci)
-
-        Returns
-        -------
-        tuple
-            (success, overall_pred, individual_preds) where:
-            - success: bool indicating if fit succeeded
-            - overall_pred: predictions for overall fit (or None)
-            - individual_preds: predictions for individual components (or None)
-        """
-        (bootstrap_indices, x_values, y_values, original_x, fitter_class,
-         original_params, max_iterations, n_fits, n_par, overall_ci, individual_ci) = args
-
-        try:
-            # Resample data
-            x_boot = x_values[bootstrap_indices]
-            y_boot = y_values[bootstrap_indices]
-
-            # Create temporary fitter and fit
-            temp_fitter = fitter_class(x_values=x_boot, y_values=y_boot,
-                                      max_iterations=max_iterations)
-            temp_fitter.fit(p0=original_params.tolist())
-
-            # Generate predictions
-            overall_pred = None
-            individual_preds = None
-
-            if overall_ci:
-                overall_pred = temp_fitter._n_fitter(original_x, *temp_fitter.params)
-
-            if individual_ci:
-                boot_params = np.reshape(temp_fitter.params, (n_fits, n_par))
-                individual_preds = np.array([
-                    temp_fitter.fitter(x=original_x, params=list(par))
-                    for par in boot_params
-                ])
-
-            return (True, overall_pred, individual_preds)
-
-        except (RuntimeError, ValueError):
-            return (False, None, None)
-
     def ci_bounds(self, ci_level: Union[int, list[int]] = 95, n_bootstrap: int = 1000,
-                  plot_it: bool = False, overall_ci: bool = False, individual_ci: bool = False,
-                  axis=None, random_state: Optional[int] = None, n_jobs: int = 1,
-                  verbose: bool = True, fast_bootstrap: bool = True):
+                  plot_it: bool = False, overall_ci: bool = True, individual_ci: bool = False,
+                  axis=None, random_state: Optional[int] = None, fast_bootstrap: bool = True):
         """
         Compute confidence interval (CI) bounds for fitted data using bootstrap resampling.
 
         Parameters
         ----------
         ci_level : int or list of int, optional
-            Confidence interval level(s) as percentages (e.g., 95 for 95% CI).
-            Defaults to 95.
+            Confidence interval level(s) as percentages (e.g., 95 for 95% CI). Defaults to 95.
         n_bootstrap : int, optional
             Number of bootstrap samples to generate. Defaults to 1000.
         plot_it : bool, optional
             If True, plots the fitted curve and shaded CI regions. Defaults to False.
         overall_ci : bool, optional
-            If True, compute CI bounds for the summed fitted curve. Defaults to False.
+            If True, compute CI bounds for the summed fitted curve. Defaults to True.
         individual_ci : bool, optional
             If True, compute CI bounds for each individual fitter. Defaults to False.
         axis : matplotlib.axes.Axes, optional
             Axes to plot on. If None and plot_it=True, a new figure is created.
         random_state : int, optional
-            Random seed for reproducibility. Defaults to None.
-        n_jobs : int, optional
-            Number of parallel jobs. -1 uses all CPUs, 1 disables parallelization.
-            Defaults to 1 (sequential mode is faster for most cases).
-        verbose : bool, optional
-            If True, print progress information. Defaults to True.
+            Random seed for reproducibility. Can be an integer or None. Defaults to None.
         fast_bootstrap : bool, optional
-            If True, use reduced max_iterations for bootstrap (much faster, minimal accuracy loss).
-            Defaults to True.
+            If True, use reduced max_iterations for bootstrap (faster, minimal accuracy loss). Defaults to True.
+            Recommended for 2-3x speedup.
 
         Returns
         -------
         dict
             Dictionary with either or both:
-            - 'overall': dict with 'lower', 'upper', 'median' bounds for summed fits (if overall_ci=True).
-            - 'individual': list of dicts with 'lower', 'upper', 'median' for each fitter (if individual_ci=True).
+            - 'overall_ci_XX': dict with 'lower', 'upper', 'median' bounds for summed fits (if overall_ci=True).
+            - 'individual_ci_XX': list of dicts with 'lower', 'upper', 'median' for each fitter (if individual_ci=True).
 
         Raises
         ------
@@ -704,10 +644,8 @@ class BaseFitter:
         For each bootstrap sample, the model is refitted and predictions are generated. The CI bounds
         are computed from the percentiles of the bootstrap distribution.
 
-        Performance tips:
-        - Use fast_bootstrap=True (default) for 2-5x speedup with minimal accuracy loss
-        - Sequential mode (n_jobs=1) is usually faster than parallel for complex fits
-        - Reduce n_bootstrap for exploratory analysis (100-500 is often sufficient)
+        Using fast_bootstrap=True (default) provides 2-3x speedup by reducing max_iterations for
+        bootstrap samples, which converge faster due to good initial guesses from the original fit.
         """
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
@@ -715,86 +653,63 @@ class BaseFitter:
         if not overall_ci and not individual_ci:
             raise ValueError("At least one of `overall_ci` or `individual_ci` must be True.")
 
+        # Initialize random number generator for reproducibility
+        rng = np.random.default_rng(random_state)
+
         # Optimize max_iterations for bootstrap if fast_bootstrap is enabled
         if fast_bootstrap:
-            # Use 1/3 to 1/2 of original iterations for bootstrap (usually converges faster with good initial guess)
-            bootstrap_max_iter = max(100, self.max_iterations // 3)
-            if verbose:
-                print(f"Fast bootstrap enabled: using {bootstrap_max_iter} max iterations (vs {self.max_iterations} for original fit)")
+            # Use 1/4 of original iterations (bootstrap converges faster with good initial guess)
+            bootstrap_max_iter = max(100, self.max_iterations // 4)
         else:
             bootstrap_max_iter = self.max_iterations
-
-        # Determine number of jobs
-        if n_jobs == -1:
-            n_jobs = cpu_count()
-        elif n_jobs < -1:
-            n_jobs = max(1, cpu_count() + 1 + n_jobs)
-
-        # Adaptive parallelization: use threads for better performance with scipy/numpy
-        use_parallel = n_jobs > 1
-
-        # For small datasets or few bootstrap samples, sequential is often faster
-        n_samples = len(self.x_values)
-        if n_bootstrap < 50 or (n_samples < 200 and self.n_fits < 3):
-            if use_parallel and verbose:
-                print("Note: Using sequential mode for small dataset (faster than parallel overhead).")
-            use_parallel = False
-            n_jobs = 1
-
-        if verbose:
-            print(f"Computing bootstrap CIs with {n_bootstrap} samples...")
-            if use_parallel:
-                print(f"Using {n_jobs} parallel workers (ThreadPool for optimal performance).")
-            else:
-                print("Using sequential processing.")
-
-        # Set random seed for reproducibility
-        if random_state is not None:
-            np.random.seed(random_state)
 
         # Handle single or multiple CI levels
         ci_levels = [ci_level] if isinstance(ci_level, int) else ci_level
 
         # Store original parameters for refitting
         original_params = np.reshape(self.params, (self.n_fits, self.n_par))
+        n_samples = len(self.x_values)
 
-        # Pre-generate all bootstrap indices for reproducibility
-        bootstrap_indices_list = [
-            np.random.choice(n_samples, size=n_samples, replace=True)
-            for _ in range(n_bootstrap)
-        ]
-
-        # Prepare arguments for parallel processing
-        args_list = [
-            (indices, self.x_values, self.y_values, self.x_values,
-             self.__class__, original_params, bootstrap_max_iter,  # Use bootstrap_max_iter instead
-             self.n_fits, self.n_par, overall_ci, individual_ci)
-            for indices in bootstrap_indices_list
-        ]
-
-        # Perform bootstrap resampling (parallel with threads or sequential)
-        if use_parallel:
-            # Use ThreadPoolExecutor for better performance with NumPy/SciPy operations
-            with ThreadPoolExecutor(max_workers=n_jobs) as executor:
-                results = list(executor.map(self._bootstrap_single_sample, args_list))
-        else:
-            # Sequential processing
-            results = [self._bootstrap_single_sample(args) for args in args_list]
-
-        # Process results
-        successful_bootstraps = 0
+        # Storage for bootstrap predictions
         if overall_ci:
             bootstrap_overall = []
         if individual_ci:
             bootstrap_individual = []
 
-        for success, overall_pred, individual_preds in results:
-            if success:
+        # Perform bootstrap resampling
+        successful_bootstraps = 0
+        for i in range(n_bootstrap):
+            # Resample indices with replacement using RNG
+            bootstrap_indices = rng.choice(n_samples, size=n_samples, replace=True)
+            x_boot = self.x_values[bootstrap_indices]
+            y_boot = self.y_values[bootstrap_indices]
+
+            try:
+                # Create temporary fitter instance for bootstrap sample
+                temp_fitter = self.__class__(x_values=x_boot, y_values=y_boot,
+                                             max_iterations=bootstrap_max_iter)
+
+                # Refit using original parameters as initial guess
+                temp_fitter.fit(p0=original_params.tolist())
+
+                # Generate predictions on original x_values
                 if overall_ci:
+                    overall_pred = temp_fitter._n_fitter(self.x_values, *temp_fitter.params)
                     bootstrap_overall.append(overall_pred)
+
                 if individual_ci:
+                    boot_params = np.reshape(temp_fitter.params, (self.n_fits, self.n_par))
+                    individual_preds = np.array([
+                        temp_fitter.fitter(x=self.x_values, params=list(par))
+                        for par in boot_params
+                    ])
                     bootstrap_individual.append(individual_preds)
+
                 successful_bootstraps += 1
+
+            except (RuntimeError, ValueError):
+                # Skip failed fits
+                continue
 
         # Convert to arrays
         if overall_ci:
@@ -802,13 +717,9 @@ class BaseFitter:
         if individual_ci:
             bootstrap_individual = np.array(bootstrap_individual)
 
-        # Report success rate
+        # Report success rate if some failed
         if successful_bootstraps < n_bootstrap:
-            msg = f"Warning: Only {successful_bootstraps}/{n_bootstrap} bootstrap samples succeeded."
-            if verbose:
-                print(msg)
-        elif verbose:
-            print(f"Successfully completed {successful_bootstraps}/{n_bootstrap} bootstrap samples.")
+            print(f"Warning: Only {successful_bootstraps}/{n_bootstrap} bootstrap samples succeeded.")
 
         if successful_bootstraps == 0:
             raise RuntimeError("All bootstrap samples failed. Try adjusting initial parameters or max_iterations.")
@@ -863,16 +774,6 @@ class BaseFitter:
         if axis is None:
             fig, axis = plt.subplots(figsize=(10, 6))
 
-        # Plot original data
-        # axis.scatter(self.x_values, self.y_values, alpha=0.5, label='Data', s=20)
-
-        # Plot fitted curve
-        # fitted_curve = self._n_fitter(self.x_values, *self.params)
-        # axis.plot(self.x_values, fitted_curve, 'r-', linewidth=2, label='Fitted curve')
-
-        # Color map for different CI levels
-        colors = plt.cm.Reds(np.linspace(0.3, 0.7, len(ci_levels)))
-
         # Plot overall CI
         if overall_ci:
             for idx, ci in enumerate(ci_levels):
@@ -881,31 +782,23 @@ class BaseFitter:
                     self.x_values,
                     ci_data['lower'],
                     ci_data['upper'],
-                    alpha=0.75,
-                    color=colors[idx],
-                    label=f'{ci}% CI (overall)',
-                    zorder=100
+                    alpha=1 * (ci / 100),
+                    color='gray',
+                    label=f'{ci}% CI (overall)'
                 )
 
         # Plot individual CIs
         if individual_ci:
-            colors_ind = plt.cm.Reds(np.linspace(0.3, 0.7, len(ci_levels)))
             for idx, ci in enumerate(ci_levels):
                 ci_data = results[f'individual_ci_{ci}']
-                # Only plot the envelope of all individual fits
-                all_lowers = np.array([fit['lower'] for fit in ci_data])
-                all_uppers = np.array([fit['upper'] for fit in ci_data])
-                overall_lower = np.min(all_lowers, axis=0)
-                overall_upper = np.max(all_uppers, axis=0)
-
-                axis.fill_between(
-                    self.x_values,
-                    overall_lower,
-                    overall_upper,
-                    alpha=0.2,
-                    color=colors_ind[idx],
-                    label=f'{ci}% CI (individual envelope)'
-                )
+                for idx2, fit in enumerate(ci_data):
+                    axis.fill_between(
+                        self.x_values,
+                        fit['lower'],
+                        fit['upper'],
+                        alpha=1 * (ci / 100),
+                        color='gray', label=f'{ci}% CI (fit {idx2 + 1})' if idx2 == 0 else '',
+                    )
 
         axis.set_xlabel('X')
         axis.set_ylabel('Y')
