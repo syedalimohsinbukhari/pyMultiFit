@@ -63,6 +63,31 @@ This approach not only reduces the likelihood of errors but also improves code r
 
    Specifies the ArcSine distribution type.
 
+.. py:data:: CHI_SQUARE
+   :type: str
+
+   Specifies the Chi-Square distribution type.
+
+.. py:data:: EXPONENTIAL
+   :type: str
+
+   Specifies the Exponential distribution type.
+
+.. py:data:: FOLDED_NORMAL
+   :type: str
+
+   Specifies the Folded Normal distribution type.
+
+.. py:data:: GAMMA
+   :type: str
+
+   Specifies the Gamma distribution type.
+
+.. py:data:: HALF_NORMAL
+   :type: str
+
+   Specifies the Half-Normal distribution type.
+
 .. py:data:: LINE
    :type: str
 
@@ -84,6 +109,72 @@ This approach not only reduces the likelihood of errors but also improves code r
    Specifies a cubic model type.
 
 
+Mathematical Constants
+----------------------
+
+The library also provides commonly used mathematical constants for convenience.
+
+.. py:data:: PI
+   :type: float
+
+   The mathematical constant π (pi).
+
+.. py:data:: SQRT_PI
+   :type: float
+
+   Square root of π.
+
+.. py:data:: LOG_PI
+   :type: float
+
+   Natural logarithm of π.
+
+.. py:data:: TWO
+   :type: float
+
+   The constant 2.0.
+
+.. py:data:: SQRT_TWO
+   :type: float
+
+   Square root of 2.
+
+.. py:data:: LOG_TWO
+   :type: float
+
+   Natural logarithm of 2.
+
+.. py:data:: TWO_PI
+   :type: float
+
+   The constant 2π.
+
+.. py:data:: SQRT_TWO_PI
+   :type: float
+
+   Square root of 2π.
+
+.. py:data:: LOG_TWO_PI
+   :type: float
+
+   Natural logarithm of 2π.
+
+.. py:data:: TWO_BY_PI
+   :type: float
+
+   The constant 2/π.
+
+.. py:data:: SQRT_TWO_BY_PI
+   :type: float
+
+   Square root of 2/π.
+
+.. py:data:: LOG_TWO_BY_PI
+   :type: float
+
+   Natural logarithm of 2/π.
+
+
 How to use
 ----------
 
@@ -92,5 +183,7 @@ They are available for various uses cases, and can be called directly from ``pyM
 .. code-block:: python
 
     from pymultifit import EPSILON
-    from pymultifit import GAUSSIAN, LAPLACE
+    from pymultifit import GAUSSIAN, LAPLACE, CHI_SQUARE, EXPONENTIAL
+    from pymultifit import PI, SQRT_TWO, LOG_TWO_PI
+    from pymultifit import LINE, QUADRATIC, CUBIC
 

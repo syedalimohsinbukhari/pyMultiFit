@@ -52,6 +52,9 @@ Derived Distributions
    * - :class:`~halfNormal_d.HalfNormalDistribution`
      - Half-Normal distribution.
      - :math:`\dfrac{1}{\sigma}\sqrt{\dfrac{2}{\pi}}\exp\left[-\dfrac{x^2}{2\sigma^2}\right]`
+   * - :class:`~johnsonSU_d.JohnsonSUDistribution`
+     - Johnson SU distribution.
+     - :math:`\dfrac{\delta}{\lambda\sqrt{2\pi}\sqrt{1+z^2}}\exp\left[-\dfrac{1}{2}\left(\gamma+\delta\sinh^{-1}(z)\right)^2\right]`
    * - :class:`~laplace_d.LaplaceDistribution`
      - Laplace distribution.
      - :math:`\dfrac{1}{2b}\exp\left[-\dfrac{|x-\mu|}{b}\right]`
@@ -109,6 +112,7 @@ Non-distribution function
    GammaDistribution        <gamma_d>
    GaussianDistribution     <gaussian_d>
    HalfNormalDistribution   <halfNormal_d>
+   JohnsonSUDistribution    <johnsonSU_d>
    LaplaceDistribution      <laplace_d>
    LogNormalDistribution    <logNormal_d>
    Non-distribution functions <polynomial_d>
