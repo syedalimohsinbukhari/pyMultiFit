@@ -48,11 +48,11 @@ def multi_base(
 
     Parameters
     ----------
-    x : Union[List[int | float], np.ndarray]
+    x : Union[List[int or float], np.ndarray]
         Input array of values.
     distribution_func : Callable
         The distribution function to be used to generate data.
-    params : Union[List[Tuple[int | float, ...]], np.ndarray]
+    params : Union[List[Tuple[int or float, ...]], np.ndarray]
         List of tuples containing the parameters for the required distribution.
     noise_level : float, optional
         Standard deviation of the noise to be added to the data.
@@ -85,9 +85,9 @@ def multi_chi_squared(x: OneDArray, params: Params_, noise_level: float = 0.0, n
 
     Parameters
     ----------
-    x : Union[List[int | float], np.ndarray]
+    x : Union[List[int or float], np.ndarray]
         Input array of values.
-    params : Union[List[Tuple[int | float, ...]], np.ndarray]
+    params : Union[List[Tuple[int or float, ...]], np.ndarray]
         List of tuples or numpy array containing the parameters for the required distribution.
     noise_level : float, optional
         Standard deviation of the noise to be added to the data.
@@ -187,9 +187,9 @@ def multiple_models(
 
     Parameters
     ----------
-    x : Union[List[int | float], np.ndarray]
+    x : Union[List[int or float], np.ndarray]
         Input array of values.
-    params : Union[List[Tuple[int | float, ...]], np.ndarray]
+    params : Union[List[Tuple[int or float, ...]], np.ndarray]
         List of tuples containing the parameters for each model.
     model_list : list
         A list of model names corresponding to the models to be used.

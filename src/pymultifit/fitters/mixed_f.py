@@ -299,7 +299,7 @@ class MixedDataFitter:
         Fit the data.
 
         :param p0: Initial guess for the fitted parameters.
-        :type p0: Union[List[Tuple[int | float, ...]], np.ndarray]
+        :type p0: Union[List[Tuple[int or float, ...]], np.ndarray]
 
         :param frozen: Parameter number of list of parameter numbers to freeze the value of.
         :type frozen: Union[int, List[int]]
