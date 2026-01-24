@@ -7,7 +7,6 @@ from .utilities_f import sanity_check
 from .. import OneDArray, Params_
 from ..distributions.utilities_d import log_normal_pdf_
 
-
 # TODO:
 #   See if `exact_mean` can be reimplemented
 

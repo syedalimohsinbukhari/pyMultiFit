@@ -26,4 +26,6 @@ f, ax = plt.subplots(1, 1, figsize=(12, 6))
 plotter = fitter.plot_fit(
     show_individuals=True, x_label="X_data", y_label="Y_data", title="XY_plot", data_label="XY_data", axis=ax
 )
+fitter.ci_bounds(plot_it=True, axis=plotter)
+
 plt.show()

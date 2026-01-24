@@ -28,6 +28,7 @@ dependencies:
     - nbsphinx-link
     - sphinx-gallery
     - sphinx-autobuild
+    - mypy
     - nox
     - uv
     - types-deprecated

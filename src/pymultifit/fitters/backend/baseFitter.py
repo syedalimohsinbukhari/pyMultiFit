@@ -327,7 +327,7 @@ class BaseFitter:
         """
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return self._n_fitter(self.x_values, self.params)
+        return self._n_fitter(self.x_values, *self.params)
 
     def get_residuals(self) -> np.ndarray:
         """
@@ -530,7 +530,7 @@ class BaseFitter:
 
         # Add a horizontal line at y=0
         plotter2: Axes = plotter[0] if isinstance(plotter, list) else plotter
-        plotter2.axhline(y=0, color='k', linestyle='--', linewidth=1, alpha=0.5)
+        plotter2.axhline(y=0, color="k", linestyle="--", linewidth=1, alpha=0.5)
         plotter2.set_xlabel(x_label if x_label else "X")
         plotter2.set_ylabel(y_label if y_label else "Residuals")
         plotter2.set_title(title if title else f"{self.n_fits} {self.__class__.__name__} residuals")
@@ -573,8 +573,7 @@ class BaseFitter:
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True,
-                                       gridspec_kw={'height_ratios': [3, 1]})
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True, gridspec_kw={"height_ratios": [3, 1]})
 
         # Plot the fit
         self.plot_fit(
@@ -588,19 +587,21 @@ class BaseFitter:
         )
 
         # Plot the residuals
-        self.plot_residuals(
-            x_label=x_label,
-            y_label="Residuals",
-            title="",
-            axis=ax2,
-        )
+        self.plot_residuals(x_label=x_label, y_label="Residuals", title="", axis=ax2)
 
         plt.tight_layout()
         return fig, (ax1, ax2)
 
-    def ci_bounds(self, ci_level: Union[int, list[int]] = 95, n_bootstrap: int = 1000,
-                  plot_it: bool = False, overall_ci: bool = True, individual_ci: bool = False,
-                  axis=None, random_state: Optional[int] = None, fast_bootstrap: bool = True):
+    def ci_bounds(
+            self,
+            ci_level: Union[int, list[int]] = 95,
+            n_bootstrap: int = 1000,
+            plot_it: bool = False,
+            overall_ci: bool = True,
+            individual_ci: bool = False,
+            axis=None,
+            random_state: Optional[int] = None
+    ):
         """
         Compute confidence interval (CI) bounds for fitted data using bootstrap resampling.
 
@@ -656,12 +657,7 @@ class BaseFitter:
         # Initialize random number generator for reproducibility
         rng = np.random.default_rng(random_state)
 
-        # Optimize max_iterations for bootstrap if fast_bootstrap is enabled
-        if fast_bootstrap:
-            # Use 1/4 of original iterations (bootstrap converges faster with good initial guess)
-            bootstrap_max_iter = max(100, self.max_iterations // 4)
-        else:
-            bootstrap_max_iter = self.max_iterations
+        bootstrap_max_iter = self.max_iterations
 
         # Handle single or multiple CI levels
         ci_levels = [ci_level] if isinstance(ci_level, int) else ci_level
@@ -671,10 +667,8 @@ class BaseFitter:
         n_samples = len(self.x_values)
 
         # Storage for bootstrap predictions
-        if overall_ci:
-            bootstrap_overall = []
-        if individual_ci:
-            bootstrap_individual = []
+        bootstrap_overall = []
+        bootstrap_individual = []
 
         # Perform bootstrap resampling
         successful_bootstraps = 0
@@ -686,8 +680,7 @@ class BaseFitter:
 
             try:
                 # Create temporary fitter instance for bootstrap sample
-                temp_fitter = self.__class__(x_values=x_boot, y_values=y_boot,
-                                             max_iterations=bootstrap_max_iter)
+                temp_fitter = self.__class__(x_values=x_boot, y_values=y_boot, max_iterations=bootstrap_max_iter)
 
                 # Refit using original parameters as initial guess
                 temp_fitter.fit(p0=original_params.tolist())
@@ -699,10 +692,9 @@ class BaseFitter:
 
                 if individual_ci:
                     boot_params = np.reshape(temp_fitter.params, (self.n_fits, self.n_par))
-                    individual_preds = np.array([
-                        temp_fitter.fitter(x=self.x_values, params=list(par))
-                        for par in boot_params
-                    ])
+                    individual_preds = np.array(
+                        [temp_fitter.fitter(x=self.x_values, params=list(par)) for par in boot_params]
+                    )
                     bootstrap_individual.append(individual_preds)
 
                 successful_bootstraps += 1
@@ -732,20 +724,22 @@ class BaseFitter:
             upper_percentile = 100 - lower_percentile
 
             if overall_ci:
-                results[f'overall_ci_{ci}'] = {
-                    'lower': np.percentile(bootstrap_overall, lower_percentile, axis=0),
-                    'upper': np.percentile(bootstrap_overall, upper_percentile, axis=0),
-                    'median': np.percentile(bootstrap_overall, 50, axis=0),
+                results[f"overall_ci_{ci}"] = {
+                    "lower": np.percentile(bootstrap_overall, lower_percentile, axis=0),
+                    "upper": np.percentile(bootstrap_overall, upper_percentile, axis=0),
+                    "median": np.percentile(bootstrap_overall, 50, axis=0),
                 }
 
             if individual_ci:
-                results[f'individual_ci_{ci}'] = []
+                results[f"individual_ci_{ci}"] = []
                 for j in range(self.n_fits):
-                    results[f'individual_ci_{ci}'].append({
-                        'lower': np.percentile(bootstrap_individual[:, j], lower_percentile, axis=0),
-                        'upper': np.percentile(bootstrap_individual[:, j], upper_percentile, axis=0),
-                        'median': np.percentile(bootstrap_individual[:, j], 50, axis=0),
-                    })
+                    results[f"individual_ci_{ci}"].append(
+                        {
+                            "lower": np.percentile(bootstrap_individual[:, j], lower_percentile, axis=0),
+                            "upper": np.percentile(bootstrap_individual[:, j], upper_percentile, axis=0),
+                            "median": np.percentile(bootstrap_individual[:, j], 50, axis=0),
+                        }
+                    )
 
         # Plot if requested
         if plot_it:
@@ -753,8 +747,7 @@ class BaseFitter:
 
         return results
 
-    def _plot_ci_bounds(self, results: dict, ci_levels: list, overall_ci: bool,
-                        individual_ci: bool, axis=None):
+    def _plot_ci_bounds(self, results: dict, ci_levels: list, overall_ci: bool, individual_ci: bool, axis=None):
         """
         Plot confidence interval bounds.
 
@@ -777,32 +770,33 @@ class BaseFitter:
         # Plot overall CI
         if overall_ci:
             for idx, ci in enumerate(ci_levels):
-                ci_data = results[f'overall_ci_{ci}']
+                ci_data = results[f"overall_ci_{ci}"]
                 axis.fill_between(
                     self.x_values,
-                    ci_data['lower'],
-                    ci_data['upper'],
+                    ci_data["lower"],
+                    ci_data["upper"],
                     alpha=1 * (ci / 100),
-                    color='gray',
-                    label=f'{ci}% CI (overall)'
+                    color="gray",
+                    label=f"{ci}% CI (overall)",
                 )
 
         # Plot individual CIs
         if individual_ci:
             for idx, ci in enumerate(ci_levels):
-                ci_data = results[f'individual_ci_{ci}']
+                ci_data = results[f"individual_ci_{ci}"]
                 for idx2, fit in enumerate(ci_data):
                     axis.fill_between(
                         self.x_values,
-                        fit['lower'],
-                        fit['upper'],
+                        fit["lower"],
+                        fit["upper"],
                         alpha=1 * (ci / 100),
-                        color='gray', label=f'{ci}% CI (fit {idx2 + 1})' if idx2 == 0 else '',
+                        color="gray",
+                        label=f"{ci}% CI (fit {idx2 + 1})" if idx2 == 0 else "",
                     )
 
-        axis.set_xlabel('X')
-        axis.set_ylabel('Y')
-        axis.set_title('Bootstrap Confidence Intervals')
+        axis.set_xlabel("X")
+        axis.set_ylabel("Y")
+        axis.set_title("Bootstrap Confidence Intervals")
         axis.legend()
         axis.grid(True, alpha=0.3)
         plt.tight_layout()

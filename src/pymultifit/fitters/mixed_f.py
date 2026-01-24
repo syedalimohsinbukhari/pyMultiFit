@@ -2,7 +2,7 @@
 
 import itertools
 import warnings
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import Callable, List, Optional, Sequence, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,8 +10,10 @@ from matplotlib.axes import Axes
 from mpyez.backend.uPlotting import LinePlot  # type: ignore
 from mpyez.ezPlotting import plot_xy  # type: ignore
 from scipy.optimize import Bounds, curve_fit
+from tqdm import trange
 
 # importing from files to avoid circular import
+from .backend import BaseFitter
 from .chiSquare_f import ChiSquareFitter
 from .exponential_f import ExponentialFitter
 from .foldedNormal_f import FoldedNormalFitter
@@ -22,7 +24,7 @@ from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter
 from .polynomial_f import LineFitter
 from .skewNormal_f import SkewNormalFitter
-from .utilities_f import _plot_fit, sanity_check
+from .utilities_f import _plot_fit
 from .. import (
     CHI_SQUARE,
     epsilon,
@@ -56,7 +58,7 @@ fitter_dict = {
 }
 
 
-class MixedDataFitter:
+class MixedDataFitter(BaseFitter):
     r"""
     Class to fit a mixture of different models to data.
 
@@ -67,36 +69,35 @@ class MixedDataFitter:
     """
 
     def __init__(
-        self,
-        x_values: OneDArray,
-        y_values: OneDArray,
-        model_list: List[str],
-        fitter_dictionary: Optional[dict] = None,
-        model_dictionary: Optional[dict] = None,
-        max_iterations: int = 1000,
+            self,
+            x_values: OneDArray,
+            y_values: OneDArray,
+            model_list: List[str],
+            fitter_dictionary: Optional[dict] = None,
+            model_dictionary: Optional[dict] = None,
+            max_iterations: int = 1000,
     ):
         # Check if the deprecated parameter was used
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                "Use `model_dictionary` instead.",
+                        "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
 
-        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-
-        self.x_values: np.ndarray = x_values
-        self.y_values: np.ndarray = y_values
+        # Set model-specific attributes before calling super().__init__()
         self.model_list = model_list
-        self.max_iterations = max_iterations
-        self.params: Any = None
-        self.covariance: Any = None
+        self.fitter_dict = model_dictionary or fitter_dictionary or fitter_dict
 
-        self.fitter_dict = fitter_dictionary or fitter_dict
-        self.fitter_dict = model_dictionary or fitter_dict
+        # Call parent constructor
+        super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
 
-        # self._validate_models()
+        # Set n_par to the total parameter count and n_fits to the number of models
+        self.n_par = self._expected_param_count()
+        self.n_fits = len(model_list)
+
+        # Create the composite model function
         self.model_function = self._create_model_function()
 
     def __repr__(self):
@@ -134,7 +135,7 @@ class MixedDataFitter:
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -153,28 +154,23 @@ class MixedDataFitter:
 
         return count
 
-    @staticmethod
-    def _format_param(value, t_low=0.001, t_high=10_000) -> str:
-        r"""
-        Formats the parameter value to scientific notation based on its magnitude.
+    def _n_fitter(self, x: np.ndarray, *params) -> np.ndarray:
+        """
+        Override parent method to use the composite model function.
 
         Parameters
         ----------
-        value: float
-            The value of the parameter to be formatted.
-        t_low: float, optional
-            The lower bound below which the formatting should be applied to the value.
-            Defaults to 0.001.
-        t_high: float, optional
-            The upper bound above which the formatting should be applied to the value.
-            Defaults to 10,000.
+        x : np.ndarray
+            Input array of values for which the composite function is evaluated.
+        params : tuple
+            A tuple with all parameters to be fitted.
 
         Returns
         -------
-        str:
-            A formatted string of the parameter value.
+        np.ndarray
+            An array containing the composite fitted values for the input ``x``.
         """
-        return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
+        return self.model_function(x, *params)
 
     def _get_bounds(self):
         """
@@ -222,32 +218,10 @@ class MixedDataFitter:
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index : p_index + n_pars]])
+            param_dict[model].extend([values[p_index: p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
-
-    def _params(self) -> np.ndarray:
-        r"""
-        Store the fitted parameters of the fitted model.
-
-        Returns
-        -------
-        np.ndarray
-            The parameters obtained after performing the fit.
-
-        Raises
-        ------
-        RuntimeError
-            If the fit has not been performed yet (i.e., ``self.params`` is ``None``).
-
-        Notes
-        -----
-        This method assumes that the fitting process assigns values to ``self.params``.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return self.params
 
     def _plot_individual_fitter(self, plotter):
         """
@@ -262,7 +236,7 @@ class MixedDataFitter:
             color = colors[i % len(colors)]
             class_model = self._instantiate_class(model=model)
             n_par = self._instantiate_n_par(model=model)
-            pars = self.params[param_index : param_index + n_par]
+            pars = self.params[param_index: param_index + n_par]
             y_component = class_model.fitter(x=x, params=pars)
             plot_xy(
                 x_data=x,
@@ -275,24 +249,6 @@ class MixedDataFitter:
                 axis=plotter,
             )
             param_index += n_par
-
-    def _standard_errors(self) -> np.ndarray:
-        r"""
-        Store the standard errors of the fitted parameters.
-
-        Returns
-        -------
-        np.ndarray
-            An array containing the standard errors of the fitted parameters.
-
-        Raises
-        ------
-        RuntimeError
-            If the fit has not been performed yet (i.e., ``self.covariance`` is ``None``).
-        """
-        if self.covariance is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return np.sqrt(np.diag(self.covariance))
 
     def fit(self, p0: Params_, frozen: Optional[Union[int, List[int]]] = None):
         """
@@ -334,38 +290,6 @@ class MixedDataFitter:
             bounds=Bounds(lb=lb, ub=ub),
         )
 
-    def get_fitted_curve(self) -> np.ndarray:
-        """
-        Gets the y-values from the fitted model.
-
-        :return: The y-values from the fitted model
-
-        :raises ValueError: If the model has not been fitted yet.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        return self.model_function(self.x_values, *self.params)
-
-    def get_residuals(self) -> np.ndarray:
-        """
-        Get the residuals (difference between data and fitted model).
-
-        Returns
-        -------
-        np.ndarray
-            An array of residual values (y_data - y_fitted).
-
-        Raises
-        ------
-        RuntimeError
-            If the fit has not been performed yet.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-        fitted_curve = self.get_fitted_curve()
-        return self.y_values - fitted_curve
-
     def get_model_parameters(self, model: Optional[str] = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
@@ -406,56 +330,182 @@ class MixedDataFitter:
 
         return output
 
-    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> np.ndarray:
-        r"""
-        Retrieve the value/error pairs for the fitted parameters.
-
-        This method provides the fitted parameter values and their corresponding standard errors as a combined array or
-        individually based on the input flags.
+    def ci_bounds(self, ci_level: Union[int, list[int]] = 95, n_bootstrap: int = 1000, plot_it: bool = False,
+                  overall_ci: bool = True, individual_ci: bool = False, axis=None, random_state: Optional[int] = None):
+        """
+        Compute confidence interval (CI) bounds for fitted data using bootstrap resampling.
 
         Parameters
         ----------
-        mean_values : bool, optional
-            If ``True``, return only the values of the fitted parameters.
-            Defaults to ``True``.
-        std_values : bool, optional
-            If ``True``, return only the standard errors of the fitted parameters.
-            Defaults to ``False``.
+        ci_level : int or list of int, optional
+            Confidence interval level(s) as percentages (e.g., 95 for 95% CI). Defaults to 95.
+        n_bootstrap : int, optional
+            Number of bootstrap samples to generate. Defaults to 1000.
+        plot_it : bool, optional
+            If True, plots the fitted curve and shaded CI regions. Defaults to False.
+        overall_ci : bool, optional
+            If True, compute CI bounds for the summed fitted curve. Defaults to True.
+        individual_ci : bool, optional
+            If True, compute CI bounds for each individual model. Defaults to False.
+        axis : matplotlib.axes.Axes, optional
+            Axes to plot on. If None and plot_it=True, a new figure is created.
+        random_state : int, optional
+            Random seed for reproducibility. Can be an integer or None. Defaults to None.
+        fast_bootstrap : bool, optional
+            If True, use reduced max_iterations for bootstrap (faster, minimal accuracy loss). Defaults to True.
+            Recommended for 2-3x speedup.
 
         Returns
         -------
-        np.ndarray
-            - If ``mean_values`` and ``std_values`` are both ``True``: A 2D array of shape (n_parameters, 2),
-                where each row is ``[value, error]``.
-            - If ``mean_values`` is ``True`` and ``std_values`` is ``False``: A 1D array of parameter values.
-            - If ``std_values`` is ``True`` and ``mean_values`` is ``False``: A 1D array of standard errors.
-            - If both flags are ``False``: An error message.
+        dict
+            Dictionary with either or both:
+            - 'overall_ci_XX': dict with 'lower', 'upper', 'median' bounds for summed fits (if overall_ci=True).
+            - 'individual_ci_XX': list of dicts with 'lower', 'upper', 'median' for each model (if individual_ci=True).
 
         Raises
         ------
         ValueError
-            If both ``mean_values`` and ``std_values`` are ``False``.
-        """
-        pairs = np.column_stack([self._params(), self._standard_errors()])
+            If neither overall_ci nor individual_ci is True.
+        RuntimeError
+            If fit has not been performed yet.
 
-        if mean_values and std_values:
-            return pairs
-        elif mean_values:
-            return pairs[:, 0]
-        elif std_values:
-            return pairs[:, 1]
-        else:
-            raise ValueError("Either 'mean_values' or 'std_values' must be True.")
+        Notes
+        -----
+        This method uses bootstrap resampling of (x, y) data pairs to estimate confidence intervals.
+        For each bootstrap sample, the model is refitted and predictions are generated. The CI bounds
+        are computed from the percentiles of the bootstrap distribution.
+
+        Using fast_bootstrap=True (default) provides 2-3x speedup by reducing max_iterations for
+        bootstrap samples, which converge faster due to good initial guesses from the original fit.
+        """
+        if self.params is None:
+            raise RuntimeError("Fit not performed yet. Call fit() first.")
+
+        if not overall_ci and not individual_ci:
+            raise ValueError("At least one of `overall_ci` or `individual_ci` must be True.")
+
+        # Initialize a random number generator for reproducibility
+        rng = np.random.default_rng(random_state)
+
+        bootstrap_max_iter = self.max_iterations
+
+        # Handle single or multiple CI levels
+        ci_levels = [ci_level] if isinstance(ci_level, int) else ci_level
+
+        # Store original parameters as a flattened list for refitting
+        original_params = self.params
+        n_samples = len(self.x_values)
+
+        # Create a p0 structure for refitting (list of tuples per model)
+        p0_list = []
+        param_index = 0
+        for model in self.model_list:
+            n_par = self._instantiate_n_par(model=model)
+            p0_list.append(tuple(original_params[param_index: param_index + n_par]))
+            param_index += n_par
+
+        # Storage for bootstrap predictions
+        bootstrap_overall = []
+        bootstrap_individual = []
+
+        # Perform bootstrap resampling
+        successful_bootstraps = 0
+        for _ in trange(n_bootstrap):
+            # Resample indices with replacement using RNG
+            bootstrap_indices = rng.choice(n_samples, size=n_samples, replace=True)
+            x_boot = self.x_values[bootstrap_indices]
+            y_boot = self.y_values[bootstrap_indices]
+
+            try:
+                # Create a temporary fitter instance for the bootstrap sample
+                temp_fitter = MixedDataFitter(
+                    x_values=x_boot,
+                    y_values=y_boot,
+                    model_list=self.model_list,
+                    model_dictionary=self.fitter_dict,
+                    max_iterations=bootstrap_max_iter,
+                )
+
+                # Refit using original parameters as an initial guess
+                temp_fitter.fit(p0=p0_list)
+
+                # Generate predictions on original x_values
+                if overall_ci:
+                    overall_pred = temp_fitter.model_function(self.x_values, *temp_fitter.params)
+                    bootstrap_overall.append(overall_pred)
+
+                if individual_ci:
+                    # Extract predictions for each individual model
+                    individual_preds = []
+                    param_idx = 0
+                    for model in self.model_list:
+                        model_class = self._instantiate_class(model=model)
+                        n_par = self._instantiate_n_par(model=model)
+                        model_params = temp_fitter.params[param_idx: param_idx + n_par]
+                        individual_pred = model_class.fitter(x=self.x_values, params=list(model_params))
+                        individual_preds.append(individual_pred)
+                        param_idx += n_par
+                    bootstrap_individual.append(individual_preds)
+
+                successful_bootstraps += 1
+
+            except (RuntimeError, ValueError):
+                # Skip failed fits
+                continue
+
+        # Convert to arrays
+        if overall_ci:
+            bootstrap_overall = np.array(bootstrap_overall)
+        if individual_ci:
+            bootstrap_individual = np.array(bootstrap_individual)
+
+        # Report success rate if some failed
+        if successful_bootstraps < n_bootstrap:
+            print(f"Warning: Only {successful_bootstraps}/{n_bootstrap} bootstrap samples succeeded.")
+
+        if successful_bootstraps == 0:
+            raise RuntimeError("All bootstrap samples failed. Try adjusting initial parameters or max_iterations.")
+
+        # Compute confidence intervals
+        results = {}
+
+        for ci in ci_levels:
+            lower_percentile = (100 - ci) / 2
+            upper_percentile = 100 - lower_percentile
+
+            if overall_ci:
+                results[f"overall_ci_{ci}"] = {
+                    "lower": np.percentile(bootstrap_overall, lower_percentile, axis=0),
+                    "upper": np.percentile(bootstrap_overall, upper_percentile, axis=0),
+                    "median": np.percentile(bootstrap_overall, 50, axis=0),
+                }
+
+            if individual_ci:
+                results[f"individual_ci_{ci}"] = []
+                for j in range(self.n_fits):
+                    results[f"individual_ci_{ci}"].append(
+                        {
+                            "lower": np.percentile(bootstrap_individual[:, j], lower_percentile, axis=0),
+                            "upper": np.percentile(bootstrap_individual[:, j], upper_percentile, axis=0),
+                            "median": np.percentile(bootstrap_individual[:, j], 50, axis=0),
+                        }
+                    )
+
+        # Plot if requested
+        if plot_it:
+            self._plot_ci_bounds(results, ci_levels, overall_ci, individual_ci, axis)
+
+        return results
 
     def plot_fit(
-        self,
-        show_individuals: bool = False,
-        x_label: Optional[str] = None,
-        y_label: Optional[str] = None,
-        data_label: Optional[str] = None,
-        fit_label: Optional[str] = None,
-        title: Optional[str] = None,
-        axis: Optional[Axes] = None,
+            self,
+            show_individuals: bool = False,
+            x_label: Optional[str] = None,
+            y_label: Optional[str] = None,
+            data_label: Optional[str] = None,
+            fit_label: Optional[str] = None,
+            title: Optional[str] = None,
+            axis: Optional[Axes] = None,
     ):
         """
         Plot the fitted models.
@@ -498,112 +548,3 @@ class MixedDataFitter:
             fit_label=fit_label,
             axis=axis,
         )
-
-    def plot_residuals(
-        self,
-        x_label: Optional[str] = None,
-        y_label: Optional[str] = None,
-        title: Optional[str] = None,
-        axis: Optional[Axes] = None,
-    ):
-        """
-        Plot the residuals (data - fitted model).
-
-        Parameters
-        ----------
-        x_label: str, optional
-            The label for the x-axis.
-        y_label: str, optional
-            The label for the y-axis.
-        title: str, optional
-            The title for the plot.
-        axis: Axes, optional
-            Axes to plot instead of the entire figure. Defaults to None.
-
-        Returns
-        -------
-        plotter
-            The plotter handle for the drawn plot.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        residuals = self.get_residuals()
-
-        plotter = plot_xy(
-            x_data=self.x_values,
-            y_data=residuals,
-            data_label="Residuals",
-            axis=axis,
-            plot_dictionary=LinePlot(alpha=0.75),
-        )
-
-        # Add a horizontal line at y=0
-        plotter2: Axes = plotter[0] if isinstance(plotter, list) else plotter
-        plotter2.axhline(y=0, color='k', linestyle='--', linewidth=1, alpha=0.5)
-        plotter2.set_xlabel(x_label if x_label else "X")
-        plotter2.set_ylabel(y_label if y_label else "Residuals")
-        plotter2.set_title(title if title else f"{len(self.model_list)} {self.__class__.__name__} residuals")
-        plt.tight_layout()
-
-        return plotter2
-
-    def plot_fit_and_residuals(
-        self,
-        show_individuals: bool = False,
-        x_label: Optional[str] = None,
-        y_label: Optional[str] = None,
-        data_label: Optional[str] = None,
-        fit_label: Optional[str] = None,
-        title: Optional[str] = None,
-    ):
-        """
-        Plot the fitted model and residuals in a 2-panel figure.
-
-        Parameters
-        ----------
-        show_individuals: bool, optional
-            Whether to show individually fitted models or not.
-        x_label: str, optional
-            The label for the x-axis.
-        y_label: str, optional
-            The label for the y-axis for the fit plot.
-        title: str, optional
-            The overall title for the figure.
-        data_label: str, optional
-            The label for the data.
-        fit_label: str, optional
-            The label for the fitted model.
-
-        Returns
-        -------
-        tuple
-            A tuple of (figure, (ax1, ax2)) where ax1 is the fit plot and ax2 is the residuals plot.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True,
-                                       gridspec_kw={'height_ratios': [3, 1]})
-
-        # Plot the fit
-        self.plot_fit(
-            show_individuals=show_individuals,
-            x_label="",
-            y_label=y_label,
-            data_label=data_label,
-            fit_label=fit_label,
-            title=title,
-            axis=ax1,
-        )
-
-        # Plot the residuals
-        self.plot_residuals(
-            x_label=x_label,
-            y_label="Residuals",
-            title="",
-            axis=ax2,
-        )
-
-        plt.tight_layout()
-        return fig, (ax1, ax2)

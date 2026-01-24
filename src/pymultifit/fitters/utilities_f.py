@@ -132,13 +132,7 @@ def _plot_fit(
     else:
         raise ValueError()
 
-    plotter = plot_xy(
-        x_data=x_values,
-        y_data=y_values,
-        data_label=dl,
-        axis=axis,
-        plot_dictionary=LinePlot(alpha=0.75),
-    )
+    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_dictionary=LinePlot(alpha=0.75))
 
     plot_xy(
         x_data=x_values,
