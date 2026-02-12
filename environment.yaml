@@ -5,9 +5,11 @@ channels:
 dependencies:
     - numpy
     - matplotlib
+    - pillow=12.1.1
     - scipy
     - custom-inherit
     - Deprecated
+    - tqdm
     - pip
     -   pip:
             - mpyez

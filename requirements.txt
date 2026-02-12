@@ -1,6 +1,8 @@
 numpy
 matplotlib
+pillow==12.1.1
 scipy
 mpyez
 custom-inherit
 Deprecated
+tqdm

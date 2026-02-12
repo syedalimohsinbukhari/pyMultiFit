@@ -1,7 +1,9 @@
 numpy
 scipy
 matplotlib
+pillow==12.1.1
 mpyez
+tqdm
 statsmodels
 custom-inherit
 Deprecated
@@ -14,7 +16,7 @@ jupyter
 notebook
 build
 memory_profiler
-sphinx>8
+sphinx
 docutils<0.21
 pydata_sphinx_theme
 sphinx_copybutton
