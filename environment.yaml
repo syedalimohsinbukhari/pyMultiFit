@@ -1,15 +1,16 @@
-name: multifit
+name: pymultifit
 channels:
-    - conda-forge
-    - nodefaults
+  - conda-forge
+  - nodefaults
 dependencies:
-    - numpy
-    - matplotlib
-    - pillow=12.1.1
-    - scipy
-    - custom-inherit
-    - Deprecated
-    - tqdm
-    - pip
-    -   pip:
-            - mpyez
+  - python>=3.10
+  - numpy
+  - matplotlib
+  - scipy
+  - tqdm
+  - custom-inherit
+  - Deprecated
+  - pip
+  - pip:
+      - plotez
+      - pymultifit

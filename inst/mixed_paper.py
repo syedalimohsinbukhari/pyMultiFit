@@ -15,18 +15,23 @@ lineParams = (-0.2, -0.3)
 
 params = [gauss, skewNorm, lineParams]
 
-mg_data = multiple_models(x, params, model_list=['gaussian', 'skew_normal', 'line'],
-                          mapping_dict={'gaussian': gaussian_pdf_,
-                                        'skew_normal': skew_normal_pdf_,
-                                        'line': line}, noise_level=0.2)
+mg_data = multiple_models(
+    x,
+    params,
+    model_list=["gaussian", "skew_normal", "line"],
+    mapping_dict={"gaussian": gaussian_pdf_, "skew_normal": skew_normal_pdf_, "line": line},
+    noise_level=0.2,
+)
 
 guess = [(8, 0, 1), (8, 3, 0, 2), (1, 0)]
 
-mg_fitter = MixedDataFitter(x, mg_data, model_list=['gaussian', 'skew_normal', 'line'],
-                            model_dictionary={'gaussian': GaussianFitter,
-                                              'skew_normal': SkewNormalFitter,
-                                              'line': LineFitter})
+mg_fitter = MixedDataFitter(
+    x,
+    mg_data,
+    model_list=["gaussian", "skew_normal", "line"],
+    model_dictionary={"gaussian": GaussianFitter, "skew_normal": SkewNormalFitter, "line": LineFitter},
+)
 mg_fitter.fit(guess)
 mg_fitter.plot_fit(show_individuals=True)
-plt.savefig('./mixed_fit_paper.png', dpi=300)
+plt.savefig("./mixed_fit_paper.png", dpi=300)
 plt.show()

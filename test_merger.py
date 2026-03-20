@@ -2,7 +2,8 @@
 """Test script to verify MixedDataFitter inheritance from BaseFitter"""
 
 import sys
-sys.path.insert(0, 'src')
+
+sys.path.insert(0, "src")
 
 from pymultifit.fitters.mixed_f import MixedDataFitter
 from pymultifit.fitters.backend.baseFitter import BaseFitter
@@ -14,7 +15,7 @@ print("Test 1: Basic Instantiation")
 print("=" * 60)
 x = np.linspace(0, 10, 100)
 y = np.random.rand(100)
-fitter = MixedDataFitter(x, y, model_list=['gaussian', 'laplace'])
+fitter = MixedDataFitter(x, y, model_list=["gaussian", "laplace"])
 
 print(f"✓ MixedDataFitter created successfully")
 print(f"  n_par = {fitter.n_par} (expected: 6, gaussian=3 + laplace=3)")
@@ -26,14 +27,14 @@ print("\n" + "=" * 60)
 print("Test 2: Inherited Methods")
 print("=" * 60)
 inherited_methods = [
-    'ci_bounds',
-    'plot_fit_and_residuals',
-    'get_residuals',
-    'get_fitted_curve',
-    'get_value_error_pair',
-    '_params',
-    '_standard_errors',
-    'dry_run'
+    "ci_bounds",
+    "plot_fit_and_residuals",
+    "get_residuals",
+    "get_fitted_curve",
+    "get_value_error_pair",
+    "_params",
+    "_standard_errors",
+    "dry_run",
 ]
 
 for method in inherited_methods:
@@ -44,13 +45,7 @@ for method in inherited_methods:
 print("\n" + "=" * 60)
 print("Test 3: Overridden Methods")
 print("=" * 60)
-overridden_methods = [
-    '_n_fitter',
-    '_plot_individual_fitter',
-    'fit',
-    'ci_bounds',
-    'plot_fit'
-]
+overridden_methods = ["_n_fitter", "_plot_individual_fitter", "fit", "ci_bounds", "plot_fit"]
 
 for method in overridden_methods:
     has_it = hasattr(fitter, method)
@@ -65,17 +60,20 @@ print("=" * 60)
 np.random.seed(42)
 x_data = np.linspace(-5, 15, 200)
 
+
 # Generate mixed data using simple functions
 def gaussian(x, amp, mu, sigma):
     return amp * np.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * np.sqrt(2 * np.pi))
 
+
 def laplace(x, amp, mu, b):
     return amp * np.exp(-np.abs(x - mu) / b) / (2 * b)
+
 
 y_data = gaussian(x_data, 1, 2, 1) + laplace(x_data, 1, 8, 0.5)
 y_data += np.random.normal(0, 0.02, size=len(x_data))
 
-fitter2 = MixedDataFitter(x_data, y_data, model_list=['gaussian', 'laplace'])
+fitter2 = MixedDataFitter(x_data, y_data, model_list=["gaussian", "laplace"])
 
 # Initial guess
 p0 = [(1, 2, 1), (1, 8, 0.5)]

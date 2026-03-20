@@ -102,9 +102,7 @@ exclude_patterns = ["_build", "**.ipynb_checkpoints", "**.ipynb", "**.md5"]
 # These enable substitutions using |variable| in the rst files
 rst_epilog = """
 .. |year| replace:: {year}
-""".format(
-    year=year
-)
+""".format(year=year)
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 html_last_updated_fmt = "%b %d, %Y"

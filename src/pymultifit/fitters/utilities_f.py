@@ -5,10 +5,8 @@ __all__ = ["parameter_logic", "sanity_check", "_plot_fit"]
 from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
-from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot  # type: ignore
-from mpyez.ezPlotting import plot_xy  # type: ignore
+from plotez import plot_xy, LinePlotConfig
 
 from .. import OneDArray
 
@@ -132,7 +130,9 @@ def _plot_fit(
     else:
         raise ValueError()
 
-    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_dictionary=LinePlot(alpha=0.75))
+    plotter = plot_xy(
+        x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_config=LinePlotConfig(alpha=0.75)
+    )
 
     plot_xy(
         x_data=x_values,
@@ -141,7 +141,7 @@ def _plot_fit(
         y_label=y_label,
         plot_title=title,
         data_label=tt,
-        plot_dictionary=LinePlot(color="k"),
+        plot_config=LinePlotConfig(color="k"),
         axis=plotter,
     )
 

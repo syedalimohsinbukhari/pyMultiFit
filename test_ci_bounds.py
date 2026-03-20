@@ -5,7 +5,8 @@ This capability was inherited from BaseFitter after the merger.
 """
 
 import sys
-sys.path.insert(0, 'src')
+
+sys.path.insert(0, "src")
 
 from pymultifit.fitters.mixed_f import MixedDataFitter
 import numpy as np
@@ -18,11 +19,14 @@ print("=" * 70)
 np.random.seed(42)
 x_data = np.linspace(-5, 15, 200)
 
+
 def gaussian(x, amp, mu, sigma):
     return amp * np.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * np.sqrt(2 * np.pi))
 
+
 def laplace(x, amp, mu, b):
     return amp * np.exp(-np.abs(x - mu) / b) / (2 * b)
+
 
 # True parameters
 true_params_gauss = (1, 2, 1)
@@ -32,7 +36,7 @@ y_data = gaussian(x_data, *true_params_gauss) + laplace(x_data, *true_params_lap
 y_data += np.random.normal(0, 0.02, size=len(x_data))
 
 print("\nStep 1: Create MixedDataFitter")
-fitter = MixedDataFitter(x_data, y_data, model_list=['gaussian', 'laplace'])
+fitter = MixedDataFitter(x_data, y_data, model_list=["gaussian", "laplace"])
 print(f"  ✓ Created with {fitter.n_fits} models and {fitter.n_par} total parameters")
 
 print("\nStep 2: Fit the model")
@@ -54,7 +58,7 @@ try:
     print(f"  ✓ CI levels computed: {[k for k in ci_results.keys()]}")
 
     # Extract CI bounds
-    ci_95 = ci_results['overall_ci_95']
+    ci_95 = ci_results["overall_ci_95"]
     print(f"\n  95% Confidence Interval Statistics:")
     print(f"    - Lower bound shape: {ci_95['lower'].shape}")
     print(f"    - Upper bound shape: {ci_95['upper'].shape}")
@@ -64,19 +68,20 @@ try:
     sample_indices = [50, 100, 150]
     print(f"\n  Sample CI widths at different x values:")
     for idx in sample_indices:
-        width = ci_95['upper'][idx] - ci_95['lower'][idx]
+        width = ci_95["upper"][idx] - ci_95["lower"][idx]
         print(f"    x = {x_data[idx]:6.2f}: CI width = {width:.6f}")
 
 except Exception as e:
     print(f"  ✗ CI computation failed: {e}")
     import traceback
+
     traceback.print_exc()
 
 print("\nStep 5: Verify other inherited methods")
 inherited_methods = {
-    'get_residuals': lambda: fitter.get_residuals(),
-    'get_fitted_curve': lambda: fitter.get_fitted_curve(),
-    'get_value_error_pair': lambda: fitter.get_value_error_pair(),
+    "get_residuals": lambda: fitter.get_residuals(),
+    "get_fitted_curve": lambda: fitter.get_fitted_curve(),
+    "get_value_error_pair": lambda: fitter.get_value_error_pair(),
 }
 
 for name, method in inherited_methods.items():

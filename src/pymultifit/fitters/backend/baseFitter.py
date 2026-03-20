@@ -6,9 +6,8 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from mpyez.backend.uPlotting import LinePlot  # type: ignore
-from mpyez.ezPlotting import plot_xy  # type: ignore
 from numpy.typing import NDArray
+from plotez import plot_xy, LinePlotConfig
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import _plot_fit, parameter_logic, sanity_check
@@ -53,7 +52,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par:]
+            provided_secondary_params = params[self.pn_par :]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -224,8 +223,8 @@ class BaseFitter:
                 x_data=x,
                 y_data=self.fitter(x=x, params=list(par)),
                 data_label=f"{self.__class__.__name__.replace('Fitter', '')} {i + 1}("
-                           f"{', '.join(self._format_param(i) for i in par)})",
-                plot_dictionary=LinePlot(line_style="--", color=color),
+                f"{', '.join(self._format_param(i) for i in par)})",
+                plot_config=LinePlotConfig(linestyle="--", color=color),
                 axis=plotter,
                 x_label="",
                 y_label="",
@@ -440,14 +439,14 @@ class BaseFitter:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
     def plot_fit(
-            self,
-            show_individuals: bool = False,
-            x_label: Optional[str] = None,
-            y_label: Optional[str] = None,
-            data_label: Optional[str] = None,
-            fit_label: Optional[str] = None,
-            title: Optional[str] = None,
-            axis: Optional[Axes] = None,
+        self,
+        show_individuals: bool = False,
+        x_label: Optional[str] = None,
+        y_label: Optional[str] = None,
+        data_label: Optional[str] = None,
+        fit_label: Optional[str] = None,
+        title: Optional[str] = None,
+        axis: Optional[Axes] = None,
     ):
         """
         Plot the fitted models.
@@ -490,11 +489,11 @@ class BaseFitter:
         )
 
     def plot_residuals(
-            self,
-            x_label: Optional[str] = None,
-            y_label: Optional[str] = None,
-            title: Optional[str] = None,
-            axis: Optional[Axes] = None,
+        self,
+        x_label: Optional[str] = None,
+        y_label: Optional[str] = None,
+        title: Optional[str] = None,
+        axis: Optional[Axes] = None,
     ):
         """
         Plot the residuals (data - fitted model).
@@ -525,7 +524,7 @@ class BaseFitter:
             y_data=residuals,
             data_label="Residuals",
             axis=axis,
-            plot_dictionary=LinePlot(alpha=0.75),
+            plot_config=LinePlotConfig(alpha=0.75),
         )
 
         # Add a horizontal line at y=0
@@ -539,13 +538,13 @@ class BaseFitter:
         return plotter2
 
     def plot_fit_and_residuals(
-            self,
-            show_individuals: bool = False,
-            x_label: Optional[str] = None,
-            y_label: Optional[str] = None,
-            data_label: Optional[str] = None,
-            fit_label: Optional[str] = None,
-            title: Optional[str] = None,
+        self,
+        show_individuals: bool = False,
+        x_label: Optional[str] = None,
+        y_label: Optional[str] = None,
+        data_label: Optional[str] = None,
+        fit_label: Optional[str] = None,
+        title: Optional[str] = None,
     ):
         """
         Plot the fitted model and residuals in a 2-panel figure.
@@ -593,14 +592,14 @@ class BaseFitter:
         return fig, (ax1, ax2)
 
     def ci_bounds(
-            self,
-            ci_level: Union[int, list[int]] = 95,
-            n_bootstrap: int = 1000,
-            plot_it: bool = False,
-            overall_ci: bool = True,
-            individual_ci: bool = False,
-            axis=None,
-            random_state: Optional[int] = None
+        self,
+        ci_level: Union[int, list[int]] = 95,
+        n_bootstrap: int = 1000,
+        plot_it: bool = False,
+        overall_ci: bool = True,
+        individual_ci: bool = False,
+        axis=None,
+        random_state: Optional[int] = None,
     ):
         """
         Compute confidence interval (CI) bounds for fitted data using bootstrap resampling.

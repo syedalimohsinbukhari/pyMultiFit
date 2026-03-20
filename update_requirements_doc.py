@@ -12,7 +12,7 @@ URL_OVERRIDES = {
     "numpy": "https://numpy.org",
     "scipy": "https://scipy.org",
     "matplotlib": "https://matplotlib.org",
-    "mpyez": "https://github.com/syedalimohsinbukhari/mpyez",
+    "plotez": "https://github.com/syedalimohsinbukhari/plotez",
     "custom-inherit": "https://github.com/rsokl/custom_inherit",
     "deprecated": "https://github.com/laurent-laporte-pro/deprecated",
 }
