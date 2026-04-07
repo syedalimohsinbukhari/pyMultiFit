@@ -3,9 +3,9 @@
 import pytest
 from scipy.stats import expon
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import ExponentialDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+from . import base_test_functions as btf
 
 
 class TestChiSquareDistribution:

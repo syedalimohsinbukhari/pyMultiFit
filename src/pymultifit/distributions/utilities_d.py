@@ -1,5 +1,7 @@
 """Created on Aug 03 17:13:21 2024"""
 
+from __future__ import annotations
+
 __all__ = [
     "_beta_expr",
     "_pdf_scaling",
@@ -65,6 +67,7 @@ __all__ = [
     "scaled_inv_chi_square_cdf_",
     "scaled_inv_chi_square_log_cdf_",
     "skew_normal_pdf_",
+    "skew_normal_log_pdf_",
     "skew_normal_cdf_",
     "uniform_pdf_",
     "uniform_cdf_",
@@ -80,21 +83,21 @@ from typing import Callable, Union
 import numpy as np
 import scipy.special as ssp
 from custom_inherit import doc_inherit  # type: ignore
+from numpy.typing import ArrayLike
 
 from .. import (
-    doc_style,
     INF,
     LOG,
     LOG_SQRT_TWO_BY_PI,
     LOG_SQRT_TWO_PI,
     LOG_TWO,
-    OneDArray,
     PI,
     SQRT_TWO,
     SQRT_TWO_BY_PI,
     SQRT_TWO_PI,
-    suppress_numpy_warnings,
     TWO_BY_PI,
+    doc_style,
+    suppress_numpy_warnings,
 )
 
 
@@ -107,44 +110,29 @@ def reject_values(x_shp, a=None, b=None, c=None):
 
 @suppress_numpy_warnings()
 def arc_sine_pdf_(
-    x: OneDArray, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
 
-    Parameters
-    ----------
-    x : np.ndarray
-        Input array of values where PDF is evaluated.
-    amplitude : float, optional
-        The amplitude of the PDF. Defaults to 1.0.
-        Ignored if **normalize** is ``True``.
-    loc : float, optional
-        The location parameter specifying the lower bound of the distribution.
-        Defaults to 0.0.
-    scale : float, optional
-        The scale parameter, specifying the width of the distribution.
-        Defaults to 1.0.
-    normalize : bool, optional
-        If True, the distribution is normalized so that the total area under the PDF equals 1.
-        Defaults to ``False``.
+    :param x: Input array of values where PDF is evaluated.
+    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    :param loc: The location parameter specifying the lower bound of the distribution. Defaults to 0.0.
+    :param scale: The scale parameter, specifying the width of the distribution. Defaults to 1.0.
+    :param normalize: If True, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
 
-    Returns
-    -------
-    np.ndarray
-        Array of the same shape as :math:`x`, containing the evaluated values.
+    :return: Array of the same shape as :math:`x`, containing the evaluated values.
 
-    Notes
-    -----
-    The ArcSine PDF is defined as:
+    .. note::
+        The ArcSine PDF is defined as:
 
-    .. math:: f(y) = \frac{1}{\pi \sqrt{y(1-y)}}
+        .. math:: f(y) = \frac{1}{\pi \sqrt{y(1-y)}}
 
-    where, :math:`y` is the transformed value of :math:`x`, defined as:
+        where, :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = \frac{x - \text{loc}}{\text{scale}}
+        .. math:: y = \frac{x - \text{loc}}{\text{scale}}
 
-    The final PDF is expressed as :math:`f(y)/\text{scale}`.
+        The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
     ret_ = reject_values(x.shape, scale)
 
@@ -174,8 +162,8 @@ def arc_sine_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_log_pdf_(
-    x: OneDArray, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute logPDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
 
@@ -219,8 +207,8 @@ def arc_sine_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_cdf_(
-    x: OneDArray, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     ret_ = reject_values(x.shape, scale)
 
     if ret_:
@@ -240,8 +228,8 @@ def arc_sine_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_cdf_, style=doc_style)
 def arc_sine_log_cdf_(
-    x: OneDArray, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`.
 
@@ -275,14 +263,14 @@ def arc_sine_log_cdf_(
 
 @suppress_numpy_warnings()
 def beta_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
@@ -352,14 +340,14 @@ def beta_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
     Notes
@@ -399,14 +387,14 @@ def beta_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
@@ -448,14 +436,14 @@ def beta_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_cdf_, style=doc_style)
 def beta_log_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute logCDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
@@ -487,14 +475,14 @@ def beta_log_cdf_(
 
 @suppress_numpy_warnings()
 def beta_prime_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
@@ -563,14 +551,14 @@ def beta_prime_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_prime_pdf_, style=doc_style)
 def beta_prime_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""Compute logPDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
     Notes
@@ -609,14 +597,14 @@ def beta_prime_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=beta_prime_pdf_, style=doc_style)
 def beta_prime_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
@@ -652,14 +640,14 @@ def beta_prime_cdf_(
 
 
 def beta_prime_log_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     beta_: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute logCDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
 
@@ -696,13 +684,13 @@ def beta_prime_log_cdf_(
 
 @suppress_numpy_warnings()
 def chi_square_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     degree_of_freedom: Union[int, float] = 1,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -766,13 +754,13 @@ def _chi2(y, df_half):
 @suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     degree_of_freedom: Union[int, float] = 1,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -809,13 +797,13 @@ def chi_square_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     degree_of_freedom: Union[int, float] = 1,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -849,13 +837,13 @@ def chi_square_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_cdf_, style=doc_style)
 def chi_square_log_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     degree_of_freedom: Union[int, float] = 1,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF for :mod:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution`.
 
@@ -881,7 +869,7 @@ def chi_square_log_cdf_(
 
 
 @suppress_numpy_warnings()
-def cubic(x: OneDArray, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float = 1.0) -> OneDArray:
+def cubic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float = 1.0) -> np.ndarray:
     r"""
     Computes the y-values of a cubic function given x-values.
 
@@ -911,13 +899,13 @@ def cubic(x: OneDArray, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float
 
     where, :math:`a`, math:`b`, :math:`c`, and :math:`d` are the cubic coefficients.
     """
-    return a * x**3 + b * x**2 + c * x + d
+    return a * x ** 3 + b * x ** 2 + c * x + d
 
 
 @suppress_numpy_warnings()
 def exponential_pdf_(
-    x: OneDArray, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
@@ -978,8 +966,8 @@ def exponential_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_log_pdf_(
-    x: OneDArray, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log PDF for :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
@@ -1025,8 +1013,8 @@ def exponential_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_cdf_(
-    x: OneDArray, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
@@ -1064,8 +1052,8 @@ def exponential_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=exponential_cdf_, style=doc_style)
 def exponential_log_cdf_(
-    x: OneDArray, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`.
 
@@ -1095,13 +1083,13 @@ def exponential_log_cdf_(
 
 @suppress_numpy_warnings()
 def folded_normal_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     mean: float = 0.0,
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -1162,7 +1150,7 @@ def folded_normal_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     mean: float = 0.0,
     sigma: float = 1.0,
@@ -1204,13 +1192,13 @@ def folded_normal_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     mean: float = 0.0,
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -1248,13 +1236,13 @@ def folded_normal_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_cdf_, style=doc_style)
 def folded_normal_log_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     mean: float = 0.0,
     sigma: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF for :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -1284,7 +1272,7 @@ def folded_normal_log_cdf_(
 
 
 @suppress_numpy_warnings()
-def _folded(x: OneDArray, mean: float, loc: float, scale: float, g_func: Callable):
+def _folded(x: ArrayLike, mean: float, loc: float, scale: float, g_func: Callable):
     r"""
     Precompute the gaussian part of :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
 
@@ -1325,13 +1313,13 @@ def _folded(x: OneDArray, mean: float, loc: float, scale: float, g_func: Callabl
 
 @suppress_numpy_warnings()
 def gamma_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     theta: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`
 
@@ -1364,7 +1352,7 @@ def gamma_pdf_(
     -----
     .. important::
 
-        The Gamma SS PDF is calculated via exponentiation of :func:`gamma_sr_log_pdf_` by setting
+        The Gamma SS PDF is calculated via exponentiation of :func:`gamma_log_pdf_` by setting
         :math:`\lambda = \dfrac{1}{\theta}`.
     """
     y = preprocess_input(x=x, loc=loc, scale=theta)
@@ -1384,13 +1372,13 @@ def gamma_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=gamma_pdf_, style=doc_style)
 def gamma_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     theta: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`
 
@@ -1398,7 +1386,7 @@ def gamma_log_pdf_(
     -----
     .. important::
 
-        The Gamma SS log PDF is calculated via :func:`gamma_sr_log_pdf_` by setting :math:`\lambda = \dfrac{1}{\theta}`.
+        The Gamma SS log PDF is calculated via :func:`gamma_log_pdf_` by setting :math:`\lambda = \dfrac{1}{\theta}`.
     """
     y = preprocess_input(x=x, loc=loc, scale=theta)
 
@@ -1422,13 +1410,13 @@ def _gamma(x, a, un_log=False):
 @suppress_numpy_warnings()
 @doc_inherit(parent=gamma_pdf_, style=doc_style)
 def gamma_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     theta: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`.
 
@@ -1443,7 +1431,7 @@ def gamma_cdf_(
     -----
     .. important::
 
-        The Gamma SS CDF is calculated via :func:`gamma_sr_cdf_` by setting :math:`\lambda = \dfrac{1}{\theta}`.
+        The Gamma SS CDF is calculated via :func:`gamma_cdf_` by setting :math:`\lambda = \dfrac{1}{\theta}`.
     """
     y = preprocess_input(x=x, loc=loc, scale=theta)
 
@@ -1456,13 +1444,13 @@ def gamma_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=gamma_cdf_, style=doc_style)
 def gamma_log_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     alpha: float = 1.0,
     theta: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`.
 
@@ -1470,7 +1458,7 @@ def gamma_log_cdf_(
     -----
     .. important::
 
-        The Gamma SS log CDF is calculated via logarithm of :func:`gamma_sr_cdf_` by setting
+        The Gamma SS log CDF is calculated via logarithm of :func:`gamma_cdf_` by setting
         :math:`\lambda = \dfrac{1}{\theta}`.
     """
     y = preprocess_input(x=x, loc=loc, scale=theta)
@@ -1482,7 +1470,7 @@ def gamma_log_cdf_(
 
 
 @suppress_numpy_warnings()
-def gaussian_pdf_(x: OneDArray, amplitude=1.0, mean=0.0, std=1.0, normalize=False) -> OneDArray:
+def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=False) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
@@ -1523,7 +1511,7 @@ def gaussian_pdf_(x: OneDArray, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
     if y.size == 0:
         return y
 
-    pdf_ = np.exp(-0.5 * y**2) / SQRT_TWO_PI / std
+    pdf_ = np.exp(-0.5 * y ** 2) / SQRT_TWO_PI / std
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1534,8 +1522,8 @@ def gaussian_pdf_(x: OneDArray, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
 @suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
 def gaussian_log_pdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log PDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
@@ -1553,7 +1541,7 @@ def gaussian_log_pdf_(
     if y.size == 0:
         return y
 
-    log_pdf_ = -(y**2) / 2.0 - LOG_SQRT_TWO_PI - LOG(std)
+    log_pdf_ = -(y ** 2) / 2.0 - LOG_SQRT_TWO_PI - LOG(std)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1564,8 +1552,8 @@ def gaussian_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
 def gaussian_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
@@ -1596,8 +1584,8 @@ def gaussian_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_cdf_, style=doc_style)
 def gaussian_log_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log CDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
 
@@ -1619,8 +1607,8 @@ def gaussian_log_cdf_(
 
 @suppress_numpy_warnings()
 def gumbel_pdf_(
-    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute PDF for Gumbel distribution`
 
@@ -1643,7 +1631,7 @@ def gumbel_pdf_(
 
     Returns
     -------
-    OneDArray
+    ArrayLike
         Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
@@ -1675,8 +1663,8 @@ def gumbel_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=gumbel_pdf_, style=doc_style)
 def gumbel_log_pdf_(
-    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log PDF for Gumbel distribution`
 
@@ -1709,8 +1697,8 @@ def gumbel_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=gumbel_pdf_, style=doc_style)
 def gumbel_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute CDF for Gumbel distribution`
 
@@ -1738,8 +1726,8 @@ def gumbel_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=gumbel_cdf_, style=doc_style)
 def gumbel_log_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log CDF for Gumbel distribution`
 
@@ -1766,8 +1754,8 @@ def gumbel_log_cdf_(
 
 @suppress_numpy_warnings()
 def half_normal_pdf_(
-    x: OneDArray, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute PDF for the :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
@@ -1815,7 +1803,7 @@ def half_normal_pdf_(
     if y.size == 0:
         return y
 
-    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * np.exp(-0.5 * y**2), 0)
+    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * np.exp(-0.5 * y ** 2), 0)
     pdf_ /= sigma
 
     if not normalize:
@@ -1827,8 +1815,8 @@ def half_normal_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_log_pdf_(
-    x: OneDArray, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log PDF for the :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
@@ -1849,7 +1837,7 @@ def half_normal_log_pdf_(
     if y.size == 0:
         return y
 
-    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y**2, -INF)
+    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y ** 2, -INF)
     log_pdf_ -= LOG(sigma)
 
     if not normalize:
@@ -1861,8 +1849,8 @@ def half_normal_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_cdf_(
-    x: OneDArray, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute the CDF for :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
@@ -1896,8 +1884,8 @@ def half_normal_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_cdf_, style=doc_style)
 def half_normal_log_cdf_(
-    x: OneDArray, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute the log CDF for :class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution`.
 
@@ -1923,14 +1911,14 @@ def half_normal_log_cdf_(
 
 @suppress_numpy_warnings()
 def johnsonSU_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     gamma: float = 1.0,
     delta: float = 1.0,
     xi: float = 0.0,
     lambda_: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute PDF for the Johnson SU distribution.
 
@@ -1978,7 +1966,7 @@ def johnsonSU_pdf_(
         return y
 
     f1 = delta / SQRT_TWO_PI
-    f2 = np.sqrt(1 + y**2)
+    f2 = np.sqrt(1 + y ** 2)
     f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
 
     pdf_ = f1 / f2 * f3
@@ -1993,14 +1981,14 @@ def johnsonSU_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=johnsonSU_pdf_, style=doc_style)
 def johnsonSU_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     gamma: float = 1.0,
     delta: float = 1.0,
     xi: float = 0.0,
     lambda_: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log-PDF for the Johnson SU distribution.
 
@@ -2020,7 +2008,7 @@ def johnsonSU_log_pdf_(
         return y
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
-    f2 = -0.5 * np.log1p(y**2)
+    f2 = -0.5 * np.log1p(y ** 2)
     f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
 
     log_pdf_ = f1 + f2 + f3
@@ -2035,14 +2023,14 @@ def johnsonSU_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=johnsonSU_pdf_, style=doc_style)
 def johnsonSU_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     gamma: float = 1.0,
     delta: float = 1.0,
     xi: float = 0.0,
     lambda_: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute CDF for the Johnson SU distribution.
 
@@ -2072,14 +2060,14 @@ def johnsonSU_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=johnsonSU_cdf_, style=doc_style)
 def johnsonSU_log_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     gamma: float = 1.0,
     delta: float = 1.0,
     xi: float = 0.0,
     lambda_: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log-CDF for the Johnson SU distribution.
 
@@ -2101,8 +2089,8 @@ def johnsonSU_log_cdf_(
 
 @suppress_numpy_warnings()
 def laplace_pdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute PDF for the :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
@@ -2157,8 +2145,8 @@ def laplace_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_log_pdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log PDF for the :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
@@ -2191,8 +2179,8 @@ def laplace_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute CDF for :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
@@ -2231,8 +2219,8 @@ def laplace_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=laplace_cdf_, style=doc_style)
 def laplace_log_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log CDF for :class:`~pymultifit.distributions.laplace_d.LaplaceDistribution`.
 
@@ -2255,7 +2243,7 @@ def laplace_log_cdf_(
 
 
 @suppress_numpy_warnings()
-def line(x: OneDArray, slope: float = 1.0, intercept: float = 0.0) -> OneDArray:
+def line(x: ArrayLike, slope: float = 1.0, intercept: float = 0.0) -> np.ndarray:
     r"""
     Computes the y-values of a line given x-values, slope, and intercept.
 
@@ -2286,8 +2274,8 @@ def line(x: OneDArray, slope: float = 1.0, intercept: float = 0.0) -> OneDArray:
 
 @suppress_numpy_warnings()
 def log_normal_pdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
@@ -2337,7 +2325,7 @@ def log_normal_pdf_(
 
     q = (LOG(y) - mean) / std
 
-    pdf_ = np.where(y > 0, 1 / y / np.exp(q**2 / 2) / SQRT_TWO_PI, 0)
+    pdf_ = np.where(y > 0, 1 / y / np.exp(q ** 2 / 2) / SQRT_TWO_PI, 0)
     pdf_ /= std
 
     if not normalize:
@@ -2349,8 +2337,8 @@ def log_normal_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_log_pdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log PDF for :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
@@ -2374,7 +2362,7 @@ def log_normal_log_pdf_(
 
     q = (LOG(y) - mean) / std
 
-    log_pdf_ = np.where(y > 0, -LOG(y) - (q**2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
+    log_pdf_ = np.where(y > 0, -LOG(y) - (q ** 2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -2386,8 +2374,8 @@ def log_normal_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
@@ -2424,8 +2412,8 @@ def log_normal_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_cdf_, style=doc_style)
 def log_normal_log_cdf_(
-    x: OneDArray, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution`.
 
@@ -2449,8 +2437,8 @@ def log_normal_log_cdf_(
 
 @suppress_numpy_warnings()
 def uniform_pdf_(
-    x: OneDArray, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
@@ -2506,8 +2494,8 @@ def uniform_pdf_(
 
 @suppress_numpy_warnings()
 def uniform_log_pdf_(
-    x: OneDArray, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log PDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
@@ -2538,8 +2526,8 @@ def uniform_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
 def uniform_cdf_(
-    x: OneDArray, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
@@ -2576,8 +2564,8 @@ def uniform_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=uniform_cdf_, style=doc_style)
 def uniform_log_cdf_(
-    x: OneDArray, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
-) -> OneDArray:
+    x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.uniform_d.UniformDistribution`.
 
@@ -2608,7 +2596,7 @@ def uniform_log_cdf_(
 
 @suppress_numpy_warnings()
 def scaled_inv_chi_square_pdf_(
-    x: OneDArray, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
+    x: ArrayLike, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
 ):
     r"""
     Compute PDF of :class:`~pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`.
@@ -2674,7 +2662,7 @@ def scaled_inv_chi_square_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     df: Union[int, float] = 1.0,
     scale: float = 1.0,
@@ -2720,7 +2708,7 @@ def scaled_inv_chi_square_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     df: Union[int, float] = 1.0,
     scale: float = 1.0,
@@ -2765,13 +2753,13 @@ def scaled_inv_chi_square_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_log_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     df: Union[int, float] = 1.0,
     scale: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`.
 
@@ -2802,13 +2790,13 @@ def scaled_inv_chi_square_log_cdf_(
 
 @suppress_numpy_warnings()
 def skew_normal_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     shape: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
 
@@ -2870,13 +2858,13 @@ def skew_normal_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     shape: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF of :class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution`.
 
@@ -2911,7 +2899,7 @@ def skew_normal_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     shape: float = 1.0,
     loc: float = 0.0,
@@ -2949,13 +2937,13 @@ def skew_normal_cdf_(
 
 @suppress_numpy_warnings()
 def sym_gen_normal_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     shape: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -3017,13 +3005,13 @@ def sym_gen_normal_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
 def sym_gen_normal_log_pdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     shape: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log PDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -3059,13 +3047,13 @@ def sym_gen_normal_log_pdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
 def sym_gen_normal_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     shape: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -3102,13 +3090,13 @@ def sym_gen_normal_cdf_(
 @suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_cdf_, style=doc_style)
 def sym_gen_normal_log_cdf_(
-    x: OneDArray,
+    x: ArrayLike,
     amplitude: float = 1.0,
     shape: float = 1.0,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
-) -> OneDArray:
+) -> np.ndarray:
     r"""
     Compute log CDF of :class:`~pymultifit.distributions.generalized.genNorm_d.SymmetricGeneralizedNormalDistribution`.
 
@@ -3133,7 +3121,7 @@ def sym_gen_normal_log_cdf_(
 
 
 @suppress_numpy_warnings()
-def quadratic(x: OneDArray, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> OneDArray:
+def quadratic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> np.ndarray:
     r"""
     Computes the y-values of a quadratic function given x-values.
 
@@ -3161,11 +3149,11 @@ def quadratic(x: OneDArray, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> O
 
     where, :math:`a`, :math:`b`, and :math:`c` are the quadratic coefficients.
     """
-    return a * x**2 + b * x + c
+    return a * x ** 2 + b * x + c
 
 
 @suppress_numpy_warnings()
-def _beta_expr(y: OneDArray, a: float, b: float, un_log: bool = False):
+def _beta_expr(y: ArrayLike, a: float, b: float, un_log: bool = False):
     in_range = (y > 0) & (y < 1)
 
     undefined_0 = (y == 0) & (a <= 1)
@@ -3185,7 +3173,7 @@ def _folded_cdf(q: float, r: float) -> float:
 
 
 @suppress_numpy_warnings()
-def _pdf_scaling(pdf_: OneDArray, amplitude: float) -> OneDArray:
+def _pdf_scaling(pdf_: ArrayLike, amplitude: float) -> np.ndarray:
     """Scales a given PDF by a specified amplitude, normalizing it relative to its maximum value.
 
     Parameters
@@ -3205,13 +3193,13 @@ def _pdf_scaling(pdf_: OneDArray, amplitude: float) -> OneDArray:
 
 
 @suppress_numpy_warnings()
-def _log_pdf_scaling(log_pdf_: OneDArray, amplitude: float) -> OneDArray:
+def _log_pdf_scaling(log_pdf_: ArrayLike, amplitude: float) -> np.ndarray:
     with np.errstate(all="ignore"):
         return LOG(amplitude) + (log_pdf_ - np.max(log_pdf_))
 
 
 @suppress_numpy_warnings()
-def preprocess_input(x: OneDArray, loc: float = 0.0, scale: float = 1.0) -> OneDArray:
+def preprocess_input(x: ArrayLike, loc: float = 0.0, scale: float = 1.0) -> np.ndarray:
     """
     Preprocess the input array, checking for scalar input, handling empty arrays, and loc-scale normalizaing the data.
 

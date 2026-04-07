@@ -6,31 +6,31 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 from matplotlib.axes import Axes
-from plotez import plot_xy, LinePlotConfig
+from plotez import lpc, plot_xy
 
-from .. import OneDArray
+from ..typing import ArrayLike
 
 # SAFEGUARD:
 xy_tuple = Tuple[np.ndarray, np.ndarray]
 indexType = Union[int, List[int], None]
 
 
-def sanity_check(x_values: OneDArray, y_values: OneDArray) -> Tuple[OneDArray, OneDArray]:
+def sanity_check(x_values: ArrayLike, y_values: ArrayLike) -> Tuple[ArrayLike, ArrayLike]:
     """
     Convert input lists to NumPy arrays if necessary.
 
     Parameters
     ----------
-    x_values : list of float or np.ndarray
+    x_values :
         Input x-values that will be converted to a NumPy array if they are in list format.
-    y_values : list of float or np.ndarray
+    y_values :
         Input y-values that will be converted to a NumPy array if they are in list format.
 
     Returns
     -------
-    x_values : np.ndarray
+    x_values :
         The x-values as a NumPy array.
-    y_values : np.ndarray
+    y_values :
         The y-values as a NumPy array.
     """
     x_values = np.asarray(a=x_values, dtype=float)
@@ -39,17 +39,17 @@ def sanity_check(x_values: OneDArray, y_values: OneDArray) -> Tuple[OneDArray, O
     return x_values, y_values
 
 
-def parameter_logic(par_array: OneDArray, n_par: int, selected_models) -> OneDArray:
+def parameter_logic(par_array: ArrayLike, n_par: int, selected_models) -> np.ndarray:
     """
     Extract parameter values from a given function based on the number of parameters per fit and selected indices.
 
     Parameters
     ----------
-    par_array : np.ndarray
+    par_array :
         A 2D array where the first column contains the parameter values and the second contains its standard errors.
-    n_par : int
+    n_par :
         The number of parameters per fit (e.g., amplitude, mu, sigma, etc.).
-    selected_models : int, list of int, or None
+    selected_models :
         Indices of model components to extract.
         - If None, selects all components.
         - If int or list of int, selects the specified components (1-based indexing).
@@ -64,9 +64,9 @@ def parameter_logic(par_array: OneDArray, n_par: int, selected_models) -> OneDAr
 
 
 def _plot_fit(
-    x_values: OneDArray,
-    y_values: OneDArray,
-    parameters: OneDArray,
+    x_values: ArrayLike,
+    y_values: ArrayLike,
+    parameters: ArrayLike,
     n_fits: int,
     class_name: str,
     _n_fitter: Callable,
@@ -84,31 +84,31 @@ def _plot_fit(
 
     Parameters
     ----------
-    x_values : array-like
+    x_values :
         The x-axis values.
-    y_values : array-like
+    y_values :
         The observed data values corresponding to `x_values`.
-    parameters : tuple or list
+    parameters :
         The optimized parameters from the fitting process.
-    n_fits : int
+    n_fits :
         The number of fits performed.
-    class_name : str
+    class_name :
         The name of the fitting model class used.
-    _n_fitter : callable
+    _n_fitter :
         A function that evaluates the fitted model given `x_values` and `parameters`.
-    _n_plotter : callable
+    _n_plotter :
         A function that plots individual model components if `show_individuals` is True.
-    show_individuals: bool, optional
+    show_individuals:
         Whether to show individually fitted models or not.
-    x_label: str, optional
+    x_label:
         The label for the x-axis.
-    y_label: str, optional
+    y_label:
         The label for the y-axis.
-    title: str, optional
+    title:
         The title for the plot.
-    data_label: str, optional
+    data_label:
         The label for the data.
-    axis: Axes, optional
+    axis:
         Axes to plot instead of the entire figure. Defaults to None.
 
     Returns
@@ -130,9 +130,7 @@ def _plot_fit(
     else:
         raise ValueError()
 
-    plotter = plot_xy(
-        x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_config=LinePlotConfig(alpha=0.75)
-    )
+    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_config=lpc(alpha=0.75))
 
     plot_xy(
         x_data=x_values,
@@ -141,7 +139,7 @@ def _plot_fit(
         y_label=y_label,
         plot_title=title,
         data_label=tt,
-        plot_config=LinePlotConfig(color="k"),
+        plot_config=lpc(c="k"),
         axis=plotter,
     )
 

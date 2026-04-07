@@ -1,13 +1,14 @@
 """Created on Aug 14 00:45:37 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
 import numpy as np
 from scipy.special import betaincinv
 
 from .backend import BaseDistribution
-from .utilities_d import beta_cdf_, beta_pdf_, beta_log_pdf_, beta_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
+from .. import md_scipy_like
+from ..typing import ArrayLike
 
 
 class BetaDistribution(BaseDistribution):
@@ -15,22 +16,16 @@ class BetaDistribution(BaseDistribution):
     Class for Beta distribution.
 
     :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
-    :type amplitude: float, optional
 
     :param alpha: The :math:`\alpha` parameter. Defaults to 1.0.
-    :type alpha: float, optional
 
     :param beta: The :math:`\beta` parameter. Defaults to 1.0.
-    :type beta: float, optional
 
-    :param loc: float, optional The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
+    :param loc: The location parameter, for shifting. Defaults to 0.0.
 
-    :param scale: float, optional The scale parameter, for scaling. Defaults to 1.0.
-    :type scale: float, optional
+    :param scale: The scale parameter, for scaling. Defaults to 1.0.
 
-    :param normalize: bool, optional If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
+    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
 
     :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
     :raise NegativeAlphaError: If the provided value of :math:`\alpha` is negative.
@@ -60,7 +55,7 @@ class BetaDistribution(BaseDistribution):
        :language: python
        :linenos:
        :lineno-start: 14
-       :lines: 14-29
+       :lines: 13-28
 
     .. image:: ../../../images/beta_example1.png
        :alt: Beta distribution (5, 30)
@@ -106,50 +101,34 @@ class BetaDistribution(BaseDistribution):
     @md_scipy_like("v1.0.7")
     def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
-        Instantiate BetaDistribution with scipy parameterization.
+        Instantiate `BetaDistribution` with scipy parameterization.
 
-        Parameters
-        ----------
-        a: float
-            The shape parameter, :math:`\alpha`.
-        b: float
-            The shape parameter, :math:`\beta`.
-        loc: float, optional
-            The location parameter. Defaults to 0.0.
-        scale: float, optional
-            The scale parameter,. Defaults to 1.0.
+        :param a: The shape parameter, :math:`\alpha`.
+        :param b: The shape parameter, :math:`\beta`.
+        :param loc: The location parameter. Defaults to 0.0.
+        :param scale: The scale parameter,. Defaults to 1.0.
 
-        Returns
-        -------
-        BetaDistribution
-            An instance of normalized BetaDistribution.
+        :return: An instance of normalized `BetaDistribution`.
+        :rtype: `BetaDistribution`
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
-        Instantiate BetaDistribution with scipy parameterization.
+        Instantiate `BetaDistribution` with scipy parameterization.
 
-        Parameters
-        ----------
-        a: float
-            The shape parameter, :math:`\alpha`.
-        b: float
-            The shape parameter, :math:`\beta`.
-        loc: float, optional
-            The location parameter. Defaults to 0.0.
-        scale: float, optional
-            The scale parameter,. Defaults to 1.0.
+        :param a: The shape parameter, :math:`\alpha`.
+        :param b: The shape parameter, :math:`\beta`.
+        :param loc: The location parameter. Defaults to 0.0.
+        :param scale: The scale parameter,. Defaults to 1.0.
 
-        Returns
-        -------
-        BetaDistribution
-            An instance of normalized BetaDistribution.
+        :rtype: `BetaDistribution`
+        :return: An instance of normalized `BetaDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return beta_pdf_(
             x,
             amplitude=self.amplitude,
@@ -160,7 +139,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return beta_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -171,7 +150,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return beta_cdf_(
             x,
             amplitude=self.amplitude,
@@ -182,7 +161,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return beta_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -193,7 +172,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         a, b = self.alpha, self.beta
         s, _l = self.scale, self.loc
 
@@ -206,6 +185,6 @@ class BetaDistribution(BaseDistribution):
         num_ = a * b
         den_ = (a + b) ** 2 * (a + b + 1)
 
-        variance_ = s**2 * (num_ / den_)
+        variance_ = s ** 2 * (num_ / den_)
 
         return {"mean": mean_, "median": median_.astype(float), "variance": variance_, "std": np.sqrt(variance_)}

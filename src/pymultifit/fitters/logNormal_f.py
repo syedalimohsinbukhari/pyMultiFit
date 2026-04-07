@@ -4,8 +4,9 @@ import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import OneDArray, Params_
 from ..distributions.utilities_d import log_normal_pdf_
+from ..typing import ArrayLike
+
 
 # TODO:
 #   See if `exact_mean` can be reimplemented
@@ -14,7 +15,7 @@ from ..distributions.utilities_d import log_normal_pdf_
 class LogNormalFitter(BaseFitter):
     """A class for fitting multiple LogNormal distributions to the given data."""
 
-    def __init__(self, x_values: OneDArray, y_values: OneDArray, max_iterations: int = 1000):
+    def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
 
@@ -28,5 +29,5 @@ class LogNormalFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x, params: Params_):
+    def fitter(x, params: ArrayLike):
         return log_normal_pdf_(x, *params)

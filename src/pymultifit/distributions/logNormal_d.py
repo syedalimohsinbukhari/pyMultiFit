@@ -1,12 +1,14 @@
 """Created on Aug 03 21:02:45 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
 import numpy as np
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_
-from .. import md_scipy_like, OneDArray, suppress_numpy_warnings
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
+from .. import md_scipy_like, suppress_numpy_warnings
+from ..typing import ArrayLike
 
 
 class LogNormalDistribution(BaseDistribution):
@@ -134,28 +136,28 @@ class LogNormalDistribution(BaseDistribution):
         """
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return log_normal_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return log_normal_log_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return log_normal_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return log_normal_log_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
     @suppress_numpy_warnings()
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         m, s, l_ = np.exp(self.mu), self.std, self.loc
 
         # copied from scipy source-code,
@@ -164,6 +166,6 @@ class LogNormalDistribution(BaseDistribution):
         p = np.exp(s * s)
         mean_ = np.sqrt(p)
         variance_ = p * (p - 1)
-        variance_ *= m**2
+        variance_ *= m ** 2
 
         return {"mean": (m * mean_) + l_, "variance": variance_, "std": np.sqrt(variance_)}

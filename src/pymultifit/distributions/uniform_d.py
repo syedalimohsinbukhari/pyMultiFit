@@ -1,12 +1,12 @@
 """Created on Dec 11 20:40:15 2024"""
 
-from typing import Dict
-
 import numpy as np
+from numpy.typing import ArrayLike
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import uniform_cdf_, uniform_pdf_, uniform_log_pdf_, uniform_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
+from .. import md_scipy_like
 
 
 class UniformDistribution(BaseDistribution):
@@ -124,19 +124,19 @@ class UniformDistribution(BaseDistribution):
         """
         return cls(low=loc, high=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return uniform_pdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return uniform_log_pdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return uniform_cdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return uniform_log_cdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         low, high = self.low, self.low + self.high
 
         if low == high:

@@ -1,12 +1,12 @@
 """Created on Nov 30 10:49:49 2024"""
 
-from typing import Dict
-
 import numpy as np
+from numpy.typing import ArrayLike
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import exponential_cdf_, exponential_pdf_, exponential_log_pdf_, exponential_log_cdf_
-from .. import md_scipy_like, OneDArray, LOG_TWO
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
+from .. import LOG_TWO, md_scipy_like
 
 
 class ExponentialDistribution(BaseDistribution):
@@ -128,23 +128,23 @@ class ExponentialDistribution(BaseDistribution):
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return exponential_pdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return exponential_log_pdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return exponential_cdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return exponential_log_cdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         s, l_ = self.scale, self.loc
 
         mean_ = (1 / s) + l_
         median_ = (LOG_TWO / s) + l_
-        variance_ = 1 / s**2
+        variance_ = 1 / s ** 2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": np.sqrt(variance_)}

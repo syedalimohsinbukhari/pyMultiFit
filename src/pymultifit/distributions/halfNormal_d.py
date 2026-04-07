@@ -1,12 +1,14 @@
 """Created on Dec 04 03:57:18 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
 import numpy as np
+from numpy.typing import ArrayLike
 
-from .backend import errorHandling as erH, BaseDistribution
-from .utilities_d import half_normal_pdf_, half_normal_cdf_, half_normal_log_pdf_, half_normal_log_cdf_
-from .. import md_scipy_like, OneDArray, SQRT_TWO_BY_PI, TWO_BY_PI
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
+from .. import SQRT_TWO_BY_PI, TWO_BY_PI, md_scipy_like
 
 
 class HalfNormalDistribution(BaseDistribution):
@@ -127,25 +129,25 @@ class HalfNormalDistribution(BaseDistribution):
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return half_normal_pdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return half_normal_log_pdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return half_normal_cdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return half_normal_log_cdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         s_, l_ = self.scale, self.loc
 
         mean_ = SQRT_TWO_BY_PI
         mode_ = 0
 
         variance_ = 1 - TWO_BY_PI
-        variance_ *= s_**2
+        variance_ *= s_ ** 2
 
         return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}

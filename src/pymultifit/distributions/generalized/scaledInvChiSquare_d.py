@@ -4,14 +4,15 @@ from typing import Dict
 
 import numpy as np
 
-from ..backend import BaseDistribution, errorHandling as erH
+from ... import md_scipy_like
+from ..backend import BaseDistribution
+from ..backend import errorHandling as erH
 from ..utilities_d import (
-    scaled_inv_chi_square_pdf_,
-    scaled_inv_chi_square_log_pdf_,
     scaled_inv_chi_square_cdf_,
     scaled_inv_chi_square_log_cdf_,
+    scaled_inv_chi_square_log_pdf_,
+    scaled_inv_chi_square_pdf_,
 )
-from ... import md_scipy_like
 
 
 class ScaledInverseChiSquareDistribution(BaseDistribution):

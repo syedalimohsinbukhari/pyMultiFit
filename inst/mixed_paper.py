@@ -3,8 +3,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from pymultifit.distributions.utilities_d import gaussian_pdf_, skew_normal_pdf_, line
-from pymultifit.fitters import MixedDataFitter, GaussianFitter, SkewNormalFitter, LineFitter
+from pymultifit.distributions.utilities_d import gaussian_pdf_, line, skew_normal_pdf_
+from pymultifit.fitters import GaussianFitter, LineFitter, MixedDataFitter, SkewNormalFitter
 from pymultifit.generators import multiple_models
 
 x = np.linspace(-10, 10, 10_000)

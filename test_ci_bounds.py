@@ -8,8 +8,9 @@ import sys
 
 sys.path.insert(0, "src")
 
-from pymultifit.fitters.mixed_f import MixedDataFitter
 import numpy as np
+
+from pymultifit.fitters.mixed_f import MixedDataFitter
 
 print("=" * 70)
 print("MixedDataFitter CI Bounds Demonstration")

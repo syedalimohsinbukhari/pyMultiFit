@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 from scipy.stats import norm
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import GaussianDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+from . import base_test_functions as btf
 
 np.random.seed(45)
 

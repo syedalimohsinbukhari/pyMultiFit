@@ -1,12 +1,14 @@
 """Created on Aug 14 01:28:13 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
 import numpy as np
+from numpy.typing import ArrayLike
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import gamma_pdf_, gamma_log_pdf_, gamma_cdf_, gamma_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
+from .. import md_scipy_like
 
 
 class GammaDistribution(BaseDistribution):
@@ -140,31 +142,31 @@ class GammaDistribution(BaseDistribution):
         """
         return cls(shape=a, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return gamma_pdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return gamma_log_pdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return gamma_cdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return gamma_log_cdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         s, r, l_ = self.shape, self.scale, self.loc
 
         mean_ = (s * r) + l_
-        variance_ = s * r**2
+        variance_ = s * r ** 2
         mode_ = (s - 1) * r + l_ if s >= 1 else 0
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}

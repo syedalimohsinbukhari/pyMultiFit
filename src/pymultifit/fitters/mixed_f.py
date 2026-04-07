@@ -7,7 +7,7 @@ from typing import Callable, List, Optional, Sequence, Union
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from plotez import plot_xy, LinePlotConfig
+from plotez import LinePlotConfig, plot_xy
 from scipy.optimize import Bounds, curve_fit
 from tqdm import trange
 
@@ -26,7 +26,6 @@ from .skewNormal_f import SkewNormalFitter
 from .utilities_f import _plot_fit
 from .. import (
     CHI_SQUARE,
-    epsilon,
     EXPONENTIAL,
     FOLDED_NORMAL,
     GAMMA,
@@ -36,10 +35,10 @@ from .. import (
     LINE,
     LOG_NORMAL,
     NORMAL,
-    OneDArray,
-    Params_,
     SKEW_NORMAL,
+    epsilon,
 )
+from ..typing import ArrayLike, Params_
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {
@@ -69,8 +68,8 @@ class MixedDataFitter(BaseFitter):
 
     def __init__(
         self,
-        x_values: OneDArray,
-        y_values: OneDArray,
+        x_values: ArrayLike,
+        y_values: ArrayLike,
         model_list: List[str],
         fitter_dictionary: Optional[dict] = None,
         model_dictionary: Optional[dict] = None,
@@ -80,7 +79,7 @@ class MixedDataFitter(BaseFitter):
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                "Use `model_dictionary` instead.",
+                        "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -134,7 +133,7 @@ class MixedDataFitter(BaseFitter):
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -217,7 +216,7 @@ class MixedDataFitter(BaseFitter):
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index : p_index + n_pars]])
+            param_dict[model].extend([values[p_index: p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
@@ -235,7 +234,7 @@ class MixedDataFitter(BaseFitter):
             color = colors[i % len(colors)]
             class_model = self._instantiate_class(model=model)
             n_par = self._instantiate_n_par(model=model)
-            pars = self.params[param_index : param_index + n_par]
+            pars = self.params[param_index: param_index + n_par]
             y_component = class_model.fitter(x=x, params=pars)
             plot_xy(
                 x_data=x,
@@ -329,16 +328,8 @@ class MixedDataFitter(BaseFitter):
 
         return output
 
-    def ci_bounds(
-        self,
-        ci_level: Union[int, list[int]] = 95,
-        n_bootstrap: int = 1000,
-        plot_it: bool = False,
-        overall_ci: bool = True,
-        individual_ci: bool = False,
-        axis=None,
-        random_state: Optional[int] = None,
-    ):
+    def ci_bounds(self, ci_level: Union[int, list[int]] = 95, n_bootstrap: int = 1000, plot_it: bool = False,
+                  overall_ci: bool = True, individual_ci: bool = False, random_state: Optional[int] = None, axis=None):
         """
         Compute confidence interval (CI) bounds for fitted data using bootstrap resampling.
 
@@ -408,7 +399,7 @@ class MixedDataFitter(BaseFitter):
         param_index = 0
         for model in self.model_list:
             n_par = self._instantiate_n_par(model=model)
-            p0_list.append(tuple(original_params[param_index : param_index + n_par]))
+            p0_list.append(tuple(original_params[param_index: param_index + n_par]))
             param_index += n_par
 
         # Storage for bootstrap predictions
@@ -448,7 +439,7 @@ class MixedDataFitter(BaseFitter):
                     for model in self.model_list:
                         model_class = self._instantiate_class(model=model)
                         n_par = self._instantiate_n_par(model=model)
-                        model_params = temp_fitter.params[param_idx : param_idx + n_par]
+                        model_params = temp_fitter.params[param_idx: param_idx + n_par]
                         individual_pred = model_class.fitter(x=self.x_values, params=list(model_params))
                         individual_preds.append(individual_pred)
                         param_idx += n_par

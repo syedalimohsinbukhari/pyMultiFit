@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 from scipy.stats import invgamma
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import ScaledInverseChiSquareDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+from . import base_test_functions as btf
 
 np.random.seed(42)
 

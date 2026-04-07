@@ -1,12 +1,12 @@
 """Created on Nov 02 18:49:12 2025"""
 
-from typing import Dict
+from __future__ import annotations
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from .backend import BaseDistribution
-from .utilities_d import johnsonSU_pdf_, johnsonSU_log_pdf_, johnsonSU_cdf_, johnsonSU_log_cdf_
-from .. import OneDArray
+from .utilities_d import johnsonSU_cdf_, johnsonSU_log_cdf_, johnsonSU_log_pdf_, johnsonSU_pdf_
 
 
 class JohnsonSUDistribution(BaseDistribution):
@@ -32,7 +32,7 @@ class JohnsonSUDistribution(BaseDistribution):
     def from_scipy_params(cls, a, b, loc: float = 0.0, scale: float = 1.0) -> "JohnsonSUDistribution":
         return cls(gamma=a, delta=b, xi=loc, lambda_=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return johnsonSU_pdf_(
             x,
             amplitude=self.amplitude,
@@ -43,7 +43,7 @@ class JohnsonSUDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return johnsonSU_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -54,7 +54,7 @@ class JohnsonSUDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return johnsonSU_cdf_(
             x,
             amplitude=self.amplitude,
@@ -65,7 +65,7 @@ class JohnsonSUDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return johnsonSU_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -76,16 +76,16 @@ class JohnsonSUDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         a, b = self.gamma, self.delta
         s, l_ = self.lambda_, self.xi
 
-        mean_ = l_ - s * np.exp(1 / (2 * b**2)) * np.sinh(a / b)
+        mean_ = l_ - s * np.exp(1 / (2 * b ** 2)) * np.sinh(a / b)
 
         median_ = l_ + s * np.sinh(-a / b)
 
-        v1 = np.exp(b**-2) * np.cosh(2 * a / b) + 1
-        v2 = np.expm1(b**-2)
-        variance_ = s**2 / 2 * v1 * v2
+        v1 = np.exp(b ** -2) * np.cosh(2 * a / b) + 1
+        v2 = np.expm1(b ** -2)
+        variance_ = s ** 2 / 2 * v1 * v2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": np.sqrt(variance_)}

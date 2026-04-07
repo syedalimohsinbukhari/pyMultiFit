@@ -2,12 +2,10 @@
 
 import functools
 from functools import wraps
-from typing import Union, Tuple, List, Annotated
 
 import numpy as np
 import scipy.special as ssp
-from deprecated.sphinx import deprecated
-from numpy.typing import NDArray
+from deprecation import deprecated as _deprecated
 
 from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
 
@@ -27,22 +25,24 @@ def check_scale_positive(func):
 
 
 def mark_deprecated(ver_: str, new: str):
-    """Decorator that marks a scipy_like-style method as deprecated.
-
-    Automatically extracts the method name and constructs a standardized warning.
+    """Decorator that marks a `scipy_like`-style method as deprecated.
 
     Parameters
     ----------
-    ver_ : str
+    ver_
         The version where the method is deprecated.
-    new : str
+    new
         The name of the method to use instead.
     """
 
     def decorator(func):
         method_name = func.__name__
-        reason = f"Use `{new}` instead of `{method_name}`. `{method_name}` will be removed in a future release."
-        return deprecated(version=ver_, reason=reason)(func)
+        reason = f"Use ``{new}`` instead of ``{method_name}``. ``{method_name}`` will be removed in a future release."
+        return _deprecated(
+            deprecated_in=ver_,
+            removed_in=None,
+            details=reason
+        )(func)
 
     return decorator
 
@@ -52,12 +52,7 @@ def md_scipy_like(ver_: str, new: str = "from_scipy_params"):
 
 
 def suppress_numpy_warnings():
-    """
-    A decorator that suppresses NumPy warnings using np.errstate.
-
-    Parameters (all optional):
-        divide, over, under, invalid: Can be 'ignore', 'warn', 'raise', 'call', 'print', or 'log'
-    """
+    """A decorator that suppresses NumPy warnings using ``np.errstate``."""
 
     def decorator(func):
         @functools.wraps(func)
@@ -100,12 +95,6 @@ TWO_BY_PI = 2.0 * INV_PI
 SQRT_TWO_BY_PI = SQRT(TWO_BY_PI)
 LOG_TWO_BY_PI = LOG(TWO_BY_PI)
 LOG_SQRT_TWO_BY_PI = ssp.xlogy(0.5, TWO_BY_PI)
-
-ListOrNdArray = Union[List[int or float], np.ndarray]
-OneDArray = Annotated[NDArray[np.float64], "1D array"]
-
-ParamTuple = Tuple[int or float, ...]
-Params_ = Union[List[ParamTuple], np.ndarray]
 
 GAUSSIAN = "gaussian"
 NORMAL = GAUSSIAN

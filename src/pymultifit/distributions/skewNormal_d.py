@@ -1,13 +1,12 @@
 """Created on Aug 03 21:35:28 2024"""
 
-from typing import Dict
-
 import numpy as np
+from numpy.typing import ArrayLike
 
 from .backend import BaseDistribution
 from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
-from .utilities_d import skew_normal_cdf_, skew_normal_pdf_, skew_normal_log_pdf_
-from .. import md_scipy_like, LOG, OneDArray, TWO_PI, TWO_BY_PI, SQRT_TWO_BY_PI
+from .utilities_d import skew_normal_cdf_, skew_normal_log_pdf_, skew_normal_pdf_
+from .. import LOG, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, md_scipy_like
 
 
 class SkewNormalDistribution(BaseDistribution):
@@ -144,38 +143,38 @@ class SkewNormalDistribution(BaseDistribution):
         """
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return skew_normal_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return skew_normal_log_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return skew_normal_cdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return LOG(self.cdf(x))
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location
-        delta = alpha / np.sqrt(1 + alpha**2)
+        delta = alpha / np.sqrt(1 + alpha ** 2)
         sqrt_2_pi_delta = SQRT_TWO_BY_PI * delta
 
         def _m0(alpha_):
-            term2 = (1 - np.pi / 4) * sqrt_2_pi_delta**3 / (1 - TWO_BY_PI * delta**2)
+            term2 = (1 - np.pi / 4) * sqrt_2_pi_delta ** 3 / (1 - TWO_BY_PI * delta ** 2)
             term3 = (TWO_PI / abs(alpha_)) * np.exp(-TWO_PI / abs(alpha_)) * np.sign(alpha_)
             return sqrt_2_pi_delta - term2 - term3
 
         # Calculating mean, mode, variance, and std
         mean_ = epsilon + omega * sqrt_2_pi_delta
         mode_ = epsilon + omega * _m0(alpha)
-        variance_ = omega**2 * (1 - (2 * delta**2 / np.pi))
+        variance_ = omega ** 2 * (1 - (2 * delta ** 2 / np.pi))
         std_ = np.sqrt(variance_)
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": std_}

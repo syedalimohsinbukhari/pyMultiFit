@@ -4,14 +4,14 @@ import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import OneDArray, Params_
 from ..distributions.utilities_d import gaussian_pdf_
+from ..typing import ArrayLike
 
 
 class GaussianFitter(BaseFitter):
     """A class for fitting multiple Gaussian distributions to the given data."""
 
-    def __init__(self, x_values: OneDArray, y_values: OneDArray, max_iterations: int = 1000):
+    def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
@@ -22,5 +22,5 @@ class GaussianFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x, params: Params_):
+    def fitter(x, params: ArrayLike):
         return gaussian_pdf_(x, *params)

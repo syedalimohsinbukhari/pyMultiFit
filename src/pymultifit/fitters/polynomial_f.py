@@ -4,13 +4,13 @@ import numpy as np
 
 from .backend import BaseFitter
 from .utilities_f import sanity_check
-from .. import Params_
-from ..distributions.utilities_d import line, quadratic, cubic
+from ..distributions.utilities_d import cubic, line, quadratic
+from ..typing import ArrayLike
 
 
 class LineFitter(BaseFitter):
 
-    def __init__(self, x_values, y_values, max_iterations: int = 1000):
+    def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 2
@@ -22,12 +22,12 @@ class LineFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x, params: Params_):
+    def fitter(x, params: ArrayLike):
         return line(x, *params)
 
 
 class QuadraticFitter(BaseFitter):
-    def __init__(self, x_values, y_values, max_iterations: int = 1000):
+    def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 3
@@ -39,13 +39,13 @@ class QuadraticFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x, params: Params_):
+    def fitter(x, params: ArrayLike):
         return quadratic(x, *params)
 
 
 class CubicFitter(BaseFitter):
 
-    def __init__(self, x_values, y_values, max_iterations: int = 1000):
+    def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
         self.n_par = 4
@@ -57,5 +57,5 @@ class CubicFitter(BaseFitter):
         return lb, ub
 
     @staticmethod
-    def fitter(x, params: Params_):
+    def fitter(x, params: ArrayLike):
         return cubic(x, *params)

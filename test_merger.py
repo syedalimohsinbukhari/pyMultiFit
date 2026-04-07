@@ -5,9 +5,10 @@ import sys
 
 sys.path.insert(0, "src")
 
-from pymultifit.fitters.mixed_f import MixedDataFitter
-from pymultifit.fitters.backend.baseFitter import BaseFitter
 import numpy as np
+
+from pymultifit.fitters.backend.baseFitter import BaseFitter
+from pymultifit.fitters.mixed_f import MixedDataFitter
 
 # Test 1: Basic instantiation
 print("=" * 60)

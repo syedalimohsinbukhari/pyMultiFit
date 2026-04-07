@@ -5,33 +5,40 @@ from typing import Dict
 import numpy as np
 from scipy.special import gammaln
 
-from ..backend import BaseDistribution, errorHandling as erH
-from ..utilities_d import sym_gen_normal_pdf_, sym_gen_normal_cdf_
 from ... import md_scipy_like
+from ..backend import BaseDistribution
+from ..backend import errorHandling as erH
+from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
 
 
 class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     r"""
     Class for SymmetricGeneralizedNormalDistribution.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
 
-    :param shape: The shape parameter, :math:`\beta`. Defaults to 1.0.
-    :type shape: float, optional
+    shape
+        The shape parameter, :math:`\beta`. Defaults to 1.0.
 
-    :param loc: The shape parameter, :math:`\mu`. Defaults to 0.0.
-    :type loc: float, optional
+    loc
+        The shape parameter, :math:`\mu`. Defaults to 0.0.
 
-    :param scale: The standard deviation parameter, :math:`\alpha`. Defaults to 1.0.
-    :type scale: float, optional
+    scale
+        The standard deviation parameter, :math:`\alpha`. Defaults to 1.0.
 
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-     Defaults to ``False``.
-    :type normalize: bool, optional
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeScaleError: If the provided value of scale parameter is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
+    NegativeScaleError
+        If the provided value of the scale parameter is negative.
 
     Examples
     --------
@@ -99,17 +106,17 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
     @classmethod
     @md_scipy_like("1.0.7")
-    def scipy_like(cls, beta, loc: float = 0.0, scale: float = 1.0):
+    def scipy_like(cls, beta: float, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate SymmetricGeneralizedNormalDistribution with scipy parametrization.
 
         Parameters
         ----------
-        beta: float
+        beta
             The shape parameter.
-        loc: float, optional
+        loc
             The mean parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -126,11 +133,11 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        beta: float
+        beta
             The shape parameter.
-        loc: float, optional
+        loc
             The mean parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The scale parameter. Defaults to 1.0.
 
         Returns

@@ -1,13 +1,15 @@
 """Created on Dec 04 03:42:42 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.special import erf
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import folded_normal_cdf_, folded_normal_pdf_, folded_normal_log_pdf_, folded_normal_log_cdf_
-from .. import md_scipy_like, OneDArray, SQRT_TWO_BY_PI, SQRT_TWO
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import folded_normal_cdf_, folded_normal_log_cdf_, folded_normal_log_pdf_, folded_normal_pdf_
+from .. import SQRT_TWO, SQRT_TWO_BY_PI, md_scipy_like
 
 
 class FoldedNormalDistribution(BaseDistribution):
@@ -137,33 +139,33 @@ class FoldedNormalDistribution(BaseDistribution):
         """
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return folded_normal_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return folded_normal_log_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return folded_normal_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return folded_normal_log_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         mean_, std_ = self.mu, self.sigma
 
-        f1 = SQRT_TWO_BY_PI * np.exp(-0.5 * mean_**2)
+        f1 = SQRT_TWO_BY_PI * np.exp(-0.5 * mean_ ** 2)
         f2 = mean_ * erf(mean_ / SQRT_TWO)
 
         mu_y = f1 + f2
-        var_y = mean_**2 + 1 - mu_y**2
+        var_y = mean_ ** 2 + 1 - mu_y ** 2
 
-        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_**2, "std": np.sqrt(var_y * std_**2)}
+        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_ ** 2, "std": np.sqrt(var_y * std_ ** 2)}

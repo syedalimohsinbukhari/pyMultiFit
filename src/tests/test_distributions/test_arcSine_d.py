@@ -3,9 +3,9 @@
 import pytest
 from scipy.stats import arcsine
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions.arcSine_d import ArcSineDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+from . import base_test_functions as btf
 
 
 class TestArcSineDistribution:
