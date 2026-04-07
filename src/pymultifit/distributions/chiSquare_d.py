@@ -7,15 +7,14 @@ import numpy as np
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
 from .. import md_scipy_like
-from ..typing import ArrayLike
+from ..typing import ArrayLike, NDArray
 
 
 class ChiSquareDistribution(BaseDistribution):
     r"""
     Class for :class:`ChiSquareDistribution` distribution.
 
-    Notes
-    -----
+    .. note::
         The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
 
         * :math:`\alpha\ (\text{shape}) = \text{dof} / 2`,
@@ -141,22 +140,22 @@ class ChiSquareDistribution(BaseDistribution):
         """
         return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return chi_square_pdf_(
             x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return chi_square_log_pdf_(
             x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return chi_square_cdf_(
             x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return chi_square_log_cdf_(
             x, amplitude=self.amplitude, degree_of_freedom=self.dof, loc=self.loc, scale=self.scale, normalize=self.norm
         )

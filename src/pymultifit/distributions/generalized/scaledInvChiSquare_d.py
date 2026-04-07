@@ -1,18 +1,16 @@
 """Created on Feb 02 03:46:43 2025"""
 
-from typing import Dict
-
 import numpy as np
 
-from ... import md_scipy_like
-from ..backend import BaseDistribution
-from ..backend import errorHandling as erH
+from ..backend import BaseDistribution, errorHandling as erH
 from ..utilities_d import (
     scaled_inv_chi_square_cdf_,
     scaled_inv_chi_square_log_cdf_,
     scaled_inv_chi_square_log_pdf_,
     scaled_inv_chi_square_pdf_,
 )
+from ... import md_scipy_like
+from ...typing import NDArray, ArrayLike
 
 
 class ScaledInverseChiSquareDistribution(BaseDistribution):
@@ -34,38 +32,38 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
     @classmethod
     @md_scipy_like("1.0.7")
-    def scipy_like(cls, a, loc: float = 0.0, scale=1.0):
+    def scipy_like(cls, a: float, loc: float = 0.0, scale=1.0):
         return cls(df=a, loc=loc, scale=scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, a, loc: float = 0.0, scale=1.0):
+    def from_scipy_params(cls, a: float, loc: float = 0.0, scale=1.0):
         return cls(df=a, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return scaled_inv_chi_square_pdf_(
             x, amplitude=self.amplitude, df=self.df, scale=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return scaled_inv_chi_square_log_pdf_(
             x, amplitude=self.amplitude, df=self.df, scale=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return scaled_inv_chi_square_cdf_(
             x, amplitude=self.amplitude, df=self.df, scale=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return scaled_inv_chi_square_log_cdf_(
             x, amplitude=self.amplitude, df=self.df, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         v, tau2, loc = self.df, self.tau2, self.loc
         mean_ = (v * tau2) / (v - 2)
         mode_ = (v * tau2) / (v + 2)
-        variance_ = (2 * v**2 * tau2**2) / ((v - 2) ** 2 * (v - 4))
+        variance_ = (2 * v ** 2 * tau2 ** 2) / ((v - 2) ** 2 * (v - 4))
 
         return {
             "mean": mean_ + loc if v > 2 else np.inf,

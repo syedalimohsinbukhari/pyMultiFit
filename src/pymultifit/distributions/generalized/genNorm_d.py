@@ -6,8 +6,7 @@ import numpy as np
 from scipy.special import gammaln
 
 from ... import md_scipy_like
-from ..backend import BaseDistribution
-from ..backend import errorHandling as erH
+from ..backend import BaseDistribution, errorHandling as erH
 from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
 
 
@@ -19,16 +18,12 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     ----------
     amplitude
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-
     shape
         The shape parameter, :math:`\beta`. Defaults to 1.0.
-
     loc
         The shape parameter, :math:`\mu`. Defaults to 0.0.
-
     scale
         The standard deviation parameter, :math:`\alpha`. Defaults to 1.0.
-
     normalize
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.

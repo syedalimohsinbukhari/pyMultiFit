@@ -8,28 +8,36 @@ from scipy.special import betaincinv
 from .backend import BaseDistribution
 from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
 from .. import md_scipy_like
-from ..typing import ArrayLike
+from ..typing import ArrayLike, NDArray
 
 
 class BetaDistribution(BaseDistribution):
     r"""
     Class for Beta distribution.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    alpha
+        The :math:`\alpha` parameter. Defaults to 1.0.
+    beta
+        The :math:`\beta` parameter. Defaults to 1.0.
+    loc
+        The location parameter, for shifting. Defaults to 0.0.
+    scale
+        The scale parameter, for scaling. Defaults to 1.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
 
-    :param alpha: The :math:`\alpha` parameter. Defaults to 1.0.
-
-    :param beta: The :math:`\beta` parameter. Defaults to 1.0.
-
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-
-    :param scale: The scale parameter, for scaling. Defaults to 1.0.
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeAlphaError: If the provided value of :math:`\alpha` is negative.
-    :raise NegativeBetaError: If the provided value of :math:`\beta` is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
+    NegativeAlphaError
+        If the provided value of :math:`\alpha` is negative.
+    NegativeBetaError
+        If the provided value of :math:`\beta` is negative.
 
     Examples
     --------
@@ -103,13 +111,21 @@ class BetaDistribution(BaseDistribution):
         r"""
         Instantiate `BetaDistribution` with scipy parameterization.
 
-        :param a: The shape parameter, :math:`\alpha`.
-        :param b: The shape parameter, :math:`\beta`.
-        :param loc: The location parameter. Defaults to 0.0.
-        :param scale: The scale parameter,. Defaults to 1.0.
+        Parameters
+        ----------
+        a
+            The shape parameter, :math:`\alpha`.
+        b
+            The shape parameter, :math:`\beta`.
+        loc
+            The location parameter. Defaults to 0.0.
+        scale
+            The scale parameter,. Defaults to 1.0.
 
-        :return: An instance of normalized `BetaDistribution`.
-        :rtype: `BetaDistribution`
+        Returns
+        -------
+        BetaDistribution
+            An instance of normalized `BetaDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
@@ -118,17 +134,25 @@ class BetaDistribution(BaseDistribution):
         r"""
         Instantiate `BetaDistribution` with scipy parameterization.
 
-        :param a: The shape parameter, :math:`\alpha`.
-        :param b: The shape parameter, :math:`\beta`.
-        :param loc: The location parameter. Defaults to 0.0.
-        :param scale: The scale parameter,. Defaults to 1.0.
+        Parameters
+        ----------
+        a
+            The shape parameter, :math:`\alpha`.
+        b
+            The shape parameter, :math:`\beta`.
+        loc
+            The location parameter. Defaults to 0.0.
+        scale
+            The scale parameter,. Defaults to 1.0.
 
-        :rtype: `BetaDistribution`
-        :return: An instance of normalized `BetaDistribution`.
+        Returns
+        -------
+        BetaDistribution
+            An instance of normalized `BetaDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return beta_pdf_(
             x,
             amplitude=self.amplitude,
@@ -139,7 +163,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return beta_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -150,7 +174,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return beta_cdf_(
             x,
             amplitude=self.amplitude,
@@ -161,7 +185,7 @@ class BetaDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return beta_log_cdf_(
             x,
             amplitude=self.amplitude,

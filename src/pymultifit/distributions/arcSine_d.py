@@ -7,7 +7,7 @@ import numpy as np
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import arc_sine_cdf_, arc_sine_log_cdf_, arc_sine_log_pdf_, arc_sine_pdf_
 from .. import md_scipy_like
-from ..typing import ArrayLike
+from ..typing import ArrayLike, NDArray
 
 
 class ArcSineDistribution(BaseDistribution):
@@ -20,17 +20,27 @@ class ArcSineDistribution(BaseDistribution):
         * :math:`\alpha_\text{beta} = 0.5`,
         * :math:`\lambda_\text{beta} = 0.5`.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :param loc: The location parameter, :math:`-` shifting. Defaults to 0.0.
-    :param scale: The scale parameter, for shifting. Defaults to 1.0.
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    loc
+        The location parameter, :math:`-` shifting. Defaults to 0.0.
+    scale
+        The scale parameter, for shifting. Defaults to 1.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeScaleError: If the provided value of scale is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
+    NegativeScaleError
+        If the provided value of scale is negative.
 
-    :example:
-
+    Examples
+    --------
     Importing libraries
 
     .. literalinclude:: ../../../examples/basic/arcSine.py
@@ -76,11 +86,17 @@ class ArcSineDistribution(BaseDistribution):
         """
         Instantiate `ArcSineDistribution` with scipy parameterization.
 
-        :param loc: The location parameter. Defaults to 0.0.
-        :param scale: The scale parameter. Defaults to 1.0.
+        Parameters
+        ----------
+        loc
+            The location parameter. Defaults to 0.0.
+        scale
+            The scale parameter. Defaults to 1.0.
 
-        :rtype: `ArcSineDistribution`
-        :return: An instance of normalized `ArcSineDistribution`.
+        Returns
+        -------
+        ArcSineDistribution
+            An instance of normalized `ArcSineDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
@@ -89,24 +105,30 @@ class ArcSineDistribution(BaseDistribution):
         """
         Instantiate `ArcSineDistribution` with scipy parameterization.
 
-        :param loc: The location parameter. Defaults to 0.0.
-        :param scale: The scale parameter. Defaults to 1.0.
+        Parameters
+        ----------
+        loc
+            The location parameter. Defaults to 0.0.
+        scale
+            The scale parameter. Defaults to 1.0.
 
-        :rtype: `ArcSineDistribution`
-        :return: An instance of normalized `ArcSineDistribution`.
+        Returns
+        -------
+        ArcSineDistribution
+            An instance of normalized `ArcSineDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return arc_sine_pdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return arc_sine_log_pdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return arc_sine_cdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return arc_sine_log_cdf_(x, amplitude=self.amplitude, loc=self.loc, scale=self.scale, normalize=self.norm)
 
     def stats(self) -> dict[str, float]:

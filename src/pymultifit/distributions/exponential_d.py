@@ -1,33 +1,36 @@
 """Created on Nov 30 10:49:49 2024"""
 
-import numpy as np
-from numpy.typing import ArrayLike
+from __future__ import annotations
 
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
+import numpy as np
+
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
 from .. import LOG_TWO, md_scipy_like
+from ..typing import NDArray, ArrayLike
 
 
 class ExponentialDistribution(BaseDistribution):
     r"""
     Class for Exponential distribution.
+    
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    scale
+        The scale parameter, :math:`\lambda`. Defaults to 1.0.
+    loc
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param scale: The scale parameter, :math:`\lambda`. Defaults to 1.0.
-    :type scale: float, optional
-
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-                      Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeScaleError: If the provided value of scale is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
+    NegativeScaleError
+        If the provided value of scale is negative.
 
     Examples
     --------
@@ -97,15 +100,15 @@ class ExponentialDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc: float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The rate parameter. Defaults to 1.0.
 
         Returns
         -------
         ExponentialDistribution
-            A instance of normalized ExponentialDistribution.
+            An instance of normalized ExponentialDistribution.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
@@ -116,28 +119,28 @@ class ExponentialDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc: float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The rate parameter. Defaults to 1.0.
 
         Returns
         -------
         ExponentialDistribution
-            A instance of normalized ExponentialDistribution.
+            An instance of normalized ExponentialDistribution.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return exponential_pdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return exponential_log_pdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return exponential_cdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return exponential_log_cdf_(x, amplitude=self.amplitude, lambda_=self.scale, loc=self.loc, normalize=self.norm)
 
     def stats(self) -> dict[str, float]:

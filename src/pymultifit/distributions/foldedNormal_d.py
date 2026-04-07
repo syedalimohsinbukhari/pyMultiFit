@@ -3,37 +3,37 @@
 from __future__ import annotations
 
 import numpy as np
-from numpy.typing import ArrayLike
 from scipy.special import erf
 
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import folded_normal_cdf_, folded_normal_log_cdf_, folded_normal_log_pdf_, folded_normal_pdf_
 from .. import SQRT_TWO, SQRT_TWO_BY_PI, md_scipy_like
+from ..typing import NDArray, ArrayLike
 
 
 class FoldedNormalDistribution(BaseDistribution):
     r"""
     Class for FoldedNormal distribution.
+    
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    mu
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    sigma
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    loc
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param mu: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type mu: float, optional
-
-    :param sigma: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    :type sigma: float, optional
-
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-        Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
+    NegativeStandardDeviationError
+        If the provided value of standard deviation is negative.
 
     Examples
     --------
@@ -104,11 +104,11 @@ class FoldedNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        c: float
+        c
             The shape parameter.
-        loc: float, optional
+        loc:
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -125,11 +125,11 @@ class FoldedNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        c: float
+        c
             The shape parameter.
-        loc: float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -139,22 +139,22 @@ class FoldedNormalDistribution(BaseDistribution):
         """
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return folded_normal_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return folded_normal_log_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return folded_normal_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return folded_normal_log_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )

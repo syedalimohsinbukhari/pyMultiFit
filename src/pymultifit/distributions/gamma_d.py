@@ -3,36 +3,38 @@
 from __future__ import annotations
 
 import numpy as np
-from numpy.typing import ArrayLike
 
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
 from .. import md_scipy_like
+from ..typing import ArrayLike, NDArray
 
 
 class GammaDistribution(BaseDistribution):
     r"""
     Class for Gamma distribution with shape and scale parameters.
-
-    :param amplitude: The amplitude of the PDF. Default is 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param shape: The shape parameter, :math:`\alpha`. Defaults to 1.0.
-    :type shape: float, optional
-
-    :param scale: The rate parameter, :math:`\theta`. Defaults to 1.0.
-    :type scale: float, optional
-
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeShapeError: If the provided value of shape is negative.
-    :raise NegativeScaleError: If the provided value of scale is negative.
+    
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Default is 1.0. Ignored if **normalize** is ``True``.
+    shape
+        The shape parameter, :math:`\alpha`. Defaults to 1.0.
+    scale
+        The rate parameter, :math:`\theta`. Defaults to 1.0.
+    loc
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
+    NegativeShapeError
+        If the provided value of shape is negative.
+    NegativeScaleError
+        If the provided value of scale is negative.
 
     Examples
     --------
@@ -107,11 +109,11 @@ class GammaDistribution(BaseDistribution):
 
         Parameters
         ----------
-        a: float
+        a
             The shape parameter.
-        loc: float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The scaling parameter. Defaults to 1.0.
 
         Returns
@@ -128,11 +130,11 @@ class GammaDistribution(BaseDistribution):
 
         Parameters
         ----------
-        a: float
+        a
             The shape parameter.
-        loc: float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The scaling parameter. Defaults to 1.0.
 
         Returns
@@ -142,22 +144,22 @@ class GammaDistribution(BaseDistribution):
         """
         return cls(shape=a, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return gamma_pdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return gamma_log_pdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return gamma_cdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return gamma_log_cdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )

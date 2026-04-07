@@ -6,19 +6,27 @@ import numpy as np
 
 from .backend import BaseDistribution
 from .utilities_d import beta_prime_cdf_, beta_prime_log_cdf_, beta_prime_log_pdf_, beta_prime_pdf_
-from ..typing import ArrayLike
+from ..typing import ArrayLike, NDArray
 
 
 class BetaPrimeDistribution(BaseDistribution):
     r"""
     Class for BetaPrime distribution.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
-    :param alpha: The shape parameter, :math:`\alpha`. Defaults to 1.
-    :param beta: The shape parameter, :math:`\beta`. Defaults to 1.
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-    :param scale: The scale parameter, for scaling. Defaults to 1.0.
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    alpha
+        The shape parameter, :math:`\alpha`. Defaults to 1.
+    beta
+        The shape parameter, :math:`\beta`. Defaults to 1.
+    loc
+        The location parameter, for shifting. Defaults to 0.0.
+    scale
+        The scale parameter, for scaling. Defaults to 1.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
 
     Examples
     --------
@@ -93,17 +101,25 @@ class BetaPrimeDistribution(BaseDistribution):
         r"""
         Instantiate `BetaPrimeDistribution` with scipy parameterization.
 
-        :param a: The shape parameter, :math:`\alpha`.
-        :param b: The shape parameter, :math:`\beta`.
-        :param loc: The location parameter. Defaults to 0.0.
-        :param scale: The scale parameter,. Defaults to 1.0.
+        Parameters
+        ----------
+        a
+            The shape parameter, :math:`\alpha`.
+        b
+            The shape parameter, :math:`\beta`.
+        loc
+            The location parameter. Defaults to 0.0.
+        scale
+            The scale parameter,. Defaults to 1.0.
 
-        :rtype: `BetaPrimeDistribution`
-        :return: An instance of normalized `BetaPrimeDistribution`.
+        Returns
+        -------
+        BetaPrimeDistribution
+            An instance of normalized `BetaPrimeDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return beta_prime_pdf_(
             x,
             amplitude=self.amplitude,
@@ -114,7 +130,7 @@ class BetaPrimeDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return beta_prime_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -125,7 +141,7 @@ class BetaPrimeDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return beta_prime_cdf_(
             x,
             amplitude=self.amplitude,
@@ -136,7 +152,7 @@ class BetaPrimeDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return beta_prime_log_cdf_(
             x,
             amplitude=self.amplitude,
