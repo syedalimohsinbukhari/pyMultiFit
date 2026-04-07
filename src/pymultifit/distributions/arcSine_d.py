@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from .backend import BaseDistribution
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import arc_sine_cdf_, arc_sine_log_cdf_, arc_sine_log_pdf_, arc_sine_pdf_
 from .. import md_scipy_like
 from ..typing import ArrayLike
@@ -61,6 +61,9 @@ class ArcSineDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
+        if not normalize and amplitude <= 0:
+            raise erH.NegativeAmplitudeError()
+
         self.amplitude = 1 if normalize else amplitude
         self.loc = loc
         self.scale = scale
