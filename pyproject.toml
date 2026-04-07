@@ -17,9 +17,8 @@ dependencies = [
     "scipy",
     "custom-inherit",
     "plotez",
-    "Deprecated",
+    "deprecation",
     "tqdm",
-    "deprecation>=2.1.0",
 ]
 keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
 classifiers = [
@@ -78,6 +77,7 @@ dev = [
     "sphinx-gallery",
     "sphinx-autobuild",
     "black[jupyter]",
+    "pylint",
     "isort",
     "mypy",
     "nox",
