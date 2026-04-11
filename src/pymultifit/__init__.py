@@ -70,6 +70,8 @@ doc_style = "numpy_napoleon_with_merge"
 INF = np.inf
 LOG = np.log
 SQRT = np.sqrt
+EXP = np.exp
+NAN = np.nan
 
 # taken from https://stackoverflow.com/a/19141711
 EPSILON = np.finfo(float).eps

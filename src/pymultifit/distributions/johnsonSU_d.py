@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-import numpy as np
-from numpy.typing import ArrayLike
+from numpy import sinh, expm1, cosh
 
 from .backend import BaseDistribution
 from .utilities_d import johnsonSU_cdf_, johnsonSU_log_cdf_, johnsonSU_log_pdf_, johnsonSU_pdf_
+from .. import SQRT, EXP
+from ..typing import ArrayLike, NDArray
 
 
 class JohnsonSUDistribution(BaseDistribution):
@@ -29,10 +30,10 @@ class JohnsonSUDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    def from_scipy_params(cls, a, b, loc: float = 0.0, scale: float = 1.0) -> "JohnsonSUDistribution":
+    def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "JohnsonSUDistribution":
         return cls(gamma=a, delta=b, xi=loc, lambda_=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return johnsonSU_pdf_(
             x,
             amplitude=self.amplitude,
@@ -43,7 +44,7 @@ class JohnsonSUDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return johnsonSU_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -54,7 +55,7 @@ class JohnsonSUDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return johnsonSU_cdf_(
             x,
             amplitude=self.amplitude,
@@ -65,7 +66,7 @@ class JohnsonSUDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return johnsonSU_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -80,12 +81,12 @@ class JohnsonSUDistribution(BaseDistribution):
         a, b = self.gamma, self.delta
         s, l_ = self.lambda_, self.xi
 
-        mean_ = l_ - s * np.exp(1 / (2 * b ** 2)) * np.sinh(a / b)
+        mean_ = l_ - s * EXP(1 / (2 * b ** 2)) * sinh(a / b)
 
-        median_ = l_ + s * np.sinh(-a / b)
+        median_ = l_ + s * sinh(-a / b)
 
-        v1 = np.exp(b ** -2) * np.cosh(2 * a / b) + 1
-        v2 = np.expm1(b ** -2)
+        v1 = EXP(b ** -2) * cosh(2 * a / b) + 1
+        v2 = expm1(b ** -2)
         variance_ = s ** 2 / 2 * v1 * v2
 
-        return {"mean": mean_, "median": median_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

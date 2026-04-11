@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import numpy as np
-
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
-from .. import LOG_TWO, md_scipy_like
-from ..typing import NDArray, ArrayLike
+from .. import LOG_TWO, md_scipy_like, SQRT
+from ..typing import ArrayLike, NDArray
 
 
 class ExponentialDistribution(BaseDistribution):
@@ -17,20 +15,19 @@ class ExponentialDistribution(BaseDistribution):
     Parameters
     ----------
     amplitude
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
     scale
         The scale parameter, :math:`\lambda`. Defaults to 1.0.
     loc
         The location parameter, for shifting. Defaults to 0.0.
     normalize
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+        
     Raises
     ------
     NegativeAmplitudeError
         If the provided value of amplitude is negative.
-    NegativeScaleError
-        If the provided value of scale is negative.
 
     Examples
     --------
@@ -84,8 +81,7 @@ class ExponentialDistribution(BaseDistribution):
     def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if scale <= 0:
-            raise erH.NegativeScaleError()
+
         self.amplitude = 1 if normalize else amplitude
         self.scale = scale
         self.loc = loc
@@ -150,4 +146,4 @@ class ExponentialDistribution(BaseDistribution):
         median_ = (LOG_TWO / s) + l_
         variance_ = 1 / s ** 2
 
-        return {"mean": mean_, "median": median_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

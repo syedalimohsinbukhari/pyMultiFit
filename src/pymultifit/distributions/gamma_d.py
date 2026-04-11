@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import ArrayLike
 
-from .backend import BaseDistribution, errorHandling as erH
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
 from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
-from .. import md_scipy_like
-from ..typing import ArrayLike, NDArray
+from .. import md_scipy_like, SQRT
 
 
 class GammaDistribution(BaseDistribution):
     r"""
     Class for Gamma distribution with shape and scale parameters.
-    
+
     Parameters
     ----------
     amplitude
@@ -25,16 +26,13 @@ class GammaDistribution(BaseDistribution):
     loc
         The location parameter, for shifting. Defaults to 0.0.
     normalize
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
     Raises
     ------
     NegativeAmplitudeError
         If the provided value of amplitude is negative.
-    NegativeShapeError
-        If the provided value of shape is negative.
-    NegativeScaleError
-        If the provided value of scale is negative.
 
     Examples
     --------
@@ -90,10 +88,7 @@ class GammaDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if shape <= 0:
-            raise erH.NegativeShapeError()
-        if scale <= 0:
-            raise erH.NegativeScaleError()
+
         self.amplitude = 1.0 if normalize else amplitude
         self.shape = shape
         self.scale = scale
@@ -144,22 +139,22 @@ class GammaDistribution(BaseDistribution):
         """
         return cls(shape=a, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> NDArray:
+    def pdf(self, x: ArrayLike) -> np.ndarray:
         return gamma_pdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: ArrayLike) -> NDArray:
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         return gamma_log_pdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: ArrayLike) -> NDArray:
+    def cdf(self, x: ArrayLike) -> np.ndarray:
         return gamma_cdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: ArrayLike) -> NDArray:
+    def logcdf(self, x: ArrayLike) -> np.ndarray:
         return gamma_log_cdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
@@ -171,4 +166,4 @@ class GammaDistribution(BaseDistribution):
         variance_ = s * r ** 2
         mode_ = (s - 1) * r + l_ if s >= 1 else 0
 
-        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

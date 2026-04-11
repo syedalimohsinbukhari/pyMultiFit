@@ -2,34 +2,33 @@
 
 from __future__ import annotations
 
-import numpy as np
-from numpy.typing import ArrayLike
-
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
-from .. import SQRT_TWO_BY_PI, TWO_BY_PI, md_scipy_like
+from .. import SQRT_TWO_BY_PI, TWO_BY_PI, md_scipy_like, SQRT
+from ..typing import ArrayLike, NDArray
 
 
 class HalfNormalDistribution(BaseDistribution):
     r"""
     Class for halfnormal distribution.
+    
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    scale
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    loc
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. 
+        Defaults to ``False``.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param scale: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    :type scale: float, optional
-
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
-
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
+    
     Examples
     --------
     Importing libraries:
@@ -129,16 +128,16 @@ class HalfNormalDistribution(BaseDistribution):
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return half_normal_pdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return half_normal_log_pdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return half_normal_cdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return half_normal_log_cdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
     def stats(self) -> dict[str, float]:
@@ -150,4 +149,4 @@ class HalfNormalDistribution(BaseDistribution):
         variance_ = 1 - TWO_BY_PI
         variance_ *= s_ ** 2
 
-        return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

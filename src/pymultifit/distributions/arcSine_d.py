@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import numpy as np
+from numpy import sqrt
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import arc_sine_cdf_, arc_sine_log_cdf_, arc_sine_log_pdf_, arc_sine_pdf_
@@ -19,7 +19,7 @@ class ArcSineDistribution(BaseDistribution):
 
         * :math:`\alpha_\text{beta} = 0.5`,
         * :math:`\lambda_\text{beta} = 0.5`.
-
+        
     Parameters
     ----------
     amplitude
@@ -92,11 +92,11 @@ class ArcSineDistribution(BaseDistribution):
             The location parameter. Defaults to 0.0.
         scale
             The scale parameter. Defaults to 1.0.
-
+            
         Returns
         -------
         ArcSineDistribution
-            An instance of normalized `ArcSineDistribution`.
+            An instance of normalized ArcSineDistribution.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
@@ -115,7 +115,7 @@ class ArcSineDistribution(BaseDistribution):
         Returns
         -------
         ArcSineDistribution
-            An instance of normalized `ArcSineDistribution`.
+            An instance of normalized ArcSineDistribution.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
@@ -138,4 +138,4 @@ class ArcSineDistribution(BaseDistribution):
         median_ = (s_ * 0.5) + l_
         variance_ = (1 / 8) * s_ ** 2
 
-        return {"mean": mean_, "median": median_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "median": median_, "variance": variance_, "std": sqrt(variance_)}

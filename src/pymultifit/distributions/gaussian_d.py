@@ -30,8 +30,6 @@ class GaussianDistribution(BaseDistribution):
     ------
     NegativeAmplitudeError
         If the provided value of amplitude is negative.
-    NegativeStandardDeviationError
-        If the provided value of standard deviation is negative.
 
     Examples
     --------
@@ -85,8 +83,6 @@ class GaussianDistribution(BaseDistribution):
     def __init__(self, amplitude: float = 1.0, mu: float = 0.0, std: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if std <= 0:
-            raise erH.NegativeStandardDeviationError()
 
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu

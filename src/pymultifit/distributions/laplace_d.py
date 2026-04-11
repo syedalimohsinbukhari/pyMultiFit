@@ -2,32 +2,32 @@
 
 from __future__ import annotations
 
-import numpy as np
-
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
-from .. import md_scipy_like
-from ..typing import ArrayLike
+from .. import md_scipy_like, SQRT
+from ..typing import ArrayLike, NDArray
 
 
 class LaplaceDistribution(BaseDistribution):
     r"""
     Class for Laplace distribution.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    mean
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    diversity
+        The diversity parameter, :math:`b`. Defaults to 1.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
-    :param mean: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type mean: float, optional
-
-    :param diversity: The diversity parameter, :math:`b`. Defaults to 1.0.
-    :type diversity: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeScaleError: If the provided value of diversity is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -81,8 +81,7 @@ class LaplaceDistribution(BaseDistribution):
     def __init__(self, amplitude: float = 1.0, mean: float = 0, diversity: float = 1, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if diversity <= 0:
-            raise erH.NegativeScaleError("diversity")
+
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mean
         self.b = diversity
@@ -97,9 +96,9 @@ class LaplaceDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc: float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -116,9 +115,9 @@ class LaplaceDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc: float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -128,16 +127,16 @@ class LaplaceDistribution(BaseDistribution):
         """
         return cls(mean=loc, diversity=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return laplace_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return laplace_log_pdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return laplace_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return laplace_log_cdf_(x, amplitude=self.amplitude, mean=self.mu, diversity=self.b, normalize=self.norm)
 
     def stats(self) -> dict[str, float]:
@@ -145,4 +144,4 @@ class LaplaceDistribution(BaseDistribution):
 
         variance_ = 2 * b ** 2
 
-        return {"mean": m, "median": m, "mode": m, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": m, "median": m, "mode": m, "variance": variance_, "std": SQRT(variance_)}

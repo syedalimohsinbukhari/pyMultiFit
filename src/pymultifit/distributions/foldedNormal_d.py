@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import numpy as np
 from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import folded_normal_cdf_, folded_normal_log_cdf_, folded_normal_log_pdf_, folded_normal_pdf_
-from .. import SQRT_TWO, SQRT_TWO_BY_PI, md_scipy_like
+from .. import SQRT_TWO, SQRT_TWO_BY_PI, md_scipy_like, SQRT, EXP
 from ..typing import NDArray, ArrayLike
 
 
@@ -26,14 +25,13 @@ class FoldedNormalDistribution(BaseDistribution):
     loc
         The location parameter, for shifting. Defaults to 0.0.
     normalize
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Raises
     ------
     NegativeAmplitudeError
         If the provided value of amplitude is negative.
-    NegativeStandardDeviationError
-        If the provided value of standard deviation is negative.
 
     Examples
     --------
@@ -89,6 +87,7 @@ class FoldedNormalDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
+
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu
         self.sigma = sigma
@@ -98,7 +97,7 @@ class FoldedNormalDistribution(BaseDistribution):
 
     @classmethod
     @md_scipy_like("1.0.7")
-    def scipy_like(cls, c, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
+    def scipy_like(cls, c: float, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
         r"""
         Instantiate FoldedNormalDistribution with scipy parametrization.
 
@@ -106,7 +105,7 @@ class FoldedNormalDistribution(BaseDistribution):
         ----------
         c
             The shape parameter.
-        loc:
+        loc
             The location parameter. Defaults to 0.0.
         scale
             The scale parameter. Defaults to 1.0.
@@ -119,7 +118,7 @@ class FoldedNormalDistribution(BaseDistribution):
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, c, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
+    def from_scipy_params(cls, c: float, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
         r"""
         Instantiate FoldedNormalDistribution with scipy parametrization.
 
@@ -162,10 +161,10 @@ class FoldedNormalDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         mean_, std_ = self.mu, self.sigma
 
-        f1 = SQRT_TWO_BY_PI * np.exp(-0.5 * mean_ ** 2)
+        f1 = SQRT_TWO_BY_PI * EXP(-0.5 * mean_ ** 2)
         f2 = mean_ * erf(mean_ / SQRT_TWO)
 
         mu_y = f1 + f2
         var_y = mean_ ** 2 + 1 - mu_y ** 2
 
-        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_ ** 2, "std": np.sqrt(var_y * std_ ** 2)}
+        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_ ** 2, "std": SQRT(var_y * std_ ** 2)}

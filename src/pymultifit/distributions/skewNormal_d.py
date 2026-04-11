@@ -1,35 +1,37 @@
 """Created on Aug 03 21:35:28 2024"""
 
-import numpy as np
-from numpy.typing import ArrayLike
+from __future__ import annotations
 
-from .backend import BaseDistribution
-from .backend.errorHandling import NegativeAmplitudeError, NegativeScaleError
+from numpy import sign
+
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import skew_normal_cdf_, skew_normal_log_pdf_, skew_normal_pdf_
-from .. import LOG, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, md_scipy_like
+from .. import LOG, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, md_scipy_like, SQRT, PI, EXP
+from ..typing import NDArray, ArrayLike
 
 
 class SkewNormalDistribution(BaseDistribution):
     r"""
     Class for SkewNormal distribution.
-
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param shape: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type shape: float, optional
-
-    :param scale: The scale parameter, for scaling. Defaults to 1.0,
-    :type scale: float, optional
-
-    :param location: The location parameter, for shifting. Defaults to 0.0.
-    :type location: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+    
+    Parameters
+    ----------
+    amplitude
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    shape
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    scale
+        The scale parameter, for scaling. Defaults to 1.0.
+    location
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. 
+        Defaults to ``False``.
+        
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -89,9 +91,7 @@ class SkewNormalDistribution(BaseDistribution):
         normalize: bool = False,
     ):
         if not normalize and amplitude < 0.0:
-            raise NegativeAmplitudeError()
-        if scale <= 0.0:
-            raise NegativeScaleError()
+            raise erH.NegativeAmplitudeError()
 
         self.amplitude = 1 if normalize else amplitude
         self.shape = shape
@@ -108,11 +108,11 @@ class SkewNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        a : float
+        a
             The skewness parameter.
-        loc : float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale : float, optional
+        scale
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -129,11 +129,11 @@ class SkewNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        a : float
+        a
             The skewness parameter.
-        loc : float, optional
+        loc
             The location parameter. Defaults to 0.0.
-        scale : float, optional
+        scale
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -143,38 +143,38 @@ class SkewNormalDistribution(BaseDistribution):
         """
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return skew_normal_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def logpdf(self, x: ArrayLike) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return skew_normal_log_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def cdf(self, x: ArrayLike) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return skew_normal_cdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.location, scale=self.scale, normalize=self.norm
         )
 
-    def logcdf(self, x: ArrayLike) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return LOG(self.cdf(x))
 
     def stats(self) -> dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location
-        delta = alpha / np.sqrt(1 + alpha ** 2)
+        delta = alpha / SQRT(1 + alpha ** 2)
         sqrt_2_pi_delta = SQRT_TWO_BY_PI * delta
 
         def _m0(alpha_):
-            term2 = (1 - np.pi / 4) * sqrt_2_pi_delta ** 3 / (1 - TWO_BY_PI * delta ** 2)
-            term3 = (TWO_PI / abs(alpha_)) * np.exp(-TWO_PI / abs(alpha_)) * np.sign(alpha_)
+            term2 = (1 - PI / 4) * sqrt_2_pi_delta ** 3 / (1 - TWO_BY_PI * delta ** 2)
+            term3 = (TWO_PI / abs(alpha_)) * EXP(-TWO_PI / abs(alpha_)) * sign(alpha_)
             return sqrt_2_pi_delta - term2 - term3
 
         # Calculating mean, mode, variance, and std
         mean_ = epsilon + omega * sqrt_2_pi_delta
         mode_ = epsilon + omega * _m0(alpha)
-        variance_ = omega ** 2 * (1 - (2 * delta ** 2 / np.pi))
-        std_ = np.sqrt(variance_)
+        variance_ = omega ** 2 * (1 - (2 * delta ** 2 / PI))
+        std_ = SQRT(variance_)
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": std_}

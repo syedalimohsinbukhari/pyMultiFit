@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import numpy as np
+from numpy import sqrt
 from scipy.special import betaincinv
 
-from .backend import BaseDistribution
+from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
 from .. import md_scipy_like
 from ..typing import ArrayLike, NDArray
@@ -14,7 +14,7 @@ from ..typing import ArrayLike, NDArray
 class BetaDistribution(BaseDistribution):
     r"""
     Class for Beta distribution.
-
+    
     Parameters
     ----------
     amplitude
@@ -28,16 +28,13 @@ class BetaDistribution(BaseDistribution):
     scale
         The scale parameter, for scaling. Defaults to 1.0.
     normalize
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+        
     Raises
     ------
     NegativeAmplitudeError
         If the provided value of amplitude is negative.
-    NegativeAlphaError
-        If the provided value of :math:`\alpha` is negative.
-    NegativeBetaError
-        If the provided value of :math:`\beta` is negative.
 
     Examples
     --------
@@ -97,6 +94,9 @@ class BetaDistribution(BaseDistribution):
         scale: float = 1.0,
         normalize: bool = False,
     ):
+        if amplitude < 0:
+            raise erH.NegativeAmplitudeError()
+
         self.amplitude = 1.0 if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
@@ -110,7 +110,7 @@ class BetaDistribution(BaseDistribution):
     def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
         Instantiate `BetaDistribution` with scipy parameterization.
-
+        
         Parameters
         ----------
         a
@@ -121,11 +121,11 @@ class BetaDistribution(BaseDistribution):
             The location parameter. Defaults to 0.0.
         scale
             The scale parameter,. Defaults to 1.0.
-
+            
         Returns
         -------
         BetaDistribution
-            An instance of normalized `BetaDistribution`.
+            An instance of normalized BetaDistribution.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
@@ -148,7 +148,7 @@ class BetaDistribution(BaseDistribution):
         Returns
         -------
         BetaDistribution
-            An instance of normalized `BetaDistribution`.
+            An instance of normalized BetaDistribution.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
@@ -211,4 +211,4 @@ class BetaDistribution(BaseDistribution):
 
         variance_ = s ** 2 * (num_ / den_)
 
-        return {"mean": mean_, "median": median_.astype(float), "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "median": median_.astype(float), "variance": variance_, "std": sqrt(variance_)}

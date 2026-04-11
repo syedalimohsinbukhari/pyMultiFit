@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import numpy as np
-
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
-from .. import md_scipy_like
+from .. import md_scipy_like, SQRT
 from ..typing import ArrayLike, NDArray
 
 
@@ -14,7 +12,8 @@ class ChiSquareDistribution(BaseDistribution):
     r"""
     Class for :class:`ChiSquareDistribution` distribution.
 
-    .. note::
+    Notes
+    -----
         The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
 
         * :math:`\alpha\ (\text{shape}) = \text{dof} / 2`,
@@ -29,7 +28,8 @@ class ChiSquareDistribution(BaseDistribution):
     loc
         The location parameter, for shifting. Defaults to 0.0.
     normalize
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Examples
     --------
@@ -90,6 +90,7 @@ class ChiSquareDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
+
         self.amplitude = 1 if normalize else amplitude
         self.dof = degree_of_freedom
         self.loc = loc
@@ -168,4 +169,4 @@ class ChiSquareDistribution(BaseDistribution):
         mode_ = max(df - 2, 0)
         variance_ = 2 * df * s ** 2
 
-        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}
