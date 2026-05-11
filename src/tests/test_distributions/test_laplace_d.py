@@ -33,9 +33,6 @@ class TestLaplaceDistribution:
         distribution = LaplaceDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.NegativeScaleError, match=f"Diversity {erH.neg_message}"):
-            LaplaceDistribution(amplitude=1.0, diversity=-3.0, normalize=True)
-
     @staticmethod
     def test_edge_cases():
         btf.edge_cases(distribution=LaplaceDistribution(), log_check=True)

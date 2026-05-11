@@ -6,9 +6,9 @@ from ...pymultifit import EPSILON
 
 loc1_parameter = np.random.uniform(low=-100, high=100, size=500)
 loc2_parameter = np.random.uniform(low=-100, high=100, size=500)
-scale_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
-shape1_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
-shape2_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
+scale_parameter = np.random.uniform(low=-100, high=100, size=500)
+shape1_parameter = np.random.uniform(low=-100, high=100, size=500)
+shape2_parameter = np.random.uniform(low=-100, high=100, size=500)
 
 
 def edge_cases(distribution, log_check=False):

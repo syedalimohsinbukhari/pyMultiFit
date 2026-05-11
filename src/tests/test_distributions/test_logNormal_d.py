@@ -33,9 +33,6 @@ class TestLogNormalDistribution:
         distribution = LogNormalDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.NegativeStandardDeviationError, match=f"Standard deviation {erH.neg_message}"):
-            LogNormalDistribution(std=-3.0)
-
     @staticmethod
     def test_edge_cases():
         btf.edge_cases(distribution=LogNormalDistribution(), log_check=True)

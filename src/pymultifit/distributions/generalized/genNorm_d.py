@@ -6,7 +6,8 @@ import numpy as np
 from scipy.special import gammaln
 
 from ... import md_scipy_like
-from ..backend import BaseDistribution, errorHandling as erH
+from ..backend import BaseDistribution
+from ..backend import errorHandling as erH
 from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
 
 

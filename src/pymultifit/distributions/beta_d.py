@@ -5,32 +5,33 @@ from __future__ import annotations
 from numpy import sqrt
 from scipy.special import betaincinv
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
-from .. import md_scipy_like
+from .. import NAN_DICT, md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
 
 
 class BetaDistribution(BaseDistribution):
     r"""
     Class for Beta distribution.
-    
+
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
-    alpha
+    alpha :
         The :math:`\alpha` parameter. Defaults to 1.0.
-    beta
+    beta :
         The :math:`\beta` parameter. Defaults to 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    scale
+    scale :
         The scale parameter, for scaling. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-        
+
     Raises
     ------
     NegativeAmplitudeError
@@ -110,18 +111,18 @@ class BetaDistribution(BaseDistribution):
     def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
         Instantiate `BetaDistribution` with scipy parameterization.
-        
+
         Parameters
         ----------
-        a
+        a :
             The shape parameter, :math:`\alpha`.
-        b
+        b :
             The shape parameter, :math:`\beta`.
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter,. Defaults to 1.0.
-            
+
         Returns
         -------
         BetaDistribution
@@ -136,13 +137,13 @@ class BetaDistribution(BaseDistribution):
 
         Parameters
         ----------
-        a
+        a :
             The shape parameter, :math:`\alpha`.
-        b
+        b :
             The shape parameter, :math:`\beta`.
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter,. Defaults to 1.0.
 
         Returns
@@ -200,6 +201,9 @@ class BetaDistribution(BaseDistribution):
         a, b = self.alpha, self.beta
         s, _l = self.scale, self.loc
 
+        if any(param <= 0 for param in (a, b, s)):
+            return NAN_DICT
+
         mean_ = a / (a + b)
         mean_ = (s * mean_) + _l
 
@@ -209,6 +213,6 @@ class BetaDistribution(BaseDistribution):
         num_ = a * b
         den_ = (a + b) ** 2 * (a + b + 1)
 
-        variance_ = s ** 2 * (num_ / den_)
+        variance_ = s**2 * (num_ / den_)
 
         return {"mean": mean_, "median": median_.astype(float), "variance": variance_, "std": sqrt(variance_)}

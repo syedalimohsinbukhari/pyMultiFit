@@ -85,6 +85,7 @@ import scipy.special as ssp
 from custom_inherit import doc_inherit  # type: ignore
 
 from .. import (
+    EXP,
     INF,
     LOG,
     LOG_SQRT_TWO_BY_PI,
@@ -98,14 +99,21 @@ from .. import (
     doc_style,
     suppress_numpy_warnings,
 )
-from ..typing import NDArray, ArrayLike
+from ..typing import ArrayLike, NDArray
 
 
-def reject_values(x_shp, a=None, b=None, c=None):
-    for val in (a, b, c):
+def reject_x(x: NDArray, shp1=None, shp2=None, loc=0, scale=1) -> tuple[NDArray | None, bool]:
+    for val in (shp1, shp2, scale):
         if val is not None and val <= 0:
-            return True
-    return False
+            return None, True
+
+    if x.size == 0:
+        return None, True
+
+    x = np.asarray(x) - loc
+    x /= scale
+
+    return x, False
 
 
 @suppress_numpy_warnings()
@@ -126,9 +134,9 @@ def arc_sine_pdf_(
     scale
         The scale parameter, specifying the width of the distribution. Defaults to 1.0.
     normalize
-        If True, the distribution is normalized so that the total area under the PDF equals 1. 
+        If True, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-        
+
     Returns
     -------
     NDArray
@@ -146,15 +154,10 @@ def arc_sine_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    ret_ = reject_values(x.shape, scale)
+    y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     c1 = (y > 0) & (y < 1)
     c2 = y == 0
@@ -191,15 +194,10 @@ def arc_sine_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    ret_ = reject_values(x.shape, scale)
+    y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     c1 = (y > 0) & (y < 1)
     c2 = y == 0
@@ -236,15 +234,10 @@ def arc_sine_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    ret_ = reject_values(x.shape, scale)
+    y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
@@ -272,15 +265,10 @@ def arc_sine_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    ret_ = reject_values(x.shape, scale)
+    y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
@@ -337,15 +325,10 @@ def beta_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    ret_ = reject_values(x.shape, alpha, beta_, scale)
+    y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     conditions, main = _beta_expr(y=y, a=alpha, b=beta_, un_log=True)
 
@@ -384,15 +367,10 @@ def beta_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    ret_ = reject_values(x.shape, alpha, beta_, scale)
+    y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     conditions, main = _beta_expr(y=y, a=alpha, b=beta_)
 
@@ -441,15 +419,10 @@ def beta_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    ret_ = reject_values(x.shape, alpha, beta_, scale)
+    y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=ssp.betainc(alpha, beta_, y))
 
@@ -481,15 +454,10 @@ def beta_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    ret_ = reject_values(x.shape, alpha, beta_, scale)
+    y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(ssp.betainc(alpha, beta_, y)))
 
@@ -543,15 +511,10 @@ def beta_prime_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    ret_ = reject_values(x.shape, alpha, beta_, scale)
+    y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     log_expr = ssp.xlogy(alpha - 1.0, y) - ssp.xlog1py(alpha + beta_, y) - ssp.betaln(alpha, beta_)
     pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[np.exp(log_expr), np.nan], default=0.0)
@@ -589,15 +552,10 @@ def beta_prime_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
     """
-    ret_ = reject_values(x.shape, alpha, beta_, scale)
+    y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
-    if ret_:
+    if rej_:
         return np.full(x.shape, np.nan)
-
-    y = preprocess_input(x=x, loc=loc, scale=scale)
-
-    if y.size == 0:
-        return y
 
     expr = ssp.xlogy(alpha - 1.0, y) - ssp.xlog1py(alpha + beta_, y) - ssp.betaln(alpha, beta_)
     log_pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[expr, np.nan], default=-INF)
@@ -645,10 +603,10 @@ def beta_prime_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     z = y / (1 + y)
     return np.where(y > 0, ssp.betainc(alpha, beta_, z), 0)
@@ -688,10 +646,10 @@ def beta_prime_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     z = y / (1 + y)
     return np.where(y > 0, LOG(ssp.betainc(alpha, beta_, z)), -INF)
@@ -742,10 +700,10 @@ def chi_square_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     df_half = degree_of_freedom / 2.0
 
@@ -789,10 +747,10 @@ def chi_square_log_pdf_(
     The final PDF is expressed as :math:`\ell(y) - \ln(\text{scale})`.
 
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     df_half = degree_of_freedom / 2.0
 
@@ -837,10 +795,10 @@ def chi_square_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y > 0, ssp.gammainc(degree_of_freedom / 2, y / 2), 0)
 
@@ -871,10 +829,10 @@ def chi_square_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y > 0, LOG(ssp.gammainc(degree_of_freedom / 2, y / 2)), -INF)
 
@@ -910,7 +868,7 @@ def cubic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float
 
     where, :math:`a`, :math:`b`, :math:`c`, and :math:`d` are the cubic coefficients.
     """
-    return a * x ** 3 + b * x ** 2 + c * x + d
+    return a * x**3 + b * x**2 + c * x + d
 
 
 @suppress_numpy_warnings()
@@ -957,10 +915,10 @@ def exponential_pdf_(
     and :math:`\theta = \dfrac{1}{\lambda}`. The final PDF is expressed as :math:`f(y)/\theta`.
     """
     rate = 1 / lambda_
-    y = preprocess_input(x=x, loc=loc, scale=rate)
+    y, rej_ = reject_x(x, loc=loc, scale=rate)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     pdf_ = np.where(y >= 0, np.exp(-y), 0)
     pdf_ /= rate
@@ -1004,10 +962,10 @@ def exponential_log_pdf_(
     and :math:`\theta = \dfrac{1}{\lambda}`. The final logPDF is expressed as :math:`\ell(y) - \ln(\theta)`.
     """
     rate = 1 / lambda_
-    y = preprocess_input(x=x, loc=loc, scale=rate)
+    y, rej_ = reject_x(x, loc=loc, scale=rate)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     log_pdf_ = np.where(y >= 0, -y, -INF)
     log_pdf_ -= LOG(rate)
@@ -1045,10 +1003,11 @@ def exponential_cdf_(
 
     and :math:`\theta = \dfrac{1}{\lambda}`. The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=1 / lambda_)
+    rate = 1 / lambda_
+    y, rej_ = reject_x(x, loc=loc, scale=rate)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y >= 0, -ssp.expm1(-y), 0)
 
@@ -1073,10 +1032,11 @@ def exponential_log_cdf_(
 
     and :math:`\theta = \dfrac{1}{\lambda}`. The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=1 / lambda_)
+    rate = 1 / lambda_
+    y, rej_ = reject_x(x, loc=loc, scale=rate)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y >= 0, LOG(-ssp.expm1(-y)), -INF)
 
@@ -1127,10 +1087,10 @@ def folded_normal_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{\sigma}`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=sigma)
+    y, rej_ = reject_x(x, mean, loc=loc, scale=sigma)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     pdf_ = np.where(
         y >= 0, gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True), 0
@@ -1169,10 +1129,10 @@ def folded_normal_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln(\text{\sigma})`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=sigma)
+    y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     log_pdf_ = np.where(
         y >= 0, LOG(gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True)), -INF
@@ -1218,10 +1178,10 @@ def folded_normal_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=sigma)
+    y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     q = (y + mean) / SQRT_TWO
     r = (y - mean) / SQRT_TWO
@@ -1256,10 +1216,10 @@ def folded_normal_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=sigma)
+    y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     q = (y + mean) / SQRT_TWO
     r = (y - mean) / SQRT_TWO
@@ -1293,13 +1253,10 @@ def _folded(x: ArrayLike, mean: float, loc: float, scale: float, g_func: Callabl
     NDArray
         The additive gaussian part of the folded normal distribution.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, mean, scale, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
-
-    if scale <= 0 or mean < 0:
-        return np.full(shape=x.size, fill_value=np.nan)
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     g1 = g_func(x=y, mean=mean, normalize=True)
     g2 = g_func(x=y, mean=-mean, normalize=True)
@@ -1340,10 +1297,10 @@ def gamma_pdf_(
     NDArray
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
-    y = preprocess_input(x=x, loc=loc, scale=theta)
+    y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     pdf_ = _gamma(x=y, a=alpha, un_log=True)
     pdf_ /= theta
@@ -1367,10 +1324,10 @@ def gamma_log_pdf_(
     r"""
     Compute logPDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`
     """
-    y = preprocess_input(x=x, loc=loc, scale=theta)
+    y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     log_pdf_ = _gamma(x=y, a=alpha)
     log_pdf_ -= LOG(theta)
@@ -1406,10 +1363,10 @@ def gamma_cdf_(
     normalize
         For API consistency only.
     """
-    y = preprocess_input(x=x, loc=loc, scale=theta)
+    y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y > 0, ssp.gammainc(alpha, y), 0)
 
@@ -1427,10 +1384,10 @@ def gamma_log_cdf_(
     r"""
     Compute logCDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=theta)
+    y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return LOG(np.where(y > 0, ssp.gammainc(alpha, y), 0))
 
@@ -1469,12 +1426,13 @@ def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
 
     The final PDF is expressed as :math:`f(x)`.
     """
-    y = preprocess_input(x=x, loc=mean, scale=std)
+    y, rej_ = reject_x(x, loc=mean, scale=std)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
-    pdf_ = np.exp(-0.5 * y ** 2) / SQRT_TWO_PI / std
+    pdf_ = np.exp(-0.5 * y**2) / SQRT_TWO_PI
+    pdf_ /= std
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1499,12 +1457,13 @@ def gaussian_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(x)`.
     """
-    y = preprocess_input(x=x, loc=mean, scale=std)
+    y, rej_ = reject_x(x, loc=mean, scale=std)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
-    log_pdf_ = -(y ** 2) / 2.0 - LOG_SQRT_TWO_PI - LOG(std)
+    log_pdf_ = -(y**2) / 2.0 - LOG_SQRT_TWO_PI
+    log_pdf_ -= LOG(std)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1607,12 +1566,13 @@ def gumbel_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\beta`.
     """
-    y = preprocess_input(x=x, loc=mu, scale=beta_)
+    y, rej_ = reject_x(x, loc=mu, scale=beta_)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
-    pdf_ = np.exp(-y - np.exp(-y)) / beta_
+    pdf_ = np.exp(-y - np.exp(-y))
+    pdf_ /= beta_
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -1641,12 +1601,13 @@ def gumbel_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln\beta`.
     """
-    y = preprocess_input(x=x, loc=mu, scale=beta_)
+    y, rej_ = reject_x(x, loc=mu, scale=beta_)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
-    log_pdf_ = -y - np.exp(-y) - LOG(beta_)
+    log_pdf_ = -y - np.exp(-y)
+    log_pdf_ -= LOG(beta_)
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
@@ -1675,10 +1636,10 @@ def gumbel_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x, loc, scale)
+    y, rej_ = reject_x(x, loc=mu, scale=beta_)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.exp(-np.exp(-y))
 
@@ -1704,10 +1665,10 @@ def gumbel_log_cdf_(
 
     The final CDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y = preprocess_input(x, loc, scale)
+    y, rej_ = reject_x(x, loc=mu, scale=beta_)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return -np.exp(-y)
 
@@ -1755,12 +1716,12 @@ def half_normal_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=sigma)
+    y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
-    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * np.exp(-0.5 * y ** 2), 0)
+    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * np.exp(-0.5 * y**2), 0)
     pdf_ /= sigma
 
     if not normalize:
@@ -1789,12 +1750,12 @@ def half_normal_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y) - \ln\left(\text{scale}\right)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=sigma)
+    y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
-    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y ** 2, -INF)
+    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y**2, -INF)
     log_pdf_ -= LOG(sigma)
 
     if not normalize:
@@ -1830,10 +1791,10 @@ def half_normal_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=sigma)
+    y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y >= 0, ssp.erf(y / SQRT_TWO), 0)
 
@@ -1858,10 +1819,10 @@ def half_normal_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=sigma)
+    y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y >= 0, LOG(ssp.erf(y / SQRT_TWO)), -INF)
 
@@ -1912,13 +1873,13 @@ def johnsonSU_pdf_(
     where :math:`y = \dfrac{x - \xi}{\lambda}` is the loc-scale transformed variable.
     The final PDF is expressed as :math:`f(y)/\lambda`.
     """
-    y = preprocess_input(x=x, loc=xi, scale=lambda_)
+    y, rej_ = reject_x(x, loc=xi, scale=lambda_)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     f1 = delta / SQRT_TWO_PI
-    f2 = np.sqrt(1 + y ** 2)
+    f2 = np.sqrt(1 + y**2)
     f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
 
     pdf_ = f1 / f2 * f3
@@ -1954,13 +1915,13 @@ def johnsonSU_log_pdf_(
     where :math:`y = \dfrac{x - \xi}{\lambda}`. The final log-PDF is
     :math:`\ell(y) - \ln(\lambda)`.
     """
-    y = preprocess_input(x=x, loc=xi, scale=lambda_)
+    y, rej_ = reject_x(x, loc=xi, scale=lambda_)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
-    f2 = -0.5 * np.log1p(y ** 2)
+    f2 = -0.5 * np.log1p(y**2)
     f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
 
     log_pdf_ = f1 + f2 + f3
@@ -2001,10 +1962,10 @@ def johnsonSU_cdf_(
 
     where :math:`\Phi` is the standard normal CDF.
     """
-    y = preprocess_input(x=x, loc=xi, scale=lambda_)
+    y, rej_ = reject_x(x, loc=xi, scale=lambda_)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return ssp.ndtr(gamma + delta * np.arcsinh(y))
 
@@ -2031,10 +1992,10 @@ def johnsonSU_log_cdf_(
 
     This function uses :obj:`ssp.log_ndtr` for numerically stable evaluation.
     """
-    y = preprocess_input(x=x, loc=xi, scale=lambda_)
+    y, rej_ = reject_x(x, loc=xi, scale=lambda_)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return ssp.log_ndtr(gamma + delta * np.arcsinh(y))
 
@@ -2077,10 +2038,10 @@ def laplace_pdf_(
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y = preprocess_input(x=x, loc=mean, scale=diversity)
+    y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     pdf_ = (1 / 2) * np.exp(-np.abs(y))
     pdf_ /= diversity
@@ -2111,10 +2072,10 @@ def laplace_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y)`.
     """
-    y = preprocess_input(x=x, loc=mean, scale=diversity)
+    y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     log_pdf_ = LOG(0.5 * np.exp(-np.abs(y)))
     log_pdf_ -= LOG(diversity)
@@ -2157,10 +2118,10 @@ def laplace_cdf_(
 
     The final CDF is expressed as :math:`F(x)`.
     """
-    y = preprocess_input(x=x, loc=mean, scale=diversity)
+    y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y > 0, 1.0 - 0.5 * np.exp(-y), 0.5 * np.exp(y))
 
@@ -2183,10 +2144,10 @@ def laplace_log_cdf_(
         \ln\left[1 - \dfrac{1}{2}\exp\left(-\dfrac{x-\mu}{b}\right)\right] &,&x\geq\mu
         \end{cases}
     """
-    y = preprocess_input(x=x, loc=mean, scale=diversity)
+    y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return np.where(y > 0, np.log1p(-0.5 * np.exp(-y)), -LOG_TWO + y)
 
@@ -2269,7 +2230,7 @@ def log_normal_pdf_(
 
     q = (LOG(y) - mean) / std
 
-    pdf_ = np.where(y > 0, 1 / y / np.exp(q ** 2 / 2) / SQRT_TWO_PI, 0)
+    pdf_ = np.where(y > 0, 1 / y / np.exp(q**2 / 2) / SQRT_TWO_PI, 0)
     pdf_ /= std
 
     if not normalize:
@@ -2306,7 +2267,7 @@ def log_normal_log_pdf_(
 
     q = (LOG(y) - mean) / std
 
-    log_pdf_ = np.where(y > 0, -LOG(y) - (q ** 2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
+    log_pdf_ = np.where(y > 0, -LOG(y) - (q**2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -2421,7 +2382,7 @@ def uniform_pdf_(
 
     high_ = high + low
 
-    if high_ == low:
+    if high_ == low == 0:
         return np.full(shape=x.size, fill_value=np.nan)
 
     pdf_ = np.where((x >= low) & (x <= high_), 1 / high, 0)
@@ -2454,6 +2415,9 @@ def uniform_log_pdf_(
         return x
 
     high_ = high + low
+
+    if low == high_ == 0:
+        return np.full(shape=y.size, fill_value=np.nan)
 
     log_pdf_ = np.where((x >= low) & (x <= high_), -LOG(high), -INF)
 
@@ -2566,7 +2530,7 @@ def scaled_inv_chi_square_pdf_(
     -----
     The Scaled Inverse ChiSquare PDF is defined as:
 
-    .. math:: f(y\ | \nu,\phi) = \dfrac{\tau^2\nu_2}{\Gamma(\nu_2)}\dfrac{1}{y^{1+\nu_2}}\exp\left[-\dfrac{\nu\tau^2}{2y}\right]
+    .. math:: f(y\ | \nu,\phi) = \dfrac{(\tau^2\nu_2)^{\nu_2}}{\Gamma(\nu_2)}\dfrac{1}{y^{1+\nu_2}}\exp\left[-\dfrac{\nu\tau^2}{2y}\right]
 
     where :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}` and :math:`y` is the transformed
     value of :math:`x`, defined as:
@@ -2575,10 +2539,10 @@ def scaled_inv_chi_square_pdf_(
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y = preprocess_input(x=x, loc=loc)
+    y, rej_ = reject_x(x, loc=loc)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     tau2 = scale / df
     df_half = df / 2
@@ -2621,10 +2585,10 @@ def scaled_inv_chi_square_log_pdf_(
 
     The final PDF is expressed as :math:`\ell(y)`.
     """
-    y = preprocess_input(x=x, loc=loc)
+    y, rej_ = reject_x(x, loc=loc)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     tau2 = scale / df
     df_half = df / 2
@@ -2674,10 +2638,10 @@ def scaled_inv_chi_square_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x=x, loc=loc)
+    y, rej_ = reject_x(x, loc=loc)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     tau2 = scale / df
     df_half = df / 2
@@ -2712,10 +2676,10 @@ def scaled_inv_chi_square_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y = preprocess_input(x=x, loc=loc)
+    y, rej_ = reject_x(x, loc=loc)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     tau2 = scale / df
     df_half = df / 2
@@ -2776,10 +2740,10 @@ def skew_normal_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\omega`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     pdf_ = 2 * gaussian_pdf_(x=y, normalize=True) * gaussian_cdf_(x=shape * y, normalize=True)
     pdf_ /= scale
@@ -2817,10 +2781,10 @@ def skew_normal_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y)/\omega`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     log_pdf_ = LOG_TWO + gaussian_log_pdf_(x=y, normalize=True) + gaussian_log_cdf_(x=shape * y, normalize=True)
     log_pdf_ -= LOG(scale)
@@ -2865,7 +2829,10 @@ def skew_normal_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, loc=loc, scale=scale)
+
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     return gaussian_cdf_(x=y, normalize=True) - 2 * ssp.owens_t(y, shape)
 
@@ -2921,10 +2888,10 @@ def sym_gen_normal_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\alpha`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     _, _, beta = loc, scale, shape
 
@@ -2963,10 +2930,10 @@ def sym_gen_normal_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y)/\alpha`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     _, _, beta = loc, scale, shape
 
@@ -3012,10 +2979,10 @@ def sym_gen_normal_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, loc=loc, scale=scale)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, np.nan)
 
     _, _, beta = loc, scale, shape
 
@@ -3084,7 +3051,7 @@ def quadratic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> N
 
     where, :math:`a`, :math:`b`, and :math:`c` are the quadratic coefficients.
     """
-    return a * x ** 2 + b * x + c
+    return a * x**2 + b * x + c
 
 
 @suppress_numpy_warnings()
@@ -3156,8 +3123,5 @@ def preprocess_input(x: ArrayLike, loc: float = 0.0, scale: float = 1.0) -> NDAr
 
     if x.size == 0:
         return np.array([])
-
-    if scale <= 0:
-        return np.full(shape=x.shape, fill_value=np.nan)
 
     return (x - loc) / scale

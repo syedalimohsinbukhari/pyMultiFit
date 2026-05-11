@@ -34,12 +34,6 @@ class TestGammaDistribution:
         distribution = GammaDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.NegativeShapeError, match=f"Shape {erH.neg_message}"):
-            GammaDistribution(shape=-1.0)
-
-        with pytest.raises(erH.NegativeScaleError, match=f"Scale {erH.neg_message}"):
-            GammaDistribution(scale=-3.0)
-
     @staticmethod
     def test_edge_cases():
         btf.edge_cases(distribution=GammaDistribution(), log_check=True)

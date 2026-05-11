@@ -2,16 +2,25 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
-from .. import LOG_TWO, md_scipy_like, SQRT
+from .. import LOG_TWO, NAN_DICT, SQRT, md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
 
 
 class ExponentialDistribution(BaseDistribution):
     r"""
     Class for Exponential distribution.
-    
+
+    .. note::
+        The :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` is a special case of
+        the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
+
+        * :math:`\alpha_\text{gammaSR} = 1`,
+        * :math:`\lambda_\text{gammaSR} = \lambda_\text{expon}`.
+
+
     Parameters
     ----------
     amplitude
@@ -23,7 +32,7 @@ class ExponentialDistribution(BaseDistribution):
     normalize
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-        
+
     Raises
     ------
     NegativeAmplitudeError
@@ -142,8 +151,11 @@ class ExponentialDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         s, l_ = self.scale, self.loc
 
+        if s <= 0:
+            return NAN_DICT
+
         mean_ = (1 / s) + l_
         median_ = (LOG_TWO / s) + l_
-        variance_ = 1 / s ** 2
+        variance_ = 1 / s**2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

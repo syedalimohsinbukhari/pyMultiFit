@@ -38,17 +38,13 @@ def mark_deprecated(ver_: str, new: str):
     def decorator(func):
         method_name = func.__name__
         reason = f"Use ``{new}`` instead of ``{method_name}``. ``{method_name}`` will be removed in a future release."
-        return _deprecated(
-            deprecated_in=ver_,
-            removed_in=None,
-            details=reason
-        )(func)
+        return _deprecated(deprecated_in=ver_, removed_in=None, details=reason)(func)
 
     return decorator
 
 
 def md_scipy_like(ver_: str, new: str = "from_scipy_params"):
-    return mark_deprecated(ver_, new)
+    return mark_deprecated(ver_=ver_, new=new)
 
 
 def suppress_numpy_warnings():
@@ -66,6 +62,8 @@ def suppress_numpy_warnings():
 
 
 doc_style = "numpy_napoleon_with_merge"
+
+_UNSET = object()
 
 INF = np.inf
 LOG = np.log
@@ -116,3 +114,5 @@ LINE = "line"
 LINEAR = LINE
 QUADRATIC = "quad"
 CUBIC = "cubic"
+
+NAN_DICT = {"mean": NAN, "median": NAN, "variance": NAN, "std": NAN}

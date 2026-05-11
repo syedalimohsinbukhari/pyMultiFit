@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
-from .. import md_scipy_like, SQRT
+from .. import NAN_DICT, SQRT, md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
 
 
 class ChiSquareDistribution(BaseDistribution):
     r"""
     Class for :class:`ChiSquareDistribution` distribution.
 
-    Notes
-    -----
+    .. note::
         The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
 
         * :math:`\alpha\ (\text{shape}) = \text{dof} / 2`,
@@ -165,8 +165,11 @@ class ChiSquareDistribution(BaseDistribution):
         df = self.dof
         s, l_ = self.scale, self.loc
 
+        if any(param <= 0 for param in (df, s)):
+            return NAN_DICT
+
         mean_ = (s * df) + l_
         mode_ = max(df - 2, 0)
-        variance_ = 2 * df * s ** 2
+        variance_ = 2 * df * s**2
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

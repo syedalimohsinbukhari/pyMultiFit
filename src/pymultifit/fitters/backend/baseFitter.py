@@ -9,21 +9,23 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
-from plotez import lpc, plot_xy
 from scipy.optimize import Bounds, curve_fit
 
-from .. import utilities_f
-from ... import epsilon
-from ...typing import NDArray, ArrayLike, Params_
+from ... import _UNSET, epsilon
+from ..._plot import FitPlotter
+from ...typing import ArrayLike, NDArray, Params_
+from ..utilities_f import parameter_logic, sanity_check
 
 
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
-        x_values, y_values = utilities_f.sanity_check(x_values=x_values, y_values=y_values)
-        self.x_values: np.ndarray = x_values
-        self.y_values: np.ndarray = y_values
+    _plotter: FitPlotter | None
+
+    def __init__(self, x_values: NDArray, y_values: NDArray, max_iterations: int = 1000):
+        x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
+        self.x_values = x_values
+        self.y_values = y_values
         self.max_iterations = max_iterations
 
         self.n_par: int = 0
@@ -31,8 +33,19 @@ class BaseFitter:
         self.sn_par: dict = {}
 
         self.n_fits: int = 0
-        self.params = None
-        self.covariance = None
+        self.params: NDArray | None = None
+        self.covariance: NDArray | None = None
+
+    @property
+    def plotter(self) -> FitPlotter:
+        """Return a cached :class:`~pymultifit._plot.FitPlotter` for this fitter.
+
+        The cache is invalidated automatically each time :meth:`fit` is called, so the plotter always reflects the
+        most recent fitted parameters.
+        """
+        if self._plotter is None:
+            self._plotter: FitPlotter = FitPlotter(self)
+        return self._plotter
 
     def _adjust_parameters(self, p0: Params_) -> Params_:
         """
@@ -40,12 +53,12 @@ class BaseFitter:
 
         Parameters
         ----------
-        p0:
+        p0 :
             A list of initial guesses for the parameters.
 
         Returns
         -------
-        Params_:
+        Params_
             Adjusted parameter list with default values for missing secondary parameters.
         """
         adjusted_p0 = []
@@ -55,7 +68,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par:]
+            provided_secondary_params = params[self.pn_par :]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -89,9 +102,9 @@ class BaseFitter:
 
         Parameters
         ----------
-        p0:
+        p0 :
             A list of initial guesses for the parameters of the models. For example, [(1, 1, 0), (3, 3, 2)].
-        frozen:
+        frozen :
             A list of booleans indicating which parameters are frozen.
             For example, [False, False, True] for 3 parameters.
 
@@ -105,22 +118,22 @@ class BaseFitter:
             lb, ub = self.fit_boundaries()
         except NotImplementedError:
             # if they're not implemented, self-imposes -inf + inf boundaries
-            lb = np.repeat(-np.inf, self.n_fits)
-            ub = np.repeat(np.inf, self.n_fits)
+            lb = np.repeat(-np.inf, repeats=self.n_fits)
+            ub = np.repeat(np.inf, repeats=self.n_fits)
 
         # Resize bounds to match total parameters
-        lb = np.resize(lb, self.n_par * self.n_fits)
-        ub = np.resize(ub, self.n_par * self.n_fits)
+        lb = np.resize(lb, new_shape=self.n_par * self.n_fits)
+        ub = np.resize(ub, new_shape=self.n_par * self.n_fits)
 
         # Validate frozen length
         if frozen is None:
-            frozen = [False] * self.n_par
+            frozen: list[bool] = [False] * self.n_par
 
         if len(frozen) != self.n_par:
             raise ValueError("The length of 'frozen' must match the number of parameters per model.")
 
         # Repeat frozen mask for all models
-        frozen = frozen * self.n_fits
+        frozen: list[bool] = frozen * self.n_fits
 
         # Flatten initial guesses
         p0_flat = np.array(p0).flatten()
@@ -142,14 +155,14 @@ class BaseFitter:
         ----------
         value :
             The value of the parameter to be formatted.
-        t_low:
+        t_low :
             The lower bound below which the formatting should be applied to the value. Defaults to 0.001.
         t_high :
             The upper bound above which the formatting should be applied to the value. Defaults to 10,000.
 
         Returns
         -------
-        str:
+        str :
             A formatted string of the parameter value.
         """
         return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
@@ -201,37 +214,6 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return self.params
 
-    def _plot_individual_fitter(self, plotter: Axes):
-        """
-        Plot individual fits from the composite fitter.
-
-        Parameters
-        ----------
-        plotter:
-            The axis object where the plots will be rendered.
-
-        Notes
-        -----
-        - ``self.params`` must contain the fitted parameters reshaped into (``self.n_fits``, ``self.n_par``).
-        - Each plot will be labeled with the class name and the index of the fit, along with the formatted parameters.
-        """
-        x = self.x_values
-        params = np.reshape(self.params, (self.n_fits, self.n_par))
-        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
-        for i, par in enumerate(params):
-            color = colors[i % len(colors)]
-            plot_xy(
-                x_data=x,
-                y_data=self.fitter(x=x, params=list(par)),
-                data_label=f"{self.__class__.__name__.replace('Fitter', '')} {i + 1}("
-                           f"{', '.join(self._format_param(i) for i in par)})",
-                plot_config=lpc(ls="--", c=color),
-                axis=plotter,
-                x_label="",
-                y_label="",
-                plot_title="",
-            )
-
     def _standard_errors(self) -> NDArray:
         """
         Store the standard errors of the fitted parameters.
@@ -259,7 +241,7 @@ class BaseFitter:
         axis:
             The axis to plot the data on.
         """
-        plot_xy(x_data=self.x_values, y_data=self.y_values, axis=axis)
+        self.plotter.dry_run(axis=axis)
 
     def fit(self, p0: Params_, frozen: list[bool] | None = None):
         """
@@ -291,11 +273,13 @@ class BaseFitter:
             maxfev=self.max_iterations,
             bounds=Bounds(lb=lb, ub=ub),
         )
+        self._plotter = None  # invalidate cached plotter after each fit
 
     def _fit_boundaries(self) -> tuple[Sequence[float], Sequence[float]]:
         """Defines the internal distribution boundaries to be used by fitter."""
-        ub = np.repeat(np.inf, self.n_par).tolist()
-        lb = np.repeat(-np.inf, self.n_par).tolist()
+        ub = np.repeat(np.inf, repeats=self.n_par).tolist()
+        lb = np.repeat(-np.inf, repeats=self.n_par).tolist()
+
         return lb, ub
 
     def fit_boundaries(self) -> tuple[Sequence[float], Sequence[float]]:
@@ -334,7 +318,7 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return self._n_fitter(self.x_values, *self.params)
 
-    def get_residuals(self) -> np.ndarray:
+    def get_residuals(self) -> NDArray:
         """
         Get the residuals (difference between data and fitted model).
 
@@ -351,6 +335,7 @@ class BaseFitter:
         if self.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         fitted_curve = self.get_fitted_curve()
+
         return self.y_values - fitted_curve
 
     def get_model_parameters(self, select: tuple[int, Any] | None = None, errors: bool = False):
@@ -386,27 +371,27 @@ class BaseFitter:
         parameter_mean = self.get_value_error_pair(mean_values=True, std_values=errors)
 
         if not errors:
-            selected = utilities_f.parameter_logic(par_array=parameter_mean, n_par=self.n_par, selected_models=select)
+            selected = parameter_logic(par_array=parameter_mean, n_par=self.n_par, selected_models=select)
 
             return selected[:, range(self.n_par)].T
         else:
             par_list = parameter_mean.reshape(self.n_fits, self.n_par, 2)
-            mean = utilities_f.parameter_logic(par_array=par_list[:, :, 0].flatten(), n_par=self.n_par,
-                                               selected_models=select)
-            std_ = utilities_f.parameter_logic(par_array=par_list[:, :, 1].flatten(), n_par=self.n_par,
-                                               selected_models=select)
+            mean = parameter_logic(par_array=par_list[:, :, 0].flatten(), n_par=self.n_par, selected_models=select)
+            std_ = parameter_logic(par_array=par_list[:, :, 1].flatten(), n_par=self.n_par, selected_models=select)
 
             return mean[:, range(self.n_par)].T, std_[:, range(self.n_par)].T
 
-    def get_value_error_pair(self, mean_values: bool = True, std_values: bool = False) -> np.ndarray:
+    def get_value_error_pair(
+        self, mean_values: bool = True, std_values: bool = False
+    ) -> NDArray | tuple[NDArray, NDArray]:
         """
         Retrieve the value/error pairs for the fitted parameters.
 
         Parameters
         ----------
-        mean_values
+        mean_values :
             If ``True``, return only the values of the fitted parameters. Defaults to ``True``.
-        std_values
+        std_values :
             If ``True``, return only the standard errors of the fitted parameters. Defaults to ``False``.
 
         Returns
@@ -429,7 +414,7 @@ class BaseFitter:
         ValueError
             If both ``mean_values`` and ``std_values`` are ``False``.
         """
-        pairs: np.ndarray = np.column_stack([self._params(), self._standard_errors()])
+        pairs: NDArray = np.column_stack([self._params(), self._standard_errors()])
 
         if mean_values and std_values:
             return pairs
@@ -443,75 +428,25 @@ class BaseFitter:
     def plot_fit(
         self,
         show_individuals: bool = False,
-        x_label: str | None = None,
-        y_label: str | None = None,
-        data_label: str | None = None,
-        fit_label: str | None = None,
-        title: str | None = None,
+        x_label: str = "X",
+        y_label: str = "Y",
+        data_label: str = "Data",
+        fit_label: str = "Total Fit",
+        plot_title: str = "",
         axis: Axes | None = None,
-    ):
-        """
-        Plot the fitted models.
-
-        :param show_individuals: Whether to show individually fitted models or not.
-        :param x_label: The label for the x-axis.
-        :param y_label: The label for the y-axis.
-        :param title: The title for the plot.
-        :param data_label: The label for the data.
-        :param axis: Axes to plot instead of the entire figure. Defaults to None.
-
-        :returns: The plot handle for the drawn plot.
-        """
-        return utilities_f._plot_fit(
-            x_values=self.x_values,
-            y_values=self.y_values,
-            parameters=self.params,
-            n_fits=self.n_fits,
-            class_name=self.__class__.__name__,
-            _n_fitter=self._n_fitter,
-            _n_plotter=self._plot_individual_fitter,
+    ) -> Axes:
+        return self.plotter.plot_fit(
             show_individuals=show_individuals,
             x_label=x_label,
             y_label=y_label,
-            title=title,
+            plot_title=plot_title,
             data_label=data_label,
             fit_label=fit_label,
             axis=axis,
         )
 
-    def plot_residuals(
-        self,
-        x_label: str | None = None,
-        y_label: str | None = None,
-        title: str | None = None,
-        axis: Axes | None = None,
-    ):
-        """
-        Plot the residuals (data - fitted model).
-
-        :param x_label: The label for the x-axis.
-        :param y_label: The label for the y-axis.
-        :param title: The title for the plot.
-        :param axis: Axes to plot instead of the entire figure. Defaults to None.
-        """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        residuals = self.get_residuals()
-
-        plotter = plot_xy(
-            x_data=self.x_values, y_data=residuals, data_label="Residuals", axis=axis, plot_config=lpc(alpha=0.75)
-        )
-
-        # Add a horizontal line at y=0
-        plotter2: Axes = plotter[0] if isinstance(plotter, list) else plotter
-        plotter2.axhline(y=0, color="k", linestyle="--", linewidth=1, alpha=0.5)
-        plotter2.set_xlabel(x_label if x_label else "X")
-        plotter2.set_ylabel(y_label if y_label else "Residuals")
-        plotter2.set_title(title if title else f"{self.n_fits} {self.__class__.__name__} residuals")
-        plt.tight_layout()
-
-        return plotter2
+    def plot_residuals(self, x_label: str = "", y_label: str = "", title: str = "", axis: Axes | None = None):
+        return self.plotter.plot_residuals(x_label=x_label, y_label=y_label, plot_title=title, axis=axis)
 
     def plot_fit_and_residuals(
         self,
@@ -535,27 +470,14 @@ class BaseFitter:
         :return: A tuple of (figure, (ax1, ax2)) where ax1 is the fit plot and ax2 is the residuals plot.
         :rtype: tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]
         """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True, gridspec_kw={"height_ratios": [3, 1]})
-
-        # Plot the fit
-        self.plot_fit(
+        return self.plotter.plot_fit_and_residuals(
             show_individuals=show_individuals,
-            x_label="",
+            x_label=x_label,
             y_label=y_label,
+            plot_title=title,
             data_label=data_label,
             fit_label=fit_label,
-            title=title,
-            axis=ax1,
         )
-
-        # Plot the residuals
-        self.plot_residuals(x_label=x_label, y_label="Residuals", title="", axis=ax2)
-
-        plt.tight_layout()
-        return fig, (ax1, ax2)
 
     def ci_bounds(
         self,
@@ -683,55 +605,6 @@ class BaseFitter:
 
         # Plot if requested
         if plot_it:
-            self._plot_ci_bounds(results, ci_levels, overall_ci, individual_ci, axis)
+            self.plotter.plot_ci_bounds(results, ci_levels, overall_ci, individual_ci, axis)
 
         return results
-
-    def _plot_ci_bounds(self, results: dict, ci_levels: list, overall_ci: bool, individual_ci: bool, axis=None):
-        """
-        Plot confidence interval bounds.
-
-        :param results: Dictionary containing CI bounds from ci_bounds method.
-        :param ci_levels: List of confidence levels to plot.
-        :param overall_ci: Whether overall CI was computed.
-        :param individual_ci: Whether individual CIs were computed.
-        :param axis: Axes to plot on. If None, a new figure is created.
-        """
-        if axis is None:
-            fig, axis = plt.subplots(figsize=(10, 6))
-
-        # Plot overall CI
-        if overall_ci:
-            for idx, ci in enumerate(ci_levels):
-                ci_data = results[f"overall_ci_{ci}"]
-                axis.fill_between(
-                    self.x_values,
-                    ci_data["lower"],
-                    ci_data["upper"],
-                    alpha=1 * (ci / 100),
-                    color="gray",
-                    label=f"{ci}% CI (overall)",
-                )
-
-        # Plot individual CIs
-        if individual_ci:
-            for idx, ci in enumerate(ci_levels):
-                ci_data = results[f"individual_ci_{ci}"]
-                for idx2, fit in enumerate(ci_data):
-                    axis.fill_between(
-                        self.x_values,
-                        fit["lower"],
-                        fit["upper"],
-                        alpha=1 * (ci / 100),
-                        color="gray",
-                        label=f"{ci}% CI (fit {idx2 + 1})" if idx2 == 0 else "",
-                    )
-
-        axis.set_xlabel("X")
-        axis.set_ylabel("Y")
-        axis.set_title("Bootstrap Confidence Intervals")
-        axis.legend()
-        axis.grid(True, alpha=0.3)
-        plt.tight_layout()
-
-        return axis

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from . import BaseDistribution
-from ..utilities_d import cubic, line, quadratic
 from ...typing import ArrayLike
+from ..utilities_d import cubic, line, quadratic
+from . import BaseDistribution
 
 
 class LineFunction(BaseDistribution):

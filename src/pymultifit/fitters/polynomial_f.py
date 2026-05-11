@@ -2,10 +2,10 @@
 
 import numpy as np
 
-from .backend import BaseFitter
-from .utilities_f import sanity_check
 from ..distributions.utilities_d import cubic, line, quadratic
 from ..typing import ArrayLike
+from .backend import BaseFitter
+from .utilities_f import sanity_check
 
 
 class LineFitter(BaseFitter):

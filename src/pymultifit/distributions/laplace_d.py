@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
-from .. import md_scipy_like, SQRT
+from .. import SQRT, md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
 
 
 class LaplaceDistribution(BaseDistribution):
@@ -142,6 +143,6 @@ class LaplaceDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         m, b = self.mu, self.b
 
-        variance_ = 2 * b ** 2
+        variance_ = 2 * b**2
 
         return {"mean": m, "median": m, "mode": m, "variance": variance_, "std": SQRT(variance_)}

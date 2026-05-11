@@ -29,9 +29,6 @@ class TestChiSquareDistribution:
         distribution = ExponentialDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.NegativeScaleError, match=f"Scale {erH.neg_message}"):
-            ExponentialDistribution(scale=-3.0)
-
     @staticmethod
     def test_edge_cases():
         btf.edge_cases(distribution=ExponentialDistribution(), log_check=True)

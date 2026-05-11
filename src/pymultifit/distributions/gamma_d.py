@@ -5,15 +5,26 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import ArrayLike
 
+from .. import SQRT, md_scipy_like
 from .backend import BaseDistribution
 from .backend import errorHandling as erH
 from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
-from .. import md_scipy_like, SQRT
 
 
 class GammaDistribution(BaseDistribution):
     r"""
     Class for Gamma distribution with shape and scale parameters.
+
+    .. note::
+       The :class:`~pymultifit.distributions.gamma_d.GammaDistribution` encompasses the following specific cases:
+
+       #. :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`:
+            - :math:`\alpha = 1`, and
+            - :math:`\theta_\text{gamma} = \dfrac{1}{\lambda_\text{expon}}`.
+
+       #. :class:`~pymultifit.distributions.uniform_d.UniformDistribution`:
+           - :math:`\alpha = 1`, and
+           - :math:`\theta = 1`.
 
     Parameters
     ----------
@@ -163,7 +174,7 @@ class GammaDistribution(BaseDistribution):
         s, r, l_ = self.shape, self.scale, self.loc
 
         mean_ = (s * r) + l_
-        variance_ = s * r ** 2
+        variance_ = s * r**2
         mode_ = (s - 1) * r + l_ if s >= 1 else 0
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

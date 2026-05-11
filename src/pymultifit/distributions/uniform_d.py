@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
+from .. import NAN, SQRT, md_scipy_like
+from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
-from .. import md_scipy_like, SQRT, NAN
-from ..typing import NDArray, ArrayLike
 
 
 class UniformDistribution(BaseDistribution):
     r"""
     Class for Uniform Distribution.
-    
+
     Parameters
     ----------
     amplitude
@@ -21,9 +22,9 @@ class UniformDistribution(BaseDistribution):
     high
         Upper bound of distribution.
     normalize
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. 
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-        
+
     Raises
     ------
     NegativeAmplitudeError

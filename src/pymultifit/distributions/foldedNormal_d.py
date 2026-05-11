@@ -4,16 +4,17 @@ from __future__ import annotations
 
 from scipy.special import erf
 
-from .backend import BaseDistribution, errorHandling as erH
+from .. import EXP, NAN_DICT, SQRT, SQRT_TWO, SQRT_TWO_BY_PI, md_scipy_like
+from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
 from .utilities_d import folded_normal_cdf_, folded_normal_log_cdf_, folded_normal_log_pdf_, folded_normal_pdf_
-from .. import SQRT_TWO, SQRT_TWO_BY_PI, md_scipy_like, SQRT, EXP
-from ..typing import NDArray, ArrayLike
 
 
 class FoldedNormalDistribution(BaseDistribution):
     r"""
     Class for FoldedNormal distribution.
-    
+
     Parameters
     ----------
     amplitude
@@ -161,10 +162,13 @@ class FoldedNormalDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         mean_, std_ = self.mu, self.sigma
 
-        f1 = SQRT_TWO_BY_PI * EXP(-0.5 * mean_ ** 2)
+        if std_ <= 0:
+            return NAN_DICT
+
+        f1 = SQRT_TWO_BY_PI * EXP(-0.5 * mean_**2)
         f2 = mean_ * erf(mean_ / SQRT_TWO)
 
         mu_y = f1 + f2
-        var_y = mean_ ** 2 + 1 - mu_y ** 2
+        var_y = mean_**2 + 1 - mu_y**2
 
-        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_ ** 2, "std": SQRT(var_y * std_ ** 2)}
+        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_**2, "std": SQRT(var_y * std_**2)}

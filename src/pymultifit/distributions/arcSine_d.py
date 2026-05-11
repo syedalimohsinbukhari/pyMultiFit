@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from numpy import sqrt
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import arc_sine_cdf_, arc_sine_log_cdf_, arc_sine_log_pdf_, arc_sine_pdf_
-from .. import md_scipy_like
+from .. import NAN_DICT, md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import arc_sine_cdf_, arc_sine_log_cdf_, arc_sine_log_pdf_, arc_sine_pdf_
 
 
 class ArcSineDistribution(BaseDistribution):
@@ -19,7 +20,7 @@ class ArcSineDistribution(BaseDistribution):
 
         * :math:`\alpha_\text{beta} = 0.5`,
         * :math:`\lambda_\text{beta} = 0.5`.
-        
+
     Parameters
     ----------
     amplitude
@@ -92,7 +93,7 @@ class ArcSineDistribution(BaseDistribution):
             The location parameter. Defaults to 0.0.
         scale
             The scale parameter. Defaults to 1.0.
-            
+
         Returns
         -------
         ArcSineDistribution
@@ -134,8 +135,11 @@ class ArcSineDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         s_, l_ = self.scale, self.loc
 
+        if s_ <= 0:
+            return NAN_DICT
+
         mean_ = (s_ * 0.5) + l_
         median_ = (s_ * 0.5) + l_
-        variance_ = (1 / 8) * s_ ** 2
+        variance_ = (1 / 8) * s_**2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": sqrt(variance_)}

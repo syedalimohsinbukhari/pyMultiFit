@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import numpy as np
-from numpy.typing import ArrayLike as _ArrayLike, NDArray as _NDArray
+from numpy.typing import ArrayLike as _ArrayLike
+from numpy.typing import NDArray as _NDArray
 
 NDArray = _NDArray[np.floating]
 ArrayLike = _ArrayLike

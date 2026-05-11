@@ -2,6 +2,7 @@
 
 __all__ = ["parameter_logic", "sanity_check", "_plot_fit"]
 
+import warnings
 from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
@@ -82,6 +83,10 @@ def _plot_fit(
     """
     Base function to plot the fitted models.
 
+    .. deprecated::
+        Use :class:`pymultifit._plot.FitPlotter` instead.
+        This function will be removed in a future release.
+
     Parameters
     ----------
     x_values :
@@ -118,6 +123,13 @@ def _plot_fit(
     """
     if parameters is None:
         raise RuntimeError("Fit not performed yet. Call fit() first.")
+
+    warnings.warn(
+        "_plot_fit() is deprecated and will be removed in a future release. "
+        "Use FitPlotter (pymultifit._plot.FitPlotter) instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
     label_dict = {"x_label": "X", "y_label": "Y", "title": f"{n_fits} {class_name} fit"}
 

@@ -4,27 +4,15 @@ import itertools
 import warnings
 from typing import Callable, List, Optional, Sequence, Union
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: F401 – kept for any subclass that may reference it
 import numpy as np
-from matplotlib.axes import Axes
-from plotez import LinePlotConfig, plot_xy
+from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
+from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external callers
 from scipy.optimize import Bounds, curve_fit
 from tqdm import trange
 
-# importing from files to avoid circular import
-from .backend import BaseFitter
-from .chiSquare_f import ChiSquareFitter
-from .exponential_f import ExponentialFitter
-from .foldedNormal_f import FoldedNormalFitter
-from .gamma_f import GammaFitter
-from .gaussian_f import GaussianFitter
-from .halfNormal_f import HalfNormalFitter
-from .laplace_f import LaplaceFitter
-from .logNormal_f import LogNormalFitter
-from .polynomial_f import LineFitter
-from .skewNormal_f import SkewNormalFitter
-from .utilities_f import _plot_fit
 from .. import (
+    _UNSET,
     CHI_SQUARE,
     EXPONENTIAL,
     FOLDED_NORMAL,
@@ -38,7 +26,20 @@ from .. import (
     SKEW_NORMAL,
     epsilon,
 )
-from ..typing import ArrayLike, Params_
+from ..typing import NDArray, Params_
+
+# importing from files to avoid circular import
+from .backend import BaseFitter
+from .chiSquare_f import ChiSquareFitter
+from .exponential_f import ExponentialFitter
+from .foldedNormal_f import FoldedNormalFitter
+from .gamma_f import GammaFitter
+from .gaussian_f import GaussianFitter
+from .halfNormal_f import HalfNormalFitter
+from .laplace_f import LaplaceFitter
+from .logNormal_f import LogNormalFitter
+from .polynomial_f import LineFitter
+from .skewNormal_f import SkewNormalFitter
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {
@@ -68,18 +69,18 @@ class MixedDataFitter(BaseFitter):
 
     def __init__(
         self,
-        x_values: ArrayLike,
-        y_values: ArrayLike,
+        x_values: NDArray,
+        y_values: NDArray,
         model_list: List[str],
-        fitter_dictionary: Optional[dict] = None,
-        model_dictionary: Optional[dict] = None,
+        fitter_dictionary: dict | None = None,
+        model_dictionary: dict | None = None,
         max_iterations: int = 1000,
     ):
         # Check if the deprecated parameter was used
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                        "Use `model_dictionary` instead.",
+                "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -98,7 +99,7 @@ class MixedDataFitter(BaseFitter):
         # Create the composite model function
         self.model_function = self._create_model_function()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"{self.__class__.__name__}(x_values={self.x_values}, y_values={self.y_values}, "
             f"model_list={self.model_list}, max_iterations={self.max_iterations})"
@@ -133,7 +134,7 @@ class MixedDataFitter(BaseFitter):
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -152,7 +153,7 @@ class MixedDataFitter(BaseFitter):
 
         return count
 
-    def _n_fitter(self, x: np.ndarray, *params) -> np.ndarray:
+    def _n_fitter(self, x: np.ndarray, *params) -> NDArray:
         """
         Override parent method to use the composite model function.
 
@@ -200,7 +201,7 @@ class MixedDataFitter(BaseFitter):
     def _instantiate_bounds(self, model: str) -> tuple[Sequence[float], Sequence[float]]:
         return self._instantiate_class(model).fit_boundaries()
 
-    def _parameter_extractor(self, values: np.ndarray) -> dict:
+    def _parameter_extractor(self, values: NDArray) -> dict:
         """
         Extracts the parameters for each model in the model list.
 
@@ -216,37 +217,10 @@ class MixedDataFitter(BaseFitter):
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index: p_index + n_pars]])
+            param_dict[model].extend([values[p_index : p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
-
-    def _plot_individual_fitter(self, plotter):
-        """
-        Plot the individual fitters function.
-
-        :param plotter: The plotting axis object
-        """
-        x = self.x_values
-        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
-        param_index = 0
-        for i, model in enumerate(self.model_list):
-            color = colors[i % len(colors)]
-            class_model = self._instantiate_class(model=model)
-            n_par = self._instantiate_n_par(model=model)
-            pars = self.params[param_index: param_index + n_par]
-            y_component = class_model.fitter(x=x, params=pars)
-            plot_xy(
-                x_data=x,
-                y_data=y_component,
-                x_label="",
-                y_label="",
-                plot_title="",
-                data_label=f"{model.capitalize()} {i + 1}({', '.join(self._format_param(i) for i in pars)})",
-                plot_config=LinePlotConfig(linestyle="--", color=color),
-                axis=plotter,
-            )
-            param_index += n_par
 
     def fit(self, p0: Params_, frozen: Optional[Union[int, List[int]]] = None):
         """
@@ -261,6 +235,7 @@ class MixedDataFitter(BaseFitter):
         :raises ValueError: If the length of the initial guess is not equal to the expected parameter count.
         """
         p0_chain = p0.tolist() if isinstance(p0, np.ndarray) else p0
+        p0_chain: list
 
         # flatten cannot always work here because the mixed fitter might contain a variable number of parameters
         p0_chain = list(itertools.chain.from_iterable(p0_chain))
@@ -287,6 +262,8 @@ class MixedDataFitter(BaseFitter):
             maxfev=self.max_iterations,
             bounds=Bounds(lb=lb, ub=ub),
         )
+
+        self._plotter = None  # invalidate cached plotter after each fit
 
     def get_model_parameters(self, model: Optional[str] = None, errors: bool = False):
         """
@@ -328,8 +305,16 @@ class MixedDataFitter(BaseFitter):
 
         return output
 
-    def ci_bounds(self, ci_level: Union[int, list[int]] = 95, n_bootstrap: int = 1000, plot_it: bool = False,
-                  overall_ci: bool = True, individual_ci: bool = False, random_state: Optional[int] = None, axis=None):
+    def ci_bounds(
+        self,
+        ci_level: Union[int, list[int]] = 95,
+        n_bootstrap: int = 1000,
+        plot_it: bool = False,
+        overall_ci: bool = True,
+        individual_ci: bool = False,
+        random_state: Optional[int] = None,
+        axis=None,
+    ):
         """
         Compute confidence interval (CI) bounds for fitted data using bootstrap resampling.
 
@@ -399,7 +384,7 @@ class MixedDataFitter(BaseFitter):
         param_index = 0
         for model in self.model_list:
             n_par = self._instantiate_n_par(model=model)
-            p0_list.append(tuple(original_params[param_index: param_index + n_par]))
+            p0_list.append(tuple(original_params[param_index : param_index + n_par]))
             param_index += n_par
 
         # Storage for bootstrap predictions
@@ -439,7 +424,7 @@ class MixedDataFitter(BaseFitter):
                     for model in self.model_list:
                         model_class = self._instantiate_class(model=model)
                         n_par = self._instantiate_n_par(model=model)
-                        model_params = temp_fitter.params[param_idx: param_idx + n_par]
+                        model_params = temp_fitter.params[param_idx : param_idx + n_par]
                         individual_pred = model_class.fitter(x=self.x_values, params=list(model_params))
                         individual_preds.append(individual_pred)
                         param_idx += n_par
@@ -491,58 +476,6 @@ class MixedDataFitter(BaseFitter):
 
         # Plot if requested
         if plot_it:
-            self._plot_ci_bounds(results, ci_levels, overall_ci, individual_ci, axis)
+            self.plotter.plot_ci_bounds(results, ci_levels, overall_ci, individual_ci, axis)
 
         return results
-
-    def plot_fit(
-        self,
-        show_individuals: bool = False,
-        x_label: Optional[str] = None,
-        y_label: Optional[str] = None,
-        data_label: Optional[str] = None,
-        fit_label: Optional[str] = None,
-        title: Optional[str] = None,
-        axis: Optional[Axes] = None,
-    ):
-        """
-        Plot the fitted models.
-
-        Parameters
-        ----------
-        show_individuals: bool, optional
-            Whether to show individually fitted models or not.
-        x_label: str, optional
-            The label for the x-axis.
-        y_label: str, optional
-            The label for the y-axis.
-        title: str, optional
-            The title for the plot.
-        data_label: str, optional
-            The label for the data.
-        fit_label: str, optional
-            The label for the fitted model.
-        axis: Axes, optional
-            Axes to plot instead of the entire figure. Defaults to None.
-
-        Returns
-        -------
-        plotter
-            The plotter handle for the drawn plot.
-        """
-        return _plot_fit(
-            x_values=self.x_values,
-            y_values=self.y_values,
-            parameters=self.params,
-            n_fits=len(self.model_list),
-            class_name=self.__class__.__name__,
-            _n_fitter=self.model_function,
-            _n_plotter=self._plot_individual_fitter,
-            show_individuals=show_individuals,
-            x_label=x_label,
-            y_label=y_label,
-            title=title,
-            data_label=data_label,
-            fit_label=fit_label,
-            axis=axis,
-        )

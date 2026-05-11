@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import beta_prime_cdf_, beta_prime_log_cdf_, beta_prime_log_pdf_, beta_prime_pdf_
-from .. import SQRT, INF
+from .. import INF, NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import beta_prime_cdf_, beta_prime_log_cdf_, beta_prime_log_pdf_, beta_prime_pdf_
 
 
 class BetaPrimeDistribution(BaseDistribution):
     r"""
     Class for BetaPrime distribution.
-    
+
     Parameters
     ----------
     amplitude
@@ -25,7 +26,7 @@ class BetaPrimeDistribution(BaseDistribution):
     scale
         The scale parameter, for scaling. Defaults to 1.0.
     normalize
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. 
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
     Examples
@@ -88,8 +89,9 @@ class BetaPrimeDistribution(BaseDistribution):
         scale: float = 1.0,
         normalize: bool = False,
     ):
-        if amplitude < 0:
+        if amplitude < 0 and normalize is False:
             raise erH.NegativeAmplitudeError()
+
         self.amplitude = 1.0 if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
@@ -102,7 +104,7 @@ class BetaPrimeDistribution(BaseDistribution):
     def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaPrimeDistribution":
         r"""
         Instantiate `BetaPrimeDistribution` with scipy parameterization.
-        
+
         Parameters
         ----------
         a
@@ -113,7 +115,7 @@ class BetaPrimeDistribution(BaseDistribution):
             The location parameter. Defaults to 0.0.
         scale
             The scale parameter,. Defaults to 1.0.
-            
+
         Returns
         -------
         BetaPrimeDistribution
@@ -169,12 +171,15 @@ class BetaPrimeDistribution(BaseDistribution):
         a, b = self.alpha, self.beta
         s, _l = self.scale, self.loc
 
+        if any(param <= 0 for param in (a, b, s)):
+            return NAN_DICT
+
         mean_ = a / (b - 1) if b > 1 else INF
         mean_ = (s * mean_) + _l
 
         num_ = a * (a + b - 1)
         den_ = (b - 2) * (b - 1) ** 2
         variance_ = num_ / den_ if b > 2 else INF
-        variance_ = variance_ * s ** 2
+        variance_ = variance_ * s**2
 
         return {"mean": mean_, "variance": variance_, "std": SQRT(variance_)}

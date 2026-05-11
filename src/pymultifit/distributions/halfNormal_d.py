@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
-from .. import SQRT_TWO_BY_PI, TWO_BY_PI, md_scipy_like, SQRT
+from .. import SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
 
 
 class HalfNormalDistribution(BaseDistribution):
     r"""
     Class for halfnormal distribution.
-    
+
     Parameters
     ----------
     amplitude
@@ -21,14 +22,14 @@ class HalfNormalDistribution(BaseDistribution):
     loc
         The location parameter, for shifting. Defaults to 0.0.
     normalize
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. 
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
     Raises
     ------
     NegativeAmplitudeError
         If the provided value of amplitude is negative.
-    
+
     Examples
     --------
     Importing libraries:
@@ -81,8 +82,7 @@ class HalfNormalDistribution(BaseDistribution):
     def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if scale < 0:
-            raise erH.NegativeScaleError()
+
         self.amplitude = 1 if normalize else amplitude
         self.scale = scale
         self.loc = loc
@@ -147,6 +147,6 @@ class HalfNormalDistribution(BaseDistribution):
         mode_ = 0
 
         variance_ = 1 - TWO_BY_PI
-        variance_ *= s_ ** 2
+        variance_ *= s_**2
 
         return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}
