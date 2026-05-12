@@ -23,13 +23,13 @@ class ArcSineDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    loc
+    loc :
         The location parameter, :math:`-` shifting. Defaults to 0.0.
-    scale
+    scale :
         The scale parameter, for shifting. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -37,8 +37,6 @@ class ArcSineDistribution(BaseDistribution):
     ------
     NegativeAmplitudeError
         If the provided value of amplitude is negative.
-    NegativeScaleError
-        If the provided value of scale is negative.
 
     Examples
     --------
@@ -89,9 +87,9 @@ class ArcSineDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -108,9 +106,9 @@ class ArcSineDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns

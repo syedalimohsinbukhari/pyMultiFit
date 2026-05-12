@@ -102,7 +102,7 @@ from .. import (
 from ..typing import ArrayLike, NDArray
 
 
-def reject_x(x: NDArray, shp1=None, shp2=None, loc=0, scale=1) -> tuple[NDArray | None, bool]:
+def reject_x(x: ArrayLike, shp1=None, shp2=None, loc=0, scale=1) -> tuple[NDArray | None, bool]:
     for val in (shp1, shp2, scale):
         if val is not None and val <= 0:
             return None, True
@@ -125,15 +125,15 @@ def arc_sine_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values where PDF is evaluated.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    loc
+    loc :
         The location parameter specifying the lower bound of the distribution. Defaults to 0.0.
-    scale
+    scale :
         The scale parameter, specifying the width of the distribution. Defaults to 1.0.
-    normalize
+    normalize :
         If True, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -291,19 +291,19 @@ def beta_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values where PDF is evaluated.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    alpha
+    alpha :
         The :math:`\alpha` parameter. Default is 1.0.
-    beta_
+    beta_ :
         The :math:`\beta` parameter. Default is 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Default is 0.0.
-    scale
+    scale :
         The scale parameter, for scaling. Default is 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -399,11 +399,11 @@ def beta_cdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -477,19 +477,19 @@ def beta_prime_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values where PDF is evaluated.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    alpha
+    alpha :
         The :math:`\alpha` parameter. Default is 1.0.
-    beta_
+    beta_ :
         The :math:`\beta` parameter. Default is 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Default is 0.0.
-    scale
+    scale :
         The scale parameter, for scaling. Default is 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -583,11 +583,9 @@ def beta_prime_cdf_(
 
     Parameters
     ----------
-    x
-        Input array of values.
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -611,7 +609,7 @@ def beta_prime_cdf_(
     z = y / (1 + y)
     return np.where(y > 0, ssp.betainc(alpha, beta_, z), 0)
 
-
+@doc_inherit(parent=beta_prime_cdf_, style=doc_style)
 def beta_prime_log_cdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -623,15 +621,6 @@ def beta_prime_log_cdf_(
 ) -> NDArray:
     r"""
     Compute logCDF for :class:`~pymultifit.distributions.beta_d.BetaDistribution`.
-
-    Parameters
-    ----------
-    x
-        Input array of values.
-    amplitude
-        For API consistency only.
-    normalize
-        For API consistency only.
 
     Notes
     -----
@@ -669,17 +658,17 @@ def chi_square_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    degree_of_freedom
+    degree_of_freedom :
         The degrees of freedom parameter. Defaults to 1.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    scale
+    scale :
         The scale parameter, for scaling. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -782,6 +771,7 @@ def chi_square_cdf_(
         For API consistency only.
     normalize
         For API consistency only.
+
     Notes
     -----
     The ChiSquare CDF is defined as:
@@ -844,15 +834,15 @@ def cubic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    a
+    a :
         The coefficient of the cubic term $(x^3)$.
-    b
+    b :
         The coefficient of the quadratic term $(x^2)$.
-    c
+    c :
         The coefficient of the linear term $(x)$.
-    d
+    d :
         The constant term (y-intercept).
 
     Returns
@@ -880,15 +870,15 @@ def exponential_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    lambda_
+    lambda_ :
         The scale parameter, :math:`\lambda`. Defaults to 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -939,9 +929,9 @@ def exponential_log_pdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -986,9 +976,9 @@ def exponential_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -1055,17 +1045,17 @@ def folded_normal_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    mean
+    mean :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
-    sigma
+    sigma :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -1160,9 +1150,9 @@ def folded_normal_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -1234,18 +1224,15 @@ def _folded(x: ArrayLike, mean: float, loc: float, scale: float, g_func: Callabl
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    mean
-        The mean parameter, :math:`\mu`.
-        Defaults to 0.0.
-    scale
-        The standard deviation parameter, :math:`\sigma`.
-        Defaults to 1.0.
-    loc
-        The location parameter, for shifting.
-        Defaults to 0.0.
-    g_func
+    mean :
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    scale :
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    loc :
+        The location parameter, for shifting. Defaults to 0.0.
+    g_func :
         The gaussian function, either PDF or CDF.
 
     Returns
@@ -1278,17 +1265,17 @@ def gamma_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    alpha
+    alpha :
         The shape parameter, :math:`\alpha`. Defaults to 1.0.
-    theta
+    theta :
         The scale parameter, :math:`\theta`. Defaults to 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -1321,9 +1308,7 @@ def gamma_log_pdf_(
     loc: float = 0.0,
     normalize: bool = False,
 ) -> NDArray:
-    r"""
-    Compute logPDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`
-    """
+    r"""Compute logPDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`"""
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
     if rej_:
@@ -1358,9 +1343,9 @@ def gamma_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
     """
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
@@ -1383,6 +1368,19 @@ def gamma_log_cdf_(
 ) -> NDArray:
     r"""
     Compute logCDF for :class:`~pymultifit.distributions.gamma_d.GammaDistribution`.
+
+    Notes
+    -----
+    The Gamma logCDF is defined as:
+
+    .. math:: \mathcal{L}(y) = \ln\left[\gamma(\alpha, y)\right]
+
+    where :math:`\gamma(\cdot, \cdot)` is the :obj:`~ssp.gammainc` lower regularized incomplete
+    gamma function, and :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \text{loc}}{\theta}
+
+    The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
@@ -1399,15 +1397,15 @@ def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    mean
+    mean :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
-    std
+    std :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -1485,9 +1483,9 @@ def gaussian_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -1536,15 +1534,15 @@ def gumbel_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    mu
+    mu :
         The location parameter, :math:`\text{loc}`. Defaults to 0.0.
-    beta_
+    beta_ :
         The scale parameter, :math:`\text{scale}`. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -1686,15 +1684,15 @@ def half_normal_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    sigma
+    sigma :
         The standard deviation :math:`\sigma`. Defaults to 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -1774,9 +1772,9 @@ def half_normal_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -1842,19 +1840,19 @@ def johnsonSU_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values where PDF is evaluated.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is True.
-    gamma
+    gamma :
         The location parameter in the transformed z-space. Defaults to 1.0.
-    delta
+    delta :
         The shape parameter that scales the asinh transform. Defaults to 1.0.
-    xi
+    xi :
         The location parameter for the original variable (shift). Defaults to 0.0.
-    lambda_
+    lambda_ :
         The scale parameter for the original variable. Defaults to 1.0.
-    normalize
+    normalize :
         If True, the distribution is normalized so the total area under the PDF equals 1.
         Defaults to False.
 
@@ -1949,9 +1947,9 @@ def johnsonSU_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -2009,15 +2007,15 @@ def laplace_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    mean
+    mean :
         The mean of laplace distribution. Defaults to 0.0.
-    diversity
+    diversity :
         The diversity parameter for laplace distribution. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -2096,9 +2094,9 @@ def laplace_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Returns
@@ -2159,11 +2157,11 @@ def line(x: ArrayLike, slope: float = 1.0, intercept: float = 0.0) -> NDArray:
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    slope
+    slope :
         The slope of the line.
-    intercept
+    intercept :
         The y-intercept of the line.
 
     Returns
@@ -2191,17 +2189,17 @@ def log_normal_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    mean
+    mean :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
-    std
+    std :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -2252,13 +2250,13 @@ def log_normal_log_pdf_(
     The LogNormal logPDF is defined as:
 
     .. math::
-        f(y\ |\ \mu, \sigma) = -\ln(\sigma) -\ln(y) - 0.5\ln(2\pi) -\dfrac{1}{2}\dfrac{(\ln y - \mu)^2}{\sigma^2}
+        \ell(y\ |\ \mu, \sigma) = -\ln(\sigma) -\ln(y) - 0.5\ln(2\pi) -\dfrac{1}{2}\dfrac{(\ln y - \mu)^2}{\sigma^2}
 
     where, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = x - \text{loc}
 
-    The final PDF is expressed as :math:`f(y)`.
+    The final PDF is expressed as :math:`\ell(y)`.
     """
     y = preprocess_input(x=x, loc=loc)
 
@@ -2286,9 +2284,9 @@ def log_normal_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only
 
     Returns
@@ -2328,12 +2326,14 @@ def log_normal_log_cdf_(
         The LogNormal logCDF is defined as:
 
         .. math::
-            F(x) = \ln\left[\Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)\right]
+            \mathcal{L}(x) = \ln\left[\Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)\right]
 
         which can be calculated via :obj:`ssp.log_ndtr` function function with ``log_ndtr(y)``, where :math:`y`
         is the transformed value of :math:`x`, defined as:
 
         .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
+
+        The final logCDF is expressed as :math:`\mathcal{L}(x)`.
     """
     y = preprocess_input(x=x, loc=loc, scale=np.exp(mean))
 
@@ -2349,15 +2349,15 @@ def uniform_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    low
+    low :
         The lower bound, :math:`a`. Defaults to 0.0.
-    high
+    high :
         The upper bound, :math:`b`. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -2394,6 +2394,7 @@ def uniform_pdf_(
 
 
 @suppress_numpy_warnings()
+@doc_inherit(parent=uniform_pdf_, style=doc_style)
 def uniform_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
 ) -> NDArray:
@@ -2437,9 +2438,9 @@ def uniform_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -2507,17 +2508,17 @@ def scaled_inv_chi_square_pdf_(
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    df
+    df :
         The degree of freedom. Defaults to 1.0.
-    scale
+    scale :
         The scale parameter, for scaling. Defaults to 1.0,
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -2619,9 +2620,9 @@ def scaled_inv_chi_square_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -2701,22 +2702,17 @@ def skew_normal_pdf_(
 
     Parameters
     ----------
-    x : NDArray
+    x :
         Input array of values.
-    amplitude : float, optional
-        The amplitude of the PDF.
-        Defaults to 1.0.
-        Ignored if **normalize** is ``True``.
-    shape : float, optional
-        The shape parameter, :math:`\alpha`.
-        Defaults to 0.0.
-    loc : float, optional
-        The location parameter, :math:`\xi`.
-        Defaults to 0.0.
-    scale: float, optional
-        The scale parameter, :math:`\omega`
-        Defaults to 1.0,
-    normalize : bool, optional
+    amplitude :
+        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+    shape :
+        The shape parameter, :math:`\alpha`. Defaults to 0.0.
+    loc :
+        The location parameter, :math:`\xi`. Defaults to 0.0.
+    scale :
+        The scale parameter, :math:`\omega`. Defaults to 1.0,
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -2810,9 +2806,9 @@ def skew_normal_cdf_(
 
     Parameters
     ----------
-    amplitude: float, optional
+    amplitude :
         For API consistency only.
-    normalize: float, optional
+    normalize :
         For API consistency only.
 
     Notes
@@ -2851,22 +2847,17 @@ def sym_gen_normal_pdf_(
 
     Parameters
     ----------
-    x : NDArray
+    x :
         Input array of values.
-    amplitude : float, optional
-        The amplitude of the PDF.
-        Defaults to 1.0.
-        Ignored if **normalize** is ``True``.
-    shape : float, optional
-        The shape parameter, :math:`\beta`.
-        Defaults to 1.0.
-    loc : float, optional
-        The location parameter, :math:`\mu`.
-        Defaults to 0.0.
-    scale: float, optional
-        The scale parameter, :math:`\alpha`
-        Defaults to 1.0,
-    normalize : bool, optional
+    amplitude :
+        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+    shape :
+        The shape parameter, :math:`\beta`. Defaults to 1.0.
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    scale :
+        The scale parameter, :math:`\alpha`. Defaults to 1.0,
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -2961,9 +2952,9 @@ def sym_gen_normal_cdf_(
 
     Parameters
     ----------
-    amplitude: float, optional
+    amplitude :
         For API consistency only.
-    normalize: bool, optional
+    normalize :
         For API consistency only.
 
     Notes
@@ -3029,13 +3020,13 @@ def quadratic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> N
 
     Parameters
     ----------
-    x
+    x :
         Input array of values.
-    a
+    a :
         The coefficient of the quadratic term $(x^2)$.
-    b
+    b :
         The coefficient of the linear term $(x)$.
-    c
+    c :
         The constant term (y-intercept).
 
     Returns
@@ -3080,9 +3071,9 @@ def _pdf_scaling(pdf_: ArrayLike, amplitude: float) -> NDArray:
 
     Parameters
     ----------
-    pdf_
+    pdf_ :
         The input probability density function values (not necessarily normalized).
-    amplitude
+    amplitude :
         The amplitude factor to scale the normalized PDF.
 
     Returns
@@ -3107,11 +3098,11 @@ def preprocess_input(x: ArrayLike, loc: float = 0.0, scale: float = 1.0) -> NDAr
 
     Parameters
     ----------
-    x
+    x :
         Input data.
-    loc
+    loc :
         The location parameter, for shifting, defaults to 0.0.
-    scale
+    scale :
         The scale parameter, for scaling, defaults to 1.0,
 
     Returns

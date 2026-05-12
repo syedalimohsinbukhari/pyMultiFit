@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
 from .. import SQRT, md_scipy_like
 from ..typing import ArrayLike, NDArray
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
-from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
 
 
 class LaplaceDistribution(BaseDistribution):
@@ -15,13 +14,13 @@ class LaplaceDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    mean
+    mean :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
-    diversity
+    diversity :
         The diversity parameter, :math:`b`. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -97,9 +96,9 @@ class LaplaceDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -116,9 +115,9 @@ class LaplaceDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -143,6 +142,6 @@ class LaplaceDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         m, b = self.mu, self.b
 
-        variance_ = 2 * b**2
+        variance_ = 2 * b ** 2
 
         return {"mean": m, "median": m, "mode": m, "variance": variance_, "std": SQRT(variance_)}

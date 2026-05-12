@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
 from .. import NAN_DICT, SQRT, md_scipy_like
 from ..typing import ArrayLike, NDArray
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
-from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
 
 
 class ChiSquareDistribution(BaseDistribution):
@@ -21,13 +20,13 @@ class ChiSquareDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    degree_of_freedom
+    degree_of_freedom :
         The degree of freedom for the chi-square distribution. Default is 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -106,11 +105,11 @@ class ChiSquareDistribution(BaseDistribution):
 
         Parameters
         ----------
-        df
+        df :
             The degree of freedom for the ChiSquare distribution.
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0
 
         Returns
@@ -127,11 +126,11 @@ class ChiSquareDistribution(BaseDistribution):
 
         Parameters
         ----------
-        df
+        df :
             The degree of freedom for the ChiSquare distribution.
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0
 
         Returns
@@ -170,6 +169,6 @@ class ChiSquareDistribution(BaseDistribution):
 
         mean_ = (s * df) + l_
         mode_ = max(df - 2, 0)
-        variance_ = 2 * df * s**2
+        variance_ = 2 * df * s ** 2
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

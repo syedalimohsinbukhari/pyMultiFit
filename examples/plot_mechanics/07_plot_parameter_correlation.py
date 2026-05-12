@@ -17,7 +17,7 @@ from pymultifit import GAUSSIAN, LINE
 from pymultifit.fitters import GaussianFitter, MixedDataFitter
 from pymultifit.generators import multi_gaussian, multiple_models
 
-# ── data & fits ───────────────────────────────────────────────────────────────
+# -- data & fits ---------------------------------------------------------------
 # 3-component Gaussian
 params_g = [(20, -15, 2), (10, 0, 5), (8, 12, 3)]
 x_g = np.linspace(-25, 25, 1200)
@@ -34,13 +34,13 @@ y_m = multiple_models(x_m, params=params_m, model_list=[LINE, GAUSSIAN, GAUSSIAN
 mf = MixedDataFitter(x_m, y_m, model_list=[LINE, GAUSSIAN, GAUSSIAN])
 mf.fit([(0.03, 1.5), (10, -9, 2.5), (5, 7, 3)])
 
-# ── Example 1 : auto-labels (p1, p2, …) ──────────────────────────────────────
+# -- Example 1 : auto-labels (p1, p2, …) --------------------------------------
 fig1, ax1 = plt.subplots(figsize=(7, 7))
 gf.plotter.plot_parameter_correlation(axis=ax1)
 ax1.set_title("3-component Gaussian — auto labels")
 plt.tight_layout()
 
-# ── Example 2 : physics-motivated custom labels ───────────────────────────────
+# -- Example 2 : physics-motivated custom labels -------------------------------
 # For GaussianFitter each component has (amplitude, mu, sigma)
 custom_labels = ["A₁", "μ₁", "σ₁", "A₂", "μ₂", "σ₂", "A₃", "μ₃", "σ₃"]
 
@@ -49,7 +49,7 @@ gf.plotter.plot_parameter_correlation(param_labels=custom_labels, axis=ax2)
 ax2.set_title("3-component Gaussian — physics labels")
 plt.tight_layout()
 
-# ── Example 3 : MixedDataFitter — model-aware auto-labels ────────────────────
+# -- Example 3 : MixedDataFitter — model-aware auto-labels --------------------
 # Labels are auto-generated as "Line_1_p1", "Gaussian_1_p1", etc.
 fig3, ax3 = plt.subplots(figsize=(8, 8))
 mf.plotter.plot_parameter_correlation(axis=ax3)

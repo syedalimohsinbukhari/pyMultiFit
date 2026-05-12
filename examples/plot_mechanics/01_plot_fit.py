@@ -32,13 +32,13 @@ gf.fit([(10, -18, 1), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)])
 mf = MixedDataFitter(x_m, y_m, model_list=[LINE, GAUSSIAN, LAPLACE, GAUSSIAN])
 mf.fit([(0, 2), (6, -15, 2), (4, 5, 1), (3, 20, 3)])
 
-# ── Example 1 : default labels ───────────────────────────────────────────────
+# ── Example 1: default labels ───────────────────────────────────────────────
 fig1, ax1 = plt.subplots(figsize=(12, 5))
 gf.plotter.plot_fit(axis=ax1)
 ax1.set_title("GaussianFitter — default labels")
 plt.tight_layout()
 
-# ── Example 2 : custom labels + show_individuals ─────────────────────────────
+# ── Example 2: custom labels + show_individuals ─────────────────────────────
 fig2, ax2 = plt.subplots(figsize=(12, 5))
 gf.plotter.plot_fit(
     show_individuals=True,

@@ -1,14 +1,11 @@
 """Created on Jan 29 15:42:23 2025"""
 
-from typing import Dict
-
-import numpy as np
 from scipy.special import gammaln
 
-from ... import md_scipy_like
-from ..backend import BaseDistribution
-from ..backend import errorHandling as erH
+from ..backend import BaseDistribution, errorHandling as erH
 from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
+from ... import md_scipy_like, LOG, EXP, SQRT
+from ...typing import ArrayLike, NDArray
 
 
 class SymmetricGeneralizedNormalDistribution(BaseDistribution):
@@ -17,15 +14,15 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    shape
+    shape :
         The shape parameter, :math:`\beta`. Defaults to 1.0.
-    loc
+    loc :
         The shape parameter, :math:`\mu`. Defaults to 0.0.
-    scale
+    scale :
         The standard deviation parameter, :math:`\alpha`. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -33,8 +30,6 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     ------
     NegativeAmplitudeError
         If the provided value of amplitude is negative.
-    NegativeScaleError
-        If the provided value of the scale parameter is negative.
 
     Examples
     --------
@@ -91,8 +86,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     ):
         if amplitude < 0 and not normalize:
             raise erH.NegativeAmplitudeError()
-        if shape < 0:
-            raise erH.NegativeShapeError()
+
         self.amplitude = 1.0 if normalize else amplitude
         self.loc = loc
         self.scale = scale
@@ -108,11 +102,11 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        beta
+        beta :
             The shape parameter.
-        loc
+        loc :
             The mean parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -129,11 +123,11 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        beta
+        beta :
             The shape parameter.
-        loc
+        loc :
             The mean parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -143,22 +137,22 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         """
         return cls(shape=beta, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return sym_gen_normal_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return sym_gen_normal_cdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         mean_ = self.loc
         median_ = self.loc
         mode_ = self.loc
 
-        variance_ = 2 * np.log(self.scale) + gammaln(3 / self.shape) - gammaln(1 / self.shape)
-        variance_ = np.exp(variance_)
+        variance_ = 2 * LOG(self.scale) + gammaln(3 / self.shape) - gammaln(1 / self.shape)
+        variance_ = EXP(variance_)
 
-        return {"mean": mean_, "median": median_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "median": median_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

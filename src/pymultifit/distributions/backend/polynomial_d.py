@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import numpy as np
-
-from ...typing import ArrayLike
-from ..utilities_d import cubic, line, quadratic
 from . import BaseDistribution
+from ..utilities_d import cubic, line, quadratic
+from ...typing import ArrayLike, NDArray
 
 
 class LineFunction(BaseDistribution):
@@ -16,17 +14,17 @@ class LineFunction(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         """Calculates the line function.
 
         Parameters
         ----------
-        x
+        x :
             Input array of values.
 
         Returns
         -------
-        ArrayLike
+        NDArray
             Array of the same shape as :math:`x`, containing the evaluated values.
         """
         return line(x, slope=self.slope, intercept=self.intercept)
@@ -40,17 +38,17 @@ class QuadraticFunction(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         """Calculates the quadratic function.
 
         Parameters
         ----------
-        x
+        x :
             Input array of values.
 
         Returns
         -------
-        ArrayLike
+        NDArray
             Array of the same shape as :math:`x`, containing the evaluated values.
         """
         return quadratic(x, a=self.a, b=self.b, c=self.c)
@@ -65,17 +63,17 @@ class CubicFunction(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: ArrayLike) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         """Calculates the cubic function.
 
         Parameters
         ----------
-        x
+        x :
             Input array of values.
 
         Returns
         -------
-        ArrayLike
+        NDArray
             Array of the same shape as :math:`x`, containing the evaluated values.
         """
         return cubic(x, a=self.a, b=self.b, c=self.c, d=self.d)

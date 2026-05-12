@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import gaussian_cdf_, gaussian_log_cdf_, gaussian_log_pdf_, gaussian_pdf_
 from .. import md_scipy_like
 from ..typing import ArrayLike, NDArray
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
-from .utilities_d import gaussian_cdf_, gaussian_log_cdf_, gaussian_log_pdf_, gaussian_pdf_
 
 
 class GaussianDistribution(BaseDistribution):
@@ -15,16 +14,13 @@ class GaussianDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-
-    mu
+    mu :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
-
-    std
+    std :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
 
     Raises
@@ -98,9 +94,9 @@ class GaussianDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The mean parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -117,9 +113,9 @@ class GaussianDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The mean parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -144,4 +140,4 @@ class GaussianDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         m, s = self.mu, self.std_
 
-        return {"mean": m, "median": m, "mode": m, "variance": s**2, "std": s}
+        return {"mean": m, "median": m, "mode": m, "variance": s ** 2, "std": s}

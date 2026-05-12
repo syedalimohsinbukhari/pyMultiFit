@@ -2,19 +2,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from itertools import chain
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from scipy.optimize import Bounds, curve_fit
 
-from ... import _UNSET, epsilon
+from ..utilities_f import parameter_logic, sanity_check
+from ... import epsilon
 from ..._plot import FitPlotter
 from ...typing import ArrayLike, NDArray, Params_
-from ..utilities_f import parameter_logic, sanity_check
 
 
 class BaseFitter:
@@ -22,7 +20,7 @@ class BaseFitter:
 
     _plotter: FitPlotter | None
 
-    def __init__(self, x_values: NDArray, y_values: NDArray, max_iterations: int = 1000):
+    def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
         self.x_values = x_values
         self.y_values = y_values
@@ -68,7 +66,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par :]
+            provided_secondary_params = params[self.pn_par:]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -167,7 +165,7 @@ class BaseFitter:
         """
         return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
-    def _n_fitter(self, x: ArrayLike, *params: Params_) -> np.ndarray:
+    def _n_fitter(self, x: ArrayLike, *params: Params_) -> NDArray:
         """
         Perform N-fitting by summing over multiple parameter sets.
 
@@ -187,12 +185,12 @@ class BaseFitter:
             An array containing the composite fitted values for the input ``x``.
         """
         y = np.zeros_like(x, dtype=float)
-        parameters: np.ndarray = np.reshape(np.array(params), newshape=(self.n_fits, self.n_par))
+        parameters: NDArray = np.reshape(np.array(params), newshape=(self.n_fits, self.n_par))
         for par in parameters:
             y += self.fitter(x=x, params=par.tolist())
         return y
 
-    def _params(self) -> np.ndarray:
+    def _params(self) -> NDArray:
         """
         Store the fitted parameters of the fitted model.
 
@@ -275,14 +273,14 @@ class BaseFitter:
         )
         self._plotter = None  # invalidate cached plotter after each fit
 
-    def _fit_boundaries(self) -> tuple[Sequence[float], Sequence[float]]:
+    def _fit_boundaries(self) -> tuple[list[float], list[float]]:
         """Defines the internal distribution boundaries to be used by fitter."""
         ub = np.repeat(np.inf, repeats=self.n_par).tolist()
         lb = np.repeat(-np.inf, repeats=self.n_par).tolist()
 
         return lb, ub
 
-    def fit_boundaries(self) -> tuple[Sequence[float], Sequence[float]]:
+    def fit_boundaries(self) -> tuple[list[float], list[float]]:
         """Defines the distribution boundaries to be used by fitter."""
         return self._fit_boundaries()
 
@@ -425,63 +423,9 @@ class BaseFitter:
         else:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
-    def plot_fit(
-        self,
-        show_individuals: bool = False,
-        x_label: str = "X",
-        y_label: str = "Y",
-        data_label: str = "Data",
-        fit_label: str = "Total Fit",
-        plot_title: str = "",
-        axis: Axes | None = None,
-    ) -> Axes:
-        return self.plotter.plot_fit(
-            show_individuals=show_individuals,
-            x_label=x_label,
-            y_label=y_label,
-            plot_title=plot_title,
-            data_label=data_label,
-            fit_label=fit_label,
-            axis=axis,
-        )
-
-    def plot_residuals(self, x_label: str = "", y_label: str = "", title: str = "", axis: Axes | None = None):
-        return self.plotter.plot_residuals(x_label=x_label, y_label=y_label, plot_title=title, axis=axis)
-
-    def plot_fit_and_residuals(
-        self,
-        show_individuals: bool = False,
-        x_label: str | None = None,
-        y_label: str | None = None,
-        data_label: str | None = None,
-        fit_label: str | None = None,
-        title: str | None = None,
-    ):
-        """
-        Plot the fitted model and residuals in a 2-panel figure.
-
-        :param show_individuals: Whether to show individually fitted models or not.
-        :param x_label: The label for the x-axis.
-        :param y_label: The label for the y-axis for the fit plot.
-        :param title: The overall title for the figure.
-        :param data_label: The label for the data.
-        :param fit_label: The label for the fitted model.
-
-        :return: A tuple of (figure, (ax1, ax2)) where ax1 is the fit plot and ax2 is the residuals plot.
-        :rtype: tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]
-        """
-        return self.plotter.plot_fit_and_residuals(
-            show_individuals=show_individuals,
-            x_label=x_label,
-            y_label=y_label,
-            plot_title=title,
-            data_label=data_label,
-            fit_label=fit_label,
-        )
-
     def ci_bounds(
         self,
-        ci_level: int | Sequence[int] = 95,
+        ci_level: int | list[int] = 95,
         n_bootstrap: int = 1000,
         plot_it: bool = False,
         overall_ci: bool = True,

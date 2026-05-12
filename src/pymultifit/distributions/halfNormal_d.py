@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
 from .. import SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, md_scipy_like
 from ..typing import ArrayLike, NDArray
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
-from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
 
 
 class HalfNormalDistribution(BaseDistribution):
@@ -15,13 +14,13 @@ class HalfNormalDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    scale
+    scale :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -97,9 +96,9 @@ class HalfNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -116,9 +115,9 @@ class HalfNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -147,6 +146,6 @@ class HalfNormalDistribution(BaseDistribution):
         mode_ = 0
 
         variance_ = 1 - TWO_BY_PI
-        variance_ *= s_**2
+        variance_ *= s_ ** 2
 
         return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

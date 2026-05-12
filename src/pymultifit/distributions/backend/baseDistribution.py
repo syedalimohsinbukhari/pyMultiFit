@@ -6,12 +6,7 @@ from ...typing import ArrayLike, NDArray
 
 
 class BaseDistribution:
-    """
-    Bare-bones class for statistical distributions to provide consistent methods.
-
-    This class serves as a template for other distribution classes, defining the common interface
-    for probability density function (PDF), cumulative distribution function (CDF), and statistics.
-    """
+    """Bare-bones class for statistical distributions to provide consistent methods."""
 
     def pdf(self, x: ArrayLike) -> NDArray:  # type: ignore[empty-body]
         """
@@ -19,7 +14,7 @@ class BaseDistribution:
 
         Parameters
         ----------
-        x
+        x :
             Input array at which to evaluate the PDF.
 
         Returns
@@ -35,7 +30,7 @@ class BaseDistribution:
 
         Parameters
         ----------
-        x
+        x :
             Input array at which to evaluate the logPDF.
 
         Returns
@@ -50,7 +45,7 @@ class BaseDistribution:
 
         Parameters
         ----------
-        x
+        x :
             Input array at which to evaluate the CDF.
 
         Returns
@@ -65,7 +60,7 @@ class BaseDistribution:
 
         Parameters
         ----------
-        x
+        x :
             Input array at which to evaluate the logCDF.
 
         Returns

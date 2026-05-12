@@ -12,7 +12,6 @@ from scipy.optimize import Bounds, curve_fit
 from tqdm import trange
 
 from .. import (
-    _UNSET,
     CHI_SQUARE,
     EXPONENTIAL,
     FOLDED_NORMAL,

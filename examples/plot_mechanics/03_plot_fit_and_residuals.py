@@ -14,7 +14,7 @@ from pymultifit import GAUSSIAN, LAPLACE, LINE
 from pymultifit.fitters import GaussianFitter, MixedDataFitter
 from pymultifit.generators import multi_gaussian, multiple_models
 
-# ── data & fits ───────────────────────────────────────────────────────────────
+# -- data & fits ---------------------------------------------------------------
 params_g = [(20, -20, 2), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
 x_g = np.linspace(-35, 35, 1500)
 y_g = multi_gaussian(x_g, params=params_g, noise_level=0.2)
@@ -29,10 +29,10 @@ gf.fit([(10, -18, 1), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)])
 mf = MixedDataFitter(x_m, y_m, model_list=[LINE, GAUSSIAN, LAPLACE, GAUSSIAN])
 mf.fit([(0, 2), (6, -15, 2), (4, 5, 1), (3, 20, 3)])
 
-# ── Example 1 : GaussianFitter, default ──────────────────────────────────────
+# -- Example 1 : GaussianFitter, default --------------------------------------
 fig1, (ax_fit1, ax_res1) = gf.plotter.plot_fit_and_residuals()
 
-# ── Example 2 : GaussianFitter, show individuals + custom labels ──────────────
+# -- Example 2 : GaussianFitter, show individuals + custom labels --------------
 fig2, (ax_fit2, ax_res2) = gf.plotter.plot_fit_and_residuals(
     show_individuals=True,
     x_label="X data",
@@ -44,7 +44,7 @@ fig2, (ax_fit2, ax_res2) = gf.plotter.plot_fit_and_residuals(
 # further customisation of the returned axes
 ax_res2.set_ylim(-1.5, 1.5)
 
-# ── Example 3 : MixedDataFitter ───────────────────────────────────────────────
+# -- Example 3 : MixedDataFitter -----------------------------------------------
 fig3, (ax_fit3, ax_res3) = mf.plotter.plot_fit_and_residuals(
     show_individuals=True, x_label="X", y_label="Y", plot_title="Mixed model — Line + Gaussian + Laplace + Gaussian"
 )

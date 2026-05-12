@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 from pymultifit.fitters import GaussianFitter
 from pymultifit.generators import multi_gaussian
 
-# ── data & fit ────────────────────────────────────────────────────────────────
+# -- data & fit ----------------------------------------------------------------
 params = [(15, 0, 4), (8, -12, 2)]
 x = np.linspace(-22, 22, 800)
 y = multi_gaussian(x, params=params, noise_level=0.5)
@@ -24,19 +24,19 @@ y = multi_gaussian(x, params=params, noise_level=0.5)
 fitter = GaussianFitter(x, y)
 fitter.fit([(12, 0, 3), (7, -11, 1.5)])
 
-# ── Example 1 : single PI level ───────────────────────────────────────────────
+# -- Example 1 : single PI level -----------------------------------------------
 fig1, ax1 = plt.subplots(figsize=(10, 5))
 fitter.plotter.plot_prediction_intervals(pi_level=95, axis=ax1)
 ax1.set_title("95 % Prediction Interval")
 plt.tight_layout()
 
-# ── Example 2 : nested PI bands ───────────────────────────────────────────────
+# -- Example 2 : nested PI bands -----------------------------------------------
 fig2, ax2 = plt.subplots(figsize=(10, 5))
 fitter.plotter.plot_prediction_intervals(pi_level=[68, 90, 95], axis=ax2)
 ax2.set_title("Nested Prediction Interval bands  (68 / 90 / 95 %)")
 plt.tight_layout()
 
-# ── Example 3 : PI vs CI side-by-side ────────────────────────────────────────
+# -- Example 3 : PI vs CI side-by-side ----------------------------------------
 print("Running bootstrap for CI comparison…")
 results_ci = fitter.ci_bounds(ci_level=95, n_bootstrap=300, overall_ci=True, individual_ci=False, random_state=0)
 

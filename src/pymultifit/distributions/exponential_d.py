@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
 from .. import LOG_TWO, NAN_DICT, SQRT, md_scipy_like
 from ..typing import ArrayLike, NDArray
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
-from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
 
 
 class ExponentialDistribution(BaseDistribution):
@@ -23,13 +22,13 @@ class ExponentialDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
-    scale
+    scale :
         The scale parameter, :math:`\lambda`. Defaults to 1.0.
-    loc
+    loc :
         The location parameter, for shifting. Defaults to 0.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -105,9 +104,9 @@ class ExponentialDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The rate parameter. Defaults to 1.0.
 
         Returns
@@ -124,9 +123,9 @@ class ExponentialDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The rate parameter. Defaults to 1.0.
 
         Returns
@@ -156,6 +155,6 @@ class ExponentialDistribution(BaseDistribution):
 
         mean_ = (1 / s) + l_
         median_ = (LOG_TWO / s) + l_
-        variance_ = 1 / s**2
+        variance_ = 1 / s ** 2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

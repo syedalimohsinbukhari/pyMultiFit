@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from numpy import cosh, expm1, sinh
 
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import johnsonSU_cdf_, johnsonSU_log_cdf_, johnsonSU_log_pdf_, johnsonSU_pdf_
 from .. import EXP, SQRT
 from ..typing import ArrayLike, NDArray
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
-from .utilities_d import johnsonSU_cdf_, johnsonSU_log_cdf_, johnsonSU_log_pdf_, johnsonSU_pdf_
 
 
 class JohnsonSUDistribution(BaseDistribution):
@@ -85,12 +84,12 @@ class JohnsonSUDistribution(BaseDistribution):
         a, b = self.gamma, self.delta
         s, l_ = self.lambda_, self.xi
 
-        mean_ = l_ - s * EXP(1 / (2 * b**2)) * sinh(a / b)
+        mean_ = l_ - s * EXP(1 / (2 * b ** 2)) * sinh(a / b)
 
         median_ = l_ + s * sinh(-a / b)
 
-        v1 = EXP(b**-2) * cosh(2 * a / b) + 1
-        v2 = expm1(b**-2)
-        variance_ = s**2 / 2 * v1 * v2
+        v1 = EXP(b ** -2) * cosh(2 * a / b) + 1
+        v2 = expm1(b ** -2)
+        variance_ = s ** 2 / 2 * v1 * v2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

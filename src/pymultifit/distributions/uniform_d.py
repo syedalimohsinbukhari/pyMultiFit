@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
 from .. import NAN, SQRT, md_scipy_like
 from ..typing import ArrayLike, NDArray
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
-from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
 
 
 class UniformDistribution(BaseDistribution):
@@ -15,13 +14,13 @@ class UniformDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    low
+    low :
         Lower bound of distribution.
-    high
+    high :
         Upper bound of distribution.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -97,9 +96,9 @@ class UniformDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -116,9 +115,9 @@ class UniformDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns

@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
 from .. import EXP, LOG, SQRT, md_scipy_like, suppress_numpy_warnings
 from ..typing import ArrayLike, NDArray
-from .backend import BaseDistribution
-from .backend import errorHandling as erH
-from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
 
 
 class LogNormalDistribution(BaseDistribution):
@@ -15,13 +14,13 @@ class LogNormalDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    mu
+    mu :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
-    std
+    std :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    normalize
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -100,11 +99,11 @@ class LogNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        s
+        s :
             The shape parameter.
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -121,11 +120,11 @@ class LogNormalDistribution(BaseDistribution):
 
         Parameters
         ----------
-        s
+        s :
             The shape parameter.
-        loc
+        loc :
             The location parameter. Defaults to 0.0.
-        scale
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -165,6 +164,6 @@ class LogNormalDistribution(BaseDistribution):
         p = EXP(s * s)
         mean_ = SQRT(p)
         variance_ = p * (p - 1)
-        variance_ *= m**2
+        variance_ *= m ** 2
 
         return {"mean": (m * mean_) + l_, "variance": variance_, "std": SQRT(variance_)}

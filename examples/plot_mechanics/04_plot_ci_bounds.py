@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 from pymultifit.fitters import GaussianFitter
 from pymultifit.generators import multi_gaussian
 
-# ── data & fit ────────────────────────────────────────────────────────────────
+# -- data & fit ----------------------------------------------------------------
 params = [(10, -5, 2), (8, 5, 3)]
 x = np.linspace(-15, 15, 500)
 y = multi_gaussian(x, params=params, noise_level=0.7)
@@ -24,7 +24,7 @@ y = multi_gaussian(x, params=params, noise_level=0.7)
 fitter = GaussianFitter(x, y)
 fitter.fit([(8, -4, 1.5), (6, 4, 2)])
 
-# ── Example 1 : overall CI at 95 % (via fitter convenience flag) ──────────────
+# -- Example 1 : overall CI at 95 % (via fitter convenience flag) --------------
 print("Running bootstrap (Example 1)…")
 results_95 = fitter.ci_bounds(ci_level=95, n_bootstrap=200, overall_ci=True, individual_ci=False, random_state=42)
 
@@ -34,7 +34,7 @@ fitter.plotter.plot_ci_bounds(results=results_95, ci_levels=[95], overall_ci=Tru
 ax1.set_title("Overall 95 % bootstrap CI")
 plt.tight_layout()
 
-# ── Example 2 : nested overall CI bands at 68 / 90 / 95 % ───────────────────
+# -- Example 2 : nested overall CI bands at 68 / 90 / 95 % -------------------
 print("Running bootstrap (Example 2)…")
 results_multi = fitter.ci_bounds(
     ci_level=[68, 90, 95], n_bootstrap=200, overall_ci=True, individual_ci=False, random_state=42
@@ -48,7 +48,7 @@ fitter.plotter.plot_ci_bounds(
 ax2.set_title("Nested bootstrap CI bands  (68 / 90 / 95 %)")
 plt.tight_layout()
 
-# ── Example 3 : individual component CIs ─────────────────────────────────────
+# -- Example 3 : individual component CIs -------------------------------------
 print("Running bootstrap (Example 3)…")
 results_ind = fitter.ci_bounds(ci_level=95, n_bootstrap=200, overall_ci=False, individual_ci=True, random_state=42)
 
