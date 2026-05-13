@@ -29,9 +29,9 @@ def mark_deprecated(ver_: str, new: str):
 
     Parameters
     ----------
-    ver_
+    ver_ :
         The version where the method is deprecated.
-    new
+    new :
         The name of the method to use instead.
     """
 
@@ -45,6 +45,12 @@ def mark_deprecated(ver_: str, new: str):
 
 def md_scipy_like(ver_: str, new: str = "from_scipy_params"):
     return mark_deprecated(ver_=ver_, new=new)
+
+def plotter_deprecation(ver_: str, new: str = "[PLOTTER].plot_fit"):
+    return mark_deprecated(
+        ver_=ver_,
+        new=new,
+    )
 
 
 def suppress_numpy_warnings():

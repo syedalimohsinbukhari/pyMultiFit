@@ -210,9 +210,9 @@ class FitPlotter:
     def plot_ci_bounds(
         self,
         results: dict,
-        ci_levels: list,
-        overall_ci: bool,
-        individual_ci: bool,
+        ci_levels: int | list[int],
+        overall_ci: bool = True,
+        individual_ci: bool = False,
         axis: Axes | None = None,
     ) -> Axes:
         """Plot bootstrap confidence interval bounds.
@@ -220,20 +220,29 @@ class FitPlotter:
         Parameters
         ----------
         results :
-            Dictionary produced by ``fitter.ci_bounds()``.
+            Dictionary produced by ``fitter.ci_bounds()`` containing:
+            - ``"x_range"``: X-values for CI evaluation
+            - ``"overall_ci_95"``: Overall CI dict with "lower", "median", "upper" keys
+            - ``"individual_ci_95"``: List of per-fit CI dicts (if individual_ci was used)
         ci_levels :
-            List of CI percentages that are present in *results*.
+            CI percentage level(s) to plot (e.g., 95 or [68, 95, 99]).
+            Must match levels computed in *results*.
         overall_ci :
-            When ``True``, overall CI bands are drawn.
+            When ``True``, overall composite CI bands are drawn. Defaults to ``True``.
         individual_ci :
-            When ``True``, per-component CI bands are drawn.
+            When ``True``, per-component CI bands are drawn. Defaults to ``False``.
         axis :
-            Target axes.  A new figure is created when ``None``.
+            Target axes. A new figure is created when ``None``.
 
         Returns
         -------
         Axes
             The axes on which the plot was drawn.
+            
+        Notes
+        -----
+        Multiple CI levels are rendered with varying transparency (alpha values),
+        where narrower intervals appear darker for better visual hierarchy.
         """
         return _ci(
             fitter_object=self.fitter,

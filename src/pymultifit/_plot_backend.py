@@ -204,12 +204,34 @@ def _prediction_interval(
 
 def _ci(
     fitter_object: "BaseFitter | MixedDataFitter",
-    results,
+    results: dict,
     ci_levels: int | list[int],
     overall_ci: bool,
     individual_ci: bool,
     axis: Axes | None,
 ) -> Axes:
+    """Plot confidence interval bands from ci_bounds results.
+
+    Parameters
+    ----------
+    fitter_object
+        The fitter instance (used for plotting context).
+    results
+        Dictionary returned from fitter.ci_bounds() containing x_range and CI data.
+    ci_levels
+        CI level(s) to plot (e.g., 95 or [68, 95, 99]).
+    overall_ci
+        Whether to plot overall composite fit CI bands.
+    individual_ci
+        Whether to plot individual component fit CI bands.
+    axis
+        Matplotlib axes to plot on. Creates new figure if None.
+
+    Returns
+    -------
+    Axes
+        The axes object with CI bands plotted.
+    """
     if axis is None:
         _, axis = plt.subplots(figsize=(10, 6))
 
@@ -219,35 +241,46 @@ def _ci(
     axis: Axes
     ci_levels: list
 
-    def _helper(given_ci, data_label, color):
+    # Extract x_range from results
+    x_range = results.get("x_range", fitter_object.x_values)
+
+    # Create alpha values for multiple CI levels (lighter for wider intervals)
+    alphas = np.linspace(0.45, 0.15, len(ci_levels))[::-1]  # Reverse so narrower is darker
+
+    def _helper(given_ci: dict, data_label: str, alpha_val: float):
+        """Helper to plot a single CI band."""
         plot_errorband(
-            x_data=fitter_object.x_values,
-            y_data=np.zeros_like(fitter_object.x_values),
+            x_data=x_range,
+            y_data=given_ci["median"],
             y_lower=given_ci["lower"],
             y_upper=given_ci["upper"],
             line=False,
-            band_config=ebc(c=color, label=data_label),
+            band_config=ebc(c=CI_BASE, alpha=alpha_val, label=data_label),
             axis=axis,
         )
 
-    if individual_ci and len(ci_levels) == 1:
-        # print(f'{fitter_object.n_par=} {fitter_object.n_fits}')
-        ci_levels = list(chain.from_iterable([ci_levels] * len(ci_levels)))
-
-    ci_colors = [plt.get_cmap("Purples")(v) for v in np.linspace(0.45, 0.75, len(ci_levels))]
-
     if overall_ci:
-        for ci, col_ in zip(ci_levels, ci_colors):
+        for ci, alpha_val in zip(ci_levels, alphas):
             label = f"{ci}% CI (overall)"
-            ci_data = results[f"overall_ci_{ci}"]
-            _helper(given_ci=ci_data, data_label=label, color=col_)
+            ci_key = f"overall_ci_{ci}"
+
+            if ci_key not in results:
+                raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
+
+            ci_data = results[ci_key]
+            _helper(given_ci=ci_data, data_label=label, alpha_val=alpha_val)
 
     if individual_ci:
-        for ci, col_ in zip(ci_levels, ci_colors):
-            ci_data = results[f"individual_ci_{ci}"]
+        for ci, alpha_val in zip(ci_levels, alphas):
+            ci_key = f"individual_ci_{ci}"
+
+            if ci_key not in results:
+                raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
+
+            ci_data = results[ci_key]
             for idx, fit_ci in enumerate(ci_data):
-                label = f"{ci}% CI (fit{idx + 1})" if idx == 0 else ""  # label first only
-                _helper(given_ci=fit_ci, data_label=label, color=col_)
+                label = f"{ci}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
+                _helper(given_ci=fit_ci, data_label=label, alpha_val=alpha_val)
 
     axis.grid(color=GRID_COLOR, ls=GRID_LS, alpha=GRID_ALPHA)
     axis.legend()

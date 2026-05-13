@@ -7,25 +7,9 @@ from typing import Callable, List, Optional, Sequence, Union
 import matplotlib.pyplot as plt  # noqa: F401 – kept for any subclass that may reference it
 import numpy as np
 from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
+from matplotlib.figure import Figure
 from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external callers
 from scipy.optimize import Bounds, curve_fit
-from tqdm import trange
-
-from .. import (
-    CHI_SQUARE,
-    EXPONENTIAL,
-    FOLDED_NORMAL,
-    GAMMA,
-    GAUSSIAN,
-    HALF_NORMAL,
-    LAPLACE,
-    LINE,
-    LOG_NORMAL,
-    NORMAL,
-    SKEW_NORMAL,
-    epsilon,
-)
-from ..typing import NDArray, Params_
 
 # importing from files to avoid circular import
 from .backend import BaseFitter
@@ -39,6 +23,22 @@ from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter
 from .polynomial_f import LineFitter
 from .skewNormal_f import SkewNormalFitter
+from .utilities_f import _plot_fit
+from .. import (
+    CHI_SQUARE,
+    EXPONENTIAL,
+    FOLDED_NORMAL,
+    GAMMA,
+    GAUSSIAN,
+    HALF_NORMAL,
+    LAPLACE,
+    LINE,
+    LOG_NORMAL,
+    NORMAL,
+    SKEW_NORMAL,
+    epsilon, plotter_deprecation,
+)
+from ..typing import NDArray, Params_
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {
@@ -79,7 +79,7 @@ class MixedDataFitter(BaseFitter):
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                "Use `model_dictionary` instead.",
+                        "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -133,7 +133,7 @@ class MixedDataFitter(BaseFitter):
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -169,6 +169,93 @@ class MixedDataFitter(BaseFitter):
             An array containing the composite fitted values for the input ``x``.
         """
         return self.model_function(x, *params)
+
+    def _evaluate_individual_component(self, x: np.ndarray, fit_index: int, params: Params_) -> NDArray:
+        """
+        Override to evaluate a single model component for CI calculation.
+
+        Parameters
+        ----------
+        x
+            X-values at which to evaluate the model.
+        fit_index
+            Index of the component model in model_list (0-based).
+        params
+            Parameters for this specific component.
+
+        Returns
+        -------
+        NDArray
+            Evaluated y-values for this component.
+        """
+        model = self.model_list[fit_index]
+        model_class = self._instantiate_class(model=model)
+        return model_class.fitter(x=x, params=list(params))
+
+    def _compute_individual_ci(
+        self, 
+        mv_parameters: NDArray, 
+        x_: NDArray, 
+        bounds: list[tuple[int, tuple[float, float, float]]]
+    ) -> dict:
+        """
+        Override to handle mixed models with different parameter counts.
+
+        Parameters
+        ----------
+        mv_parameters
+            Bootstrap parameter samples, shape (n_bootstrap, n_total_params).
+        x_
+            X-values at which to evaluate.
+        bounds
+            List of (ci_value, (lower_percentile, median_percentile, upper_percentile)).
+
+        Returns
+        -------
+        dict
+            Dictionary mapping ci_value to list of component CI dicts.
+        """
+        n_bootstrap = mv_parameters.shape[0]
+        curves_ = np.zeros(shape=(n_bootstrap, self.n_fits, x_.shape[0]))
+
+        # Generate curves for each model and bootstrap sample
+        for boot_idx, boot_params in enumerate(mv_parameters):
+            param_index = 0
+            for model_idx, model in enumerate(self.model_list):
+                n_par = self._instantiate_n_par(model=model)
+                model_params = boot_params[param_index:param_index + n_par]
+                curves_[boot_idx, model_idx, :] = self._evaluate_individual_component(
+                    x_, model_idx, model_params
+                )
+                param_index += n_par
+
+        results = {}
+        for ci_val, (lower_p, median_p, upper_p) in bounds:
+            individual_results = []
+
+            for fit_idx in range(self.n_fits):
+                quantiles = np.quantile(
+                    curves_[:, fit_idx, :],
+                    [lower_p, median_p, upper_p],
+                    axis=0
+                )
+
+                # Validate dimensions
+                if quantiles.shape[-1] != len(x_):
+                    raise ValueError(
+                        f"Dimension mismatch for fit {fit_idx}: x_range has length {len(x_)} but "
+                        f"quantiles have shape {quantiles.shape}"
+                    )
+
+                individual_results.append({
+                    "lower": quantiles[0],
+                    "median": quantiles[1],
+                    "upper": quantiles[2],
+                })
+
+            results[ci_val] = individual_results
+
+        return results
 
     def _get_bounds(self):
         """
@@ -216,10 +303,37 @@ class MixedDataFitter(BaseFitter):
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index : p_index + n_pars]])
+            param_dict[model].extend([values[p_index: p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
+
+    def _plot_individual_fitter(self, plotter):
+        """
+        Plot the individual fitters function.
+
+        :param plotter: The plotting axis object
+        """
+        x = self.x_values
+        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
+        param_index = 0
+        for i, model in enumerate(self.model_list):
+            color = colors[i % len(colors)]
+            class_model = self._instantiate_class(model=model)
+            n_par = self._instantiate_n_par(model=model)
+            pars = self.params[param_index: param_index + n_par]
+            y_component = class_model.fitter(x=x, params=pars)
+            plot_xy(
+                x_data=x,
+                y_data=y_component,
+                x_label="",
+                y_label="",
+                plot_title="",
+                data_label=f"{model.capitalize()} {i + 1}({', '.join(self._format_param(i) for i in pars)})",
+                plot_config=LinePlotConfig(linestyle="--", color=color),
+                axis=plotter,
+            )
+            param_index += n_par
 
     def fit(self, p0: Params_, frozen: Optional[Union[int, List[int]]] = None):
         """
@@ -304,177 +418,55 @@ class MixedDataFitter(BaseFitter):
 
         return output
 
-    def ci_bounds(
+
+    def plot_fit(
         self,
-        ci_level: Union[int, list[int]] = 95,
-        n_bootstrap: int = 1000,
-        plot_it: bool = False,
-        overall_ci: bool = True,
-        individual_ci: bool = False,
-        random_state: Optional[int] = None,
-        axis=None,
+        show_individuals: bool = False,
+        x_label: str | None = None,
+        y_label: str | None = None,
+        data_label: str | None = None,
+        fit_label: str | None = None,
+        title: str | None = None,
+        axis: Axes | None = None,
     ):
         """
-        Compute confidence interval (CI) bounds for fitted data using bootstrap resampling.
+        Plot the fitted models.
 
         Parameters
         ----------
-        ci_level : int or list of int, optional
-            Confidence interval level(s) as percentages (e.g., 95 for 95% CI). Defaults to 95.
-        n_bootstrap : int, optional
-            Number of bootstrap samples to generate. Defaults to 1000.
-        plot_it : bool, optional
-            If True, plots the fitted curve and shaded CI regions. Defaults to False.
-        overall_ci : bool, optional
-            If True, compute CI bounds for the summed fitted curve. Defaults to True.
-        individual_ci : bool, optional
-            If True, compute CI bounds for each individual model. Defaults to False.
-        axis : matplotlib.axes.Axes, optional
-            Axes to plot on. If None and plot_it=True, a new figure is created.
-        random_state : int, optional
-            Random seed for reproducibility. Can be an integer or None. Defaults to None.
-        fast_bootstrap : bool, optional
-            If True, use reduced max_iterations for bootstrap (faster, minimal accuracy loss). Defaults to True.
-            Recommended for 2-3x speedup.
+        show_individuals :
+            Whether to show individually fitted models or not.
+        x_label :
+            The label for the x-axis.
+        y_label :
+            The label for the y-axis.
+        title :
+            The title for the plot.
+        data_label :
+            The label for the data.
+        fit_label :
+            The label for the fitted model.
+        axis :
+            Axes to plot instead of the entire figure. Defaults to None.
 
         Returns
         -------
-        dict
-            Dictionary with either or both:
-            - 'overall_ci_XX': dict with 'lower', 'upper', 'median' bounds for summed fits (if overall_ci=True).
-            - 'individual_ci_XX': list of dicts with 'lower', 'upper', 'median' for each model (if individual_ci=True).
-
-        Raises
-        ------
-        ValueError
-            If neither overall_ci nor individual_ci is True.
-        RuntimeError
-            If fit has not been performed yet.
-
-        Notes
-        -----
-        This method uses bootstrap resampling of (x, y) data pairs to estimate confidence intervals.
-        For each bootstrap sample, the model is refitted and predictions are generated. The CI bounds
-        are computed from the percentiles of the bootstrap distribution.
-
-        Using fast_bootstrap=True (default) provides 2-3x speedup by reducing max_iterations for
-        bootstrap samples, which converge faster due to good initial guesses from the original fit.
+        plotter
+            The plotter handle for the drawn plot.
         """
-        if self.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-        if not overall_ci and not individual_ci:
-            raise ValueError("At least one of `overall_ci` or `individual_ci` must be True.")
-
-        # Initialize a random number generator for reproducibility
-        rng = np.random.default_rng(random_state)
-
-        bootstrap_max_iter = self.max_iterations
-
-        # Handle single or multiple CI levels
-        ci_levels = [ci_level] if isinstance(ci_level, int) else ci_level
-
-        # Store original parameters as a flattened list for refitting
-        original_params = self.params
-        n_samples = len(self.x_values)
-
-        # Create a p0 structure for refitting (list of tuples per model)
-        p0_list = []
-        param_index = 0
-        for model in self.model_list:
-            n_par = self._instantiate_n_par(model=model)
-            p0_list.append(tuple(original_params[param_index : param_index + n_par]))
-            param_index += n_par
-
-        # Storage for bootstrap predictions
-        bootstrap_overall = []
-        bootstrap_individual = []
-
-        # Perform bootstrap resampling
-        successful_bootstraps = 0
-        for _ in trange(n_bootstrap):
-            # Resample indices with replacement using RNG
-            bootstrap_indices = rng.choice(n_samples, size=n_samples, replace=True)
-            x_boot = self.x_values[bootstrap_indices]
-            y_boot = self.y_values[bootstrap_indices]
-
-            try:
-                # Create a temporary fitter instance for the bootstrap sample
-                temp_fitter = MixedDataFitter(
-                    x_values=x_boot,
-                    y_values=y_boot,
-                    model_list=self.model_list,
-                    model_dictionary=self.fitter_dict,
-                    max_iterations=bootstrap_max_iter,
-                )
-
-                # Refit using original parameters as an initial guess
-                temp_fitter.fit(p0=p0_list)
-
-                # Generate predictions on original x_values
-                if overall_ci:
-                    overall_pred = temp_fitter.model_function(self.x_values, *temp_fitter.params)
-                    bootstrap_overall.append(overall_pred)
-
-                if individual_ci:
-                    # Extract predictions for each individual model
-                    individual_preds = []
-                    param_idx = 0
-                    for model in self.model_list:
-                        model_class = self._instantiate_class(model=model)
-                        n_par = self._instantiate_n_par(model=model)
-                        model_params = temp_fitter.params[param_idx : param_idx + n_par]
-                        individual_pred = model_class.fitter(x=self.x_values, params=list(model_params))
-                        individual_preds.append(individual_pred)
-                        param_idx += n_par
-                    bootstrap_individual.append(individual_preds)
-
-                successful_bootstraps += 1
-
-            except (RuntimeError, ValueError):
-                # Skip failed fits
-                continue
-
-        # Convert to arrays
-        if overall_ci:
-            bootstrap_overall = np.array(bootstrap_overall)
-        if individual_ci:
-            bootstrap_individual = np.array(bootstrap_individual)
-
-        # Report success rate if some failed
-        if successful_bootstraps < n_bootstrap:
-            print(f"Warning: Only {successful_bootstraps}/{n_bootstrap} bootstrap samples succeeded.")
-
-        if successful_bootstraps == 0:
-            raise RuntimeError("All bootstrap samples failed. Try adjusting initial parameters or max_iterations.")
-
-        # Compute confidence intervals
-        results = {}
-
-        for ci in ci_levels:
-            lower_percentile = (100 - ci) / 2
-            upper_percentile = 100 - lower_percentile
-
-            if overall_ci:
-                results[f"overall_ci_{ci}"] = {
-                    "lower": np.percentile(bootstrap_overall, lower_percentile, axis=0),
-                    "upper": np.percentile(bootstrap_overall, upper_percentile, axis=0),
-                    "median": np.percentile(bootstrap_overall, 50, axis=0),
-                }
-
-            if individual_ci:
-                results[f"individual_ci_{ci}"] = []
-                for j in range(self.n_fits):
-                    results[f"individual_ci_{ci}"].append(
-                        {
-                            "lower": np.percentile(bootstrap_individual[:, j], lower_percentile, axis=0),
-                            "upper": np.percentile(bootstrap_individual[:, j], upper_percentile, axis=0),
-                            "median": np.percentile(bootstrap_individual[:, j], 50, axis=0),
-                        }
-                    )
-
-        # Plot if requested
-        if plot_it:
-            self.plotter.plot_ci_bounds(results, ci_levels, overall_ci, individual_ci, axis)
-
-        return results
+        return _plot_fit(
+            x_values=self.x_values,
+            y_values=self.y_values,
+            parameters=self.params,
+            n_fits=len(self.model_list),
+            class_name=self.__class__.__name__,
+            _n_fitter=self.model_function,
+            _n_plotter=self._plot_individual_fitter,
+            show_individuals=show_individuals,
+            x_label=x_label,
+            y_label=y_label,
+            title=title,
+            data_label=data_label,
+            fit_label=fit_label,
+            axis=axis,
+        )

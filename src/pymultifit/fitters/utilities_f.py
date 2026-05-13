@@ -9,14 +9,14 @@ import numpy as np
 from matplotlib.axes import Axes
 from plotez import lpc, plot_xy
 
-from ..typing import ArrayLike
+from ..typing import ArrayLike, NDArray
 
 # SAFEGUARD:
 xy_tuple = Tuple[np.ndarray, np.ndarray]
 indexType = Union[int, List[int], None]
 
 
-def sanity_check(x_values: ArrayLike, y_values: ArrayLike) -> Tuple[ArrayLike, ArrayLike]:
+def sanity_check(x_values: ArrayLike, y_values: ArrayLike):
     """
     Convert input lists to NumPy arrays if necessary.
 
