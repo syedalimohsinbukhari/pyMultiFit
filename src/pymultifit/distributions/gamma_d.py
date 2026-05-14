@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
-from .. import SQRT, md_scipy_like
+from .. import SQRT, md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -169,6 +169,9 @@ class GammaDistribution(BaseDistribution):
 
     def stats(self) -> dict[str, float]:
         s, r, l_ = self.shape, self.scale, self.loc
+
+        if any(param <= 0 for param in (s, r)):
+            return NAN_DICT
 
         mean_ = (s * r) + l_
         variance_ = s * r ** 2

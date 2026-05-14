@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
-from .. import NAN, SQRT, md_scipy_like
+from .. import SQRT, md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -142,8 +142,8 @@ class UniformDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         low, high = self.low, self.low + self.high
 
-        if low == high:
-            return {"mean": NAN, "median": NAN, "variance": NAN, "std": NAN}
+        if low >= high:
+            return NAN_DICT
 
         mean_ = 0.5 * (low + high)
         median_ = mean_

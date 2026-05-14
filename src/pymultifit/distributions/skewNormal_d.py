@@ -6,7 +6,7 @@ from numpy import sign
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import skew_normal_cdf_, skew_normal_log_pdf_, skew_normal_pdf_
-from .. import EXP, LOG, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, md_scipy_like
+from .. import EXP, LOG, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -163,8 +163,12 @@ class SkewNormalDistribution(BaseDistribution):
 
     def stats(self) -> dict[str, float]:
         alpha, omega, epsilon = self.shape, self.scale, self.location
+
+        if omega <= 0:
+            return NAN_DICT
+
         delta = alpha / SQRT(1 + alpha ** 2)
-        sqrt_2_pi_delta = SQRT_TWO_BY_PI * delta
+        sqrt_2_pi_delta = omega * SQRT_TWO_BY_PI * delta
 
         def _m0(alpha_):
             term2 = (1 - PI / 4) * sqrt_2_pi_delta ** 3 / (1 - TWO_BY_PI * delta ** 2)
@@ -172,7 +176,7 @@ class SkewNormalDistribution(BaseDistribution):
             return sqrt_2_pi_delta - term2 - term3
 
         # Calculating mean, mode, variance, and std
-        mean_ = epsilon + omega * sqrt_2_pi_delta
+        mean_ = epsilon + sqrt_2_pi_delta
         mode_ = epsilon + omega * _m0(alpha)
         variance_ = omega ** 2 * (1 - (2 * delta ** 2 / PI))
         std_ = SQRT(variance_)

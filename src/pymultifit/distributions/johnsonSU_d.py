@@ -6,7 +6,7 @@ from numpy import cosh, expm1, sinh
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import johnsonSU_cdf_, johnsonSU_log_cdf_, johnsonSU_log_pdf_, johnsonSU_pdf_
-from .. import EXP, SQRT
+from .. import EXP, SQRT, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -83,6 +83,9 @@ class JohnsonSUDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         a, b = self.gamma, self.delta
         s, l_ = self.lambda_, self.xi
+
+        if any(param <= 0 for param in (b, s)):
+            return NAN_DICT
 
         mean_ = l_ - s * EXP(1 / (2 * b ** 2)) * sinh(a / b)
 

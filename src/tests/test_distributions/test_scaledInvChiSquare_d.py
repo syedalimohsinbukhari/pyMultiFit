@@ -34,9 +34,6 @@ class TestScaledInvChiSquareDistribution:
         distribution = ScaledInverseChiSquareDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.NegativeScaleError, match=f"Scale {erH.neg_message}"):
-            ScaledInverseChiSquareDistribution(scale=-3.0)
-
     @staticmethod
     def test_edge_cases():
         btf.edge_cases(distribution=ScaledInverseChiSquareDistribution(), log_check=True)

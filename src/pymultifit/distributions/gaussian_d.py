@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gaussian_cdf_, gaussian_log_cdf_, gaussian_log_pdf_, gaussian_pdf_
-from .. import md_scipy_like
+from .. import md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -139,5 +139,8 @@ class GaussianDistribution(BaseDistribution):
 
     def stats(self) -> dict[str, float]:
         m, s = self.mu, self.std_
+
+        if s <= 0:
+            return NAN_DICT
 
         return {"mean": m, "median": m, "mode": m, "variance": s ** 2, "std": s}

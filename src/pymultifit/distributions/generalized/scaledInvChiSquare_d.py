@@ -7,7 +7,7 @@ from ..utilities_d import (
     scaled_inv_chi_square_log_pdf_,
     scaled_inv_chi_square_pdf_,
 )
-from ... import md_scipy_like, SQRT, INF
+from ... import md_scipy_like, SQRT, INF, NAN_DICT
 from ...typing import ArrayLike, NDArray
 
 
@@ -17,8 +17,6 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
     ):
         if not normalize and amplitude < 0:
             raise erH.NegativeAmplitudeError()
-        if scale < 0:
-            raise erH.NegativeScaleError()
 
         self.amplitude = 1 if normalize else amplitude
         self.df = df
@@ -59,6 +57,10 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
     def stats(self) -> dict[str, float]:
         v, tau2, loc = self.df, self.tau2, self.loc
+
+        if any(param <= 0 for param in (v, tau2)):
+            return NAN_DICT
+
         mean_ = (v * tau2) / (v - 2)
         mode_ = (v * tau2) / (v + 2)
         variance_ = (2 * v ** 2 * tau2 ** 2) / ((v - 2) ** 2 * (v - 4))

@@ -163,6 +163,8 @@ class FoldedNormalDistribution(BaseDistribution):
 
         if std_ <= 0:
             return NAN_DICT
+        elif mean_ <= 0:
+            return NAN_DICT
 
         f1 = SQRT_TWO_BY_PI * EXP(-0.5 * mean_ ** 2)
         f2 = mean_ * erf(mean_ / SQRT_TWO)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
-from .. import SQRT, md_scipy_like
+from .. import SQRT, md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -141,6 +141,9 @@ class LaplaceDistribution(BaseDistribution):
 
     def stats(self) -> dict[str, float]:
         m, b = self.mu, self.b
+
+        if b <= 0:
+            return NAN_DICT
 
         variance_ = 2 * b ** 2
 
