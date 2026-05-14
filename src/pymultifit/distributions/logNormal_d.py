@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
-from .. import EXP, LOG, SQRT, md_scipy_like, suppress_numpy_warnings, NAN_DICT, NAN
+from .. import EXP, SQRT, md_scipy_like, suppress_numpy_warnings, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -156,9 +156,9 @@ class LogNormalDistribution(BaseDistribution):
 
     @suppress_numpy_warnings()
     def stats(self) -> dict[str, float]:
-        m, s, l_ = EXP(self.mu), self.std, self.loc
+        m, s, l_ = self.mu, self.std, self.loc
 
-        if s <= 0:
+        if m <= 0 or s <= 0:
             return NAN_DICT
 
         # copied from scipy source-code,
