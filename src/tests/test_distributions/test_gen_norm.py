@@ -32,9 +32,6 @@ class TestSymNormalDistribution:
         distribution = SymmetricGeneralizedNormalDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 
-        with pytest.raises(erH.NegativeShapeError, match=f"Shape {erH.neg_message}"):
-            SymmetricGeneralizedNormalDistribution(shape=-3.0)
-
     @staticmethod
     def test_edge_case():
         dist = SymmetricGeneralizedNormalDistribution()

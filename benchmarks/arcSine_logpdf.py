@@ -1,8 +1,8 @@
 """Created on Jan 31 22:21:08 2025"""
 
 import numpy as np
-
 from functions import plot_all_variations
+
 from pymultifit import EPSILON
 
 

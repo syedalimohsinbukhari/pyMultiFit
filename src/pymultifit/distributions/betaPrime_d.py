@@ -1,35 +1,32 @@
 """Created on Oct 31 18:28:47 2025"""
 
-from typing import Dict
+from __future__ import annotations
 
-import numpy as np
-
-from .backend import BaseDistribution
-from .utilities_d import beta_prime_pdf_, beta_prime_log_pdf_, beta_prime_cdf_, beta_prime_log_cdf_
-from .. import OneDArray
+from .backend import BaseDistribution, errorHandling as erH
+from .utilities_d import beta_prime_cdf_, beta_prime_log_cdf_, beta_prime_log_pdf_, beta_prime_pdf_
+from .. import INF, NAN_DICT, SQRT
+from ..typing import ArrayLike, NDArray
 
 
 class BetaPrimeDistribution(BaseDistribution):
     r"""
-    Class for Beta Prime distribution.
+    Class for BetaPrime distribution.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
-    :type amplitude: float, optional
-
-    :param alpha: The :math:`\alpha` parameter. Defaults to 1.0.
-    :type alpha: float, optional
-
-    :param beta: The :math:`\beta` parameter. Defaults to 1.0.
-    :type beta: float, optional
-
-    :param loc: float, optional The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
-
-    :param scale: float, optional The scale parameter, for scaling. Defaults to 1.0.
-    :type scale: float, optional
-
-    :param normalize: bool, optional If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
+    Parameters
+    ----------
+    amplitude :
+        The amplitude of the PDF, defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    alpha :
+        The shape parameter, :math:`\alpha`. Defaults to 1.
+    beta :
+        The shape parameter, :math:`\beta`. Defaults to 1.
+    loc :
+        The location parameter, for shifting. Defaults to 0.0.
+    scale :
+        The scale parameter, for scaling. Defaults to 1.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Examples
     --------
@@ -91,6 +88,9 @@ class BetaPrimeDistribution(BaseDistribution):
         scale: float = 1.0,
         normalize: bool = False,
     ):
+        if amplitude < 0 and normalize is False:
+            raise erH.NegativeAmplitudeError()
+
         self.amplitude = 1.0 if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
@@ -102,27 +102,27 @@ class BetaPrimeDistribution(BaseDistribution):
     @classmethod
     def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaPrimeDistribution":
         r"""
-        Instantiate BetaDistribution with scipy parameterization.
+        Instantiate `BetaPrimeDistribution` with scipy parameterization.
 
         Parameters
         ----------
-        a: float
+        a :
             The shape parameter, :math:`\alpha`.
-        b: float
+        b :
             The shape parameter, :math:`\beta`.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter,. Defaults to 1.0.
 
         Returns
         -------
-        BetaDistribution
-            An instance of normalized BetaDistribution.
+        BetaPrimeDistribution
+            An instance of normalized BetaPrimeDistribution.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return beta_prime_pdf_(
             x,
             amplitude=self.amplitude,
@@ -133,7 +133,7 @@ class BetaPrimeDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return beta_prime_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -144,7 +144,7 @@ class BetaPrimeDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return beta_prime_cdf_(
             x,
             amplitude=self.amplitude,
@@ -155,7 +155,7 @@ class BetaPrimeDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return beta_prime_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -166,16 +166,19 @@ class BetaPrimeDistribution(BaseDistribution):
             normalize=self.norm,
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         a, b = self.alpha, self.beta
         s, _l = self.scale, self.loc
 
-        mean_ = a / (b - 1) if b > 1 else np.inf
+        if any(param <= 0 for param in (a, b, s)):
+            return NAN_DICT
+
+        mean_ = a / (b - 1) if b > 1 else INF
         mean_ = (s * mean_) + _l
 
         num_ = a * (a + b - 1)
         den_ = (b - 2) * (b - 1) ** 2
-        variance_ = num_ / den_ if b > 2 else np.inf
-        variance_ = variance_ * s**2
+        variance_ = num_ / den_ if b > 2 else INF
+        variance_ = variance_ * s ** 2
 
-        return {"mean": mean_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "variance": variance_, "std": SQRT(variance_)}

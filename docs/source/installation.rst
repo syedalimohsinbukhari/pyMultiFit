@@ -12,7 +12,7 @@ Whether you're a user or a developer, follow the steps below to get started quic
 - `plotez <https://github.com/syedalimohsinbukhari/plotez>`_
 - `tqdm <https://tqdm.github.io>`_
 - `custom-inherit <https://github.com/rsokl/custom_inherit>`_
-- `Deprecated <https://github.com/laurent-laporte-pro/deprecated>`_
+- `deprecation <https://github.com/briancurtin/deprecation>`_
 
 -------------------------------
 

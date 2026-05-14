@@ -1,32 +1,33 @@
 """Created on Aug 03 21:02:45 2024"""
 
-from typing import Dict
-
-import numpy as np
+from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_
-from .. import md_scipy_like, OneDArray, suppress_numpy_warnings
+from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
+from .. import EXP, SQRT, md_scipy_like, suppress_numpy_warnings, NAN_DICT
+from ..typing import ArrayLike, NDArray
 
 
 class LogNormalDistribution(BaseDistribution):
     r"""
     Class for LogNormal distribution.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
+    Parameters
+    ----------
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    mu :
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    std :
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
-    :param mu: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type mu: float, optional
-
-    :param std: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    :type std: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -82,10 +83,9 @@ class LogNormalDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if std <= 0:
-            raise erH.NegativeStandardDeviationError()
+
         self.amplitude = 1.0 if normalize else amplitude
-        self.mu = np.log(mu)
+        self.mu = mu
         self.std = std
         self.loc = loc
 
@@ -93,17 +93,17 @@ class LogNormalDistribution(BaseDistribution):
 
     @classmethod
     @md_scipy_like("1.0.7")
-    def scipy_like(cls, s, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
+    def scipy_like(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
         """
         Instantiate LogNormalDistribution with scipy parametrization.
 
         Parameters
         ----------
-        s: float
+        s :
             The shape parameter.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -114,17 +114,17 @@ class LogNormalDistribution(BaseDistribution):
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, s, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
+    def from_scipy_params(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
         """
         Instantiate LogNormalDistribution with scipy parametrization.
 
         Parameters
         ----------
-        s: float
+        s :
             The shape parameter.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -134,36 +134,39 @@ class LogNormalDistribution(BaseDistribution):
         """
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return log_normal_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return log_normal_log_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return log_normal_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return log_normal_log_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
     @suppress_numpy_warnings()
-    def stats(self) -> Dict[str, float]:
-        m, s, l_ = np.exp(self.mu), self.std, self.loc
+    def stats(self) -> dict[str, float]:
+        m, s, l_ = self.mu, self.std, self.loc
+
+        if m <= 0 or s <= 0:
+            return NAN_DICT
 
         # copied from scipy source-code,
         # simpler implementations give reasonable higher values > 10^100 but scipy gives np.inf,
         # so I'm shortcutting it by taking scipy implementation here directly.
-        p = np.exp(s * s)
-        mean_ = np.sqrt(p)
+        p = EXP(s * s)
+        mean_ = SQRT(p)
         variance_ = p * (p - 1)
-        variance_ *= m**2
+        variance_ *= m ** 2
 
-        return {"mean": (m * mean_) + l_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": (m * mean_) + l_, "variance": variance_, "std": SQRT(variance_)}

@@ -1,36 +1,46 @@
 """Created on Aug 14 01:28:13 2024"""
 
-from typing import Dict
-
-import numpy as np
+from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import gamma_pdf_, gamma_log_pdf_, gamma_cdf_, gamma_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
+from .. import SQRT, md_scipy_like, NAN_DICT
+from ..typing import ArrayLike, NDArray
 
 
 class GammaDistribution(BaseDistribution):
     r"""
     Class for Gamma distribution with shape and scale parameters.
 
-    :param amplitude: The amplitude of the PDF. Default is 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
+    .. note::
+       The :class:`~pymultifit.distributions.gamma_d.GammaDistribution` encompasses the following specific cases:
 
-    :param shape: The shape parameter, :math:`\alpha`. Defaults to 1.0.
-    :type shape: float, optional
+       #. :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`:
+            - :math:`\alpha = 1`, and
+            - :math:`\theta_\text{gamma} = \dfrac{1}{\lambda_\text{expon}}`.
 
-    :param scale: The rate parameter, :math:`\theta`. Defaults to 1.0.
-    :type scale: float, optional
+       #. :class:`~pymultifit.distributions.uniform_d.UniformDistribution`:
+           - :math:`\alpha = 1`, and
+           - :math:`\theta = 1`.
 
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
+    Parameters
+    ----------
+    amplitude :
+        The amplitude of the PDF. Default is 1.0. Ignored if **normalize** is ``True``.
+    shape :
+        The shape parameter, :math:`\alpha`. Defaults to 1.0.
+    scale :
+        The rate parameter, :math:`\theta`. Defaults to 1.0.
+    loc :
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeShapeError: If the provided value of shape is negative.
-    :raise NegativeScaleError: If the provided value of scale is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -86,10 +96,7 @@ class GammaDistribution(BaseDistribution):
     ):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if shape <= 0:
-            raise erH.NegativeShapeError()
-        if scale <= 0:
-            raise erH.NegativeScaleError()
+
         self.amplitude = 1.0 if normalize else amplitude
         self.shape = shape
         self.scale = scale
@@ -105,11 +112,11 @@ class GammaDistribution(BaseDistribution):
 
         Parameters
         ----------
-        a: float
+        a :
             The shape parameter.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scaling parameter. Defaults to 1.0.
 
         Returns
@@ -126,11 +133,11 @@ class GammaDistribution(BaseDistribution):
 
         Parameters
         ----------
-        a: float
+        a :
             The shape parameter.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scaling parameter. Defaults to 1.0.
 
         Returns
@@ -140,31 +147,34 @@ class GammaDistribution(BaseDistribution):
         """
         return cls(shape=a, loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return gamma_pdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return gamma_log_pdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return gamma_cdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return gamma_log_cdf_(
             x, amplitude=self.amplitude, alpha=self.shape, theta=self.scale, loc=self.loc, normalize=self.norm
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         s, r, l_ = self.shape, self.scale, self.loc
 
+        if any(param <= 0 for param in (s, r)):
+            return NAN_DICT
+
         mean_ = (s * r) + l_
-        variance_ = s * r**2
+        variance_ = s * r ** 2
         mode_ = (s - 1) * r + l_ if s >= 1 else 0
 
-        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": np.sqrt(variance_)}
+        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

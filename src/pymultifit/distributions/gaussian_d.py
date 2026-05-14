@@ -1,30 +1,32 @@
 """Created on Aug 03 20:07:50 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import gaussian_cdf_, gaussian_pdf_, gaussian_log_pdf_, gaussian_log_cdf_
-from .. import md_scipy_like, OneDArray
+from .utilities_d import gaussian_cdf_, gaussian_log_cdf_, gaussian_log_pdf_, gaussian_pdf_
+from .. import md_scipy_like, NAN_DICT
+from ..typing import ArrayLike, NDArray
 
 
 class GaussianDistribution(BaseDistribution):
     r"""
     Class for Gaussian distribution.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
+    Parameters
+    ----------
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    mu :
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    std :
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
 
-    :param mu: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type mu: float, optional
-
-    :param std: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    :type std: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+    Raises
+    ------
+    NegativeAmplitudeError
+        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -78,8 +80,6 @@ class GaussianDistribution(BaseDistribution):
     def __init__(self, amplitude: float = 1.0, mu: float = 0.0, std: float = 1.0, normalize: bool = False):
         if not normalize and amplitude <= 0:
             raise erH.NegativeAmplitudeError()
-        if std <= 0:
-            raise erH.NegativeStandardDeviationError()
 
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu
@@ -89,14 +89,14 @@ class GaussianDistribution(BaseDistribution):
     @classmethod
     @md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "GaussianDistribution":
-        """
+        r"""
         Instantiate GaussianDistribution with scipy parametrization.
 
         Parameters
         ----------
-        loc: float, optional
+        loc :
             The mean parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -113,9 +113,9 @@ class GaussianDistribution(BaseDistribution):
 
         Parameters
         ----------
-        loc: float, optional
+        loc :
             The mean parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
@@ -125,19 +125,22 @@ class GaussianDistribution(BaseDistribution):
         """
         return cls(mu=loc, std=scale, normalize=True)
 
-    def pdf(self, x: OneDArray) -> OneDArray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return gaussian_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
-    def logpdf(self, x: OneDArray) -> OneDArray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return gaussian_log_pdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
-    def cdf(self, x: OneDArray) -> OneDArray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return gaussian_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
-    def logcdf(self, x: OneDArray) -> OneDArray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return gaussian_log_cdf_(x, amplitude=self.amplitude, mean=self.mu, std=self.std_, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         m, s = self.mu, self.std_
 
-        return {"mean": m, "median": m, "mode": m, "variance": s**2, "std": s}
+        if s <= 0:
+            return NAN_DICT
+
+        return {"mean": m, "median": m, "mode": m, "variance": s ** 2, "std": s}

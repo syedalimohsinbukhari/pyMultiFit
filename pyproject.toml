@@ -11,7 +11,15 @@ readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 license-files = ["LICENSE"]
 dynamic = ["version"]
-dependencies = ["numpy", "matplotlib", "scipy", "custom-inherit", "plotez", "Deprecated", "tqdm"]
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "scipy",
+    "custom-inherit",
+    "plotez",
+    "deprecation",
+    "tqdm",
+]
 keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -69,6 +77,7 @@ dev = [
     "sphinx-gallery",
     "sphinx-autobuild",
     "black[jupyter]",
+    "pylint",
     "isort",
     "mypy",
     "nox",
@@ -88,7 +97,7 @@ include = '\.pyi?$'
 [tool.isort]
 profile = "black"
 line_length = 120
-known_first_party = ["pymultifit"]h
+known_first_party = ["pymultifit"]
 known_third_party = ["numpy", "matplotlib", "scipy", "plotez", "tqdm"]
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
 

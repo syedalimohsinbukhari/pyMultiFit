@@ -3,8 +3,8 @@
 import numpy as np
 from scipy.stats import johnsonsu
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import JohnsonSUDistribution
+from . import base_test_functions as btf
 
 np.random.seed(42)
 

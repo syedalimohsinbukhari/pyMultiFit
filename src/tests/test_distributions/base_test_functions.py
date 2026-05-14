@@ -2,13 +2,13 @@
 
 import numpy as np
 
-from ...pymultifit import EPSILON
+rng = np.random.default_rng(seed=42)
 
-loc1_parameter = np.random.uniform(low=-100, high=100, size=500)
-loc2_parameter = np.random.uniform(low=-100, high=100, size=500)
-scale_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
-shape1_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
-shape2_parameter = np.random.uniform(low=EPSILON, high=100, size=500)
+loc1_parameter = rng.uniform(low=-100, high=100, size=500)
+loc2_parameter = rng.uniform(low=-100, high=100, size=500)
+scale_parameter = rng.uniform(low=-100, high=100, size=500)
+shape1_parameter = rng.uniform(low=-100, high=100, size=500)
+shape2_parameter = rng.uniform(low=-100, high=100, size=500)
 
 
 def edge_cases(distribution, log_check=False):
@@ -35,7 +35,7 @@ def scaled_distributions(
     is_expon=False,
     is_scaled_inv_chi=False,
 ):
-    dist = custom_distribution(*parameters)
+    custom_dist = custom_distribution(*parameters)
 
     # make an exception for exponential distribution which gets scale = 1/scale
     if is_expon:
@@ -45,14 +45,16 @@ def scaled_distributions(
         parameters[0] = parameters[0] / 2
         parameters[-1] = parameters[-1] / 2
 
-    np.testing.assert_allclose(actual=dist.pdf(x), desired=scipy_distribution(*parameters).pdf(x), rtol=1e-5, atol=1e-8)
-    np.testing.assert_allclose(actual=dist.cdf(x), desired=scipy_distribution(*parameters).cdf(x), rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(actual=custom_dist.pdf(x), desired=scipy_distribution(*parameters).pdf(x), rtol=1e-5,
+                               atol=1e-8)
+    np.testing.assert_allclose(actual=custom_dist.cdf(x), desired=scipy_distribution(*parameters).cdf(x), rtol=1e-5,
+                               atol=1e-8)
     if log_check:
         np.testing.assert_allclose(
-            actual=dist.logpdf(x), desired=scipy_distribution(*parameters).logpdf(x), rtol=1e-5, atol=1e-8
+            actual=custom_dist.logpdf(x), desired=scipy_distribution(*parameters).logpdf(x), rtol=1e-5, atol=1e-8
         )
         np.testing.assert_allclose(
-            actual=dist.logcdf(x), desired=scipy_distribution(*parameters).logcdf(x), rtol=1e-5, atol=1e-8
+            actual=custom_dist.logcdf(x), desired=scipy_distribution(*parameters).logcdf(x), rtol=1e-5, atol=1e-8
         )
 
 
@@ -78,13 +80,13 @@ def statistics(
     if mean_variance:
         scipy_mean, scipy_variance = scipy_distribution.stats(*parameters, moments="mv")
         scipy_stddev = np.sqrt(scipy_variance)
-        np.testing.assert_allclose(actual=scipy_mean, desired=d_stats["mean"], rtol=1e-5, atol=1e-8)
-        np.testing.assert_allclose(actual=scipy_variance, desired=d_stats["variance"], rtol=1e-5, atol=1e-8)
-        np.testing.assert_allclose(actual=scipy_stddev, desired=d_stats["std"], rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(actual=d_stats["mean"], desired=scipy_mean, rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(actual=d_stats["variance"], desired=scipy_variance, rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(actual=d_stats["std"], desired=scipy_stddev, rtol=1e-5, atol=1e-8)
 
     if median:
         scipy_median = scipy_distribution.median(*parameters)
-        np.testing.assert_allclose(actual=scipy_median, desired=d_stats["median"], rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(desired=scipy_median, actual=d_stats["median"], rtol=1e-5, atol=1e-8)
 
 
 def stats(
@@ -196,10 +198,14 @@ def single_input_n_variables(
             pars[0] = pars[0] / 2
             pars[-1] = pars[-1] / 2
 
-        p1 = scipy_distribution(*pars)
+        # p1 = scipy_distribution(*pars)
 
-        np.testing.assert_allclose(actual=p1.pdf(value), desired=p2.pdf(value), rtol=1e-5, atol=1e-8)
-        np.testing.assert_allclose(actual=p1.cdf(value), desired=p2.cdf(value), rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(actual=scipy_distribution(*pars).pdf(value), desired=p2.pdf(value), rtol=1e-5,
+                                   atol=1e-8)
+        np.testing.assert_allclose(actual=scipy_distribution(*pars).cdf(value), desired=p2.cdf(value), rtol=1e-5,
+                                   atol=1e-8)
         if log_check:
-            np.testing.assert_allclose(actual=p1.logpdf(value), desired=p2.logpdf(value), rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(actual=p1.logcdf(value), desired=p2.logcdf(value), rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_distribution(*pars).logpdf(value), desired=p2.logpdf(value),
+                                       rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(actual=scipy_distribution(*pars).logcdf(value), desired=p2.logcdf(value),
+                                       rtol=1e-5, atol=1e-8)

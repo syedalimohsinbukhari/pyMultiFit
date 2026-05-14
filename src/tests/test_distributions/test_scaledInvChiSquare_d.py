@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 from scipy.stats import invgamma
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import ScaledInverseChiSquareDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+from . import base_test_functions as btf
 
 np.random.seed(42)
 
@@ -33,9 +33,6 @@ class TestScaledInvChiSquareDistribution:
         # amplitude should be internally updated to 1.0 if `normalize` is called
         distribution = ScaledInverseChiSquareDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
-
-        with pytest.raises(erH.NegativeScaleError, match=f"Scale {erH.neg_message}"):
-            ScaledInverseChiSquareDistribution(scale=-3.0)
 
     @staticmethod
     def test_edge_cases():

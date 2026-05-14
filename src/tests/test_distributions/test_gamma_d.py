@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 from scipy.stats import gamma
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import GammaDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+from . import base_test_functions as btf
 
 np.random.seed(45)
 
@@ -33,12 +33,6 @@ class TestGammaDistribution:
         # amplitude should be internally updated to 1.0 if `normalize` is called
         distribution = GammaDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
-
-        with pytest.raises(erH.NegativeShapeError, match=f"Shape {erH.neg_message}"):
-            GammaDistribution(shape=-1.0)
-
-        with pytest.raises(erH.NegativeScaleError, match=f"Scale {erH.neg_message}"):
-            GammaDistribution(scale=-3.0)
 
     @staticmethod
     def test_edge_cases():

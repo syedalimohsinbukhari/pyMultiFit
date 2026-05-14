@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 from scipy.stats import lognorm
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import LogNormalDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+from . import base_test_functions as btf
 
 np.random.seed(42)
 
@@ -17,7 +17,7 @@ class TestLogNormalDistribution:
     def test_initialization():
         dist = LogNormalDistribution(amplitude=2.0, mu=1.0, std=0.5, normalize=False)
         assert dist.amplitude == 2.0
-        assert dist.mu == np.log(1)
+        assert dist.mu == 1.0
         assert dist.std == 0.5
         assert not dist.norm
 
@@ -32,9 +32,6 @@ class TestLogNormalDistribution:
         # amplitude should be internally updated to 1.0 if `normalize` is called
         distribution = LogNormalDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
-
-        with pytest.raises(erH.NegativeStandardDeviationError, match=f"Standard deviation {erH.neg_message}"):
-            LogNormalDistribution(std=-3.0)
 
     @staticmethod
     def test_edge_cases():

@@ -1,7 +1,6 @@
 """Created on Jan 31 22:50:44 2025"""
 
 import numpy as np
-
 from functions import plot_all_variations
 
 

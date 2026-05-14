@@ -2,8 +2,8 @@
 
 from scipy.stats import beta
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import BetaDistribution
+from . import base_test_functions as btf
 
 
 class TestBetaDistribution:

@@ -1,10 +1,10 @@
 """Created on Jul 12 05:01:19 2025"""
 
-import numpy as np
-from numpy import ndarray
+from __future__ import annotations
 
 from . import BaseDistribution
-from ..utilities_d import line, quadratic, cubic
+from ..utilities_d import cubic, line, quadratic
+from ...typing import ArrayLike, NDArray
 
 
 class LineFunction(BaseDistribution):
@@ -14,17 +14,17 @@ class LineFunction(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         """Calculates the line function.
 
         Parameters
         ----------
-        x : np.ndarray
+        x :
             Input array of values.
 
         Returns
         -------
-        np.ndarray
+        NDArray
             Array of the same shape as :math:`x`, containing the evaluated values.
         """
         return line(x, slope=self.slope, intercept=self.intercept)
@@ -38,17 +38,17 @@ class QuadraticFunction(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: ndarray) -> ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         """Calculates the quadratic function.
 
         Parameters
         ----------
-        x : np.ndarray
+        x :
             Input array of values.
 
         Returns
         -------
-        np.ndarray
+        NDArray
             Array of the same shape as :math:`x`, containing the evaluated values.
         """
         return quadratic(x, a=self.a, b=self.b, c=self.c)
@@ -63,17 +63,17 @@ class CubicFunction(BaseDistribution):
 
         self.norm = normalize
 
-    def pdf(self, x: ndarray) -> ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         """Calculates the cubic function.
 
         Parameters
         ----------
-        x : np.ndarray
+        x :
             Input array of values.
 
         Returns
         -------
-        np.ndarray
+        NDArray
             Array of the same shape as :math:`x`, containing the evaluated values.
         """
         return cubic(x, a=self.a, b=self.b, c=self.c, d=self.d)
