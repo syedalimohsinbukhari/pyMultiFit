@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
-from .. import EXP, LOG, SQRT, md_scipy_like, suppress_numpy_warnings, NAN_DICT
+from .. import EXP, LOG, SQRT, md_scipy_like, suppress_numpy_warnings, NAN_DICT, NAN
 from ..typing import ArrayLike, NDArray
 
 
@@ -85,7 +85,7 @@ class LogNormalDistribution(BaseDistribution):
             raise erH.NegativeAmplitudeError()
 
         self.amplitude = 1.0 if normalize else amplitude
-        self.mu = LOG(mu)
+        self.mu = mu
         self.std = std
         self.loc = loc
 

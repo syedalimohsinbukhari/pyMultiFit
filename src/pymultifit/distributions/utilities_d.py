@@ -2230,12 +2230,12 @@ def log_normal_pdf_(
 
     The final PDF is expressed as :math:`f(y)`.
     """
-    y = preprocess_input(x=x, loc=loc)
+    y, rej_ = reject_x(x, mean, std, loc=loc)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, NAN)
 
-    q = (LOG(y) - mean) / std
+    q = (LOG(y) - LOG(mean)) / std
 
     pdf_ = np.where(y > 0, 1 / y / EXP(q ** 2 / 2) / SQRT_TWO_PI, 0)
     pdf_ /= std
@@ -2267,12 +2267,12 @@ def log_normal_log_pdf_(
 
     The final PDF is expressed as :math:`\ell(y)`.
     """
-    y = preprocess_input(x=x, loc=loc)
+    y, rej_ = reject_x(x, mean, std, loc=loc)
 
-    if y.size == 0:
-        return y
+    if rej_:
+        return np.full(x.shape, NAN)
 
-    q = (LOG(y) - mean) / std
+    q = (LOG(y) - LOG(mean)) / std
 
     log_pdf_ = np.where(y > 0, -LOG(y) - (q ** 2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
     log_pdf_ -= LOG(std)
@@ -2316,9 +2316,12 @@ def log_normal_cdf_(
 
         .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
     """
-    y = preprocess_input(x=x, loc=loc, scale=EXP(mean))
+    y, rej_ = reject_x(x, mean, std, loc=loc)
 
-    return np.where(y > 0, ssp.ndtr(LOG(y) / std), 0)
+    if rej_:
+        return np.full(x.shape, NAN)
+
+    return np.where(y > 0, ssp.ndtr((LOG(y) - LOG(mean)) / std), 0)
 
 
 @suppress_numpy_warnings()
@@ -2344,9 +2347,12 @@ def log_normal_log_cdf_(
 
         The final logCDF is expressed as :math:`\mathcal{L}(x)`.
     """
-    y = preprocess_input(x=x, loc=loc, scale=EXP(mean))
+    y, rej_ = reject_x(x, mean, std, loc=loc)
 
-    return np.where(y > 0, ssp.log_ndtr(LOG(y) / std), -INF)
+    if rej_:
+        return np.full(x.shape, NAN)
+
+    return np.where(y > 0, ssp.log_ndtr((LOG(y) - LOG(mean)) / std), -INF)
 
 
 @suppress_numpy_warnings()
