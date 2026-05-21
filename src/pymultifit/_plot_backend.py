@@ -38,7 +38,7 @@ GRID_LS = "--"
 def _qq(
     plot_object: "FitPlotter",
     fitter_object: "BaseFitter | MixedDataFitter",
-    plot_title="QQ-Plot",
+    plot_title: str = "QQ-Plot",
     axis: Axes | None = None,
 ) -> Axes:
     plot_object._validate_fitted()
@@ -146,7 +146,7 @@ def _prediction_interval(
     plot_object._validate_fitted()
     params = fitter_object.params
 
-    params: NDArray
+    x, params = np.asarray(fitter_object.x_values), np.asarray(params)
 
     pi_levels = sorted(
         [pi_level] if isinstance(pi_level, int) else list(pi_level), reverse=True  # widest band drawn first
@@ -156,11 +156,10 @@ def _prediction_interval(
         kwargs=kwargs, n_fits=fitter_object.n_fits, class_name=fitter_object.__class__.__name__
     )
 
-    n = len(fitter_object.x_values)
-    k = len(fitter_object.params)
+    n, k = len(x), len(params)
 
     residuals = fitter_object.get_residuals()
-    sigma = np.sqrt(np.sum(residuals**2) / max(n - k, 1))
+    sigma = np.sqrt(np.sum(residuals ** 2) / max(n - k, 1))
     fitted = fitter_object._n_fitter(fitter_object.x_values, *params)
 
     if axis is None:
@@ -168,7 +167,8 @@ def _prediction_interval(
 
     axis: Axes
 
-    pi_colors = [plt.get_cmap("YlOrBr")(v) for v in np.linspace(0.35, 0.75, len(pi_levels))]
+    pi_colors = [plt.get_cmap("YlOrBr")(v)
+                 for v in np.linspace(0.35, 0.75, len(pi_levels))]
 
     for pi, col_ in zip(pi_levels, pi_colors):
         alpha_stat = 1 - pi / 100
@@ -209,28 +209,6 @@ def _ci(
     individual_ci: bool,
     axis: Axes | None,
 ) -> Axes:
-    """Plot confidence interval bands from ci_bounds results.
-
-    Parameters
-    ----------
-    fitter_object
-        The fitter instance (used for plotting context).
-    results
-        Dictionary returned from fitter.ci_bounds() containing x_range and CI data.
-    ci_levels
-        CI level(s) to plot (e.g., 95 or [68, 95, 99]).
-    overall_ci
-        Whether to plot overall composite fit CI bands.
-    individual_ci
-        Whether to plot individual component fit CI bands.
-    axis
-        Matplotlib axes to plot on. Creates new figure if None.
-
-    Returns
-    -------
-    Axes
-        The axes object with CI bands plotted.
-    """
     if axis is None:
         _, axis = plt.subplots(figsize=(10, 6))
 

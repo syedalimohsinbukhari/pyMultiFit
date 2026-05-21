@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from itertools import chain
 from typing import Any
 from warnings import warn
@@ -15,6 +14,7 @@ from scipy.optimize import Bounds, curve_fit
 from ..utilities_f import parameter_logic, sanity_check
 from ... import epsilon
 from ..._plot import FitPlotter
+from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
 from ...typing import ArrayLike, NDArray, Params_
 
 
@@ -386,6 +386,7 @@ class BaseFitter:
 
             return selected[:, range(self.n_par)].T
         else:
+            parameter_mean: NDArray
             par_list = parameter_mean.reshape(self.n_fits, self.n_par, 2)
             mean = parameter_logic(par_array=par_list[:, :, 0].flatten(), n_par=self.n_par, selected_models=select)
             std_ = parameter_logic(par_array=par_list[:, :, 1].flatten(), n_par=self.n_par, selected_models=select)
@@ -445,167 +446,58 @@ class BaseFitter:
         seed: int | None = None,
         rng_engine: Generator | None = None,
         x_range: ArrayLike | None = None,
+        plot: bool = False,
+        axis: Axes | None = None,
     ) -> dict:
-        """
-        Calculate bootstrap confidence intervals for fitted model.
+        """Compute bootstrap confidence intervals for the fitted model.
 
         Parameters
         ----------
-        ci_levels
-            Confidence interval level(s) as percentage (e.g., 95 or [68, 95, 99]).
-            Can be float, tuple, or list.
-        n_bootstrap
-            Number of bootstrap samples to generate. Defaults to 5000.
-        overall_ci
-            If ``True``, compute confidence intervals for the overall composite fit.
-            Defaults to ``True``.
-        individual_ci
-            If ``True``, compute confidence intervals for each individual component fit.
+        ci_levels :
+            CI level(s) as a percentage (e.g. 95 or [68, 95, 99]).
+        n_bootstrap :
+            Bootstrap samples. Defaults to 5 000.
+        overall_ci :
+            Compute CI for the overall composite fit. Defaults to ``True``.
+        individual_ci :
+            Compute CI for each individual component. Defaults to ``False``.
+        seed :
+            Random seed (mutually exclusive with *rng_engine*).
+        rng_engine :
+            NumPy Generator instance (mutually exclusive with *seed*).
+        x_range :
+            X-values at which to evaluate the CI.
+            Defaults to 1 000 points spanning the data range.
+        plot :
+            When ``True``, plot the CI bands immediately after computing them.
             Defaults to ``False``.
-        seed
-            Random seed for reproducibility. Either ``seed`` or ``rng_engine`` must be provided.
-        rng_engine
-            NumPy random generator instance. Either ``seed`` or ``rng_engine`` must be provided.
-        x_range
-            X-values at which to evaluate confidence intervals.
-            If ``None``, uses 1000 points spanning the original x_values range.
+        axis :
+            Target axes for the optional plot (ignored when ``plot=False``).
 
         Returns
         -------
         dict
-            Dictionary containing CI results with keys:
-            - ``"x_range"``: X-values used for CI evaluation
-            - ``"overall_ci_95"``: Dict with ``"lower"``, ``"median"``, ``"upper"`` arrays (if overall_ci=True)
-            - ``"individual_ci_95"``: List of dicts, one per fit (if individual_ci=True)
-
-        Raises
-        ------
-        ValueError
-            If neither ``overall_ci`` nor ``individual_ci`` is ``True``, or if x_range dimensions don't match.
+            ``{"x_range": ..., "overall_ci_<level>": {...}, "individual_ci_<level>": [...]}``
         """
+        results = compute_ci_bounds(fitter_object=self, ci_levels=ci_levels, n_bootstrap=n_bootstrap,
+                                    overall_ci=overall_ci, individual_ci=individual_ci, seed=seed,
+                                    rng_engine=rng_engine, x_range=x_range)
 
-        def _ci_to_percentiles(_ci_lvls: float | Iterable[float]) -> list[tuple[int, tuple[float, float, float]]]:
-            """Convert CI levels to (ci_value, (lower, median, upper)) tuples."""
-            _bounds: list[tuple[int, tuple[float, float, float]]] = []
-
-            if isinstance(_ci_lvls, float | int):
-                _ci_lvls: list[float] = [float(_ci_lvls)]
-            elif isinstance(_ci_lvls, tuple):
-                _ci_lvls: list[float] = list(_ci_lvls)
-
-            for ci in _ci_lvls:
-                ci_original = int(ci) if ci > 1 else int(ci * 100)
-                ci = ci / 100 if ci > 1 else ci
-
-                if not (0 < ci < 1):
-                    raise ValueError(f"Invalid confidence interval: {ci}. Must be between 0 and 1 (or 0 and 100).")
-
-                alpha = 1.0 - ci
-                lower = alpha / 2.0
-                upper = 1.0 - lower
-
-                _bounds.append((ci_original, (lower, 0.5, upper)))
-
-            return _bounds
-
-        # Validate at least one CI type is requested
-        if not overall_ci and not individual_ci:
-            raise ValueError("At least one of 'overall_ci' or 'individual_ci' must be True.")
-
-        # Setup x range for evaluation
-        x_ = np.asarray(x_range) if x_range is not None else np.linspace(*self.x_values[[0, -1]], 1000)
-
-        # Get fitted parameters and covariance
-        mean_ = self.params
-        cov_matrix = self.covariance
-
-        # Generate bootstrap samples
-        _rng = _sanitize_generator(rng_engine=rng_engine, seed=seed)
-        mv_parameters = _rng.multivariate_normal(mean=mean_, cov=cov_matrix, size=n_bootstrap)
-
-        # Convert CI levels to percentiles with original CI values
-        bounds = _ci_to_percentiles(ci_levels)
-
-        # Initialize results dictionary
-        results = {"x_range": x_}
-
-        # Compute overall CI
-        if overall_ci:
-            curves_ = np.array([self._n_fitter(x_, *j) for j in mv_parameters])
-
-            for ci_val, (lower_p, median_p, upper_p) in bounds:
-                quantiles = np.quantile(curves_, [lower_p, median_p, upper_p], axis=0)
-
-                # Validate dimensions
-                if quantiles.shape[-1] != len(x_):
-                    raise ValueError(
-                        f"Dimension mismatch: x_range has length {len(x_)} but "
-                        f"quantiles have shape {quantiles.shape}"
-                    )
-
-                results[f"overall_ci_{ci_val}"] = {"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]}
-
-        # Compute individual CI
-        if individual_ci:
-            individual_ci_results = self._compute_individual_ci(mv_parameters, x_, bounds)
-            for ci_val in individual_ci_results:
-                results[f"individual_ci_{ci_val}"] = individual_ci_results[ci_val]
+        if plot:
+            self.plotter.plot_ci_bounds(
+                ci_levels=ci_levels,
+                results=results,
+                overall_ci=overall_ci,
+                individual_ci=individual_ci,
+                axis=axis,
+            )
 
         return results
 
-    def _compute_individual_ci(
+    def compute_individual_ci(
         self, mv_parameters: NDArray, x_: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
-        """
-        Compute individual component confidence intervals.
-
-        This method can be overridden by subclasses (e.g., MixedDataFitter)
-        that have different parameter structures.
-
-        Parameters
-        ----------
-        mv_parameters
-            Bootstrap parameter samples, shape (n_bootstrap, n_total_params).
-        x_
-            X-values at which to evaluate.
-        bounds
-            List of (ci_value, (lower_percentile, median_percentile, upper_percentile)).
-
-        Returns
-        -------
-        dict
-            Dictionary mapping ci_value to list of component CI dicts.
-        """
-        # Total parameters across all fits
-        n_total_params = mv_parameters.shape[1]
-        params_per_fit = n_total_params // self.n_fits
-        params = mv_parameters.reshape((-1, self.n_fits, params_per_fit))
-        curves_ = np.zeros(shape=(params.shape[0], self.n_fits, x_.shape[0]))
-
-        # Generate curves for each fit and bootstrap sample
-        for j_idx, j in enumerate(params):
-            for i_idx, i in enumerate(j):
-                curves_[j_idx, i_idx, :] = self._evaluate_individual_component(x_, i_idx, i)
-
-        results = {}
-        for ci_val, (lower_p, median_p, upper_p) in bounds:
-            individual_results = []
-
-            for fit_idx in range(self.n_fits):
-                quantiles = np.quantile(curves_[:, fit_idx, :], [lower_p, median_p, upper_p], axis=0)
-
-                # Validate dimensions
-                if quantiles.shape[-1] != len(x_):
-                    raise ValueError(
-                        f"Dimension mismatch for fit {fit_idx}: x_range has length {len(x_)} but "
-                        f"quantiles have shape {quantiles.shape}"
-                    )
-
-                individual_results.append({"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]})
-
-            results[ci_val] = individual_results
-
-        return results
+        return compute_individual_ci_base(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 
     def plot_fit(
         self,
@@ -635,14 +527,3 @@ class BaseFitter:
         )
 
 
-def _sanitize_generator(rng_engine: Generator | None, seed: int | None) -> Generator:
-    if seed is None and rng_engine is None:
-        raise ValueError("Either 'seed' or 'rng_engine' must be provided.")
-
-    if seed is not None and rng_engine is not None:
-        raise ValueError("Only one of 'seed' or 'rng_engine' should be provided.")
-
-    if rng_engine is not None:
-        return rng_engine
-
-    return np.random.default_rng(seed)

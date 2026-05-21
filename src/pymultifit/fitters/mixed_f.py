@@ -11,7 +11,7 @@ from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external c
 from scipy.optimize import Bounds, curve_fit
 
 # importing from files to avoid circular import
-from .backend import BaseFitter
+from .backend import BaseFitter, compute_individual_ci_mixed
 from .chiSquare_f import ChiSquareFitter
 from .exponential_f import ExponentialFitter
 from .foldedNormal_f import FoldedNormalFitter
@@ -22,7 +22,6 @@ from .laplace_f import LaplaceFitter
 from .logNormal_f import LogNormalFitter
 from .polynomial_f import LineFitter
 from .skewNormal_f import SkewNormalFitter
-from .utilities_f import _plot_fit
 from .. import (
     CHI_SQUARE,
     EXPONENTIAL,
@@ -70,7 +69,7 @@ class MixedDataFitter(BaseFitter):
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                "Use `model_dictionary` instead.",
+                        "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -124,7 +123,7 @@ class MixedDataFitter(BaseFitter):
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -143,7 +142,7 @@ class MixedDataFitter(BaseFitter):
 
         return count
 
-    def _n_fitter(self, x: np.ndarray, *params) -> NDArray:
+    def _n_fitter(self, x: NDArray, *params) -> NDArray:
         """
         Override parent method to use the composite model function.
 
@@ -161,7 +160,7 @@ class MixedDataFitter(BaseFitter):
         """
         return self.model_function(x, *params)
 
-    def _evaluate_individual_component(self, x: np.ndarray, fit_index: int, params: Params_) -> NDArray:
+    def _evaluate_individual_component(self, x: NDArray, fit_index: int, params: Params_) -> NDArray:
         """
         Override to evaluate a single model component for CI calculation.
 
@@ -183,57 +182,10 @@ class MixedDataFitter(BaseFitter):
         model_class = self._instantiate_class(model=model)
         return model_class.fitter(x=x, params=list(params))
 
-    def _compute_individual_ci(
+    def compute_individual_ci(
         self, mv_parameters: NDArray, x_: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
-        """
-        Override to handle mixed models with different parameter counts.
-
-        Parameters
-        ----------
-        mv_parameters
-            Bootstrap parameter samples, shape (n_bootstrap, n_total_params).
-        x_
-            X-values at which to evaluate.
-        bounds
-            List of (ci_value, (lower_percentile, median_percentile, upper_percentile)).
-
-        Returns
-        -------
-        dict
-            Dictionary mapping ci_value to list of component CI dicts.
-        """
-        n_bootstrap = mv_parameters.shape[0]
-        curves_ = np.zeros(shape=(n_bootstrap, self.n_fits, x_.shape[0]))
-
-        # Generate curves for each model and bootstrap sample
-        for boot_idx, boot_params in enumerate(mv_parameters):
-            param_index = 0
-            for model_idx, model in enumerate(self.model_list):
-                n_par = self._instantiate_n_par(model=model)
-                model_params = boot_params[param_index : param_index + n_par]
-                curves_[boot_idx, model_idx, :] = self._evaluate_individual_component(x_, model_idx, model_params)
-                param_index += n_par
-
-        results = {}
-        for ci_val, (lower_p, median_p, upper_p) in bounds:
-            individual_results = []
-
-            for fit_idx in range(self.n_fits):
-                quantiles = np.quantile(curves_[:, fit_idx, :], [lower_p, median_p, upper_p], axis=0)
-
-                # Validate dimensions
-                if quantiles.shape[-1] != len(x_):
-                    raise ValueError(
-                        f"Dimension mismatch for fit {fit_idx}: x_range has length {len(x_)} but "
-                        f"quantiles have shape {quantiles.shape}"
-                    )
-
-                individual_results.append({"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]})
-
-            results[ci_val] = individual_results
-
-        return results
+        return compute_individual_ci_mixed(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 
     def _get_bounds(self):
         """
@@ -281,7 +233,7 @@ class MixedDataFitter(BaseFitter):
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index : p_index + n_pars]])
+            param_dict[model].extend([values[p_index: p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
@@ -292,14 +244,14 @@ class MixedDataFitter(BaseFitter):
 
         :param plotter: The plotting axis object
         """
-        x = self.x_values
+        x, params = np.asarray(self.x_values), np.asarray(self.params)
         colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
         param_index = 0
         for i, model in enumerate(self.model_list):
             color = colors[i % len(colors)]
             class_model = self._instantiate_class(model=model)
             n_par = self._instantiate_n_par(model=model)
-            pars = self.params[param_index : param_index + n_par]
+            pars = params[param_index: param_index + n_par]
             y_component = class_model.fitter(x=x, params=pars)
             plot_xy(
                 x_data=x,

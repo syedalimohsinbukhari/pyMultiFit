@@ -10,7 +10,16 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from plotez import lpc, plot_xy
 
-from ._plot_backend import _ci, _fit_and_residual, _param_correlation, _plot, _prediction_interval, _qq, _resid
+from ._plot_backend import (
+    _ci,
+    _fit_and_residual,
+    _param_correlation,
+    _plot,
+    _prediction_interval,
+    _qq,
+    _resid,
+)
+from .fitters.backend._ci_backend import compute_ci_bounds
 
 
 class FitPlotter:
@@ -209,41 +218,52 @@ class FitPlotter:
 
     def plot_ci_bounds(
         self,
-        results: dict,
-        ci_levels: int | list[int],
+        ci_levels: float | int | list | tuple,
+        results: dict | None = None,
+        n_bootstrap: int = 5_000,
         overall_ci: bool = True,
         individual_ci: bool = False,
+        seed: int | None = None,
+        rng_engine=None,
+        x_range=None,
         axis: Axes | None = None,
     ) -> Axes:
         """Plot bootstrap confidence interval bounds.
 
+        If *results* is not provided, the CI is computed automatically using
+        the remaining keyword arguments (``n_bootstrap``, ``seed`` / ``rng_engine``, etc.).
+
         Parameters
         ----------
-        results :
-            Dictionary produced by ``fitter.ci_bounds()`` containing:
-            - ``"x_range"``: X-values for CI evaluation
-            - ``"overall_ci_95"``: Overall CI dict with "lower", "median", "upper" keys
-            - ``"individual_ci_95"``: List of per-fit CI dicts (if individual_ci was used)
         ci_levels :
-            CI percentage level(s) to plot (e.g., 95 or [68, 95, 99]).
-            Must match levels computed in *results*.
+            CI percentage level(s) to plot (e.g. 95 or [68, 95, 99]).
+        results :
+            Pre-computed CI dict returned by :meth:`BaseFitter.ci_bounds`.
+            When ``None`` the CI is computed internally.
+        n_bootstrap :
+            Bootstrap samples.  Used only when *results* is ``None``.
         overall_ci :
-            When ``True``, overall composite CI bands are drawn. Defaults to ``True``.
+            Draw the overall composite CI band.  Defaults to ``True``.
         individual_ci :
-            When ``True``, per-component CI bands are drawn. Defaults to ``False``.
+            Draw per-component CI bands.  Defaults to ``False``.
+        seed :
+            Random seed (mutually exclusive with *rng_engine*).
+        rng_engine :
+            NumPy Generator instance (mutually exclusive with *seed*).
+        x_range :
+            X-values for CI evaluation.  Defaults to 1 000 evenly-spaced points.
         axis :
-            Target axes. A new figure is created when ``None``.
+            Target axes.  A new figure is created when ``None``.
 
         Returns
         -------
         Axes
             The axes on which the plot was drawn.
-
-        Notes
-        -----
-        Multiple CI levels are rendered with varying transparency (alpha values),
-        where narrower intervals appear darker for better visual hierarchy.
         """
+        if results is None:
+            results = compute_ci_bounds(fitter_object=self.fitter, ci_levels=ci_levels, n_bootstrap=n_bootstrap,
+                                        overall_ci=overall_ci, individual_ci=individual_ci, seed=seed,
+                                        rng_engine=rng_engine, x_range=x_range)
         return _ci(
             fitter_object=self.fitter,
             results=results,
