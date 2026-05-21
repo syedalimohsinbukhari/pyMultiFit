@@ -45,10 +45,12 @@ def scaled_distributions(
         parameters[0] = parameters[0] / 2
         parameters[-1] = parameters[-1] / 2
 
-    np.testing.assert_allclose(actual=custom_dist.pdf(x), desired=scipy_distribution(*parameters).pdf(x), rtol=1e-5,
-                               atol=1e-8)
-    np.testing.assert_allclose(actual=custom_dist.cdf(x), desired=scipy_distribution(*parameters).cdf(x), rtol=1e-5,
-                               atol=1e-8)
+    np.testing.assert_allclose(
+        actual=custom_dist.pdf(x), desired=scipy_distribution(*parameters).pdf(x), rtol=1e-5, atol=1e-8
+    )
+    np.testing.assert_allclose(
+        actual=custom_dist.cdf(x), desired=scipy_distribution(*parameters).cdf(x), rtol=1e-5, atol=1e-8
+    )
     if log_check:
         np.testing.assert_allclose(
             actual=custom_dist.logpdf(x), desired=scipy_distribution(*parameters).logpdf(x), rtol=1e-5, atol=1e-8
@@ -200,12 +202,16 @@ def single_input_n_variables(
 
         # p1 = scipy_distribution(*pars)
 
-        np.testing.assert_allclose(actual=scipy_distribution(*pars).pdf(value), desired=p2.pdf(value), rtol=1e-5,
-                                   atol=1e-8)
-        np.testing.assert_allclose(actual=scipy_distribution(*pars).cdf(value), desired=p2.cdf(value), rtol=1e-5,
-                                   atol=1e-8)
+        np.testing.assert_allclose(
+            actual=scipy_distribution(*pars).pdf(value), desired=p2.pdf(value), rtol=1e-5, atol=1e-8
+        )
+        np.testing.assert_allclose(
+            actual=scipy_distribution(*pars).cdf(value), desired=p2.cdf(value), rtol=1e-5, atol=1e-8
+        )
         if log_check:
-            np.testing.assert_allclose(actual=scipy_distribution(*pars).logpdf(value), desired=p2.logpdf(value),
-                                       rtol=1e-5, atol=1e-8)
-            np.testing.assert_allclose(actual=scipy_distribution(*pars).logcdf(value), desired=p2.logcdf(value),
-                                       rtol=1e-5, atol=1e-8)
+            np.testing.assert_allclose(
+                actual=scipy_distribution(*pars).logpdf(value), desired=p2.logpdf(value), rtol=1e-5, atol=1e-8
+            )
+            np.testing.assert_allclose(
+                actual=scipy_distribution(*pars).logcdf(value), desired=p2.logcdf(value), rtol=1e-5, atol=1e-8
+            )

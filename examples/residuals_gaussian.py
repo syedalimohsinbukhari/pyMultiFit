@@ -33,17 +33,17 @@ print(f"  Max:  {np.max(residuals):.6f}")
 
 # Example 2: Plot only residuals
 fig1, ax1 = plt.subplots(1, 1, figsize=(12, 4))
-fitter.plot_residuals(x_label="X data", y_label="Residuals", title="Residuals of Gaussian Fit", axis=ax1)
+fitter.plotter.plot_residuals(x_label="X data", y_label="Residuals", plot_title="Residuals of Gaussian Fit", axis=ax1)
 plt.tight_layout()
 plt.savefig("example_gaussian_residuals_only.png", dpi=150, bbox_inches="tight")
 print("\nSaved: example_gaussian_residuals_only.png")
 
 # Example 3: Combined plot of fit and residuals
-fig2, (ax_fit, ax_res) = fitter.plot_fit_and_residuals(
+fig2, (ax_fit, ax_res) = fitter.plotter.plot_fit_and_residuals(
     show_individuals=True,
     x_label="X data",
     y_label="Y data",
-    title="Multi-Gaussian Fit with Residuals",
+    plot_title="Multi-Gaussian Fit with Residuals",
     data_label="Data",
 )
 plt.savefig("example_gaussian_fit_and_residuals.png", dpi=150, bbox_inches="tight")

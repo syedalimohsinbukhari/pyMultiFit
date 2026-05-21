@@ -1,6 +1,5 @@
 """Created on May 07 09:38:52 2026"""
 
-from itertools import chain
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
@@ -318,7 +317,9 @@ def _fit_and_residual(
         plot_title=plot_title,
     )
 
-    _resid(plot_object=plot_object, fitter_object=fitter_object, axis=ax2, residual_label=residual_label)
+    _resid(
+        plot_object=plot_object, fitter_object=fitter_object, axis=ax2, residual_label=residual_label, x_label=x_label
+    )
 
     plt.tight_layout()
 
@@ -329,20 +330,23 @@ def _resid(
     plot_object: "FitPlotter", fitter_object: "BaseFitter | MixedDataFitter", axis: Axes | None = None, **kwargs
 ) -> Axes:
     plot_object._validate_fitted()
+    x, y = np.asarray(fitter_object.x_values), np.asarray(fitter_object.y_values)
 
     x_label, y_label, plot_title, data_label, fit_label, residual_label = _resolve_kwargs(
         kwargs, get_residual_label=True
     )
 
     plotter = plot_xy(
-        x_data=fitter_object.x_values, y_data=fitter_object.get_residuals(), axis=axis, plot_config=lpc(alpha=0.75)
+        x_data=x, y_data=fitter_object.get_residuals(), axis=axis, plot_title="", plot_config=lpc(alpha=0.75)
     )
 
     ax = plot_object._unwrap_plotter(plotter)
     ax.axhline(y=0, color="k", linestyle="--", linewidth=1, alpha=0.5)
     ax.set_xlabel(x_label)
     ax.set_ylabel(residual_label)
-    plt.tight_layout()
+    ax.legend_ = None
+
+    # plt.tight_layout()
 
     return ax
 
@@ -369,6 +373,7 @@ def _plot(
     **kwargs,
 ) -> Axes:
     plot_object._validate_fitted()
+    x, y = np.asarray(fitter_object.x_values), np.asarray(fitter_object.y_values)
 
     x_label, y_label, plot_title, data_label, fit_label = _resolve_kwargs(
         kwargs, fitter_object.n_fits, fitter_object.__class__.__name__
@@ -377,20 +382,14 @@ def _plot(
     params = fitter_object.params
     dl, tt = plot_object._resolve_data_labels(data_label, fit_label)
 
-    plotter = plot_xy(
-        x_data=fitter_object.x_values,
-        y_data=fitter_object.y_values,
-        data_label=dl,
-        axis=axis,
-        plot_config=lpc(alpha=0.75),
-    )
+    plotter = plot_xy(x_data=x, y_data=y, data_label=dl, axis=axis, plot_config=lpc(alpha=0.75))
 
     plotter: Axes
     params: NDArray
 
     plot_xy(
-        x_data=fitter_object.x_values,
-        y_data=fitter_object._n_fitter(fitter_object.x_values, *params),
+        x_data=x,
+        y_data=fitter_object._n_fitter(x, *params),
         x_label=x_label,
         y_label=y_label,
         plot_title=plot_title,

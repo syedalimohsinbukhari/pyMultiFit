@@ -149,6 +149,6 @@ class HalfNormalDistribution(BaseDistribution):
         mode_ = 0
 
         variance_ = 1 - TWO_BY_PI
-        variance_ *= s_ ** 2
+        variance_ *= s_**2
 
         return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

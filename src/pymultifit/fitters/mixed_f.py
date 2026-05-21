@@ -7,7 +7,6 @@ from typing import Callable, List, Optional, Sequence, Union
 import matplotlib.pyplot as plt  # noqa: F401 – kept for any subclass that may reference it
 import numpy as np
 from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
-from matplotlib.figure import Figure
 from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external callers
 from scipy.optimize import Bounds, curve_fit
 
@@ -36,7 +35,7 @@ from .. import (
     LOG_NORMAL,
     NORMAL,
     SKEW_NORMAL,
-    epsilon, plotter_deprecation,
+    epsilon,
 )
 from ..typing import NDArray, Params_
 
@@ -57,14 +56,6 @@ fitter_dict = {
 
 
 class MixedDataFitter(BaseFitter):
-    r"""
-    Class to fit a mixture of different models to data.
-
-    :param x_values: The x-values for the data.
-    :param y_values: The y-values for the data.
-    :param model_list: List of models to fit (e.g., `LINE`, `GAUSSIAN`, `LOG_NORMAL`)
-    :param max_iterations: The maximum number of iterations for fitting procedure.
-    """
 
     def __init__(
         self,
@@ -79,7 +70,7 @@ class MixedDataFitter(BaseFitter):
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                        "Use `model_dictionary` instead.",
+                "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -133,7 +124,7 @@ class MixedDataFitter(BaseFitter):
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -193,10 +184,7 @@ class MixedDataFitter(BaseFitter):
         return model_class.fitter(x=x, params=list(params))
 
     def _compute_individual_ci(
-        self, 
-        mv_parameters: NDArray, 
-        x_: NDArray, 
-        bounds: list[tuple[int, tuple[float, float, float]]]
+        self, mv_parameters: NDArray, x_: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
         """
         Override to handle mixed models with different parameter counts.
@@ -223,10 +211,8 @@ class MixedDataFitter(BaseFitter):
             param_index = 0
             for model_idx, model in enumerate(self.model_list):
                 n_par = self._instantiate_n_par(model=model)
-                model_params = boot_params[param_index:param_index + n_par]
-                curves_[boot_idx, model_idx, :] = self._evaluate_individual_component(
-                    x_, model_idx, model_params
-                )
+                model_params = boot_params[param_index : param_index + n_par]
+                curves_[boot_idx, model_idx, :] = self._evaluate_individual_component(x_, model_idx, model_params)
                 param_index += n_par
 
         results = {}
@@ -234,11 +220,7 @@ class MixedDataFitter(BaseFitter):
             individual_results = []
 
             for fit_idx in range(self.n_fits):
-                quantiles = np.quantile(
-                    curves_[:, fit_idx, :],
-                    [lower_p, median_p, upper_p],
-                    axis=0
-                )
+                quantiles = np.quantile(curves_[:, fit_idx, :], [lower_p, median_p, upper_p], axis=0)
 
                 # Validate dimensions
                 if quantiles.shape[-1] != len(x_):
@@ -247,11 +229,7 @@ class MixedDataFitter(BaseFitter):
                         f"quantiles have shape {quantiles.shape}"
                     )
 
-                individual_results.append({
-                    "lower": quantiles[0],
-                    "median": quantiles[1],
-                    "upper": quantiles[2],
-                })
+                individual_results.append({"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]})
 
             results[ci_val] = individual_results
 
@@ -303,7 +281,7 @@ class MixedDataFitter(BaseFitter):
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index: p_index + n_pars]])
+            param_dict[model].extend([values[p_index : p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
@@ -321,7 +299,7 @@ class MixedDataFitter(BaseFitter):
             color = colors[i % len(colors)]
             class_model = self._instantiate_class(model=model)
             n_par = self._instantiate_n_par(model=model)
-            pars = self.params[param_index: param_index + n_par]
+            pars = self.params[param_index : param_index + n_par]
             y_component = class_model.fitter(x=x, params=pars)
             plot_xy(
                 x_data=x,
@@ -417,56 +395,3 @@ class MixedDataFitter(BaseFitter):
                 output[key] = np.array_split(np.asarray(par_dict, dtype=float).flatten(), n_pars)
 
         return output
-
-
-    def plot_fit(
-        self,
-        show_individuals: bool = False,
-        x_label: str | None = None,
-        y_label: str | None = None,
-        data_label: str | None = None,
-        fit_label: str | None = None,
-        title: str | None = None,
-        axis: Axes | None = None,
-    ):
-        """
-        Plot the fitted models.
-
-        Parameters
-        ----------
-        show_individuals :
-            Whether to show individually fitted models or not.
-        x_label :
-            The label for the x-axis.
-        y_label :
-            The label for the y-axis.
-        title :
-            The title for the plot.
-        data_label :
-            The label for the data.
-        fit_label :
-            The label for the fitted model.
-        axis :
-            Axes to plot instead of the entire figure. Defaults to None.
-
-        Returns
-        -------
-        plotter
-            The plotter handle for the drawn plot.
-        """
-        return _plot_fit(
-            x_values=self.x_values,
-            y_values=self.y_values,
-            parameters=self.params,
-            n_fits=len(self.model_list),
-            class_name=self.__class__.__name__,
-            _n_fitter=self.model_function,
-            _n_plotter=self._plot_individual_fitter,
-            show_individuals=show_individuals,
-            x_label=x_label,
-            y_label=y_label,
-            title=title,
-            data_label=data_label,
-            fit_label=fit_label,
-            axis=axis,
-        )

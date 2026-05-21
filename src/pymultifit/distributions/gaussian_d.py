@@ -143,4 +143,4 @@ class GaussianDistribution(BaseDistribution):
         if s <= 0:
             return NAN_DICT
 
-        return {"mean": m, "median": m, "mode": m, "variance": s ** 2, "std": s}
+        return {"mean": m, "median": m, "mode": m, "variance": s**2, "std": s}

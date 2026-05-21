@@ -99,7 +99,7 @@ from .. import (
     suppress_numpy_warnings,
     NAN,
     SQRT,
-    EXP
+    EXP,
 )
 from ..typing import ArrayLike, NDArray
 
@@ -861,7 +861,7 @@ def cubic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float
 
     where, :math:`a`, :math:`b`, :math:`c`, and :math:`d` are the cubic coefficients.
     """
-    return a * x ** 3 + b * x ** 2 + c * x + d
+    return a * x**3 + b * x**2 + c * x + d
 
 
 @suppress_numpy_warnings()
@@ -1173,7 +1173,7 @@ def folded_normal_cdf_(
     """
     y, rej_ = reject_x(x, shp1=mean, loc=loc, scale=sigma)
 
-    print(f'{mean=} {sigma=} {rej_=}')
+    print(f"{mean=} {sigma=} {rej_=}")
 
     if rej_:
         return np.full(x.shape, NAN)
@@ -1434,7 +1434,7 @@ def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
     if rej_:
         return np.full(x.shape, NAN)
 
-    pdf_ = EXP(-0.5 * y ** 2) / SQRT_TWO_PI
+    pdf_ = EXP(-0.5 * y**2) / SQRT_TWO_PI
     pdf_ /= std
 
     if not normalize:
@@ -1465,7 +1465,7 @@ def gaussian_log_pdf_(
     if rej_:
         return np.full(x.shape, NAN)
 
-    log_pdf_ = -(y ** 2) / 2.0 - LOG_SQRT_TWO_PI
+    log_pdf_ = -(y**2) / 2.0 - LOG_SQRT_TWO_PI
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -1728,7 +1728,7 @@ def half_normal_pdf_(
     if rej_:
         return np.full(x.shape, NAN)
 
-    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * EXP(-0.5 * y ** 2), 0)
+    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * EXP(-0.5 * y**2), 0)
     pdf_ /= sigma
 
     if not normalize:
@@ -1762,7 +1762,7 @@ def half_normal_log_pdf_(
     if rej_:
         return np.full(x.shape, NAN)
 
-    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y ** 2, -INF)
+    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y**2, -INF)
     log_pdf_ -= LOG(sigma)
 
     if not normalize:
@@ -1886,7 +1886,7 @@ def johnsonSU_pdf_(
         return np.full(x.shape, NAN)
 
     f1 = delta / SQRT_TWO_PI
-    f2 = np.sqrt(1 + y ** 2)
+    f2 = np.sqrt(1 + y**2)
     f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
 
     pdf_ = f1 / f2 * f3
@@ -1928,7 +1928,7 @@ def johnsonSU_log_pdf_(
         return np.full(x.shape, NAN)
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
-    f2 = -0.5 * np.log1p(y ** 2)
+    f2 = -0.5 * np.log1p(y**2)
     f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
 
     log_pdf_ = f1 + f2 + f3
@@ -2237,7 +2237,7 @@ def log_normal_pdf_(
 
     q = (LOG(y) - LOG(mean)) / std
 
-    pdf_ = np.where(y > 0, 1 / y / EXP(q ** 2 / 2) / SQRT_TWO_PI, 0)
+    pdf_ = np.where(y > 0, 1 / y / EXP(q**2 / 2) / SQRT_TWO_PI, 0)
     pdf_ /= std
 
     if not normalize:
@@ -2274,7 +2274,7 @@ def log_normal_log_pdf_(
 
     q = (LOG(y) - LOG(mean)) / std
 
-    log_pdf_ = np.where(y > 0, -LOG(y) - (q ** 2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
+    log_pdf_ = np.where(y > 0, -LOG(y) - (q**2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -3057,7 +3057,7 @@ def quadratic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> N
 
     where, :math:`a`, :math:`b`, and :math:`c` are the quadratic coefficients.
     """
-    return a * x ** 2 + b * x + c
+    return a * x**2 + b * x + c
 
 
 @suppress_numpy_warnings()

@@ -145,6 +145,6 @@ class LaplaceDistribution(BaseDistribution):
         if b <= 0:
             return NAN_DICT
 
-        variance_ = 2 * b ** 2
+        variance_ = 2 * b**2
 
         return {"mean": m, "median": m, "mode": m, "variance": variance_, "std": SQRT(variance_)}

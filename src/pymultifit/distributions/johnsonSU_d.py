@@ -87,12 +87,12 @@ class JohnsonSUDistribution(BaseDistribution):
         if any(param <= 0 for param in (b, s)):
             return NAN_DICT
 
-        mean_ = l_ - s * EXP(1 / (2 * b ** 2)) * sinh(a / b)
+        mean_ = l_ - s * EXP(1 / (2 * b**2)) * sinh(a / b)
 
         median_ = l_ + s * sinh(-a / b)
 
-        v1 = EXP(b ** -2) * cosh(2 * a / b) + 1
-        v2 = expm1(b ** -2)
-        variance_ = s ** 2 / 2 * v1 * v2
+        v1 = EXP(b**-2) * cosh(2 * a / b) + 1
+        v2 = expm1(b**-2)
+        variance_ = s**2 / 2 * v1 * v2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

@@ -21,9 +21,7 @@ from .. import (
     SKEW_NORMAL,
 )
 from .. import distributions as dist
-from .. import (
-    doc_style,
-)
+from .. import doc_style
 from ..typing import ArrayLike, Params_
 
 model_map = {

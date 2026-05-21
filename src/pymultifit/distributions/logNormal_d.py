@@ -167,6 +167,6 @@ class LogNormalDistribution(BaseDistribution):
         p = EXP(s * s)
         mean_ = SQRT(p)
         variance_ = p * (p - 1)
-        variance_ *= m ** 2
+        variance_ *= m**2
 
         return {"mean": (m * mean_) + l_, "variance": variance_, "std": SQRT(variance_)}

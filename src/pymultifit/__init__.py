@@ -46,11 +46,9 @@ def mark_deprecated(ver_: str, new: str):
 def md_scipy_like(ver_: str, new: str = "from_scipy_params"):
     return mark_deprecated(ver_=ver_, new=new)
 
+
 def plotter_deprecation(ver_: str, new: str = "[PLOTTER].plot_fit"):
-    return mark_deprecated(
-        ver_=ver_,
-        new=new,
-    )
+    return mark_deprecated(ver_=ver_, new=new)
 
 
 def suppress_numpy_warnings():

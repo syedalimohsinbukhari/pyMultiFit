@@ -166,10 +166,10 @@ class FoldedNormalDistribution(BaseDistribution):
         elif mean_ <= 0:
             return NAN_DICT
 
-        f1 = SQRT_TWO_BY_PI * EXP(-0.5 * mean_ ** 2)
+        f1 = SQRT_TWO_BY_PI * EXP(-0.5 * mean_**2)
         f2 = mean_ * erf(mean_ / SQRT_TWO)
 
         mu_y = f1 + f2
-        var_y = mean_ ** 2 + 1 - mu_y ** 2
+        var_y = mean_**2 + 1 - mu_y**2
 
-        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_ ** 2, "std": SQRT(var_y * std_ ** 2)}
+        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_**2, "std": SQRT(var_y * std_**2)}

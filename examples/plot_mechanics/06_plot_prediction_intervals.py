@@ -38,13 +38,7 @@ plt.tight_layout()
 
 # -- Example 3: PI vs CI side-by-side -----------------------------------------
 print("Running bootstrap for CI comparison…")
-results_ci = fitter.ci_bounds(
-    ci_levels=95,
-    n_bootstrap=300,
-    overall_ci=True,
-    individual_ci=False,
-    seed=0
-)
+results_ci = fitter.ci_bounds(ci_levels=95, n_bootstrap=300, overall_ci=True, individual_ci=False, seed=0)
 
 fig3, (ax_pi, ax_ci) = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
 
@@ -52,13 +46,7 @@ fitter.plotter.plot_prediction_intervals(pi_level=95, axis=ax_pi)
 ax_pi.set_title("95% Prediction Interval\n(accounts for observation scatter)")
 
 fitter.plotter.plot_fit(axis=ax_ci)
-fitter.plotter.plot_ci_bounds(
-    results=results_ci,
-    ci_levels=95,
-    overall_ci=True,
-    individual_ci=False,
-    axis=ax_ci
-)
+fitter.plotter.plot_ci_bounds(results=results_ci, ci_levels=95, overall_ci=True, individual_ci=False, axis=ax_ci)
 ax_ci.set_title("95% Bootstrap CI\n(uncertainty of mean response only)")
 
 fig3.suptitle("PI vs CI — PI is always wider", fontsize=13)

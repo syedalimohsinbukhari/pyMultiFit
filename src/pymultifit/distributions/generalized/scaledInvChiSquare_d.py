@@ -63,7 +63,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
         mean_ = (v * tau2) / (v - 2)
         mode_ = (v * tau2) / (v + 2)
-        variance_ = (2 * v ** 2 * tau2 ** 2) / ((v - 2) ** 2 * (v - 4))
+        variance_ = (2 * v**2 * tau2**2) / ((v - 2) ** 2 * (v - 4))
 
         return {
             "mean": mean_ + loc if v > 2 else INF,

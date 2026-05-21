@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from itertools import chain
 from typing import Any
+from warnings import warn
 
 import numpy as np
 from matplotlib.axes import Axes
@@ -68,7 +69,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par:]
+            provided_secondary_params = params[self.pn_par :]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -482,6 +483,7 @@ class BaseFitter:
         ValueError
             If neither ``overall_ci`` nor ``individual_ci`` is ``True``, or if x_range dimensions don't match.
         """
+
         def _ci_to_percentiles(_ci_lvls: float | Iterable[float]) -> list[tuple[int, tuple[float, float, float]]]:
             """Convert CI levels to (ci_value, (lower, median, upper)) tuples."""
             _bounds: list[tuple[int, tuple[float, float, float]]] = []
@@ -541,11 +543,7 @@ class BaseFitter:
                         f"quantiles have shape {quantiles.shape}"
                     )
 
-                results[f"overall_ci_{ci_val}"] = {
-                    "lower": quantiles[0],
-                    "median": quantiles[1],
-                    "upper": quantiles[2],
-                }
+                results[f"overall_ci_{ci_val}"] = {"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]}
 
         # Compute individual CI
         if individual_ci:
@@ -556,15 +554,12 @@ class BaseFitter:
         return results
 
     def _compute_individual_ci(
-        self, 
-        mv_parameters: NDArray, 
-        x_: NDArray, 
-        bounds: list[tuple[int, tuple[float, float, float]]]
+        self, mv_parameters: NDArray, x_: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
         """
         Compute individual component confidence intervals.
-        
-        This method can be overridden by subclasses (e.g., MixedDataFitter) 
+
+        This method can be overridden by subclasses (e.g., MixedDataFitter)
         that have different parameter structures.
 
         Parameters
@@ -597,11 +592,7 @@ class BaseFitter:
             individual_results = []
 
             for fit_idx in range(self.n_fits):
-                quantiles = np.quantile(
-                    curves_[:, fit_idx, :],
-                    [lower_p, median_p, upper_p],
-                    axis=0
-                )
+                quantiles = np.quantile(curves_[:, fit_idx, :], [lower_p, median_p, upper_p], axis=0)
 
                 # Validate dimensions
                 if quantiles.shape[-1] != len(x_):
@@ -610,27 +601,46 @@ class BaseFitter:
                         f"quantiles have shape {quantiles.shape}"
                     )
 
-                individual_results.append({
-                    "lower": quantiles[0],
-                    "median": quantiles[1],
-                    "upper": quantiles[2],
-                })
+                individual_results.append({"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]})
 
             results[ci_val] = individual_results
 
         return results
 
+    def plot_fit(
+        self,
+        show_individuals: bool = False,
+        x_label: str = "X",
+        y_label: str = "Y",
+        plot_title: str = "Plot",
+        data_label: str = "Data",
+        fit_label: str = "Total Fit",
+        axis: Axes | None = None,
+    ) -> Axes:
+        # Emit a clear deprecation warning for callers (stacklevel=2 points to the user's call site)
+        warn(
+            "BaseFitter.plot_fit is deprecated and will be removed in a future release. "
+            "Please use the fitter's plotter API instead, e.g. `fitter.plotter.plot_fit(...)`.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.plotter.plot_fit(
+            show_individuals=show_individuals,
+            x_label=x_label,
+            y_label=y_label,
+            plot_title=plot_title,
+            data_label=data_label,
+            fit_label=fit_label,
+            axis=axis,
+        )
+
 
 def _sanitize_generator(rng_engine: Generator | None, seed: int | None) -> Generator:
     if seed is None and rng_engine is None:
-        raise ValueError(
-            "Either 'seed' or 'rng_engine' must be provided."
-        )
+        raise ValueError("Either 'seed' or 'rng_engine' must be provided.")
 
     if seed is not None and rng_engine is not None:
-        raise ValueError(
-            "Only one of 'seed' or 'rng_engine' should be provided."
-        )
+        raise ValueError("Only one of 'seed' or 'rng_engine' should be provided.")
 
     if rng_engine is not None:
         return rng_engine

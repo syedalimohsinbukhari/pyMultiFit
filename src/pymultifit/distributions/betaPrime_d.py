@@ -179,6 +179,6 @@ class BetaPrimeDistribution(BaseDistribution):
         num_ = a * (a + b - 1)
         den_ = (b - 2) * (b - 1) ** 2
         variance_ = num_ / den_ if b > 2 else INF
-        variance_ = variance_ * s ** 2
+        variance_ = variance_ * s**2
 
         return {"mean": mean_, "variance": variance_, "std": SQRT(variance_)}

@@ -155,6 +155,6 @@ class ExponentialDistribution(BaseDistribution):
 
         mean_ = (1 / s) + l_
         median_ = (LOG_TWO / s) + l_
-        variance_ = 1 / s ** 2
+        variance_ = 1 / s**2
 
         return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

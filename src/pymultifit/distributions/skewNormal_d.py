@@ -167,18 +167,18 @@ class SkewNormalDistribution(BaseDistribution):
         if omega <= 0:
             return NAN_DICT
 
-        delta = alpha / SQRT(1 + alpha ** 2)
+        delta = alpha / SQRT(1 + alpha**2)
         sqrt_2_pi_delta = omega * SQRT_TWO_BY_PI * delta
 
         def _m0(alpha_):
-            term2 = (1 - PI / 4) * sqrt_2_pi_delta ** 3 / (1 - TWO_BY_PI * delta ** 2)
+            term2 = (1 - PI / 4) * sqrt_2_pi_delta**3 / (1 - TWO_BY_PI * delta**2)
             term3 = (TWO_PI / abs(alpha_)) * EXP(-TWO_PI / abs(alpha_)) * sign(alpha_)
             return sqrt_2_pi_delta - term2 - term3
 
         # Calculating mean, mode, variance, and std
         mean_ = epsilon + sqrt_2_pi_delta
         mode_ = epsilon + omega * _m0(alpha)
-        variance_ = omega ** 2 * (1 - (2 * delta ** 2 / PI))
+        variance_ = omega**2 * (1 - (2 * delta**2 / PI))
         std_ = SQRT(variance_)
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": std_}

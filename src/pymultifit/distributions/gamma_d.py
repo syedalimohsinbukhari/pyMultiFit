@@ -174,7 +174,7 @@ class GammaDistribution(BaseDistribution):
             return NAN_DICT
 
         mean_ = (s * r) + l_
-        variance_ = s * r ** 2
+        variance_ = s * r**2
         mode_ = (s - 1) * r + l_ if s >= 1 else 0
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

@@ -21,7 +21,8 @@ guess = [(2, 2, 1, 3), (3, 5, 1.5, 1), (1, 2, 1, 8)]
 fitter.fit(p0=guess)
 
 f, ax = plt.subplots(1, 1, figsize=(12, 6))
-fitter.plot_fit(
-    show_individuals=True, x_label="X_data", y_label="Y_data", data_label="XY_data", plot_title="XY_plot", axis=ax
-)
+fitter.dry_run(axis=ax)
+
+f2, ax = fitter.plotter.plot_fit_and_residuals(show_individuals=True)
+f2.tight_layout()
 plt.show()

@@ -238,7 +238,7 @@ class FitPlotter:
         -------
         Axes
             The axes on which the plot was drawn.
-            
+
         Notes
         -----
         Multiple CI levels are rendered with varying transparency (alpha values),
@@ -304,7 +304,7 @@ class FitPlotter:
         show_individuals: bool = False,
         x_label: str = "X",
         y_label: str = "Y",
-        plot_title: str = "Fit and Residuals",
+        plot_title: str = "",
         data_label: str = "Data",
         residual_label: str = "Residuals",
         fit_label: str = "Total Fit",

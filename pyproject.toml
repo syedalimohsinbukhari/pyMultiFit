@@ -17,8 +17,7 @@ dependencies = [
     "scipy",
     "custom-inherit",
     "plotez",
-    "deprecation",
-    "tqdm",
+    "deprecation"
 ]
 keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
 classifiers = [
@@ -82,7 +81,8 @@ dev = [
     "mypy",
     "nox",
     "uv",
-    "types-deprecated"
+    "types-deprecated",
+    "tqdm"
 ]
 
 # -- black ---------------------------------------------------------------------
