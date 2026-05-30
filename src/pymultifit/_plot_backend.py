@@ -157,7 +157,7 @@ def _prediction_interval(
     n, k = len(x), len(params)
 
     residuals = fitter_object.get_residuals()
-    sigma = np.sqrt(np.sum(residuals**2) / max(n - k, 1))
+    sigma = np.sqrt(np.sum(residuals ** 2) / max(n - k, 1))
     fitted = fitter_object._n_fitter(fitter_object.x_values, *params)
 
     if axis is None:
@@ -200,7 +200,7 @@ def _prediction_interval(
 def _ci(
     fitter_object: "BaseFitter | MixedDataFitter",
     results: dict,
-    ci_levels: int | float | tuple[int | float] | list[int | float],
+    ci_levels: float | tuple[float] | list[float],
     overall_ci: bool,
     individual_ci: bool,
     axis: Axes | None,

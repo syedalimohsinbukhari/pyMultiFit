@@ -9,5 +9,5 @@ from numpy.typing import NDArray as _NDArray
 NDArray = _NDArray[np.floating]
 ArrayLike = _ArrayLike
 
-RaggedParams = list[tuple[int | float, ...]]  # mixed-length components
+RaggedParams = list[tuple[float, ...]]
 Params_ = RaggedParams | ArrayLike

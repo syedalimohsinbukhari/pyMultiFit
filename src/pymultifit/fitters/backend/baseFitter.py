@@ -242,14 +242,17 @@ class BaseFitter:
         ----------
         p0 :
             A list of initial guesses for the parameters of the models.
-            For example, [(1, 1, 0), (3, 3, 2)].
         frozen :
             A list of booleans indicating whether each parameter is frozen.
-            For example, [False, False, True] for 3 parameters.
         """
-        # if the first element is a single number, treat the entire thing as a single fit guess
-        if isinstance(p0[0], int | float):
-            p0 = [p0]
+        if isinstance(p0[0], float):
+            # flat list — use n_par to split
+            if len(p0) % self.n_par != 0:
+                raise ValueError(f"p0 length {len(p0)} not divisible by n_par={self.n_par}")
+            p0 = np.asarray(p0).reshape(-1, self.n_par)
+        else:
+            # already structured as list-of-guesses — pass through
+            p0 = [np.asarray(g) for g in p0]
 
         self.n_fits = len(p0)
         len_guess = len(list(chain(*p0)))
@@ -304,19 +307,19 @@ class BaseFitter:
 
         Parameters
         ----------
-        x
+        x :
             X-values at which to evaluate the model.
-        fit_index
+        fit_index :
             Index of the component model (0-based).
-        params
+        params :
             Parameters for this specific component.
 
         Returns
         -------
-        NDArray
+        NDArray :
             Evaluated y-values for this component.
         """
-        return self.fitter(x, params)
+        return self.fitter(x=x, params=params)
 
     def get_fitted_curve(self) -> NDArray:
         """
@@ -324,12 +327,12 @@ class BaseFitter:
 
         Returns
         -------
-        NDArray
+        NDArray :
             An array of fitted values.
 
         Raises
         ------
-        RuntimeError
+        RuntimeError :
             If the fit has not been performed yet.
         """
         if self.params is None:
@@ -342,12 +345,12 @@ class BaseFitter:
 
         Returns
         -------
-        NDArray
+        NDArray :
             An array of residual values (y_data - y_fitted).
 
         Raises
         ------
-        RuntimeError
+        RuntimeError :
             If the fit has not been performed yet.
         """
         if self.params is None:
@@ -362,12 +365,12 @@ class BaseFitter:
 
         Parameters
         ----------
-        select
+        select :
             A list of indices specifying which submodels to extract parameters for.
             Indexing starts at 1.
             If ``None``, parameters for all submodels are returned.
             Defaults to None.
-        errors
+        errors :
             If ``True``, both the parameter values and their standard errors are returned.
             Defaults to ``False``.
 
@@ -461,13 +464,13 @@ class BaseFitter:
         Parameters
         ----------
         ci_levels :
-            CI level(s) as a percentage (e.g. 95 or [68, 95, 99]).
+            CI level(s) as a percentage (e.g., 95 or [68, 95, 99]).
         n_bootstrap :
             Bootstrap samples. Defaults to 5 000.
         overall_ci :
             Compute CI for the overall composite fit. Defaults to ``True``.
         individual_ci :
-            Compute CI for each individual component. Defaults to ``False``.
+            Compute CI for each component. Defaults to ``False``.
         seed :
             Random seed (mutually exclusive with *rng_engine*).
         rng_engine :
@@ -505,7 +508,10 @@ class BaseFitter:
         return results
 
     def _compute_individual_ci(
-        self, mv_parameters: ArrayLike, x_: ArrayLike, bounds: list[tuple[int, tuple[float, float, float]]]
+        self,
+        x_: ArrayLike,
+        mv_parameters: ArrayLike,
+        bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
         return compute_individual_ci_base(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 

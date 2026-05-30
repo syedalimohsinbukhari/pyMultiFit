@@ -4,7 +4,6 @@ import itertools
 import warnings
 from typing import Callable, List, Optional, Sequence, Union
 
-import matplotlib.pyplot as plt  # noqa: F401 – kept for any subclass that may reference it
 import numpy as np
 from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
 from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external callers
@@ -63,7 +62,7 @@ class MixedDataFitter(BaseFitter):
         model_list: Optional[List[str]] = None,
         fitter_dictionary: dict | None = None,
         model_dictionary: dict | None = None,
-        max_iterations: int = 1000,
+        max_iterations: int = 1_000,
     ):
         # Check if the deprecated parameter was used
         if fitter_dictionary is not None:
@@ -201,12 +200,11 @@ class MixedDataFitter(BaseFitter):
         model_class = self._instantiate_class(model=model)
         return model_class.fitter(x=x, params=list(params))
 
-    def _compute_individual_ci(
-        self, mv_parameters: NDArray, x_: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
-    ) -> dict:
+    def _compute_individual_ci(self, x_: NDArray, mv_parameters: NDArray,
+                               bounds: list[tuple[int, tuple[float, float, float]]]) -> dict:
         return compute_individual_ci_mixed(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 
-    def _get_bounds(self):
+    def _get_bounds(self) -> tuple[NDArray, NDArray]:
         """
         Sets the bounds for each parameter based on the model list.
 
@@ -229,7 +227,8 @@ class MixedDataFitter(BaseFitter):
         try:
             fitter_instance = self.fitter_dict[model](x_values=np.array([]), y_values=np.array([]))
         except KeyError:
-            raise ValueError(f"Model '{model}' not recognized. Ensure it is defined in the fitter dictionary.")
+            raise ValueError(f"Model '{model}' is not recognized. "
+                             f"Ensure it is defined in the fitter dictionary.")
 
         return fitter_instance
 
@@ -270,24 +269,31 @@ class MixedDataFitter(BaseFitter):
         """
         Fit the data.
 
-        :param p0: Initial guess for the fitted parameters.
-        :type p0: Union[List[Tuple[int or float, ...]], np.ndarray]
+        Parameters
+        ----------
+        p0 :
+            Initial guess for the fitted parameters.
+        frozen :
+            Parameter number of list of parameter numbers to freeze the value of.
 
-        :param frozen: Parameter number of list of parameter numbers to freeze the value of.
-        :type frozen: Union[int, List[int]]
-
-        :raises ValueError: If the length of the initial guess is not equal to the expected parameter count.
+        Raises
+        ------
+        ValueError :
+            If the length of the initial guess is not equal to the expected parameter count.
         """
         p0_chain = p0.tolist() if isinstance(p0, np.ndarray) else p0
         p0_chain: list
 
-        # flatten cannot always work here because the mixed fitter might contain a variable number of parameters
+        if not all(isinstance(g, (tuple, list, np.ndarray)) for g in p0_chain):
+            raise TypeError(
+                "MixedDataFitter requires p0 as a list of per-component guesses: [(p1, p2, ...), ...]"
+            )
+
         p0_chain = list(itertools.chain.from_iterable(p0_chain))
         if len(p0_chain) != self._expected_param_count():
             raise ValueError(
-                f"Initial parameters length {len(p0_chain)} does not match expected count "
-                f"{self._expected_param_count()}."
-            )
+                f"The length of the initial guess ({len(p0_chain)}) does not match the expected parameter count "
+                f"({self._expected_param_count()}).")
 
         lb, ub = self._get_bounds()
 
@@ -313,18 +319,24 @@ class MixedDataFitter(BaseFitter):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
 
-        :param model: Model name to extract parameters for. If unspecified, extracts parameters for all models.
+        Parameters
+        ----------
+        model :
+            Model name to extract parameters for.
+            If unspecified, extracts parameters for all models.
             Defaults to ``None``.
-        :param errors: If ``True``, includes the errors in the returned output. Defaults to ``False``.
+        errors :
+            If ``True``, includes the errors in the returned output.
+            Defaults to ``False``.
 
-        :return: A dictionary containing:
-
-                - "parameters": Nested dictionary of parameter values for each model if `get_errors` is True.
-                - "errors": Nested dictionary of errors for each model (if `get_errors=True`).
-
-                Otherwise, returns just the parameters directly.
+        Returns
+        -------
+        dict :
+            A dictionary containing:
+                - "parameters": Nested dictionary of parameter values for each model.
+                - "errors": Nested dictionary of errors for each model (if ``get_errors=True``).
+            Otherwise, returns just the parameters directly.
         """
-
         parameters = self._parameter_extractor(self.params)
         errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
 
@@ -345,6 +357,7 @@ class MixedDataFitter(BaseFitter):
             if n_pars == 2:
                 output[key] = par_dict
             else:
-                output[key] = np.array_split(np.asarray(par_dict, dtype=float).flatten(), n_pars)
+                output[key] = np.array_split(np.asarray(par_dict, dtype=float).flatten(),
+                                             indices_or_sections=n_pars)
 
         return output

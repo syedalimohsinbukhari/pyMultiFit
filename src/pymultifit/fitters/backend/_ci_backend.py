@@ -300,7 +300,7 @@ def compute_ci_bounds(
             results[f"overall_ci_{ci_val}"] = {"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]}
 
     if individual_ci:
-        individual_ci_results = fitter_object._compute_individual_ci(mv_parameters=mv_parameters, x_=x_, bounds=bounds)
+        individual_ci_results = fitter_object._compute_individual_ci(x_=x_, mv_parameters=mv_parameters, bounds=bounds)
         for ci_val in individual_ci_results:
             results[f"individual_ci_{ci_val}"] = individual_ci_results[ci_val]
 
