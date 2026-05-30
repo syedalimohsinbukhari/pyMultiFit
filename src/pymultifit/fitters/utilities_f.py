@@ -1,22 +1,17 @@
 """Created on Aug 18 23:52:19 2024"""
 
-__all__ = ["parameter_logic", "sanity_check", "_plot_fit"]
-
-import warnings
-from typing import Callable, List, Optional, Tuple, Union
+__all__ = ["parameter_logic", "sanity_check"]
 
 import numpy as np
-from matplotlib.axes import Axes
-from plotez import lpc, plot_xy
 
 from ..typing import ArrayLike, NDArray
 
 # SAFEGUARD:
-xy_tuple = Tuple[np.ndarray, np.ndarray]
-indexType = Union[int, List[int], None]
+xy_tuple = tuple[NDArray, NDArray]
+indexType = int | list[int] | None
 
 
-def sanity_check(x_values: ArrayLike, y_values: ArrayLike):
+def sanity_check(x_values: ArrayLike, y_values: ArrayLike) -> xy_tuple:
     """
     Convert input lists to NumPy arrays if necessary.
 
@@ -40,7 +35,7 @@ def sanity_check(x_values: ArrayLike, y_values: ArrayLike):
     return x_values, y_values
 
 
-def parameter_logic(par_array: ArrayLike, n_par: int, selected_models) -> np.ndarray:
+def parameter_logic(par_array: NDArray, n_par: int, selected_models) -> NDArray:
     """
     Extract parameter values from a given function based on the number of parameters per fit and selected indices.
 
@@ -62,108 +57,3 @@ def parameter_logic(par_array: ArrayLike, n_par: int, selected_models) -> np.nda
     """
     indices = np.array(selected_models) - 1 if selected_models is not None else slice(None)
     return par_array.reshape(-1, n_par)[indices]
-
-
-def _plot_fit(
-    x_values: ArrayLike,
-    y_values: ArrayLike,
-    parameters: ArrayLike,
-    n_fits: int,
-    class_name: str,
-    _n_fitter: Callable,
-    _n_plotter: Callable,
-    show_individuals: bool = False,
-    x_label: Optional[str] = None,
-    y_label: Optional[str] = None,
-    title: Optional[str] = None,
-    data_label: Optional[str] = None,
-    fit_label: Optional[str] = None,
-    axis: Optional[Axes] = None,
-):
-    """
-    Base function to plot the fitted models.
-
-    .. deprecated::
-        Use :class:`pymultifit._plot.FitPlotter` instead.
-        This function will be removed in a future release.
-
-    Parameters
-    ----------
-    x_values :
-        The x-axis values.
-    y_values :
-        The observed data values corresponding to `x_values`.
-    parameters :
-        The optimized parameters from the fitting process.
-    n_fits :
-        The number of fits performed.
-    class_name :
-        The name of the fitting model class used.
-    _n_fitter :
-        A function that evaluates the fitted model given `x_values` and `parameters`.
-    _n_plotter :
-        A function that plots individual model components if `show_individuals` is True.
-    show_individuals:
-        Whether to show individually fitted models or not.
-    x_label:
-        The label for the x-axis.
-    y_label:
-        The label for the y-axis.
-    title:
-        The title for the plot.
-    data_label:
-        The label for the data.
-    axis:
-        Axes to plot instead of the entire figure. Defaults to None.
-
-    Returns
-    -------
-    plotter
-        The plotter handle for the drawn plot.
-    """
-    if parameters is None:
-        raise RuntimeError("Fit not performed yet. Call fit() first.")
-
-    warnings.warn(
-        "_plot_fit() is deprecated and will be removed in a future release. "
-        "Use FitPlotter (pymultifit._plot.FitPlotter) instead.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    label_dict = {"x_label": "X", "y_label": "Y", "title": f"{n_fits} {class_name} fit"}
-
-    if data_label is None:
-        dl, tt = "Data", "Total fit"
-    elif len(data_label) == 1 or isinstance(data_label, str):
-        dl, tt = data_label, "Total fit"
-    elif 1 < len(data_label) <= 2:
-        dl, tt = data_label, fit_label
-    else:
-        raise ValueError()
-
-    plotter = plot_xy(x_data=x_values, y_data=y_values, data_label=dl, axis=axis, plot_config=lpc(alpha=0.75))
-
-    plot_xy(
-        x_data=x_values,
-        y_data=_n_fitter(x_values, *parameters),
-        x_label=x_label,
-        y_label=y_label,
-        plot_title=title,
-        data_label=tt,
-        plot_config=lpc(c="k"),
-        axis=plotter,
-    )
-
-    if show_individuals:
-        _n_plotter(plotter=plotter)
-
-    plotter2: Axes = plotter[0] if isinstance(plotter, list) else plotter
-
-    plotter2.set_xlabel(label_dict.get("x_label", x_label))
-    plotter2.set_ylabel(label_dict.get("y_label", y_label))
-    plotter2.set_title(label_dict.get("title", title))
-    plotter2.grid(ls="--", alpha=0.25, color="k")
-    # plt.tight_layout()
-
-    return plotter2

@@ -1,27 +1,12 @@
 """Created on Jul 18 00:15:42 2024"""
 
 import functools
-from functools import wraps
 
 import numpy as np
 import scipy.special as ssp
 from deprecation import deprecated as _deprecated
 
 from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
-
-
-def check_scale_positive(func):
-    """Decorator that returns NaN array if scale < 0."""
-
-    @wraps(func)
-    def wrapper(x, *args, **kwargs):
-        scale = args[-2]
-        if scale is not None and scale < 0:
-            # Return NaNs of the same shape as x
-            return np.full_like(x, np.nan, dtype=float)
-        return func(x, *args, **kwargs)
-
-    return wrapper
 
 
 def mark_deprecated(ver_: str, new: str):
@@ -35,19 +20,15 @@ def mark_deprecated(ver_: str, new: str):
         The name of the method to use instead.
     """
 
-    def decorator(func):
+    def _decorator(func):
         method_name = func.__name__
         reason = f"Use ``{new}`` instead of ``{method_name}``. ``{method_name}`` will be removed in a future release."
         return _deprecated(deprecated_in=ver_, removed_in=None, details=reason)(func)
 
-    return decorator
+    return _decorator
 
 
-def md_scipy_like(ver_: str, new: str = "from_scipy_params"):
-    return mark_deprecated(ver_=ver_, new=new)
-
-
-def plotter_deprecation(ver_: str, new: str = "[PLOTTER].plot_fit"):
+def _md_scipy_like(ver_: str, new: str = "from_scipy_params"):
     return mark_deprecated(ver_=ver_, new=new)
 
 

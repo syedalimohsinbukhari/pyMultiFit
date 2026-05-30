@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
-from .. import EXP, SQRT, md_scipy_like, suppress_numpy_warnings, NAN_DICT
+from .. import EXP, SQRT, _md_scipy_like, suppress_numpy_warnings, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -92,7 +92,7 @@ class LogNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
         """
         Instantiate LogNormalDistribution with scipy parametrization.

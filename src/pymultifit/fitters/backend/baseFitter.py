@@ -4,17 +4,16 @@ from __future__ import annotations
 
 from itertools import chain
 from typing import Any
-from warnings import warn
 
 import numpy as np
 from matplotlib.axes import Axes
 from numpy.random import Generator
 from scipy.optimize import Bounds, curve_fit
 
+from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
 from ..utilities_f import parameter_logic, sanity_check
 from ... import epsilon
 from ..._plot import FitPlotter
-from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
 from ...typing import ArrayLike, NDArray, Params_
 
 
@@ -69,7 +68,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par :]
+            provided_secondary_params = params[self.pn_par:]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -220,16 +219,20 @@ class BaseFitter:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
         return np.sqrt(np.diag(self.covariance))
 
-    def dry_run(self, axis: Axes | None = None):
+    def dry_run(self, axis: Axes | None = None, is_scatter: bool = False):
         """
         Plot the x and y data for a quick visual inspection of the data.
 
         Parameters
         ----------
-        axis:
+        axis :
             The axis to plot the data on.
+        is_scatter :
+            If ``True``, the data will be plotted as a scatter plot.
+            If ``False``, the data will be plotted as a line plot.
+            Defaults to ``False``.
         """
-        self.plotter.dry_run(axis=axis)
+        self.plotter.dry_run(axis=axis, is_scatter=is_scatter)
 
     def fit(self, p0: Params_, frozen: list[bool] | None = None):
         """
@@ -237,13 +240,17 @@ class BaseFitter:
 
         Parameters
         ----------
-        p0:
+        p0 :
             A list of initial guesses for the parameters of the models.
             For example, [(1, 1, 0), (3, 3, 2)].
-        frozen:
+        frozen :
             A list of booleans indicating whether each parameter is frozen.
             For example, [False, False, True] for 3 parameters.
         """
+        # if the first element is a single number, treat the entire thing as a single fit guess
+        if isinstance(p0[0], int | float):
+            p0 = [p0]
+
         self.n_fits = len(p0)
         len_guess = len(list(chain(*p0)))
         total_pars = self.n_par * self.n_fits
@@ -479,23 +486,26 @@ class BaseFitter:
         dict
             ``{"x_range": ..., "overall_ci_<level>": {...}, "individual_ci_<level>": [...]}``
         """
-        results = compute_ci_bounds(fitter_object=self, ci_levels=ci_levels, n_bootstrap=n_bootstrap,
-                                    overall_ci=overall_ci, individual_ci=individual_ci, seed=seed,
-                                    rng_engine=rng_engine, x_range=x_range)
+        results = compute_ci_bounds(
+            fitter_object=self,
+            ci_levels=ci_levels,
+            n_bootstrap=n_bootstrap,
+            overall_ci=overall_ci,
+            individual_ci=individual_ci,
+            seed=seed,
+            rng_engine=rng_engine,
+            x_range=x_range,
+        )
 
         if plot:
             self.plotter.plot_ci_bounds(
-                ci_levels=ci_levels,
-                results=results,
-                overall_ci=overall_ci,
-                individual_ci=individual_ci,
-                axis=axis,
+                ci_levels=ci_levels, results=results, overall_ci=overall_ci, individual_ci=individual_ci, axis=axis
             )
 
         return results
 
-    def compute_individual_ci(
-        self, mv_parameters: NDArray, x_: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
+    def _compute_individual_ci(
+        self, mv_parameters: ArrayLike, x_: ArrayLike, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
         return compute_individual_ci_base(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 
@@ -507,15 +517,9 @@ class BaseFitter:
         plot_title: str = "Plot",
         data_label: str = "Data",
         fit_label: str = "Total Fit",
+        is_scatter: bool = False,
         axis: Axes | None = None,
     ) -> Axes:
-        # Emit a clear deprecation warning for callers (stacklevel=2 points to the user's call site)
-        warn(
-            "BaseFitter.plot_fit is deprecated and will be removed in a future release. "
-            "Please use the fitter's plotter API instead, e.g. `fitter.plotter.plot_fit(...)`.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         return self.plotter.plot_fit(
             show_individuals=show_individuals,
             x_label=x_label,
@@ -523,7 +527,6 @@ class BaseFitter:
             plot_title=plot_title,
             data_label=data_label,
             fit_label=fit_label,
+            is_scatter=is_scatter,
             axis=axis,
         )
-
-

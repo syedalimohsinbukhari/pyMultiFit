@@ -10,15 +10,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from plotez import lpc, plot_xy
 
-from ._plot_backend import (
-    _ci,
-    _fit_and_residual,
-    _param_correlation,
-    _plot,
-    _prediction_interval,
-    _qq,
-    _resid,
-)
+from ._plot_backend import _ci, _fit_and_residual, _param_correlation, _plot, _prediction_interval, _qq, _resid
 from .fitters.backend._ci_backend import compute_ci_bounds
 
 
@@ -206,19 +198,22 @@ class FitPlotter:
         if self.fitter.params is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
 
-    def dry_run(self, axis: Axes | None = None) -> None:
+    def dry_run(self, axis: Axes | None = None, is_scatter: bool = False) -> None:
         """Plot raw x / y data for quick inspection before fitting.
 
         Parameters
         ----------
         axis :
             Target axes.  A new figure is created when ``None``.
+        is_scatter :
+            When ``True``, the raw data is plotted as a scatter plot instead of a line
         """
-        plot_xy(x_data=self.fitter.x_values, y_data=self.fitter.y_values, axis=axis)
+        axis = plot_xy(x_data=self.fitter.x_values, y_data=self.fitter.y_values, axis=axis, is_scatter=is_scatter)
+        axis.get_figure().tight_layout()
 
     def plot_ci_bounds(
         self,
-        ci_levels: float | int | list | tuple,
+        ci_levels: float | tuple[float] | list[float],
         results: dict | None = None,
         n_bootstrap: int = 5_000,
         overall_ci: bool = True,
@@ -261,9 +256,16 @@ class FitPlotter:
             The axes on which the plot was drawn.
         """
         if results is None:
-            results = compute_ci_bounds(fitter_object=self.fitter, ci_levels=ci_levels, n_bootstrap=n_bootstrap,
-                                        overall_ci=overall_ci, individual_ci=individual_ci, seed=seed,
-                                        rng_engine=rng_engine, x_range=x_range)
+            results = compute_ci_bounds(
+                fitter_object=self.fitter,
+                ci_levels=ci_levels,
+                n_bootstrap=n_bootstrap,
+                overall_ci=overall_ci,
+                individual_ci=individual_ci,
+                seed=seed,
+                rng_engine=rng_engine,
+                x_range=x_range,
+            )
         return _ci(
             fitter_object=self.fitter,
             results=results,
@@ -281,6 +283,7 @@ class FitPlotter:
         plot_title: str = "Plot",
         data_label: str = "Data",
         fit_label: str = "Total Fit",
+        is_scatter: bool = False,
         axis: Axes | None = None,
     ) -> Axes:
         """Plot the fitted composite model on top of the raw data.
@@ -299,6 +302,8 @@ class FitPlotter:
             Legend label for the raw-data series.
         fit_label :
             Legend label for the total-fit series.
+        is_scatter :
+            When ``True``, the raw data is plotted as a scatter plot instead of a line.
         axis :
             Target axes.  A new figure is created when ``None``.
 
@@ -312,6 +317,7 @@ class FitPlotter:
             fitter_object=self.fitter,
             show_individuals=show_individuals,
             axis=axis,
+            is_scatter=is_scatter,
             x_label=x_label,
             y_label=y_label,
             plot_title=plot_title,

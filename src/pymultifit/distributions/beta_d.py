@@ -5,7 +5,7 @@ from __future__ import annotations
 from numpy import sqrt
 from scipy.special import betaincinv
 
-from .. import NAN_DICT, md_scipy_like
+from .. import NAN_DICT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .backend import errorHandling as erH
@@ -107,7 +107,7 @@ class BetaDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("v1.0.7")
+    @_md_scipy_like("v1.0.7")
     def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
         Instantiate `BetaDistribution` with scipy parameterization.

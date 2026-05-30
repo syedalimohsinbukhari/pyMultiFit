@@ -6,7 +6,7 @@ from scipy.special import erf
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import folded_normal_cdf_, folded_normal_log_cdf_, folded_normal_log_pdf_, folded_normal_pdf_
-from .. import EXP, NAN_DICT, SQRT, SQRT_TWO, SQRT_TWO_BY_PI, md_scipy_like
+from .. import EXP, NAN_DICT, SQRT, SQRT_TWO, SQRT_TWO_BY_PI, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 
 
@@ -96,7 +96,7 @@ class FoldedNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, c: float, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
         r"""
         Instantiate FoldedNormalDistribution with scipy parametrization.

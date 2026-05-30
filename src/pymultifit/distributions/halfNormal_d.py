@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
-from .. import SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, md_scipy_like, NAN_DICT
+from .. import SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, _md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -89,7 +89,7 @@ class HalfNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":
         """
         Instantiate HalfNormalDistribution with scipy parametrization.

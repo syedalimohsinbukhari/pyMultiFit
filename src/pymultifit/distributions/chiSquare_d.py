@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
-from .. import NAN_DICT, SQRT, md_scipy_like
+from .. import NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 
 
@@ -98,7 +98,7 @@ class ChiSquareDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("v1.0.7")
+    @_md_scipy_like("v1.0.7")
     def scipy_like(cls, df: int | float, loc: float = 0.0, scale: float = 1.0) -> "ChiSquareDistribution":
         """
         Instantiate ChiSquareDistribution with scipy parameterization.

@@ -12,12 +12,13 @@ requires-python = ">=3.10"
 license-files = ["LICENSE"]
 dynamic = ["version"]
 dependencies = [
-    "numpy",
-    "matplotlib",
-    "scipy",
     "custom-inherit",
+    "deprecation",
+    "matplotlib",
+    "numpy",
     "plotez",
-    "deprecation"
+    "scipy",
+    "statsmodels",
 ]
 keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
 classifiers = [
@@ -58,7 +59,6 @@ dev = [
     "pytest-cov",
     "seaborn",
     "pandas",
-    "statsmodels",
     "astropy",
     "jupyter",
     "notebook",
@@ -81,8 +81,8 @@ dev = [
     "mypy",
     "nox",
     "uv",
-    "types-deprecated",
-    "tqdm"
+    "tqdm",
+    "pyqt6",
 ]
 
 # -- black ---------------------------------------------------------------------

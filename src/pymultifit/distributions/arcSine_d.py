@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from numpy import sqrt
 
-from .. import NAN_DICT, md_scipy_like
+from .. import NAN_DICT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .backend import errorHandling as erH
@@ -80,7 +80,7 @@ class ArcSineDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "ArcSineDistribution":
         """
         Instantiate `ArcSineDistribution` with scipy parameterization.

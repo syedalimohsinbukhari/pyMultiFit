@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
-from .. import SQRT, md_scipy_like, NAN_DICT
+from .. import SQRT, _md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -89,7 +89,7 @@ class LaplaceDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "LaplaceDistribution":
         """
         Instantiate LaplaceDistribution with scipy parametrization.

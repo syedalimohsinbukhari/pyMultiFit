@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gaussian_cdf_, gaussian_log_cdf_, gaussian_log_pdf_, gaussian_pdf_
-from .. import md_scipy_like, NAN_DICT
+from .. import _md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -87,7 +87,7 @@ class GaussianDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "GaussianDistribution":
         r"""
         Instantiate GaussianDistribution with scipy parametrization.

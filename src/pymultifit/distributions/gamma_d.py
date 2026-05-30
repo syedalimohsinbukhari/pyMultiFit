@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
-from .. import SQRT, md_scipy_like, NAN_DICT
+from .. import SQRT, _md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -105,7 +105,7 @@ class GammaDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "GammaDistribution":
         r"""
         Instantiate GammaDistributionSS with scipy parametrization.

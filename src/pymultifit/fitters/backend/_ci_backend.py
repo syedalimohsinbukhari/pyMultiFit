@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 # RNG helper
 # ---------------------------------------------------------------------------
 
+
 def _sanitize_generator(rng_engine: Generator | None, seed: int | None) -> Generator:
     """Return a NumPy random Generator from either a seed or an existing engine.
 
@@ -54,9 +55,8 @@ def _sanitize_generator(rng_engine: Generator | None, seed: int | None) -> Gener
 # CI level normalisation
 # ---------------------------------------------------------------------------
 
-def _ci_to_percentiles(
-    ci_lvls: float | int | Iterable[float],
-) -> list[tuple[int, tuple[float, float, float]]]:
+
+def _ci_to_percentiles(ci_lvls: float | int | Iterable[float]) -> list[tuple[int, tuple[float, float, float]]]:
     """Normalise CI levels to ``(ci_integer, (lower_p, 0.5, upper_p))`` tuples.
 
     Accepts both percentage form (95, 68.5) and decimal form (0.95, 0.685).
@@ -104,11 +104,9 @@ def _ci_to_percentiles(
 # Shared quantile → results converter
 # ---------------------------------------------------------------------------
 
+
 def _curves_to_ci_results(
-    curves_: NDArray,
-    n_fits: int,
-    x_: NDArray,
-    bounds: list[tuple[int, tuple[float, float, float]]],
+    curves_: NDArray, n_fits: int, x_: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
 ) -> dict:
     """Convert a ``(n_bootstrap, n_fits, n_x)`` curves array into a CI results dict.
 
@@ -152,10 +150,11 @@ def _curves_to_ci_results(
 # Per-component CI strategies (one per fitter type)
 # ---------------------------------------------------------------------------
 
+
 def compute_individual_ci_base(
     fitter_object: "BaseFitter",
-    mv_parameters: NDArray,
-    x_: NDArray,
+    mv_parameters: ArrayLike,
+    x_: ArrayLike,
     bounds: list[tuple[int, tuple[float, float, float]]],
 ) -> dict:
     """Compute per-component CIs for a uniform ``BaseFitter`` (equal params per fit).
@@ -176,6 +175,8 @@ def compute_individual_ci_base(
     dict
         ``{ci_value: [{"lower": ..., "median": ..., "upper": ...}, ...]}``
     """
+    mv_parameters, x_ = np.asarray(mv_parameters), np.asarray(x_)
+
     n_total_params = mv_parameters.shape[1]
     params_per_fit = n_total_params // fitter_object.n_fits
     params = mv_parameters.reshape((-1, fitter_object.n_fits, params_per_fit))
@@ -219,10 +220,8 @@ def compute_individual_ci_mixed(
         param_index = 0
         for model_idx, model in enumerate(fitter_object.model_list):
             n_par = fitter_object._instantiate_n_par(model=model)
-            model_params = boot_params[param_index: param_index + n_par]
-            curves_[boot_idx, model_idx, :] = fitter_object._evaluate_individual_component(
-                x_, model_idx, model_params
-            )
+            model_params = boot_params[param_index : param_index + n_par]
+            curves_[boot_idx, model_idx, :] = fitter_object._evaluate_individual_component(x_, model_idx, model_params)
             param_index += n_par
 
     return _curves_to_ci_results(curves_=curves_, n_fits=fitter_object.n_fits, x_=x_, bounds=bounds)
@@ -231,6 +230,7 @@ def compute_individual_ci_mixed(
 # ---------------------------------------------------------------------------
 # Top-level CI computation
 # ---------------------------------------------------------------------------
+
 
 def compute_ci_bounds(
     fitter_object: "BaseFitter | MixedDataFitter",
@@ -279,13 +279,15 @@ def compute_ci_bounds(
     if not overall_ci and not individual_ci:
         raise ValueError("At least one of 'overall_ci' or 'individual_ci' must be True.")
 
-    x_ = np.asarray(x_range) if x_range is not None else np.linspace(*fitter_object.x_values[[0, -1]], 1000)
+    x_ = np.asarray(x_range) if x_range is not None else np.linspace(*np.asarray(fitter_object.x_values)[[0, -1]], 1000)
 
     _rng = _sanitize_generator(rng_engine=rng_engine, seed=seed)
     mv_parameters = _rng.multivariate_normal(mean=fitter_object.params, cov=fitter_object.covariance, size=n_bootstrap)
 
     bounds = _ci_to_percentiles(ci_levels)
     results: dict = {"x_range": x_}
+
+    bounds: Iterable
 
     if overall_ci:
         curves_ = np.array([fitter_object._n_fitter(x_, *j) for j in mv_parameters])
@@ -295,14 +297,10 @@ def compute_ci_bounds(
                 raise ValueError(
                     f"Dimension mismatch: x_range has length {len(x_)} but quantiles have shape {quantiles.shape}"
                 )
-            results[f"overall_ci_{ci_val}"] = {
-                "lower": quantiles[0],
-                "median": quantiles[1],
-                "upper": quantiles[2],
-            }
+            results[f"overall_ci_{ci_val}"] = {"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]}
 
     if individual_ci:
-        individual_ci_results = fitter_object.compute_individual_ci(mv_parameters=mv_parameters, x_=x_, bounds=bounds)
+        individual_ci_results = fitter_object._compute_individual_ci(mv_parameters=mv_parameters, x_=x_, bounds=bounds)
         for ci_val in individual_ci_results:
             results[f"individual_ci_{ci_val}"] = individual_ci_results[ci_val]
 

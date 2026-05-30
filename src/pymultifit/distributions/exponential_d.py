@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
-from .. import LOG_TWO, NAN_DICT, SQRT, md_scipy_like
+from .. import LOG_TWO, NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 
 
@@ -97,7 +97,7 @@ class ExponentialDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "ExponentialDistribution":
         r"""
         Instantiate ExponentialDistribution with scipy parameterization.

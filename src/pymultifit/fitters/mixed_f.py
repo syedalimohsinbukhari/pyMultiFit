@@ -60,7 +60,7 @@ class MixedDataFitter(BaseFitter):
         self,
         x_values: NDArray,
         y_values: NDArray,
-        model_list: List[str],
+        model_list: Optional[List[str]] = None,
         fitter_dictionary: dict | None = None,
         model_dictionary: dict | None = None,
         max_iterations: int = 1000,
@@ -74,9 +74,25 @@ class MixedDataFitter(BaseFitter):
                 stacklevel=2,
             )
 
+        resolved_dict = model_dictionary or fitter_dictionary or None
+
+        # Infer model_list from model_dictionary keys when not explicitly provided
+        if model_list is None:
+            if resolved_dict is not None:
+                model_list = list(resolved_dict.keys())
+            else:
+                raise ValueError("`model_list` must be provided when `model_dictionary` is not given.")
+        elif resolved_dict is not None and list(resolved_dict.keys()) != model_list:
+            warnings.warn(
+                message="`model_list` and `model_dictionary` keys differ. "
+                        "`model_list` takes precedence; consider omitting it and relying on `model_dictionary` keys.",
+                category=UserWarning,
+                stacklevel=2,
+            )
+
         # Set model-specific attributes before calling super().__init__()
         self.model_list = model_list
-        self.fitter_dict = model_dictionary or fitter_dictionary or fitter_dict
+        self.fitter_dict = resolved_dict or fitter_dict
 
         # Call parent constructor
         super().__init__(x_values=x_values, y_values=y_values, max_iterations=max_iterations)
@@ -98,7 +114,10 @@ class MixedDataFitter(BaseFitter):
         """
         Creates a composite model function based on the specified models.
 
-        :return: A composite model for fitting.
+        Returns
+        -------
+        Callable :
+            A composite model for fitting.
         """
 
         def _composite_model(x: np.ndarray, *params) -> np.ndarray:
@@ -107,14 +126,14 @@ class MixedDataFitter(BaseFitter):
 
             Parameters
             ----------
-            x : np.ndarray
+            x :
                 The x-values where the model is evaluated.
-            params : tuple
+            params :
                 Parameters for the model components.
 
             Returns
             -------
-            y : np.ndarray
+            y :
                 The computed y-values from the composite model.
             """
             y = np.zeros_like(x, dtype=float)
@@ -142,20 +161,20 @@ class MixedDataFitter(BaseFitter):
 
         return count
 
-    def _n_fitter(self, x: NDArray, *params) -> NDArray:
+    def _n_fitter(self, x: NDArray, *params: Params_) -> NDArray:
         """
-        Override parent method to use the composite model function.
+        Override the parent method to use the composite model function.
 
         Parameters
         ----------
-        x : np.ndarray
+        x :
             Input array of values for which the composite function is evaluated.
-        params : tuple
+        params :
             A tuple with all parameters to be fitted.
 
         Returns
         -------
-        np.ndarray
+        NDArray :
             An array containing the composite fitted values for the input ``x``.
         """
         return self.model_function(x, *params)
@@ -166,23 +185,23 @@ class MixedDataFitter(BaseFitter):
 
         Parameters
         ----------
-        x
+        x :
             X-values at which to evaluate the model.
-        fit_index
+        fit_index :
             Index of the component model in model_list (0-based).
-        params
+        params :
             Parameters for this specific component.
 
         Returns
         -------
-        NDArray
+        NDArray :
             Evaluated y-values for this component.
         """
         model = self.model_list[fit_index]
         model_class = self._instantiate_class(model=model)
         return model_class.fitter(x=x, params=list(params))
 
-    def compute_individual_ci(
+    def _compute_individual_ci(
         self, mv_parameters: NDArray, x_: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
         return compute_individual_ci_mixed(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
@@ -191,7 +210,10 @@ class MixedDataFitter(BaseFitter):
         """
         Sets the bounds for each parameter based on the model list.
 
-        :returns: Lower and upper bounds for the parameters.
+        Returns
+        -------
+        tuple[NDArray, NDArray] :
+            Lower and upper bounds for the parameters.
         """
         lower_bounds = []
         upper_bounds = []
@@ -221,9 +243,15 @@ class MixedDataFitter(BaseFitter):
         """
         Extracts the parameters for each model in the model list.
 
-        :param values: The values from which the model dictionary is to be extracted.
+        Parameters
+        ----------
+        values :
+            The values from which the model dictionary is to be extracted.
 
-        :return: A dictionary where the keys are model names and the values are lists of parameters/error values.
+        Returns
+        -------
+        dict :
+            A dictionary where the keys are model names and the values are lists of parameters/error values.
         """
         p_index = 0
         param_dict: dict = {}
@@ -237,33 +265,6 @@ class MixedDataFitter(BaseFitter):
             p_index += n_pars
 
         return param_dict
-
-    def _plot_individual_fitter(self, plotter):
-        """
-        Plot the individual fitters function.
-
-        :param plotter: The plotting axis object
-        """
-        x, params = np.asarray(self.x_values), np.asarray(self.params)
-        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
-        param_index = 0
-        for i, model in enumerate(self.model_list):
-            color = colors[i % len(colors)]
-            class_model = self._instantiate_class(model=model)
-            n_par = self._instantiate_n_par(model=model)
-            pars = params[param_index: param_index + n_par]
-            y_component = class_model.fitter(x=x, params=pars)
-            plot_xy(
-                x_data=x,
-                y_data=y_component,
-                x_label="",
-                y_label="",
-                plot_title="",
-                data_label=f"{model.capitalize()} {i + 1}({', '.join(self._format_param(i) for i in pars)})",
-                plot_config=LinePlotConfig(linestyle="--", color=color),
-                axis=plotter,
-            )
-            param_index += n_par
 
     def fit(self, p0: Params_, frozen: Optional[Union[int, List[int]]] = None):
         """

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
-from .. import SQRT, md_scipy_like, NAN_DICT
+from .. import SQRT, _md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -89,7 +89,7 @@ class UniformDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate UniformDistribution with scipy parametrization.

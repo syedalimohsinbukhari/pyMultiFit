@@ -20,7 +20,6 @@ guess = [(10, -18, 1), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
 fitter.fit(guess)
 
 f, ax = plt.subplots(1, 1, figsize=(12, 6))
-plotter = fitter.plotter.plot_fit(
-    show_individuals=True, x_label="X_data", y_label="Y_data", data_label="XY_data", plot_title="XY_plot", axis=ax
-)
+plotter = fitter.plotter.plot_fit(show_individuals=True, axis=ax, is_scatter=True)
+f.tight_layout()
 plt.show()

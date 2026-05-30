@@ -6,7 +6,7 @@ from numpy import sign
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import skew_normal_cdf_, skew_normal_log_pdf_, skew_normal_pdf_
-from .. import EXP, LOG, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, md_scipy_like, NAN_DICT
+from .. import EXP, LOG, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, _md_scipy_like, NAN_DICT
 from ..typing import ArrayLike, NDArray
 
 
@@ -101,7 +101,7 @@ class SkewNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "SkewNormalDistribution":
         """
         Instantiate SkewNormalDistribution with scipy parametrization.

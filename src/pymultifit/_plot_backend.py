@@ -83,7 +83,6 @@ def _qq(
     )
 
     plotter.grid(ls=GRID_LS, alpha=GRID_ALPHA, color=GRID_COLOR)
-    plt.tight_layout()
 
     return plotter
 
@@ -131,7 +130,6 @@ def _param_correlation(
             axis.text(j, i, f"{corr[i, j]:.2f}", ha="center", va="center", fontsize=7, color=text_color)
 
     axis.set_title(plot_title)
-    plt.tight_layout()
 
     return axis
 
@@ -159,7 +157,7 @@ def _prediction_interval(
     n, k = len(x), len(params)
 
     residuals = fitter_object.get_residuals()
-    sigma = np.sqrt(np.sum(residuals ** 2) / max(n - k, 1))
+    sigma = np.sqrt(np.sum(residuals**2) / max(n - k, 1))
     fitted = fitter_object._n_fitter(fitter_object.x_values, *params)
 
     if axis is None:
@@ -167,8 +165,7 @@ def _prediction_interval(
 
     axis: Axes
 
-    pi_colors = [plt.get_cmap("YlOrBr")(v)
-                 for v in np.linspace(0.35, 0.75, len(pi_levels))]
+    pi_colors = [plt.get_cmap("YlOrBr")(v) for v in np.linspace(0.35, 0.75, len(pi_levels))]
 
     for pi, col_ in zip(pi_levels, pi_colors):
         alpha_stat = 1 - pi / 100
@@ -196,7 +193,6 @@ def _prediction_interval(
 
     axis.legend()
     axis.grid(ls=GRID_LS, alpha=GRID_ALPHA, color=GRID_COLOR)
-    plt.tight_layout()
 
     return axis
 
@@ -204,7 +200,7 @@ def _prediction_interval(
 def _ci(
     fitter_object: "BaseFitter | MixedDataFitter",
     results: dict,
-    ci_levels: int | list[int],
+    ci_levels: int | float | tuple[int | float] | list[int | float],
     overall_ci: bool,
     individual_ci: bool,
     axis: Axes | None,
@@ -261,7 +257,6 @@ def _ci(
 
     axis.grid(color=GRID_COLOR, ls=GRID_LS, alpha=GRID_ALPHA)
     axis.legend()
-    plt.tight_layout()
 
     return axis
 
@@ -299,8 +294,6 @@ def _fit_and_residual(
         plot_object=plot_object, fitter_object=fitter_object, axis=ax2, residual_label=residual_label, x_label=x_label
     )
 
-    plt.tight_layout()
-
     return fig, (ax1, ax2)
 
 
@@ -324,8 +317,6 @@ def _resid(
     ax.set_ylabel(residual_label)
     ax.legend_ = None
 
-    # plt.tight_layout()
-
     return ax
 
 
@@ -348,6 +339,7 @@ def _plot(
     fitter_object: "BaseFitter | MixedDataFitter",
     show_individuals: bool = False,
     axis: Axes | None = None,
+    is_scatter: bool = False,
     **kwargs,
 ) -> Axes:
     plot_object._validate_fitted()
@@ -360,26 +352,30 @@ def _plot(
     params = fitter_object.params
     dl, tt = plot_object._resolve_data_labels(data_label, fit_label)
 
-    plotter = plot_xy(x_data=x, y_data=y, data_label=dl, axis=axis, plot_config=lpc(alpha=0.75))
+    axis = plot_xy(x_data=x, y_data=y, data_label=dl, axis=axis, is_scatter=is_scatter, plot_config=lpc(alpha=0.75))
+    # Plot combined fit and/or individual component fits.
+    # Behavior: if show_individuals and there's only one model component, draw only the individual fit
+    # (which is the same as the combined).
+    # Otherwise, draw the combined fit and, when requested, overlay individual fits.
+    if show_individuals and fitter_object.n_fits == 1:
+        plot_object._plot_individual_fits(axis=axis)
+    else:
+        # draw combined fit
+        plot_xy(
+            x_data=x,
+            y_data=fitter_object._n_fitter(x, *params),
+            x_label=x_label,
+            y_label=y_label,
+            plot_title=plot_title,
+            data_label=tt,
+            plot_config=lpc(c="k"),
+            axis=axis,
+        )
+        # optionally overlay individual fits when there are multiple components
+        if show_individuals:
+            plot_object._plot_individual_fits(axis=axis)
 
-    plotter: Axes
-    params: NDArray
-
-    plot_xy(
-        x_data=x,
-        y_data=fitter_object._n_fitter(x, *params),
-        x_label=x_label,
-        y_label=y_label,
-        plot_title=plot_title,
-        data_label=tt,
-        plot_config=lpc(c="k"),
-        axis=plotter,
-    )
-
-    if show_individuals:
-        plot_object._plot_individual_fits(axis=plotter)
-
-    ax = plot_object._unwrap_plotter(plotter)
+    ax = plot_object._unwrap_plotter(axis)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     ax.set_title(plot_title)

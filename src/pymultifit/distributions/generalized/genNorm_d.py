@@ -4,7 +4,7 @@ from scipy.special import gammaln
 
 from ..backend import BaseDistribution, errorHandling as erH
 from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
-from ... import md_scipy_like, LOG, EXP, SQRT
+from ... import _md_scipy_like, LOG, EXP, SQRT
 from ...typing import ArrayLike, NDArray
 
 
@@ -95,7 +95,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like("1.0.7")
+    @_md_scipy_like("1.0.7")
     def scipy_like(cls, beta: float, loc: float = 0.0, scale: float = 1.0):
         """
         Instantiate SymmetricGeneralizedNormalDistribution with scipy parametrization.
