@@ -78,7 +78,7 @@ __all__ = [
     "cubic",
 ]
 
-from typing import Callable, Union
+from typing import Callable
 
 import numpy as np
 import scipy.special as ssp
@@ -651,7 +651,7 @@ def beta_prime_log_cdf_(
 def chi_square_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
-    degree_of_freedom: Union[int, float] = 1,
+    degree_of_freedom: int | float = 1,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
@@ -717,7 +717,7 @@ def _chi2(y, df_half):
 def chi_square_log_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
-    degree_of_freedom: Union[int, float] = 1,
+    degree_of_freedom: int | float = 1,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
@@ -760,7 +760,7 @@ def chi_square_log_pdf_(
 def chi_square_cdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
-    degree_of_freedom: Union[int, float] = 1,
+    degree_of_freedom: int | float = 1,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
@@ -801,7 +801,7 @@ def chi_square_cdf_(
 def chi_square_log_cdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
-    degree_of_freedom: Union[int, float] = 1,
+    degree_of_freedom: int | float = 1,
     loc: float = 0.0,
     scale: float = 1.0,
     normalize: bool = False,
@@ -2579,7 +2579,7 @@ def scaled_inv_chi_square_pdf_(
 def scaled_inv_chi_square_log_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
-    df: Union[int, float] = 1.0,
+    df: int | float = 1.0,
     scale: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
@@ -2625,7 +2625,7 @@ def scaled_inv_chi_square_log_pdf_(
 def scaled_inv_chi_square_cdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
-    df: Union[int, float] = 1.0,
+    df: int | float = 1.0,
     scale: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
@@ -2670,7 +2670,7 @@ def scaled_inv_chi_square_cdf_(
 def scaled_inv_chi_square_log_cdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
-    df: Union[int, float] = 1.0,
+    df: int | float = 1.0,
     scale: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,

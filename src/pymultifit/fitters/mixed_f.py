@@ -2,7 +2,7 @@
 
 import itertools
 import warnings
-from typing import Callable, List, Optional, Sequence, Union
+from typing import Callable, Sequence
 
 import numpy as np
 from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
@@ -59,7 +59,7 @@ class MixedDataFitter(BaseFitter):
         self,
         x_values: NDArray,
         y_values: NDArray,
-        model_list: Optional[List[str]] = None,
+        model_list: list[str] | None = None,
         fitter_dictionary: dict | None = None,
         model_dictionary: dict | None = None,
         max_iterations: int = 1_000,
@@ -68,7 +68,7 @@ class MixedDataFitter(BaseFitter):
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                        "Use `model_dictionary` instead.",
+                "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -84,7 +84,7 @@ class MixedDataFitter(BaseFitter):
         elif resolved_dict is not None and list(resolved_dict.keys()) != model_list:
             warnings.warn(
                 message="`model_list` and `model_dictionary` keys differ. "
-                        "`model_list` takes precedence; consider omitting it and relying on `model_dictionary` keys.",
+                "`model_list` takes precedence; consider omitting it and relying on `model_dictionary` keys.",
                 category=UserWarning,
                 stacklevel=2,
             )
@@ -141,7 +141,7 @@ class MixedDataFitter(BaseFitter):
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -200,8 +200,9 @@ class MixedDataFitter(BaseFitter):
         model_class = self._instantiate_class(model=model)
         return model_class.fitter(x=x, params=list(params))
 
-    def _compute_individual_ci(self, x_: NDArray, mv_parameters: NDArray,
-                               bounds: list[tuple[int, tuple[float, float, float]]]) -> dict:
+    def _compute_individual_ci(
+        self, x_: NDArray, mv_parameters: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
+    ) -> dict:
         return compute_individual_ci_mixed(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 
     def _get_bounds(self) -> tuple[NDArray, NDArray]:
@@ -227,8 +228,7 @@ class MixedDataFitter(BaseFitter):
         try:
             fitter_instance = self.fitter_dict[model](x_values=np.array([]), y_values=np.array([]))
         except KeyError:
-            raise ValueError(f"Model '{model}' is not recognized. "
-                             f"Ensure it is defined in the fitter dictionary.")
+            raise ValueError(f"Model '{model}' is not recognized. " f"Ensure it is defined in the fitter dictionary.")
 
         return fitter_instance
 
@@ -237,6 +237,15 @@ class MixedDataFitter(BaseFitter):
 
     def _instantiate_bounds(self, model: str) -> tuple[Sequence[float], Sequence[float]]:
         return self._instantiate_class(model).fit_boundaries()
+
+    def _component_param_offsets(self) -> list[int]:
+        """Return the flat parameter offset for each component in model_list."""
+        offsets = []
+        offset = 0
+        for model in self.model_list:
+            offsets.append(offset)
+            offset += self._instantiate_n_par(model=model)
+        return offsets
 
     def _parameter_extractor(self, values: NDArray) -> dict:
         """
@@ -260,12 +269,12 @@ class MixedDataFitter(BaseFitter):
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index: p_index + n_pars]])
+            param_dict[model].extend([values[p_index : p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
 
-    def fit(self, p0: Params_, frozen: Optional[Union[int, List[int]]] = None):
+    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None):
         """
         Fit the data.
 
@@ -273,36 +282,87 @@ class MixedDataFitter(BaseFitter):
         ----------
         p0 :
             Initial guess for the fitted parameters.
+            Must be a list of per-component guesses: ``[(p1, p2, ...), ...]``.
         frozen :
-            Parameter number of list of parameter numbers to freeze the value of.
+            A sparse dict mapping **0-based component indices** to a per-parameter boolean mask.
+            Components not listed in the dict are treated as fully unfrozen.
+            Each inner list must have length equal to the component's ``n_par`` or ``pn_par``
+            (if ``pn_par`` length is given, secondary parameters such as ``loc`` are auto-padded with ``False``,
+            and a :class:`UserWarning` is emitted to flag this).
+
+
+        Examples
+        --------
+        - Freeze ``sigma`` in the first component and ``loc`` in the second::
+
+            frozen = {0: [False, False, True], 1: [False, False, False, True]}
+
+        - With 30 components and only one to freeze::
+
+            frozen = {7: [False, True, False]}
 
         Raises
         ------
+        TypeError :
+            If ``p0`` is not a list of per-component sequences.
         ValueError :
-            If the length of the initial guess is not equal to the expected parameter count.
+            If the total length of ``p0`` does not match the expected parameter count, or if a frozen mask length is
+            incompatible with its component's parameter count.
         """
         p0_chain = p0.tolist() if isinstance(p0, np.ndarray) else p0
         p0_chain: list
 
         if not all(isinstance(g, (tuple, list, np.ndarray)) for g in p0_chain):
-            raise TypeError(
-                "MixedDataFitter requires p0 as a list of per-component guesses: [(p1, p2, ...), ...]"
-            )
+            raise TypeError("MixedDataFitter requires p0 as a list of per-component guesses: [(p1, p2, ...), ...]")
 
         p0_chain = list(itertools.chain.from_iterable(p0_chain))
         if len(p0_chain) != self._expected_param_count():
             raise ValueError(
                 f"The length of the initial guess ({len(p0_chain)}) does not match the expected parameter count "
-                f"({self._expected_param_count()}).")
+                f"({self._expected_param_count()})."
+            )
 
         lb, ub = self._get_bounds()
 
-        if frozen:
-            if isinstance(frozen, int):
-                frozen = [frozen]
-            for par_num in frozen:
-                lb[par_num - 1] = p0_chain[par_num - 1] - epsilon
-                ub[par_num - 1] = p0_chain[par_num - 1] + epsilon
+        if frozen is not None:
+            # Build a flat bool mask over all parameters
+            flat_frozen: list[bool] = [False] * self._expected_param_count()
+            param_offsets = self._component_param_offsets()
+
+            for comp_idx, mask in frozen.items():
+                if comp_idx < 0 or comp_idx >= len(self.model_list):
+                    raise ValueError(
+                        f"frozen key {comp_idx} is out of range for model_list of length {len(self.model_list)}."
+                    )
+                model = self.model_list[comp_idx]
+                comp_instance = self._instantiate_class(model)
+                n_par = comp_instance.n_par
+                pn_par = comp_instance.pn_par
+
+                if len(mask) == pn_par:
+                    warnings.warn(
+                        f"frozen[{comp_idx}] has length {pn_par} (pn_par), which is shorter than n_par={n_par}"
+                        f" for model '{model}'. The {n_par - pn_par} secondary parameter(s) (e.g. loc/scale) are being "
+                        f"auto-padded as False (unfrozen). Pass a mask of length {n_par} to make this explicit.",
+                        UserWarning,
+                        stacklevel=2,
+                    )
+                    mask = list(mask) + [False] * (n_par - pn_par)
+                elif len(mask) != n_par:
+                    raise ValueError(
+                        f"frozen[{comp_idx}] length ({len(mask)}) must equal n_par ({n_par}) or pn_par ({pn_par}) for "
+                        f"model '{model}'."
+                    )
+
+                offset = param_offsets[comp_idx]
+                for j, is_frozen in enumerate(mask):
+                    if is_frozen:
+                        flat_frozen[offset + j] = True
+
+            for i, is_frozen in enumerate(flat_frozen):
+                if is_frozen:
+                    lb[i] = p0_chain[i] - epsilon
+                    ub[i] = p0_chain[i] + epsilon
 
         self.params, self.covariance, *_ = curve_fit(
             f=self.model_function,
@@ -315,7 +375,7 @@ class MixedDataFitter(BaseFitter):
 
         self._plotter = None  # invalidate cached plotter after each fit
 
-    def get_model_parameters(self, model: Optional[str] = None, errors: bool = False):
+    def get_model_parameters(self, model: str | None = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
 
@@ -357,7 +417,6 @@ class MixedDataFitter(BaseFitter):
             if n_pars == 2:
                 output[key] = par_dict
             else:
-                output[key] = np.array_split(np.asarray(par_dict, dtype=float).flatten(),
-                                             indices_or_sections=n_pars)
+                output[key] = np.array_split(np.asarray(par_dict, dtype=float).flatten(), indices_or_sections=n_pars)
 
         return output

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import warnings
 from itertools import chain
 from typing import Any
 
@@ -68,7 +69,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par:]
+            provided_secondary_params = params[self.pn_par :]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -93,7 +94,11 @@ class BaseFitter:
             A list of initial guesses for the parameters of the models. For example, [(1, 1, 0), (3, 3, 2)].
         frozen :
             A list of booleans indicating which parameters are frozen.
-            For example, [False, False, True] for 3 parameters.
+            Length must equal ``n_par`` (all parameters) or ``pn_par`` (primary parameters only — secondary
+            parameters such as ``loc`` are automatically treated as unfrozen).
+            When ``pn_par`` length is given, a :class:`UserWarning` is emitted to flag the auto-padding.
+            For example, for a distribution with ``n_par=4`` and ``pn_par=3``, passing ``[False, False, True]``
+            is equivalent to ``[False, False, True, False]``.
 
         Returns
         -------
@@ -112,12 +117,23 @@ class BaseFitter:
         lb = np.resize(lb, new_shape=self.n_par * self.n_fits)
         ub = np.resize(ub, new_shape=self.n_par * self.n_fits)
 
-        # Validate frozen length
+        # Validate and normalise frozen mask
         if frozen is None:
             frozen: list[bool] = [False] * self.n_par
-
-        if len(frozen) != self.n_par:
-            raise ValueError("The length of 'frozen' must match the number of parameters per model.")
+        elif len(frozen) == self.pn_par:
+            # Auto-pad: secondary params (loc/scale) default to unfrozen
+            warnings.warn(
+                f"'frozen' has length {self.pn_par} (pn_par), which is shorter than n_par={self.n_par}. "
+                f"The {self.n_par - self.pn_par} secondary parameter(s) (e.g. loc/scale) are being auto-padded as "
+                f"False (unfrozen). Pass a mask of length {self.n_par} to make this explicit.",
+                UserWarning,
+                stacklevel=3,
+            )
+            frozen = list(frozen) + [False] * (self.n_par - self.pn_par)
+        elif len(frozen) != self.n_par:
+            raise ValueError(
+                f"'frozen' length ({len(frozen)}) must equal n_par ({self.n_par}) " f"or pn_par ({self.pn_par})."
+            )
 
         # Repeat frozen mask for all models
         frozen: list[bool] = frozen * self.n_fits
@@ -508,10 +524,7 @@ class BaseFitter:
         return results
 
     def _compute_individual_ci(
-        self,
-        x_: ArrayLike,
-        mv_parameters: ArrayLike,
-        bounds: list[tuple[int, tuple[float, float, float]]]
+        self, x_: ArrayLike, mv_parameters: ArrayLike, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
         return compute_individual_ci_base(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 

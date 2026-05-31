@@ -157,7 +157,7 @@ def _prediction_interval(
     n, k = len(x), len(params)
 
     residuals = fitter_object.get_residuals()
-    sigma = np.sqrt(np.sum(residuals ** 2) / max(n - k, 1))
+    sigma = np.sqrt(np.sum(residuals**2) / max(n - k, 1))
     fitted = fitter_object._n_fitter(fitter_object.x_values, *params)
 
     if axis is None:
