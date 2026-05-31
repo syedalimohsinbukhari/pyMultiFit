@@ -190,7 +190,7 @@ class BaseFitter:
             An array containing the composite fitted values for the input ``x``.
         """
         y = np.zeros_like(x, dtype=float)
-        parameters: NDArray = np.reshape(np.array(params), newshape=(self.n_fits, self.n_par))
+        parameters: NDArray = np.reshape(np.array(params), (self.n_fits, self.n_par))
         for par in parameters:
             y += self.fitter(x=x, params=par.tolist())
         return y
