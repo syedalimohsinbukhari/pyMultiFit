@@ -68,7 +68,7 @@ class MixedDataFitter(BaseFitter):
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                "Use `model_dictionary` instead.",
+                        "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -84,7 +84,7 @@ class MixedDataFitter(BaseFitter):
         elif resolved_dict is not None and list(resolved_dict.keys()) != model_list:
             warnings.warn(
                 message="`model_list` and `model_dictionary` keys differ. "
-                "`model_list` takes precedence; consider omitting it and relying on `model_dictionary` keys.",
+                        "`model_list` takes precedence; consider omitting it and relying on `model_dictionary` keys.",
                 category=UserWarning,
                 stacklevel=2,
             )
@@ -141,7 +141,7 @@ class MixedDataFitter(BaseFitter):
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -177,28 +177,6 @@ class MixedDataFitter(BaseFitter):
             An array containing the composite fitted values for the input ``x``.
         """
         return self.model_function(x, *params)
-
-    def _evaluate_individual_component(self, x: NDArray, fit_index: int, params: Params_) -> NDArray:
-        """
-        Override to evaluate a single model component for CI calculation.
-
-        Parameters
-        ----------
-        x :
-            X-values at which to evaluate the model.
-        fit_index :
-            Index of the component model in model_list (0-based).
-        params :
-            Parameters for this specific component.
-
-        Returns
-        -------
-        NDArray :
-            Evaluated y-values for this component.
-        """
-        model = self.model_list[fit_index]
-        model_class = self._instantiate_class(model=model)
-        return model_class.fitter(x=x, params=list(params))
 
     def _compute_individual_ci(
         self, x_: NDArray, mv_parameters: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
@@ -269,7 +247,7 @@ class MixedDataFitter(BaseFitter):
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index : p_index + n_pars]])
+            param_dict[model].extend([values[p_index: p_index + n_pars]])
             p_index += n_pars
 
         return param_dict

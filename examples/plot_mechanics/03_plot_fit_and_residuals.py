@@ -30,10 +30,12 @@ mf = MixedDataFitter(x_m, y_m, model_list=[LINE, GAUSSIAN, LAPLACE, GAUSSIAN])
 mf.fit([(0, 2), (6, -15, 2), (4, 5, 1), (3, 20, 3)])
 
 # -- Example 1 : GaussianFitter, default --------------------------------------
-fig1, (ax_fit1, ax_res1) = gf.plotter.plot_fit_and_residuals()
+ax_fit1, ax_res1 = gf.plotter.plot_fit_and_residuals()
+_f = ax_fit1.get_figure()
+_f.tight_layout()
 
 # -- Example 2 : GaussianFitter, show individuals + custom labels --------------
-fig2, (ax_fit2, ax_res2) = gf.plotter.plot_fit_and_residuals(
+ax_fit2, ax_res2 = gf.plotter.plot_fit_and_residuals(
     show_individuals=True,
     x_label="X data",
     y_label="Amplitude",
@@ -41,12 +43,18 @@ fig2, (ax_fit2, ax_res2) = gf.plotter.plot_fit_and_residuals(
     data_label="Observations",
     fit_label="Composite fit",
 )
-# further customisation of the returned axes
+
+_f2 = ax_fit2.get_figure()
+_f2.tight_layout()
+
+# further customization of the returned axes
 ax_res2.set_ylim(-1.5, 1.5)
 
 # -- Example 3 : MixedDataFitter -----------------------------------------------
-fig3, (ax_fit3, ax_res3) = mf.plotter.plot_fit_and_residuals(
+ax_fit3, ax_res3 = mf.plotter.plot_fit_and_residuals(
     show_individuals=True, x_label="X", y_label="Y", plot_title="Mixed model — Line + Gaussian + Laplace + Gaussian"
 )
+_f3 = ax_fit3.get_figure()
+_f3.tight_layout()
 
 plt.show()

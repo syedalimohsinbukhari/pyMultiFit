@@ -4,28 +4,23 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from matplotlib.figure import Figure
-from plotez import lpc, plot_xy
+from plotez import plot_xy, lpc
 
-from ._plot_backend import _ci, _fit_and_residual, _param_correlation, _plot, _prediction_interval, _qq, _resid
-from .fitters.backend._ci_backend import compute_ci_bounds
+from ._plot_backend import _ci_plotter, _plot, _fit_and_residual, _param_correlation, _prediction_interval, _qq, _resid
+from ..fitters.backend import compute_ci_bounds
 
 
 class FitPlotter:
     """Centralized plotting class for fitter objects.
 
-    Uses composition — accepts any fitter instance that exposes the required
-    attributes — and an internal strategy pattern to differentiate between
-    ``BaseFitter`` subclasses and ``MixedDataFitter``.
-
     Parameters
     ----------
     fitter :
-        A fitted (or pre-fit) fitter instance.  Must expose at minimum the
-        attributes listed in ``_REQUIRED_ATTRS``.
+        A fitted (or pre-fit) fitter instance.
+        Must expose at minimum the attributes listed in ``_REQUIRED_ATTRS``.
 
     Raises
     ------
@@ -162,7 +157,7 @@ class FitPlotter:
         for i, model in enumerate(fitter.model_list):
             class_model = fitter._instantiate_class(model=model)
             n_par = fitter._instantiate_n_par(model=model)
-            pars = fitter.params[param_index : param_index + n_par]
+            pars = fitter.params[param_index: param_index + n_par]
             self._plot_component(
                 x=x,
                 y=class_model.fitter(x=x, params=list(pars)),
@@ -171,24 +166,6 @@ class FitPlotter:
                 axis=axis,
             )
             param_index += n_par
-
-    @staticmethod
-    def _resolve_data_labels(data_label: str, fit_label: str) -> tuple[str, str]:
-        """Resolve raw-data and fit-line legend labels.
-
-        Parameters
-        ----------
-        data_label :
-            User-supplied data label (empty string means "use default").
-        fit_label :
-            User-supplied fit label (empty string means "use default").
-
-        Returns
-        -------
-        tuple[str, str]
-            ``(data_label, fit_label)`` with defaults filled in.
-        """
-        return (data_label or "Data"), (fit_label or "Total fit")
 
     @staticmethod
     def _unwrap_plotter(plotter) -> Axes:
@@ -211,7 +188,7 @@ class FitPlotter:
         axis = plot_xy(x_data=self.fitter.x_values, y_data=self.fitter.y_values, axis=axis, is_scatter=is_scatter)
         axis.get_figure().tight_layout()
 
-    def plot_ci_bounds(
+    def plot_confidence_intervals(
         self,
         ci_levels: float | tuple[float] | list[float],
         results: dict | None = None,
@@ -221,39 +198,46 @@ class FitPlotter:
         seed: int | None = None,
         rng_engine=None,
         x_range=None,
+        get_value: bool = False,
         axis: Axes | None = None,
-    ) -> Axes:
-        """Plot bootstrap confidence interval bounds.
-
-        If *results* is not provided, the CI is computed automatically using
-        the remaining keyword arguments (``n_bootstrap``, ``seed`` / ``rng_engine``, etc.).
+    ) -> tuple[dict, Axes] | Axes:
+        """
+        Plot bootstrap confidence interval bounds.
 
         Parameters
         ----------
         ci_levels :
-            CI percentage level(s) to plot (e.g. 95 or [68, 95, 99]).
+            CI percentage level(s) to plot (e.g., 95 or [68, 95, 99]).
         results :
-            Pre-computed CI dict returned by :meth:`BaseFitter.ci_bounds`.
-            When ``None`` the CI is computed internally.
+            Pre-computed CI dictionary returned by :meth:`BaseFitter.ci_bounds`.
+            When None, the CI is computed internally, defaults to None.
         n_bootstrap :
-            Bootstrap samples.  Used only when *results* is ``None``.
+            Number of bootstrap samples to use when computing the CI.
+            Ignored if the keyword `results` is provided, defaults to 5,000.
         overall_ci :
-            Draw the overall composite CI band.  Defaults to ``True``.
+            Whether to draw the overall composite CI band, defaults to True.
         individual_ci :
-            Draw per-component CI bands.  Defaults to ``False``.
+            Whether to draw per-component CI bands, defaults to False.
         seed :
-            Random seed (mutually exclusive with *rng_engine*).
+            Random seed for reproducibility (mutually exclusive with *rng_engine*).
+            Defaults to None.
         rng_engine :
-            NumPy Generator instance (mutually exclusive with *seed*).
+            Instance of numpy random Generator (mutually exclusive with *seed*).
+            Defaults to None.
         x_range :
-            X-values for CI evaluation.  Defaults to 1 000 evenly-spaced points.
+            X-values at which to evaluate the CI.
+            When None, 1,000 evenly spaced points are used.
+        get_value :
+            Whether to return the computed CI dictionary along with the axis for further inspection, defaults to False.
         axis :
-            Target axes.  A new figure is created when ``None``.
+            The matplotlib axes object on which the plot is to be drawn.
+            If None, an axis object is generated and returned. Defaults to None.
 
         Returns
         -------
-        Axes
-            The axes on which the plot was drawn.
+        tuple of (dict, matplotlib.axes._axes.Axes) or matplotlib.axes._axes.Axes
+            If `get_value` is True, a tuple containing the CI dictionary and the axis is returned; otherwise,
+            only the axis is returned.
         """
         if results is None:
             results = compute_ci_bounds(
@@ -266,7 +250,8 @@ class FitPlotter:
                 rng_engine=rng_engine,
                 x_range=x_range,
             )
-        return _ci(
+
+        axis = _ci_plotter(
             fitter_object=self.fitter,
             results=results,
             ci_levels=ci_levels,
@@ -274,6 +259,11 @@ class FitPlotter:
             individual_ci=individual_ci,
             axis=axis,
         )
+
+        if get_value:
+            return results, axis
+        else:
+            return axis
 
     def plot_fit(
         self,
@@ -291,38 +281,38 @@ class FitPlotter:
         Parameters
         ----------
         show_individuals :
-            When ``True``, each component is plotted as a dashed line.
+            When True, each component is plotted separately.
         x_label :
-            Label for the x-axis.  Defaults to ``"X"``.
+            The x-axis label, defaults to "X".
         y_label :
-            Label for the y-axis.  Defaults to ``"Y"``.
+            The y-axis label, defaults to "Y".
         plot_title :
-            Plot title.  Defaults to an auto-generated string.
+            The title for the PI plot, defaults to "Plot".
         data_label :
-            Legend label for the raw-data series.
+            THe label for the plotted data, defaults to "Data".
         fit_label :
-            Legend label for the total-fit series.
+            The label for the fitted curve, defaults to "Total Fit".
         is_scatter :
-            When ``True``, the raw data is plotted as a scatter plot instead of a line.
+            When True, the raw data is plotted as a scatter plot instead of a line, defaults to False.
         axis :
-            Target axes.  A new figure is created when ``None``.
+            The matplotlib axis object on which the plot is to be drawn.
+            If None, an axis object is generated and returned, defaults to None.
 
         Returns
         -------
         Axes :
-            The axes on which the plot was drawn.
+            The matplotlib axis object on which the plot was drawn.
         """
         return _plot(
             plot_object=self,
-            fitter_object=self.fitter,
             show_individuals=show_individuals,
-            axis=axis,
-            is_scatter=is_scatter,
             x_label=x_label,
             y_label=y_label,
             plot_title=plot_title,
             data_label=data_label,
             fit_label=fit_label,
+            is_scatter=is_scatter,
+            axis=axis,
         )
 
     def plot_fit_and_residuals(
@@ -330,105 +320,132 @@ class FitPlotter:
         show_individuals: bool = False,
         x_label: str = "X",
         y_label: str = "Y",
-        plot_title: str = "",
+        plot_title: str = "Fit and Residuals",
         data_label: str = "Data",
-        residual_label: str = "Residuals",
         fit_label: str = "Total Fit",
-    ) -> tuple[Figure, tuple[Axes, Axes]]:
+        is_scatter: tuple[bool, bool] = (False, False),
+        axes: tuple[Axes, Axes] | None = None,
+    ) -> tuple[Axes, Axes]:
         """Plot the fitted model and residuals in a two-panel figure.
 
         Parameters
         ----------
         show_individuals :
-            When ``True``, individual components are plotted in the top panel.
+            When True, each component is plotted separately.
         x_label :
-            Label for the shared x-axis (shown on the residuals panel).
+            The x-axis label, defaults to "X".
         y_label :
-            Label for the y-axis of the fit panel.
+            The y-axis label, defaults to "Y".
         plot_title :
-            Title for the fit panel.
+            The title for the PI plot, defaults to "Plot".
         data_label :
-            Forwarded to :meth:`plot_fit`.
-        residual_label :
-            Labels for the residual plot.
+            THe label for the plotted data, defaults to "Data".
         fit_label :
-            Forwarded to :meth:`plot_fit`.
+            The label for the fitted curve, defaults to "Total Fit".
+        is_scatter :
+            When True, the raw data is plotted as a scatter plot instead of a line.
+            The tuple is shared with both fit plot and residual plots individually, both defaults to False.
+        axes :
+            The matplotlib axis objects on which the fit and residuals are to be drawn.
+            If None, a 1x2 subplot will be generated with 3:1 height for fit and residuals.
 
         Returns
         -------
-        tuple[plt.Figure, tuple[Axes, Axes]]
-            ``(fig, (ax_fit, ax_residuals))``.
+        tuple[Axis, Axis]
+            The set of axes on which the figure and residuals were drawn.
         """
+        is_scatter_plot, is_scatter_residual = is_scatter
         return _fit_and_residual(
             plot_object=self,
-            fitter_object=self.fitter,
             show_individuals=show_individuals,
             x_label=x_label,
             y_label=y_label,
-            plot_title=plot_title,
             data_label=data_label,
             fit_label=fit_label,
-            residual_label=residual_label,
+            plot_title=plot_title,
+            is_scatter_plot=is_scatter_plot,
+            is_scatter_residual=is_scatter_residual,
+            axes=axes,
         )
 
     def plot_parameter_correlation(
-        self, param_labels: list[str] | None = None, plot_title="Parameter Correlation Matrix", axis: Axes | None = None
+        self,
+        param_labels: list[str] | None = None,
+        plot_title: str = "Parameter Correlation Matrix",
+        axis: Axes | None = None,
     ) -> Axes:
         """Heatmap of the parameter correlation matrix from the covariance matrix.
-
-        Each cell shows the Pearson correlation between a pair of fitted
-        parameters.  Values near ±1 indicate strong linear dependence, which
-        may signal over-parameterisation or identifiability issues.
 
         Parameters
         ----------
         param_labels :
-            Custom axis labels.  When ``None``, model-aware names are generated
-            automatically (e.g. ``"Gaussian_1_p1"`` for ``MixedDataFitter``,
-            or ``"p1", "p2", ...`` for single-model fitters).
+            Custom axis labels.
+            When ``None``, model-aware names are generated automatically.
+        plot_title :
+            The title of the correlation plot.
         axis :
-            Target axes.  A square figure is created when ``None``.
+            The matplotlib axes object on which the plot is to be drawn.
+            If None, an axis object is generated and returned. Defaults to None.
 
         Returns
         -------
-        Axes
+        Axes :
             The axes on which the plot was drawn.
         """
         return _param_correlation(
             plot_object=self, fitter_object=self.fitter, param_labels=param_labels, plot_title=plot_title, axis=axis
         )
 
-    def plot_prediction_intervals(self, pi_level: int | list[int] = 95, axis: Axes | None = None, **kwargs) -> Axes:
-        """Plot prediction intervals for new individual observations.
+    def plot_prediction_intervals(
+        self,
+        pi_level: int | list[int] = 95,
+        x_label: str = "X",
+        y_label: str = "Y",
+        plot_title: str = "PI",
+        axis: Axes | None = None,
+    ) -> Axes:
+        r"""Plot prediction intervals for new individual observations.
 
-        Prediction intervals are **wider** than confidence intervals: they
-        estimate the range where a new single observation will fall, not the
-        uncertainty in the mean response.
-
+        Notes
+        -----
         The interval is computed analytically:
 
         .. math::
 
-            \\hat{y} \\pm t_{\\alpha/2,\\,n-k} \\cdot \\hat{\\sigma}
+            \hat{y} \pm t_{(\alpha/2,\,n-k)} \cdot \hat{\sigma}
 
-        where :math:`\\hat{\\sigma} = \\sqrt{RSS / (n - k)}` is the residual
-        standard deviation, :math:`n` is the number of data points, and
-        :math:`k` is the total number of fitted parameters.
+        where :math:`\hat{\sigma} = \sqrt{RSS / (n - k)}` is the residual standard deviation, :math:`n` is the
+        number of data points, and :math:`k` is the total number of fitted parameters.
 
         Parameters
         ----------
         pi_level :
-            Prediction interval level(s) as percentages.  Pass a single integer
-            or a list of integers for multiple bands.  Defaults to 95.
+            Prediction interval level(s) as percentages.
+            Pass a single integer or a list of integers for multiple bands, defaults to 95.
+        x_label :
+            The x-axis label, defaults to X.
+        y_label :
+            The y-axis label, defaults to Y.
+        plot_title :
+            The title for the PI plot, defaults to PI.
         axis :
-            Target axes.  A new figure is created when ``None``.
+            The matplotlib axis object on which the plot is to be drawn.
+            If None, an axis object is generated and returned, defaults to None.
 
         Returns
         -------
-        Axes
-            The axes on which the plot was drawn.
+        Axes :
+            The matplotlib axis object on which the plot was drawn.
         """
-        return _prediction_interval(plot_object=self, fitter_object=self.fitter, pi_level=pi_level, axis=axis, **kwargs)
+        return _prediction_interval(
+            plot_object=self,
+            fitter_object=self.fitter,
+            pi_level=pi_level,
+            x_label=x_label,
+            y_label=y_label,
+            plot_title=plot_title,
+            axis=axis,
+        )
 
     def plot_qq_plot(self, plot_title: str = "Q-Q plot", axis: Axes | None = None) -> Axes:
         """
@@ -437,8 +454,7 @@ class FitPlotter:
         Parameters
         ----------
         plot_title :
-            The title of the Q-Q plot.
-            Defaults to ``Q-Q plot``.
+            The title of the Q-Q plot, defaults to "Q-Q plot".
         axis :
             Matplotlib Axes object to use for the Q-Q plot.
             If None, a new Axes object is created.
@@ -448,30 +464,49 @@ class FitPlotter:
         Axes
             The Matplotlib Axes object containing the Q-Q plot.
         """
-        return _qq(plot_object=self, fitter_object=self.fitter, plot_title=plot_title, axis=axis)
+        return _qq(plot_object=self, plot_title=plot_title, axis=axis)
 
     def plot_residuals(
-        self, x_label: str = "X", y_label: str = "Y", plot_title: str = "Residuals", axis: Axes | None = None
+        self,
+        x_label: str = "X",
+        y_label: str = "Y",
+        data_label: str = "Residuals",
+        plot_title: str = "",
+        is_scatter: bool = False,
+        axis: Axes | None = None,
     ) -> Axes:
         """Plot residuals (data − fitted model).
 
         Parameters
         ----------
         x_label :
-            Label for the x-axis.  Defaults to ``"X"``.
+            Label for the x-axis, defaults to "X".
         y_label :
-            Label for the y-axis.  Defaults to ``"Residuals"``.
+            Label for the y-axis, defaults to "Y".
         plot_title :
-            Plot title.  Defaults to an auto-generated string.
+            Residual plot title, defaults to "Residuals".
+        data_label :
+            Data label for the residuals, defaults to "".
+        is_scatter :
+            When True, the raw data is plotted as a scatter plot instead of a line, defaults to False.
         axis :
-            Target axes.  A new figure is created when ``None``.
+            The matplotlib axis object on which the plot is to be drawn.
+            If None, an axis object is generated and returned, defaults to None.
 
         Returns
         -------
         Axes :
-            The axes on which the plot was drawn.
+            The matplotlib axis object on which the plot was drawn.
         """
-        return _resid(plot_object=self, fitter_object=self.fitter, axis=axis)
+        return _resid(
+            plot_object=self,
+            x_label=x_label,
+            y_label=y_label,
+            data_label=data_label,
+            plot_title=plot_title,
+            is_scatter=is_scatter,
+            axis=axis,
+        )
 
     @staticmethod
     def save_plot(filename: str, figure: plt.Figure | None = None, dpi: int = 150, **kwargs) -> str:
@@ -518,5 +553,3 @@ class FitPlotter:
         fig = figure or plt.gcf()
         fig.savefig(path, format=ext, dpi=dpi, bbox_inches="tight", **kwargs)
         return str(path)
-
-    # ------------------------------------------------------------------ individual fits (strategy)

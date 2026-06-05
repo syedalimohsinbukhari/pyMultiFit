@@ -14,7 +14,7 @@ from scipy.optimize import Bounds, curve_fit
 from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
 from ..utilities_f import parameter_logic, sanity_check
 from ... import epsilon
-from ..._plot import FitPlotter
+from ...plot import FitPlotter
 from ...typing import ArrayLike, NDArray, Params_
 
 
@@ -69,7 +69,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par :]
+            provided_secondary_params = params[self.pn_par:]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -314,29 +314,6 @@ class BaseFitter:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def _evaluate_individual_component(self, x: ArrayLike, fit_index: int, params: Params_) -> NDArray:
-        """
-        Evaluate a single model component for CI calculation.
-
-        This method is used by ci_bounds() for individual_ci calculation.
-        Override in subclasses if special handling is needed (e.g., MixedDataFitter).
-
-        Parameters
-        ----------
-        x :
-            X-values at which to evaluate the model.
-        fit_index :
-            Index of the component model (0-based).
-        params :
-            Parameters for this specific component.
-
-        Returns
-        -------
-        NDArray :
-            Evaluated y-values for this component.
-        """
-        return self.fitter(x=x, params=params)
-
     def get_fitted_curve(self) -> NDArray:
         """
         Get the fitted values of the model.
@@ -463,7 +440,7 @@ class BaseFitter:
         else:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
-    def ci_bounds(
+    def confidence_intervals(
         self,
         ci_levels: float | tuple[float] | list[float],
         n_bootstrap: int = 5_000,
@@ -474,7 +451,7 @@ class BaseFitter:
         x_range: ArrayLike | None = None,
         plot: bool = False,
         axis: Axes | None = None,
-    ) -> dict:
+    ) -> dict | tuple[dict, Axes]:
         """Compute bootstrap confidence intervals for the fitted model.
 
         Parameters
@@ -517,9 +494,10 @@ class BaseFitter:
         )
 
         if plot:
-            self.plotter.plot_ci_bounds(
-                ci_levels=ci_levels, results=results, overall_ci=overall_ci, individual_ci=individual_ci, axis=axis
-            )
+            axis = self.plotter.plot_confidence_intervals(ci_levels=ci_levels, results=results, overall_ci=overall_ci,
+                                                          individual_ci=individual_ci, axis=axis)
+
+            return results, axis
 
         return results
 
