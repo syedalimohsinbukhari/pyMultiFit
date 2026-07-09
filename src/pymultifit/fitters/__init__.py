@@ -1,10 +1,5 @@
 """Created on Aug 03 20:34:39 2024"""
 
-import numpy as np
-
-ArrayLike = np.typing.ArrayLike
-NDArray = np.typing.NDArray[np.floating]
-
 from .chiSquare_f import ChiSquareFitter
 from .exponential_f import ExponentialFitter
 from .foldedNormal_f import FoldedNormalFitter
