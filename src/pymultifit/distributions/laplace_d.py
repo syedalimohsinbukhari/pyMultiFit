@@ -4,18 +4,18 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
-from .. import SQRT, _md_scipy_like, NAN_DICT
+from .. import NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 
 
 class LaplaceDistribution(BaseDistribution):
     r"""
-    Class for Laplace distribution.
+    Class for :class:`~.LaplaceDistribution`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
     mean :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
     diversity :
@@ -23,11 +23,6 @@ class LaplaceDistribution(BaseDistribution):
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -79,9 +74,6 @@ class LaplaceDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, mean: float = 0, diversity: float = 1, normalize: bool = False):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mean
         self.b = diversity
@@ -91,8 +83,8 @@ class LaplaceDistribution(BaseDistribution):
     @classmethod
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "LaplaceDistribution":
-        """
-        Instantiate LaplaceDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.LaplaceDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -103,15 +95,15 @@ class LaplaceDistribution(BaseDistribution):
 
         Returns
         -------
-        LaplaceDistribution
-            An instance of normalized LaplaceDistribution.
+        :class:`~.LaplaceDistribution`
+            An instance of normalized :class:`~.LaplaceDistribution`.
         """
         return cls(mean=loc, diversity=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "LaplaceDistribution":
-        """
-        Instantiate LaplaceDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.LaplaceDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -122,8 +114,8 @@ class LaplaceDistribution(BaseDistribution):
 
         Returns
         -------
-        LaplaceDistribution
-            An instance of normalized LaplaceDistribution.
+        :class:`~.LaplaceDistribution`
+            An instance of normalized :class:`~.LaplaceDistribution`.
         """
         return cls(mean=loc, diversity=scale, normalize=True)
 

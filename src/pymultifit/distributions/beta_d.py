@@ -14,7 +14,7 @@ from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
 
 class BetaDistribution(BaseDistribution):
     r"""
-    Class for Beta distribution.
+    Class for :class:`~.BetaDistribution`.
 
     Parameters
     ----------
@@ -31,11 +31,6 @@ class BetaDistribution(BaseDistribution):
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -95,9 +90,6 @@ class BetaDistribution(BaseDistribution):
         scale: float = 1.0,
         normalize: bool = False,
     ):
-        if amplitude < 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
@@ -110,7 +102,7 @@ class BetaDistribution(BaseDistribution):
     @_md_scipy_like("v1.0.7")
     def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
-        Instantiate `BetaDistribution` with scipy parameterization.
+        Instantiate :class:`~.BetaDistribution` with scipy parameterization.
 
         Parameters
         ----------
@@ -125,15 +117,15 @@ class BetaDistribution(BaseDistribution):
 
         Returns
         -------
-        BetaDistribution
-            An instance of normalized BetaDistribution.
+        :class:`~.BetaDistribution`
+            An instance of normalized :class:`~.BetaDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
-        Instantiate `BetaDistribution` with scipy parameterization.
+        Instantiate :class:`~.BetaDistribution` with scipy parameterization.
 
         Parameters
         ----------
@@ -148,8 +140,8 @@ class BetaDistribution(BaseDistribution):
 
         Returns
         -------
-        BetaDistribution
-            An instance of normalized BetaDistribution.
+        :class:`~.BetaDistribution`
+            An instance of normalized :class:`~.BetaDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 

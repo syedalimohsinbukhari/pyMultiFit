@@ -4,29 +4,25 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import gaussian_cdf_, gaussian_log_cdf_, gaussian_log_pdf_, gaussian_pdf_
-from .. import _md_scipy_like, NAN_DICT
+from .. import NAN_DICT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 
 
 class GaussianDistribution(BaseDistribution):
     r"""
-    Class for Gaussian distribution.
+    Class for :class:`~.GaussianDistribution`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
     mu :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
     std :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
     normalize :
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Examples
     --------
@@ -78,9 +74,6 @@ class GaussianDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, mu: float = 0.0, std: float = 1.0, normalize: bool = False):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu
         self.std_ = std
@@ -90,7 +83,7 @@ class GaussianDistribution(BaseDistribution):
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "GaussianDistribution":
         r"""
-        Instantiate GaussianDistribution with scipy parametrization.
+        Instantiate :class:`~.GaussianDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -101,15 +94,15 @@ class GaussianDistribution(BaseDistribution):
 
         Returns
         -------
-        GaussianDistribution
-            An instance of normalized GaussianDistribution.
+        :class:`~.GaussianDistribution`
+            An instance of normalized :class:`~.GaussianDistribution`.
         """
         return cls(mu=loc, std=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "GaussianDistribution":
-        """
-        Instantiate GaussianDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.GaussianDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -120,8 +113,8 @@ class GaussianDistribution(BaseDistribution):
 
         Returns
         -------
-        GaussianDistribution
-            An instance of normalized GaussianDistribution.
+        :class:`~.GaussianDistribution`
+            An instance of normalized :class:`~.GaussianDistribution`.
         """
         return cls(mu=loc, std=scale, normalize=True)
 

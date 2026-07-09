@@ -4,30 +4,27 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
-from .. import EXP, SQRT, _md_scipy_like, suppress_numpy_warnings, NAN_DICT
+from .. import EXP, NAN_DICT, SQRT, _md_scipy_like, suppress_numpy_warnings
 from ..typing import ArrayLike, NDArray
 
 
 class LogNormalDistribution(BaseDistribution):
     r"""
-    Class for LogNormal distribution.
+    Class for :class:`~.LogNormalDistribution`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
     mu :
-        The mean parameter, :math:`\mu`. Defaults to 0.0.
+        The mean parameter, :math:`\mu`. Defaults to 1.0.
     std :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    loc :
+        The location parameter, for shifting. Defaults to 0.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -81,9 +78,6 @@ class LogNormalDistribution(BaseDistribution):
     def __init__(
         self, amplitude: float = 1.0, mu: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
     ):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu
         self.std = std
@@ -94,8 +88,8 @@ class LogNormalDistribution(BaseDistribution):
     @classmethod
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
-        """
-        Instantiate LogNormalDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.LogNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -108,15 +102,15 @@ class LogNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        LogNormalDistribution
-            An instance of normalized LogNormalDistribution.
+        :class:`~.LogNormalDistribution`
+            An instance of normalized :class:`~.LogNormalDistribution`.
         """
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
-        """
-        Instantiate LogNormalDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.LogNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -129,8 +123,8 @@ class LogNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        LogNormalDistribution
-            An instance of normalized LogNormalDistribution.
+        :class:`~.LogNormalDistribution`
+            An instance of normalized :class:`~.LogNormalDistribution`.
         """
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 

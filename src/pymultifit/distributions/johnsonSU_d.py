@@ -21,9 +21,6 @@ class JohnsonSUDistribution(BaseDistribution):
         lambda_: float = 1.0,
         normalize: bool = False,
     ):
-        if amplitude <= 0 and not normalize:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.gamma = gamma
         self.delta = delta

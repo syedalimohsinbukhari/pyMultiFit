@@ -4,30 +4,25 @@ from __future__ import annotations
 
 from .backend import BaseDistribution, errorHandling as erH
 from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
-from .. import SQRT, _md_scipy_like, NAN_DICT
+from .. import NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 
 
 class UniformDistribution(BaseDistribution):
     r"""
-    Class for Uniform Distribution.
+    Class for :class:`~.UniformDistribution`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
     low :
-        Lower bound of distribution.
+        Lower bound of distribution. Defaults to 0.0.
     high :
-        Upper bound of distribution.
+        Upper bound of distribution. Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -79,9 +74,6 @@ class UniformDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1 if normalize else amplitude
         self.low = low
         self.high = high
@@ -90,9 +82,9 @@ class UniformDistribution(BaseDistribution):
 
     @classmethod
     @_md_scipy_like("1.0.7")
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
-        """
-        Instantiate UniformDistribution with scipy parametrization.
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "UniformDistribution":
+        r"""
+        Instantiate :class:`~.UniformDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -103,15 +95,15 @@ class UniformDistribution(BaseDistribution):
 
         Returns
         -------
-        UniformDistribution
-            An instance of normalized UniformDistribution.
+        :class:`~.UniformDistribution`
+            An instance of normalized :class:`~.UniformDistribution`.
         """
         return cls(low=loc, high=scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0):
-        """
-        Instantiate UniformDistribution with scipy parametrization.
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "UniformDistribution":
+        r"""
+        Instantiate :class:`~.UniformDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -122,8 +114,8 @@ class UniformDistribution(BaseDistribution):
 
         Returns
         -------
-        UniformDistribution
-            An instance of normalized UniformDistribution.
+        :class:`~.UniformDistribution`
+            An instance of normalized :class:`~.UniformDistribution`.
         """
         return cls(low=loc, high=scale, normalize=True)
 

@@ -12,12 +12,12 @@ from ..typing import ArrayLike, NDArray
 
 class FoldedNormalDistribution(BaseDistribution):
     r"""
-    Class for FoldedNormal distribution.
+    Class for :class:`~.FoldedNormalDistribution`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
     mu :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
     sigma :
@@ -27,11 +27,6 @@ class FoldedNormalDistribution(BaseDistribution):
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -85,9 +80,6 @@ class FoldedNormalDistribution(BaseDistribution):
     def __init__(
         self, amplitude: float = 1.0, mu: float = 0.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
     ):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu
         self.sigma = sigma
@@ -99,7 +91,7 @@ class FoldedNormalDistribution(BaseDistribution):
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, c: float, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
         r"""
-        Instantiate FoldedNormalDistribution with scipy parametrization.
+        Instantiate :class:`~.FoldedNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -112,15 +104,15 @@ class FoldedNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        FoldedNormalDistribution
-            An instance of normalized FoldedNormalDistribution.
+        :class:`~.FoldedNormalDistribution`
+            An instance of normalized :class:`~.FoldedNormalDistribution`.
         """
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, c: float, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
         r"""
-        Instantiate FoldedNormalDistribution with scipy parametrization.
+        Instantiate :class:`~.FoldedNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -133,8 +125,8 @@ class FoldedNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        FoldedNormalDistribution
-            An instance of normalized FoldedNormalDistribution.
+        :class:`~.FoldedNormalDistribution`
+            An instance of normalized :class:`~.FoldedNormalDistribution`.
         """
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 

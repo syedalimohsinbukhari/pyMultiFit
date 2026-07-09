@@ -160,6 +160,8 @@ def arc_sine_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     c1 = (y > 0) & (y < 1)
     c2 = y == 0
@@ -199,6 +201,8 @@ def arc_sine_log_pdf_(
     y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     c1 = (y > 0) & (y < 1)
@@ -240,6 +244,8 @@ def arc_sine_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
@@ -270,6 +276,8 @@ def arc_sine_log_cdf_(
     y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     c1 = (y > 0) & (y < 1)
@@ -331,6 +339,8 @@ def beta_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     conditions, main = _beta_expr(y=y, a=alpha, b=beta_, un_log=True)
 
@@ -372,6 +382,8 @@ def beta_log_pdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     conditions, main = _beta_expr(y=y, a=alpha, b=beta_)
@@ -425,6 +437,8 @@ def beta_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=ssp.betainc(alpha, beta_, y))
 
@@ -459,6 +473,8 @@ def beta_log_cdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(ssp.betainc(alpha, beta_, y)))
@@ -517,6 +533,8 @@ def beta_prime_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     log_expr = ssp.xlogy(alpha - 1.0, y) - ssp.xlog1py(alpha + beta_, y) - ssp.betaln(alpha, beta_)
     pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[EXP(log_expr), NAN], default=0.0)
@@ -557,6 +575,8 @@ def beta_prime_log_pdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     expr = ssp.xlogy(alpha - 1.0, y) - ssp.xlog1py(alpha + beta_, y) - ssp.betaln(alpha, beta_)
@@ -607,6 +627,8 @@ def beta_prime_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     z = y / (1 + y)
     return np.where(y > 0, ssp.betainc(alpha, beta_, z), 0)
@@ -641,6 +663,8 @@ def beta_prime_log_cdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     z = y / (1 + y)
@@ -696,6 +720,8 @@ def chi_square_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     df_half = degree_of_freedom / 2.0
 
@@ -742,6 +768,8 @@ def chi_square_log_pdf_(
     y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     df_half = degree_of_freedom / 2.0
@@ -792,6 +820,8 @@ def chi_square_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return np.where(y > 0, ssp.gammainc(degree_of_freedom / 2, y / 2), 0)
 
@@ -825,6 +855,8 @@ def chi_square_log_cdf_(
     y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return np.where(y > 0, LOG(ssp.gammainc(degree_of_freedom / 2, y / 2)), -INF)
@@ -912,6 +944,9 @@ def exponential_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
+
 
     pdf_ = np.where(y >= 0, EXP(-y), 0)
     pdf_ /= rate
@@ -959,6 +994,8 @@ def exponential_log_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     log_pdf_ = np.where(y >= 0, -y, -INF)
     log_pdf_ -= LOG(rate)
@@ -1001,6 +1038,8 @@ def exponential_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return np.where(y >= 0, -ssp.expm1(-y), 0)
 
@@ -1029,6 +1068,8 @@ def exponential_log_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=rate)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return np.where(y >= 0, LOG(-ssp.expm1(-y)), -INF)
@@ -1084,6 +1125,8 @@ def folded_normal_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     pdf_ = np.where(
         y >= 0, gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True), 0
@@ -1125,6 +1168,8 @@ def folded_normal_log_pdf_(
     y, rej_ = reject_x(x, shp1=mean, loc=loc, scale=sigma)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     log_pdf_ = np.where(
@@ -1177,6 +1222,8 @@ def folded_normal_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     q = (y + mean) / SQRT_TWO
     r = (y - mean) / SQRT_TWO
@@ -1214,6 +1261,8 @@ def folded_normal_log_cdf_(
     y, rej_ = reject_x(x, shp1=mean, loc=loc, scale=sigma)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     q = (y + mean) / SQRT_TWO
@@ -1293,6 +1342,8 @@ def gamma_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     pdf_ = _gamma(x=y, a=alpha, un_log=True)
     pdf_ /= theta
@@ -1317,6 +1368,8 @@ def gamma_log_pdf_(
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     log_pdf_ = _gamma(x=y, a=alpha)
@@ -1357,6 +1410,8 @@ def gamma_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return np.where(y > 0, ssp.gammainc(alpha, y), 0)
 
@@ -1390,6 +1445,8 @@ def gamma_log_cdf_(
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return LOG(np.where(y > 0, ssp.gammainc(alpha, y), 0))
@@ -1433,6 +1490,8 @@ def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     pdf_ = EXP(-0.5 * y**2) / SQRT_TWO_PI
     pdf_ /= std
@@ -1463,6 +1522,8 @@ def gaussian_log_pdf_(
     y, rej_ = reject_x(x, loc=mean, scale=std)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     log_pdf_ = -(y**2) / 2.0 - LOG_SQRT_TWO_PI
@@ -1503,6 +1564,9 @@ def gaussian_cdf_(
 
     The final CDF is expressed as :math:`F(x)`.
     """
+
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
     if std <= 0:
         return np.full(x.shape, NAN)
     return ssp.ndtr((x - mean) / std)
@@ -1529,6 +1593,8 @@ def gaussian_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(x)`.
     """
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
     if std <= 0:
         return np.full(x.shape, NAN)
     return ssp.log_ndtr((x - mean) / std)
@@ -1727,6 +1793,8 @@ def half_normal_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * EXP(-0.5 * y**2), 0)
     pdf_ /= sigma
@@ -1760,6 +1828,8 @@ def half_normal_log_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y**2, -INF)
@@ -1802,6 +1872,8 @@ def half_normal_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return np.where(y >= 0, ssp.erf(y / SQRT_TWO), 0)
 
@@ -1829,6 +1901,8 @@ def half_normal_log_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return np.where(y >= 0, LOG(ssp.erf(y / SQRT_TWO)), -INF)
@@ -1884,6 +1958,8 @@ def johnsonSU_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     f1 = delta / SQRT_TWO_PI
     f2 = np.sqrt(1 + y**2)
@@ -1925,6 +2001,8 @@ def johnsonSU_log_pdf_(
     y, rej_ = reject_x(x, delta, loc=xi, scale=lambda_)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
@@ -1973,6 +2051,8 @@ def johnsonSU_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return ssp.ndtr(gamma + delta * np.arcsinh(y))
 
@@ -2002,6 +2082,8 @@ def johnsonSU_log_cdf_(
     y, rej_ = reject_x(x, delta, loc=xi, scale=lambda_)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return ssp.log_ndtr(gamma + delta * np.arcsinh(y))
@@ -2049,6 +2131,8 @@ def laplace_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     pdf_ = (1 / 2) * EXP(-np.abs(y))
     pdf_ /= diversity
@@ -2082,6 +2166,8 @@ def laplace_log_pdf_(
     y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     log_pdf_ = LOG(0.5 * EXP(-np.abs(y)))
@@ -2129,6 +2215,8 @@ def laplace_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return np.where(y > 0, 1.0 - 0.5 * EXP(-y), 0.5 * EXP(y))
 
@@ -2154,6 +2242,8 @@ def laplace_log_cdf_(
     y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return np.where(y > 0, np.log1p(-0.5 * EXP(-y)), -LOG_TWO + y)
@@ -2234,6 +2324,8 @@ def log_normal_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     q = (LOG(y) - LOG(mean)) / std
 
@@ -2270,6 +2362,8 @@ def log_normal_log_pdf_(
     y, rej_ = reject_x(x, mean, std, loc=loc)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     q = (LOG(y) - LOG(mean)) / std
@@ -2320,6 +2414,8 @@ def log_normal_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return np.where(y > 0, ssp.ndtr((LOG(y) - LOG(mean)) / std), 0)
 
@@ -2350,6 +2446,8 @@ def log_normal_log_cdf_(
     y, rej_ = reject_x(x, mean, std, loc=loc)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return np.where(y > 0, ssp.log_ndtr((LOG(y) - LOG(mean)) / std), -INF)
@@ -2399,6 +2497,8 @@ def uniform_pdf_(
 
     if high <= 0:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     pdf_ = np.where((x >= low) & (x <= high_), 1 / high, 0)
 
@@ -2433,6 +2533,8 @@ def uniform_log_pdf_(
     high_ = high + low
 
     if high <= 0:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     log_pdf_ = np.where((x >= low) & (x <= high_), -LOG(high), -INF)
@@ -2477,6 +2579,8 @@ def uniform_cdf_(
 
     if high <= 0:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     return np.select(condlist=[y < 0, y > 1], choicelist=[0, 1], default=y)
 
@@ -2509,6 +2613,8 @@ def uniform_log_cdf_(
     high_ = high + low
 
     if high <= 0:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return np.select(condlist=[y < 0, y > 1], choicelist=[-INF, 0], default=LOG(y))
@@ -2559,6 +2665,8 @@ def scaled_inv_chi_square_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     tau2 = scale / df
     df_half = df / 2
@@ -2604,6 +2712,8 @@ def scaled_inv_chi_square_log_pdf_(
     y, rej_ = reject_x(x, df, scale, loc=loc)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     tau2 = scale / df
@@ -2658,6 +2768,8 @@ def scaled_inv_chi_square_cdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     tau2 = scale / df
     df_half = df / 2
@@ -2695,6 +2807,8 @@ def scaled_inv_chi_square_log_cdf_(
     y, rej_ = reject_x(x, df, scale, loc=loc)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     tau2 = scale / df
@@ -2755,6 +2869,8 @@ def skew_normal_pdf_(
 
     if rej_:
         return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
 
     pdf_ = 2 * gaussian_pdf_(x=y, normalize=True) * gaussian_cdf_(x=shape * y, normalize=True)
     pdf_ /= scale
@@ -2795,6 +2911,8 @@ def skew_normal_log_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     log_pdf_ = LOG_TWO + gaussian_log_pdf_(x=y, normalize=True) + gaussian_log_cdf_(x=shape * y, normalize=True)
@@ -2843,6 +2961,8 @@ def skew_normal_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     return gaussian_cdf_(x=y, normalize=True) - 2 * ssp.owens_t(y, shape)
@@ -2897,6 +3017,8 @@ def sym_gen_normal_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     _, _, beta = loc, scale, shape
@@ -2988,6 +3110,8 @@ def sym_gen_normal_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
         return np.full(x.shape, NAN)
 
     _, _, beta = loc, scale, shape

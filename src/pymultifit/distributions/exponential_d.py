@@ -10,20 +10,19 @@ from ..typing import ArrayLike, NDArray
 
 class ExponentialDistribution(BaseDistribution):
     r"""
-    Class for Exponential distribution.
+    Class for :class:`~.ExponentialDistribution`.
 
     .. note::
-        The :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` is a special case of
+        The :class:`~.ExponentialDistribution` is a special case of
         the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
 
         * :math:`\alpha_\text{gammaSR} = 1`,
         * :math:`\lambda_\text{gammaSR} = \lambda_\text{expon}`.
 
-
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF, defaults to 1.0. Ignored if ``normalize`` is ``True``.
     scale :
         The scale parameter, :math:`\lambda`. Defaults to 1.0.
     loc :
@@ -31,11 +30,6 @@ class ExponentialDistribution(BaseDistribution):
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -47,7 +41,7 @@ class ExponentialDistribution(BaseDistribution):
        :lineno-start: 3
        :lines: 3-7
 
-    Generating a standard Exponential(:math:`\lambda =1.5`) distribution with ``pyMultiFit`` and ``scipy``:
+    Generating a standard Exponential(:math:`\lambda = 1.5`) distribution with ``pyMultiFit`` and ``scipy``:
 
     .. literalinclude:: ../../../examples/basic/expon.py
        :language: python
@@ -67,7 +61,7 @@ class ExponentialDistribution(BaseDistribution):
        :alt: Expon(1.5)
        :align: center
 
-    Generating a translated Exponential(:math:`\lambda=1.5`) distribution with :math:`\text{loc} = 3`:
+    Generating a translated Exponential(:math:`\lambda = 1.5`) distribution with :math:`\text{loc} = 3`:
 
     .. literalinclude:: ../../../examples/basic/expon.py
        :language: python
@@ -87,9 +81,6 @@ class ExponentialDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1 if normalize else amplitude
         self.scale = scale
         self.loc = loc
@@ -100,7 +91,7 @@ class ExponentialDistribution(BaseDistribution):
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "ExponentialDistribution":
         r"""
-        Instantiate ExponentialDistribution with scipy parameterization.
+        Instantiate :class:`~.ExponentialDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -111,15 +102,15 @@ class ExponentialDistribution(BaseDistribution):
 
         Returns
         -------
-        ExponentialDistribution
-            An instance of normalized ExponentialDistribution.
+        :class:`~.ExponentialDistribution`
+            An instance of normalized :class:`~.ExponentialDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "ExponentialDistribution":
         r"""
-        Instantiate ExponentialDistribution with scipy parameterization.
+        Instantiate :class:`~.ExponentialDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -130,8 +121,8 @@ class ExponentialDistribution(BaseDistribution):
 
         Returns
         -------
-        ExponentialDistribution
-            An instance of normalized ExponentialDistribution.
+        :class:`~.ExponentialDistribution`
+            An instance of normalized :class:`~.ExponentialDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
