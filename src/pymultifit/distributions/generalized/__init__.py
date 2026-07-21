@@ -2,3 +2,8 @@
 
 from .genNorm_d import SymmetricGeneralizedNormalDistribution
 from .scaledInvChiSquare_d import ScaledInverseChiSquareDistribution
+
+__all__ = [
+    "SymmetricGeneralizedNormalDistribution",
+    "ScaledInverseChiSquareDistribution",
+]
