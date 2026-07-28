@@ -8,7 +8,6 @@ from ..backend import BaseDistribution, errorHandling as erH
 from ...typing import ArrayLike, NDArray
 
 
-
 class StudentsTDistribution(BaseDistribution):
     r"""
     Class for :class:`~.StudentsTDistribution`.
