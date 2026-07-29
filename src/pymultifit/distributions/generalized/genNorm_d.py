@@ -130,16 +130,57 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         return cls(shape=beta, loc=loc, scale=scale, normalize=True)
 
     def pdf(self, x: ArrayLike) -> NDArray:
+        """
+        Probability density function evaluated at x.
+
+        Parameters
+        ----------
+        x :
+            Quantiles where the PDF is evaluated.
+
+        Returns
+        -------
+        NDArray
+            Probability density function values evaluated at x.
+        """
         return sym_gen_normal_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
     def cdf(self, x: ArrayLike) -> NDArray:
+        """
+        Cumulative distribution function evaluated at x.
+
+        Parameters
+        ----------
+        x :
+            Quantiles where the CDF is evaluated.
+
+        Returns
+        -------
+        NDArray
+            Cumulative distribution function values evaluated at x.
+        """
         return sym_gen_normal_cdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
     def stats(self) -> dict[str, float]:
+        r"""
+        Compute descriptive summary statistics for the distribution.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the calculated statistics.
+            Key mappings:
+
+            - "mean": The expected value, :math:`\mu`.
+            - "median": The median value, :math:`\mu`.
+            - "mode": The mode value, :math:`\mu`.
+            - "variance": The calculated variance, :math:`\sigma^2`.
+            - "std": The calculated standard deviation, :math:`\sigma`.
+        """
         mean_ = self.loc
         median_ = self.loc
         mode_ = self.loc
