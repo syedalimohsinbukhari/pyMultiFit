@@ -6,4 +6,5 @@ from .scaledInvChiSquare_d import ScaledInverseChiSquareDistribution
 __all__ = [
     "SymmetricGeneralizedNormalDistribution",
     "ScaledInverseChiSquareDistribution",
+    "student_t"
 ]
