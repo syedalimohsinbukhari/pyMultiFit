@@ -2825,7 +2825,7 @@ def students_t_log_pdf_(
     scale: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-):
+) -> NDArray:
     r"""
     Compute logPDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
 
@@ -2834,13 +2834,13 @@ def students_t_log_pdf_(
     x :
         Input array of values.
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
     v :
         Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
     scale :
-        The scale parameter, for scaling. Defaults to 1.0. Must be strictly positive.
+        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
     loc :
-        The location parameter, for shifting. Defaults to 0.0.
+        The location parameter, :math:`\mu`. Defaults to 0.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -2854,12 +2854,12 @@ def students_t_log_pdf_(
     -----
     The Student's t logPDF is defined as:
 
-    .. math:: \ell(y) = \ln\Gamma\left(\frac{v+1}{2}\right) - \ln\Gamma\left(\frac{v}{2}\right) - \frac{1}{2}\ln(\pi v) - \ln(\sigma) - \frac{v+1}{2} \ln\left(1 + \frac{y^2}{v \sigma^2}\right)
+    .. math:: \ell(y) = \ln\Gamma\left(\frac{v+1}{2}\right) - \ln\Gamma\left(\frac{v}{2}\right) - \frac{1}{2}\ln(\pi v) - \ln(\sigma) - \frac{v+1}{2} \ln\left(1 + \frac{y^2}{v}\right)
 
     where :math:`\ln` is the natural logarithm, :math:`\ln\Gamma(\cdot)` is the :obj:`~ssp.gammaln` function,
     and :math:`y` is the transformed value of :math:`x`, defined as:
 
-    .. math:: y = x - \text{loc}
+    .. math:: y = \dfrac{x - \mu}{\sigma}
 
     The final logPDF is expressed as :math:`\ell(y)`.
     """
@@ -2898,9 +2898,30 @@ def students_t_pdf_(
     scale: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-):
+) -> NDArray:
     r"""
     Compute PDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+    v :
+        Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
+    scale :
+        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----
@@ -2929,6 +2950,27 @@ def students_t_log_cdf_(
     r"""
     Compute logCDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
 
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+    v :
+        Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
+    scale :
+        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
     Notes
     -----
     The Student's t logCDF is defined as:
@@ -2939,7 +2981,7 @@ def students_t_log_cdf_(
     underlying standard distributions, and :math:`y` is the transformed value of :math:`x`,
     defined as:
 
-    .. math:: y = x - \text{loc}
+    .. math:: y = \dfrac{x - \mu}{\sigma}
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
@@ -2972,9 +3014,30 @@ def students_t_cdf_(
     scale: float = 1.0,
     loc: float = 0.0,
     normalize: bool = False,
-):
+) -> NDArray:
     r"""
     Compute CDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+    v :
+        Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
+    scale :
+        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----

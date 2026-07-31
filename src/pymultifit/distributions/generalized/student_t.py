@@ -1,6 +1,6 @@
 """Created on July 28 11:15:23 2026"""
 
-from ..backend import BaseDistribution, errorHandling as erH
+from ..backend import BaseDistribution
 from ... import INF, NAN, NAN_DICT, SQRT
 from ...typing import ArrayLike, NDArray
 from ..utilities_d import (
