@@ -1,4 +1,5 @@
 """Created on Aug 14 02:02:42 2024"""
+
 from __future__ import annotations
 
 from numpy import sqrt
@@ -6,7 +7,7 @@ from numpy import sqrt
 from .. import NAN_DICT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
-from .backend import errorHandling as erH
+
 from .utilities_d import arc_sine_cdf_, arc_sine_log_cdf_, arc_sine_log_pdf_, arc_sine_pdf_
 
 class ArcSineDistribution(BaseDistribution):

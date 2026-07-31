@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
+from .backend import BaseDistribution
 from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
 from .. import LOG_TWO, NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray

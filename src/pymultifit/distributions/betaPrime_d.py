@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
+from .backend import BaseDistribution
 from .utilities_d import beta_prime_cdf_, beta_prime_log_cdf_, beta_prime_log_pdf_, beta_prime_pdf_
 from .. import INF, NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray

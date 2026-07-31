@@ -1,6 +1,6 @@
 """Created on Feb 02 03:46:43 2025"""
 
-from ..backend import BaseDistribution, errorHandling as erH
+from ..backend import BaseDistribution
 from ..utilities_d import (
     scaled_inv_chi_square_cdf_,
     scaled_inv_chi_square_log_cdf_,
@@ -28,6 +28,55 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
+
+    Examples
+    --------
+    Importing libraries:
+
+    .. literalinclude:: ../../../examples/basic/gaussian.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
+
+    Generating a standard :class:`~.ScaledInverseChiSquaredDistribution` (:math:`\nu=1, \tau^2=1, \mu=0`)
+     with ``pyMultiFit`` and ``scipy`` (where :math:`\nu=1` yields the inverse gamma parameterization :math:`a=\frac{\nu}{2}, \text{scale}=\frac{\nu \tau^2}{2}`):
+
+    .. literalinclude:: ../../../examples/basic/scaled_inv_chi2.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/scaled_inv_chi2.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/scaled_inv_chi2_example1.png
+       :alt: ScaledInvChi2(1, 1, 0)
+       :align: center
+
+    Generating a scaled and translated :class:`~.ScaledInverseChiSquaredDistribution` with Gaussian variance hyperparameters (:math:`\nu=5, \tau^2=2.5, \mu=-3`):
+
+    .. literalinclude:: ../../../examples/basic/scaled_inv_chi2.py
+       :language: python
+       :lineno-start: 32
+       :lines: 32
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/scaled_inv_chi2.py
+       :language: python
+       :lineno-start: 34
+       :lines: 34-49
+
+    .. image:: ../../../images/scaled_inv_chi2_example2.png
+       :alt: ScaledInvChi2(5, 2.5, -3)
+       :align: center
     """
 
     def __init__(
@@ -85,92 +134,26 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
         return cls(df=a, loc=loc, scale=scale, normalize=True)
 
     def pdf(self, x: ArrayLike) -> NDArray:
-        """
-        Probability density function evaluated at x.
-
-        Parameters
-        ----------
-        x :
-            Quantiles where the PDF is evaluated.
-
-        Returns
-        -------
-        NDArray
-            Probability density function values evaluated at x.
-        """
         return scaled_inv_chi_square_pdf_(
             x, amplitude=self.amplitude, df=self.df, scale=self.scale, loc=self.loc, normalize=self.norm
         )
 
     def logpdf(self, x: ArrayLike) -> NDArray:
-        """
-        Log of the probability density function evaluated at x.
-
-        Parameters
-        ----------
-        x :
-            Quantiles where the log-PDF is evaluated.
-
-        Returns
-        -------
-        NDArray
-            Logarithm of the probability density function values evaluated at x.
-        """
         return scaled_inv_chi_square_log_pdf_(
             x, amplitude=self.amplitude, df=self.df, scale=self.scale, loc=self.loc, normalize=self.norm
         )
 
     def cdf(self, x: ArrayLike) -> NDArray:
-        """
-        Cumulative distribution function evaluated at x.
-
-        Parameters
-        ----------
-        x :
-            Quantiles where the CDF is evaluated.
-
-        Returns
-        -------
-        NDArray
-            Cumulative distribution function values evaluated at x.
-        """
         return scaled_inv_chi_square_cdf_(
             x, amplitude=self.amplitude, df=self.df, scale=self.scale, loc=self.loc, normalize=self.norm
         )
 
     def logcdf(self, x: ArrayLike) -> NDArray:
-        """
-        Log of the cumulative distribution function evaluated at x.
-
-        Parameters
-        ----------
-        x :
-            Quantiles where the log-CDF is evaluated.
-
-        Returns
-        -------
-        NDArray
-            Logarithm of the cumulative distribution function values evaluated at x.
-        """
         return scaled_inv_chi_square_log_cdf_(
             x, amplitude=self.amplitude, df=self.df, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
     def stats(self) -> dict[str, float]:
-        r"""
-        Compute descriptive summary statistics for the distribution.
-
-        Returns
-        -------
-        dict
-            A dictionary containing the calculated statistics.
-            Key mappings:
-
-            - "mean": Expected value (returns infinity if :math:`\nu \le 2`).
-            - "mode": Mode value.
-            - "variance": Population variance (returns infinity if :math:`\nu \le 4`).
-            - "std": Standard deviation (returns infinity if :math:`\nu \le 4`).
-        """
         v, tau2, loc = self.df, self.tau2, self.loc
 
         if any(param <= 0 for param in (v, tau2)):

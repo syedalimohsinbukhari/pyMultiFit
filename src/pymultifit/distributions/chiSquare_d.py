@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
+from .backend import BaseDistribution
 from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
 from .. import NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray

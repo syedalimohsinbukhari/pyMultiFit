@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
+from .backend import BaseDistribution
 from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
 from .. import NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray

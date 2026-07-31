@@ -8,7 +8,7 @@ from scipy.special import betaincinv
 from .. import NAN_DICT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
-from .backend import errorHandling as erH
+
 from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
 
 
