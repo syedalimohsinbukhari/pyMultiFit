@@ -1,11 +1,14 @@
 """Created on July 28 11:15:23 2026"""
 
-from scipy.stats import cauchy as scipy_cauchy
-from scipy.stats import norm as scipy_norm
-from scipy.stats import t as scipy_t
-
 from ..backend import BaseDistribution, errorHandling as erH
+from ... import INF, NAN, NAN_DICT, SQRT
 from ...typing import ArrayLike, NDArray
+from ..utilities_d import (
+    students_t_cdf_,
+    students_t_log_cdf_,
+    students_t_log_pdf_,
+    students_t_pdf_,
+)
 
 
 class StudentsTDistribution(BaseDistribution):
@@ -14,67 +17,140 @@ class StudentsTDistribution(BaseDistribution):
 
     Parameters
     ----------
-    v :
-        Degrees of freedom parameter, :math:`v`. Must be strictly positive (:math:`v > 0`). Defaults to 1.0.
-    loc :
+    v : float, default=1.0
+        Degrees of freedom parameter, :math:`v`. Must be strictly positive (:math:`v > 0`).
+    loc : float, default=0.0
         The location parameter, :math:`\mu`. Defaults to 0.0.
-    scale :
+    scale : float, default=1.0
         The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
+    amplitude : float, default=1.0
+        The amplitude or scaling factor of the distribution. Defaults to 1.0.
+    normalize : bool, default=False
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
-    Notes
-    -----
-    **Analytical Log-PDF Derivation:**
+    Examples
+    --------
+    Importing libraries:
 
-    To prevent numerical instability or overflow when evaluating Gamma functions at large degrees of freedom,
-    the log-PDF is computed using log-gamma functions:
+    .. literalinclude:: ../../../examples/basic/gaussian.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-7
 
-    .. math::
+    Generating a heavy-tailed Student's t-distribution (:math:`v=1, \mu=0, \sigma=1`), equivalent to a Cauchy distribution,
+    with ``pyMultiFit`` and ``scipy``:
 
-        \log f(x \mid v) = \ln \Gamma\left(\frac{v+1}{2}\right) - \ln \Gamma\left(\frac{v}{2}\right)
-        - \frac{1}{2}\ln(v\pi) - \frac{v+1}{2} \ln\left(1 + \frac{x^2}{v}\right)
+    .. literalinclude:: ../../../examples/basic/student_t.py
+       :language: python
+       :linenos:
+       :lineno-start: 9
+       :lines: 9-12
 
-    **Limiting Case Delegation:**
+    Plotting **PDF** and **CDF**:
 
-    - **Lorentzian/Cauchy Limit (:math:`v = 1`)**: When :math:`v \approx 1`, the distribution reduces
-      analytically to the standard Lorentzian/Cauchy distribution and delegates to :class:`scipy.stats.cauchy`.
-    - **Gaussian Limit (:math:`v \to \infty`)**: For very large degrees of freedom (:math:`v > 10^5`),
-      the distribution converges to the Gaussian limit and delegates directly to :class:`scipy.stats.norm`.
+    .. literalinclude:: ../../../examples/basic/student_t.py
+       :language: python
+       :linenos:
+       :lineno-start: 14
+       :lines: 14-29
+
+    .. image:: ../../../images/student_t_example1.png
+       :alt: StudentsT(1, 0, 1)
+       :align: center
+
+    Generating a scaled and translated Student's t-distribution approaching a Gaussian (:math:`v=100, \mu=-3, \sigma=2.5, A=2.0`):
+
+    .. literalinclude:: ../../../examples/basic/student_t.py
+       :language: python
+       :lineno-start: 32
+       :lines: 32
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/student_t.py
+       :language: python
+       :lineno-start: 34
+       :lines: 34-49
+
+    .. image:: ../../../images/student_t_example2.png
+       :alt: StudentsT(100, -3, 2.5, A=2.0)
+       :align: center
     """
 
-    def __init__(self, v: float = 1.0, loc: float = 0.0, scale: float = 1.0):
+    def __init__(
+        self,
+        v: float = 1.0,
+        scale: float = 1.0,
+        loc: float = 0.0,
+        amplitude: float = 1.0,
+        normalize: bool = False,
+    ):
         if v <= 0:
             raise ValueError(f"Degrees of freedom v must be > 0, got {v}")
         if scale <= 0:
             raise ValueError(f"Scale must be > 0, got {scale}")
 
-        self.v = v
-        self.loc = loc
-        self.scale = scale
-
-    def pdf(self, x: ArrayLike) -> NDArray:
-        if self.v == 1 or abs(self.v - 1.0) < 1e-8:
-            return scipy_cauchy.pdf(x, loc=self.loc, scale=self.scale)
-        elif self.v > 1e5:
-            return scipy_norm.pdf(x, loc=self.loc, scale=self.scale)
-        return scipy_t.pdf(x, df=self.v, loc=self.loc, scale=self.scale)
+        self.v = float(v)
+        self.scale = float(scale)
+        self.loc = float(loc)
+        self.amplitude = float(amplitude)
+        self.normalize = bool(normalize)
 
     def logpdf(self, x: ArrayLike) -> NDArray:
-        if self.v == 1 or abs(self.v - 1.0) < 1e-8:
-            return scipy_cauchy.logpdf(x, loc=self.loc, scale=self.scale)
-        elif self.v > 1e5:
-            return scipy_norm.logpdf(x, loc=self.loc, scale=self.scale)
-        return scipy_t.logpdf(x, df=self.v, loc=self.loc, scale=self.scale)
+        return students_t_log_pdf_(
+            x,
+            amplitude=self.amplitude,
+            v=self.v,
+            scale=self.scale,
+            loc=self.loc,
+            normalize=self.normalize,
+        )
 
-    def cdf(self, x: ArrayLike) -> NDArray:
-        if self.v == 1 or abs(self.v - 1.0) < 1e-8:
-            return scipy_cauchy.cdf(x, loc=self.loc, scale=self.scale)
-        elif self.v > 1e5:
-            return scipy_norm.cdf(x, loc=self.loc, scale=self.scale)
-        return scipy_t.cdf(x, df=self.v, loc=self.loc, scale=self.scale)
+    def pdf(self, x: ArrayLike) -> NDArray:
+        return students_t_pdf_(
+            x,
+            amplitude=self.amplitude,
+            v=self.v,
+            scale=self.scale,
+            loc=self.loc,
+            normalize=self.normalize,
+        )
 
     def logcdf(self, x: ArrayLike) -> NDArray:
-        if self.v == 1 or abs(self.v - 1.0) < 1e-8:
-            return scipy_cauchy.logcdf(x, loc=self.loc, scale=self.scale)
-        elif self.v > 1e5:
-            return scipy_norm.logcdf(x, loc=self.loc, scale=self.scale)
-        return scipy_t.logcdf(x, df=self.v, loc=self.loc, scale=self.scale)
+        return students_t_log_cdf_(
+            x,
+            amplitude=self.amplitude,
+            v=self.v,
+            scale=self.scale,
+            loc=self.loc,
+            normalize=self.normalize,
+        )
+
+    def cdf(self, x: ArrayLike) -> NDArray:
+        return students_t_cdf_(
+            x,
+            amplitude=self.amplitude,
+            v=self.v,
+            scale=self.scale,
+            loc=self.loc,
+            normalize=self.normalize,
+        )
+
+    def stats(self) -> dict[str, float]:
+        v, scale, loc = self.v, self.scale, self.loc
+
+        if any(param <= 0 for param in (v, scale)):
+            return NAN_DICT
+
+        mean_ = loc if v > 1 else NAN
+        mode_ = loc
+        variance_ = (scale**2 * (v / (v - 2.0))) if v > 2 else (INF if v > 1 else NAN)
+
+        return {
+            "mean": mean_,
+            "mode": mode_,
+            "variance": variance_,
+            "std": SQRT(variance_) if v > 2 else NAN,
+        }

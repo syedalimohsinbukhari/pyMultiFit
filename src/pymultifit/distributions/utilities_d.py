@@ -2818,6 +2818,179 @@ def scaled_inv_chi_square_log_cdf_(
 
 
 @suppress_numpy_warnings()
+def students_t_log_pdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    v: float = 1.0,
+    scale: float = 1.0,
+    loc: float = 0.0,
+    normalize: bool = False,
+):
+    r"""
+    Compute logPDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    v :
+        Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
+    scale :
+        The scale parameter, for scaling. Defaults to 1.0. Must be strictly positive.
+    loc :
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Student's t logPDF is defined as:
+
+    .. math:: \ell(y) = \ln\Gamma\left(\frac{v+1}{2}\right) - \ln\Gamma\left(\frac{v}{2}\right) - \frac{1}{2}\ln(\pi v) - \ln(\sigma) - \frac{v+1}{2} \ln\left(1 + \frac{y^2}{v \sigma^2}\right)
+
+    where :math:`\ln` is the natural logarithm, :math:`\ln\Gamma(\cdot)` is the :obj:`~ssp.gammaln` function,
+    and :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = x - \text{loc}
+
+    The final logPDF is expressed as :math:`\ell(y)`.
+    """
+    y, rej_ = reject_x(x, v, scale, loc=loc)
+
+    if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
+
+    z = y / scale
+
+    if v == 1 or abs(v - 1.0) < 1e-8:
+        log_c = -LOG(np.pi * scale)
+        log_pdf_ = log_c - np.log1p(z**2)
+    elif v > 1e5:
+        log_c = -LOG(scale * np.sqrt(2.0 * np.pi))
+        log_pdf_ = log_c - 0.5 * z**2
+    else:
+        v_half = v / 2.0
+        log_c = ssp.gammaln(v_half + 0.5) - ssp.gammaln(v_half) - 0.5 * LOG(np.pi * v) - LOG(scale)
+        log_pdf_ = log_c - (v_half + 0.5) * np.log1p((z**2) / v)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=students_t_log_pdf_, style=doc_style)
+def students_t_pdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    v: float = 1.0,
+    scale: float = 1.0,
+    loc: float = 0.0,
+    normalize: bool = False,
+):
+    r"""
+    Compute PDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Notes
+    -----
+    The Student's t PDF is calculated via exponentiation of logPDF:
+
+    .. math:: f(y) = \exp\left[\ell(y)\right]
+
+    where :math:`\ell(y)` is the logPDF evaluated by :func:`students_t_log_pdf_`.
+    """
+    log_pdf_ = students_t_log_pdf_(
+        x, amplitude=amplitude, v=v, scale=scale, loc=loc, normalize=normalize
+    )
+    return EXP(log_pdf_)
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=students_t_log_pdf_, style=doc_style)
+def students_t_log_cdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    v: float = 1.0,
+    scale: float = 1.0,
+    loc: float = 0.0,
+    normalize: bool = False,
+) -> NDArray:
+    r"""
+    Compute logCDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Notes
+    -----
+    The Student's t logCDF is defined as:
+
+    .. math:: \mathcal{L}(y) = \ln\left[ F(y) \right]
+
+    where :math:`F(y)` is the cumulative distribution function evaluated using SciPy's
+    underlying standard distributions, and :math:`y` is the transformed value of :math:`x`,
+    defined as:
+
+    .. math:: y = x - \text{loc}
+
+    The final logCDF is expressed as :math:`\mathcal{L}(y)`.
+    """
+    y, rej_ = reject_x(x, v, scale, loc=loc)
+
+    if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
+
+    if v == 1 or abs(v - 1.0) < 1e-8:
+        base_logcdf = ssp.cauchy.logcdf(y, loc=0.0, scale=scale)
+    elif v > 1e5:
+        base_logcdf = ssp.norm.logcdf(y, loc=0.0, scale=scale)
+    else:
+        base_logcdf = ssp.t.logcdf(y, df=v, loc=0.0, scale=scale)
+
+    if not normalize:
+        base_logcdf = _log_pdf_scaling(log_pdf_=base_logcdf, amplitude=amplitude)
+
+    return base_logcdf
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=students_t_log_pdf_, style=doc_style)
+def students_t_cdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    v: float = 1.0,
+    scale: float = 1.0,
+    loc: float = 0.0,
+    normalize: bool = False,
+):
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Notes
+    -----
+    The Student's t CDF is calculated via exponentiation of logCDF:
+
+    .. math:: F(y) = \exp\left[\mathcal{L}(y)\right]
+
+    where :math:`\mathcal{L}(y)` is the logCDF evaluated by :func:`students_t_log_cdf_`.
+    """
+    log_cdf_ = students_t_log_cdf_(
+        x, amplitude=amplitude, v=v, scale=scale, loc=loc, normalize=normalize
+    )
+    return EXP(log_cdf_)
+
+
+@suppress_numpy_warnings()
 def skew_normal_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
