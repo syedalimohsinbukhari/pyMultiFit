@@ -17,14 +17,14 @@ class StudentsTDistribution(BaseDistribution):
 
     Parameters
     ----------
-    v : float, default=1.0
-        Degrees of freedom parameter, :math:`v`. Must be strictly positive (:math:`v > 0`).
-    loc : float, default=0.0
-        The location parameter, :math:`\mu`. Defaults to 0.0.
-    scale : float, default=1.0
-        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
     amplitude : float, default=1.0
         The amplitude or scaling factor of the distribution. Defaults to 1.0.
+    v : float, default=1.0
+        Degrees of freedom parameter, :math:`v`. Must be strictly positive (:math:`v > 0`).
+    scale : float, default=1.0
+        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
+    loc : float, default=0.0
+        The location parameter, :math:`\mu`. Defaults to 0.0.
     normalize : bool, default=False
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -81,10 +81,10 @@ class StudentsTDistribution(BaseDistribution):
 
     def __init__(
         self,
+        amplitude: float = 1.0,
         v: float = 1.0,
         scale: float = 1.0,
         loc: float = 0.0,
-        amplitude: float = 1.0,
         normalize: bool = False,
     ):
         if v <= 0:
@@ -92,10 +92,10 @@ class StudentsTDistribution(BaseDistribution):
         if scale <= 0:
             raise ValueError(f"Scale must be > 0, got {scale}")
 
+        self.amplitude = float(amplitude)
         self.v = float(v)
         self.scale = float(scale)
         self.loc = float(loc)
-        self.amplitude = float(amplitude)
         self.normalize = bool(normalize)
 
     def logpdf(self, x: ArrayLike) -> NDArray:

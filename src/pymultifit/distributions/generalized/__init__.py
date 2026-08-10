@@ -2,9 +2,10 @@
 
 from .genNorm_d import SymmetricGeneralizedNormalDistribution
 from .scaledInvChiSquare_d import ScaledInverseChiSquareDistribution
+from .student_t import StudentsTDistribution
 
 __all__ = [
     "SymmetricGeneralizedNormalDistribution",
     "ScaledInverseChiSquareDistribution",
-    "student_t"
+    "StudentsTDistribution"
 ]

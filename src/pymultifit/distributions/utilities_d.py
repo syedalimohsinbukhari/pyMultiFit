@@ -2834,7 +2834,7 @@ def students_t_log_pdf_(
     x :
         Input array of values.
     amplitude :
-        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     v :
         Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
     scale :
@@ -2907,7 +2907,7 @@ def students_t_pdf_(
     x :
         Input array of values.
     amplitude :
-        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     v :
         Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
     scale :
@@ -2955,7 +2955,7 @@ def students_t_log_cdf_(
     x :
         Input array of values.
     amplitude :
-        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     v :
         Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
     scale :
@@ -3023,7 +3023,7 @@ def students_t_cdf_(
     x :
         Input array of values.
     amplitude :
-        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     v :
         Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
     scale :
