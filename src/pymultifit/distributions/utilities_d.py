@@ -83,6 +83,7 @@ from typing import Callable
 import numpy as np
 import scipy.special as ssp
 from custom_inherit import doc_inherit  # type: ignore
+from scipy.stats import t
 
 from .. import (
     INF,
@@ -2985,7 +2986,7 @@ def students_t_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(y)`.
     """
-    y, rej_ = reject_x(x, v, scale, loc=loc)
+    y, rej_ = reject_x(x, v, loc=loc, scale=scale)
 
     if rej_:
         return np.full(x.shape, NAN)
@@ -2993,11 +2994,11 @@ def students_t_log_cdf_(
         return np.full(x.shape, NAN)
 
     if v == 1 or abs(v - 1.0) < 1e-8:
-        base_logcdf = ssp.cauchy.logcdf(y, loc=0.0, scale=scale)
+        base_logcdf = t.logcdf(y, loc=0.0, scale=scale)
     elif v > 1e5:
-        base_logcdf = ssp.norm.logcdf(y, loc=0.0, scale=scale)
+        base_logcdf = t.logcdf(y, loc=0.0, scale=scale)
     else:
-        base_logcdf = ssp.t.logcdf(y, df=v, loc=0.0, scale=scale)
+        base_logcdf = t.logcdf(y, df=v, loc=0.0, scale=scale)
 
     if not normalize:
         base_logcdf = _log_pdf_scaling(log_pdf_=base_logcdf, amplitude=amplitude)
