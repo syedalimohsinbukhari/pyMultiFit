@@ -81,8 +81,10 @@ __all__ = [
 from typing import Callable
 
 import numpy as np
+import scipy
 import scipy.special as ssp
 from custom_inherit import doc_inherit  # type: ignore
+from scipy.special import gamma
 from scipy.special.cython_special import poch
 from scipy.stats import t
 
@@ -2936,6 +2938,67 @@ def students_t_pdf_(
 
 @suppress_numpy_warnings()
 @doc_inherit(parent=students_t_log_pdf_, style=doc_style)
+def students_t_cdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    v: float = 1.0,
+    loc: float = 0.0,
+    scale: float = 1.0,
+    normalize: bool = False,
+) -> NDArray:
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    v :
+        Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
+    scale :
+        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Student's t CDF is calculated via exponentiation of logCDF:
+
+    .. math:: F(y) = \exp\left[\mathcal{L}(y)\right]
+
+    where :math:`\mathcal{L}(y)` is the logCDF evaluated by :func:`students_t_log_cdf_`.
+    """
+    y, rej_ = reject_x(x, v, loc=loc, scale=scale)
+
+    if rej_:
+        return np.full(x.shape, NAN)
+    if amplitude <= 0:
+        return np.full(x.shape, NAN)
+
+    nu_half = v / 2
+    nu_half_ = nu_half + 0.5
+
+    f1 = y * gamma(nu_half_)
+    f2 = (v * PI) ** 0.5 * gamma(nu_half)
+    f3 = scipy.special.hyp2f1(1 / 2, nu_half_, 3 / 2, -(y ** 2) / v)
+
+    cdf_ = (1 / 2) + (f1 / f2) * f3
+
+    return cdf_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=students_t_log_pdf_, style=doc_style)
 def students_t_log_cdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -2989,65 +3052,9 @@ def students_t_log_cdf_(
     if amplitude <= 0:
         return np.full(x.shape, NAN)
 
-    if v == 1 or abs(v - 1.0) < 1e-8:
-        base_logcdf = t.logcdf(y, loc=0.0, scale=scale)
-    elif v > 1e5:
-        base_logcdf = t.logcdf(y, loc=0.0, scale=scale)
-    else:
-        base_logcdf = t.logcdf(y, df=v, loc=0.0, scale=scale)
+    cdf_ = students_t_cdf_(x=x, amplitude=amplitude, v=v, loc=loc, scale=scale)
 
-    if not normalize:
-        base_logcdf = _log_pdf_scaling(log_pdf_=base_logcdf, amplitude=amplitude)
-
-    return base_logcdf
-
-
-@suppress_numpy_warnings()
-@doc_inherit(parent=students_t_log_pdf_, style=doc_style)
-def students_t_cdf_(
-    x: ArrayLike,
-    amplitude: float = 1.0,
-    v: float = 1.0,
-    scale: float = 1.0,
-    loc: float = 0.0,
-    normalize: bool = False,
-) -> NDArray:
-    r"""
-    Compute CDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
-
-    Parameters
-    ----------
-    x :
-        Input array of values.
-    amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    v :
-        Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
-    scale :
-        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
-    loc :
-        The location parameter, :math:`\mu`. Defaults to 0.0.
-    normalize :
-        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
-        Defaults to ``False``.
-
-    Returns
-    -------
-    NDArray
-        Array of the same shape as :math:`x`, containing the evaluated values.
-
-    Notes
-    -----
-    The Student's t CDF is calculated via exponentiation of logCDF:
-
-    .. math:: F(y) = \exp\left[\mathcal{L}(y)\right]
-
-    where :math:`\mathcal{L}(y)` is the logCDF evaluated by :func:`students_t_log_cdf_`.
-    """
-    log_cdf_ = students_t_log_cdf_(
-        x, amplitude=amplitude, v=v, scale=scale, loc=loc, normalize=normalize
-    )
-    return EXP(log_cdf_)
+    return LOG(cdf_)
 
 
 @suppress_numpy_warnings()

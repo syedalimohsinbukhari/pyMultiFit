@@ -118,8 +118,8 @@ class StudentsTDistribution(BaseDistribution):
             normalize=self.normalize,
         )
 
-    def logcdf(self, x: ArrayLike) -> NDArray:
-        return students_t_log_cdf_(
+    def cdf(self, x: ArrayLike) -> NDArray:
+        return students_t_cdf_(
             x,
             amplitude=self.amplitude,
             v=self.v,
@@ -128,8 +128,8 @@ class StudentsTDistribution(BaseDistribution):
             normalize=self.normalize,
         )
 
-    def cdf(self, x: ArrayLike) -> NDArray:
-        return students_t_cdf_(
+    def logcdf(self, x: ArrayLike) -> NDArray:
+        return students_t_log_cdf_(
             x,
             amplitude=self.amplitude,
             v=self.v,
