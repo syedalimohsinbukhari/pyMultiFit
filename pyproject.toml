@@ -14,8 +14,10 @@ dynamic = ["version"]
 dependencies = [
     "custom-inherit",
     "deprecation",
+    "duckdb>=1.5.5",
     "matplotlib",
     "numpy",
+    "pandas>=2.3.3",
     "plotez",
     "scipy",
     "statsmodels",

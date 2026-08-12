@@ -2624,6 +2624,254 @@ def uniform_log_cdf_(
 
 
 @suppress_numpy_warnings()
+def q_exponential_log_pdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    q: float = 1.0,
+    rate: float = 1.0,
+    loc: float = 0.0,
+    normalize: bool = False,
+) -> NDArray:
+    r"""
+    Compute logPDF of :class:`~pymultifit.distributions.generalized.q_exponential.QExponentialDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    q :
+        The entropic index parameter, :math:`q`. Defaults to 1.0. Must satisfy :math:`q < 2`.
+    rate :
+        The rate parameter, :math:`\lambda`. Defaults to 1.0. Must be strictly positive (:math:`\lambda > 0`).
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The q-exponential logPDF for :math:`z = x - \mu \ge 0` is defined as:
+
+    .. math:: \ell(z) = \ln(2 - q) + \ln(\lambda) + \frac{1}{1 - q} \ln\left[1 - (1 - q)\lambda z\right]
+
+    when normalized, and as:
+
+    .. math:: \ell(z) = \ln(A) + \frac{1}{1 - q} \ln\left[1 - (1 - q)\lambda z\right]
+
+    when unnormalized (:math:`\text{normalize} = \text{False}`). When :math:`q \to 1`, it recovers
+    the standard exponential logPDF:
+
+    .. math:: \ell(z) = \ln(\lambda) - \lambda z
+    """
+    x_arr = np.asarray(x)
+
+    if q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
+        return np.full(x_arr.shape, NAN)
+
+    z = x_arr - loc
+
+    if np.isclose(q, 1.0):
+        log_kernel = -rate * z
+        log_norm = LOG(rate)
+    else:
+        u = (1.0 - q) * rate * z
+        with np.errstate(invalid="ignore", divide="ignore"):
+            log_kernel = (1.0 / (1.0 - q)) * np.log1p(-u)
+        log_norm = LOG((2.0 - q) * rate)
+
+    log_pdf_ = log_norm + log_kernel
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    support_mask = z >= 0.0
+    if q < 1.0:
+        support_mask &= z <= 1.0 / ((1.0 - q) * rate)
+
+    return np.where(support_mask, log_pdf_, -INF)
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
+def q_exponential_pdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    q: float = 1.0,
+    rate: float = 1.0,
+    loc: float = 0.0,
+    normalize: bool = False,
+) -> NDArray:
+    r"""
+    Compute PDF of :class:`~pymultifit.distributions.generalized.q_exponential.QExponentialDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    q :
+        The entropic index parameter, :math:`q`. Defaults to 1.0. Must satisfy :math:`q < 2`.
+    rate :
+        The rate parameter, :math:`\lambda`. Defaults to 1.0. Must be strictly positive (:math:`\lambda > 0`).
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The q-exponential PDF is calculated via exponentiation of logPDF:
+
+    .. math:: f(x) = \exp\left[\ell(x)\right]
+
+    where :math:`\ell(x)` is evaluated by :func:`q_exponential_log_pdf_`.
+    """
+    log_pdf_ = q_exponential_log_pdf_(
+        x, amplitude=amplitude, q=q, rate=rate, loc=loc, normalize=normalize
+    )
+    return EXP(log_pdf_)
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
+def q_exponential_cdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    q: float = 1.0,
+    rate: float = 1.0,
+    loc: float = 0.0,
+    normalize: bool = False,
+) -> NDArray:
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.generalized.q_exponential.QExponentialDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    q :
+        The entropic index parameter, :math:`q`. Defaults to 1.0. Must satisfy :math:`q < 2`.
+    rate :
+        The rate parameter, :math:`\lambda`. Defaults to 1.0. Must be strictly positive (:math:`\lambda > 0`).
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The q-exponential CDF for :math:`z = x - \mu \ge 0` is defined as:
+
+    .. math:: F(z) = 1 - \left[1 - (1 - q)\lambda z\right]_+^{\frac{2 - q}{1 - q}}
+
+    scaled by :math:`A` when unnormalized. Evaluated using :obj:`numpy.expm1` and :obj:`numpy.log1p`
+    to guarantee numerical precision near :math:`z \to 0` and :math:`q \to 1`.
+    """
+    x_arr = np.asarray(x)
+
+    if q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
+        return np.full(x_arr.shape, NAN)
+
+    z = x_arr - loc
+    scale_factor = 1.0 if normalize else amplitude
+
+    if np.isclose(q, 1.0):
+        g = -rate * z
+    else:
+        u = (1.0 - q) * rate * z
+        p = (2.0 - q) / (1.0 - q)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            g = p * np.log1p(-u)
+
+    cdf_vals = -scale_factor * np.expm1(g)
+
+    cdf_ = np.where(z <= 0.0, 0.0, cdf_vals)
+
+    if q < 1.0:
+        z_max = 1.0 / ((1.0 - q) * rate)
+        cdf_ = np.where(z >= z_max, scale_factor, cdf_)
+
+    return cdf_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
+def q_exponential_log_cdf_(
+    x: ArrayLike,
+    amplitude: float = 1.0,
+    q: float = 1.0,
+    rate: float = 1.0,
+    loc: float = 0.0,
+    normalize: bool = False,
+) -> NDArray:
+    r"""
+    Compute logCDF of :class:`~pymultifit.distributions.generalized.q_exponential.QExponentialDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    q :
+        The entropic index parameter, :math:`q`. Defaults to 1.0. Must satisfy :math:`q < 2`.
+    rate :
+        The rate parameter, :math:`\lambda`. Defaults to 1.0. Must be strictly positive (:math:`\lambda > 0`).
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The q-exponential logCDF is defined as:
+
+    .. math:: \mathcal{L}(x) = \ln\left[ F(x) \right]
+
+    where :math:`F(x)` is the cumulative distribution function evaluated by :func:`q_exponential_cdf_`.
+    """
+    x_arr = np.asarray(x)
+
+    if q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
+        return np.full(x_arr.shape, NAN)
+
+    cdf_ = q_exponential_cdf_(
+        x=x, amplitude=amplitude, q=q, rate=rate, loc=loc, normalize=normalize
+    )
+
+    return LOG(cdf_)
+
+
+@suppress_numpy_warnings()
 def scaled_inv_chi_square_pdf_(
     x: ArrayLike, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
 ):
