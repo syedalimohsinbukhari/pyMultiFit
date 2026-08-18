@@ -2673,11 +2673,12 @@ def q_exponential_log_pdf_(
     """
     x_arr, rej_ = reject_x(x, q, rate, loc=loc)
 
-    if rej_ or q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
+    if rej_ or q >= 2.0 or rate <= 0.0 or np.isnan(q) or np.isnan(rate) or amplitude <= 0.0:
         return np.full(x_arr.shape, NAN)
 
     z = x_arr - loc
-    f1 = LOG((2.0 - q) * rate)
+
+    f1 = LOG((2.0 - q) * rate) if normalize else 0.0
 
     if np.isclose(q, 1.0):
         f2 = -rate * z
@@ -2789,7 +2790,7 @@ def q_exponential_cdf_(
     """
     x_arr, rej_ = reject_x(x, q, rate, loc=loc)
 
-    if rej_ or q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
+    if rej_ or q >= 2.0 or rate <= 0.0 or np.isnan(q) or np.isnan(rate) or amplitude <= 0.0:
         return np.full(x_arr.shape, NAN)
 
     z = x_arr - loc

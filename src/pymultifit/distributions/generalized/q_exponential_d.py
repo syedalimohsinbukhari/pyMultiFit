@@ -46,9 +46,6 @@ class QExponentialDistribution(BaseDistribution):
         self.loc = loc
         self.normalize = normalize
 
-    def _is_invalid_param(self) -> bool:
-        return self.q >= 2.0 or self.rate <= 0.0 or np.isnan(self.q) or np.isnan(self.rate)
-
     def logpdf(self, x: ArrayLike) -> NDArray:
         if self._is_invalid_param():
             return np.full_like(x, np.nan, dtype=np.float64)
