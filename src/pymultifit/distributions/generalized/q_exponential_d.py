@@ -1,5 +1,7 @@
 """Created on August 12 11:26:00 2026"""
 
+import numpy as np
+
 from ..backend import BaseDistribution
 from ... import INF, NAN, NAN_DICT, SQRT
 from ...typing import ArrayLike, NDArray
@@ -9,7 +11,6 @@ from ..utilities_d import (
     q_exponential_log_pdf_,
     q_exponential_pdf_,
 )
-
 
 class QExponentialDistribution(BaseDistribution):
     r"""
@@ -29,37 +30,6 @@ class QExponentialDistribution(BaseDistribution):
     normalize : bool, default=False
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Examples
-    --------
-    Importing libraries:
-
-    .. literalinclude:: ../../../examples/basic/gaussian.py
-       :language: python
-       :linenos:
-       :lineno-start: 3
-       :lines: 3-7
-
-    Generating a heavy-tailed q-exponential distribution (:math:`q=1.5, \mu=0, \lambda=1.0`)
-    with ``pyMultiFit``:
-
-    .. literalinclude:: ../../../examples/basic/q_exponential_d.py
-       :language: python
-       :linenos:
-       :lineno-start: 9
-       :lines: 9-12
-
-    Plotting **PDF** and **CDF**:
-
-    .. literalinclude:: ../../../examples/basic/q_exponential_d.py
-       :language: python
-       :linenos:
-       :lineno-start: 14
-       :lines: 14-29
-
-    .. image:: ../../../images/q_exponential_example1.png
-       :alt: QExponential(q=1.5, loc=0, rate=1.0)
-       :align: center
     """
 
     def __init__(
@@ -70,18 +40,18 @@ class QExponentialDistribution(BaseDistribution):
         loc: float = 0.0,
         normalize: bool = False,
     ):
-        if q >= 2.0:
-            raise ValueError(f"Entropic index q must be < 2, got {q}")
-        if rate <= 0:
-            raise ValueError(f"Rate must be > 0, got {rate}")
+        self.amplitude = amplitude
+        self.q = q
+        self.rate = rate
+        self.loc = loc
+        self.normalize = normalize
 
-        self.amplitude = float(amplitude)
-        self.q = float(q)
-        self.rate = float(rate)
-        self.loc = float(loc)
-        self.normalize = bool(normalize)
+    def _is_invalid_param(self) -> bool:
+        return self.q >= 2.0 or self.rate <= 0.0 or np.isnan(self.q) or np.isnan(self.rate)
 
     def logpdf(self, x: ArrayLike) -> NDArray:
+        if self._is_invalid_param():
+            return np.full_like(x, np.nan, dtype=np.float64)
         return q_exponential_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -92,6 +62,8 @@ class QExponentialDistribution(BaseDistribution):
         )
 
     def pdf(self, x: ArrayLike) -> NDArray:
+        if self._is_invalid_param():
+            return np.full_like(x, np.nan, dtype=np.float64)
         return q_exponential_pdf_(
             x,
             amplitude=self.amplitude,
@@ -102,6 +74,8 @@ class QExponentialDistribution(BaseDistribution):
         )
 
     def cdf(self, x: ArrayLike) -> NDArray:
+        if self._is_invalid_param():
+            return np.full_like(x, np.nan, dtype=np.float64)
         return q_exponential_cdf_(
             x,
             amplitude=self.amplitude,
@@ -112,6 +86,8 @@ class QExponentialDistribution(BaseDistribution):
         )
 
     def logcdf(self, x: ArrayLike) -> NDArray:
+        if self._is_invalid_param():
+            return np.full_like(x, np.nan, dtype=np.float64)
         return q_exponential_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -124,7 +100,7 @@ class QExponentialDistribution(BaseDistribution):
     def stats(self) -> dict[str, float]:
         q, rate, loc = self.q, self.rate, self.loc
 
-        if q >= 2.0 or rate <= 0:
+        if self._is_invalid_param():
             return NAN_DICT
 
         mode_ = loc

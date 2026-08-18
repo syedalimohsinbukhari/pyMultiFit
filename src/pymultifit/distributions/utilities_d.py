@@ -2671,31 +2671,28 @@ def q_exponential_log_pdf_(
 
     .. math:: \ell(z) = \ln(\lambda) - \lambda z
     """
-    x_arr = np.asarray(x)
+    x_arr, rej_ = reject_x(x, q, rate, loc=loc)
 
-    if q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
+    if rej_ or q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
         return np.full(x_arr.shape, NAN)
 
     z = x_arr - loc
+    f1 = LOG((2.0 - q) * rate)
 
     if np.isclose(q, 1.0):
-        log_kernel = -rate * z
-        log_norm = LOG(rate)
+        f2 = -rate * z
     else:
-        u = (1.0 - q) * rate * z
+        q_diff = 1.0 - q
+        u = np.clip(q_diff * rate * z, None, 1.0 - 1e-15) if q < 1.0 else q_diff * rate * z
         with np.errstate(invalid="ignore", divide="ignore"):
-            log_kernel = (1.0 / (1.0 - q)) * np.log1p(-u)
-        log_norm = LOG((2.0 - q) * rate)
+            f2 = (1.0 / q_diff) * np.log1p(-u)
 
-    log_pdf_ = log_norm + log_kernel
+    log_pdf_ = f1 + f2
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    support_mask = z >= 0.0
-    if q < 1.0:
-        support_mask &= z <= 1.0 / ((1.0 - q) * rate)
-
+    support_mask = (z >= 0.0) & (z <= 1.0 / ((1.0 - q) * rate)) if q < 1.0 else (z >= 0.0)
     return np.where(support_mask, log_pdf_, -INF)
 
 
@@ -2790,24 +2787,24 @@ def q_exponential_cdf_(
     scaled by :math:`A` when unnormalized. Evaluated using :obj:`numpy.expm1` and :obj:`numpy.log1p`
     to guarantee numerical precision near :math:`z \to 0` and :math:`q \to 1`.
     """
-    x_arr = np.asarray(x)
+    x_arr, rej_ = reject_x(x, q, rate, loc=loc)
 
-    if q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
+    if rej_ or q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
         return np.full(x_arr.shape, NAN)
 
     z = x_arr - loc
     scale_factor = 1.0 if normalize else amplitude
 
     if np.isclose(q, 1.0):
-        g = -rate * z
+        f2 = -rate * z
     else:
-        u = (1.0 - q) * rate * z
-        p = (2.0 - q) / (1.0 - q)
+        q_diff = 1.0 - q
+        f1 = (2.0 - q) / q_diff
+        u = np.clip(q_diff * rate * z, None, 1.0 - 1e-15) if q < 1.0 else q_diff * rate * z
         with np.errstate(invalid="ignore", divide="ignore"):
-            g = p * np.log1p(-u)
+            f2 = f1 * np.log1p(-u)
 
-    cdf_vals = -scale_factor * np.expm1(g)
-
+    cdf_vals = -scale_factor * np.expm1(f2)
     cdf_ = np.where(z <= 0.0, 0.0, cdf_vals)
 
     if q < 1.0:
@@ -2859,11 +2856,6 @@ def q_exponential_log_cdf_(
 
     where :math:`F(x)` is the cumulative distribution function evaluated by :func:`q_exponential_cdf_`.
     """
-    x_arr = np.asarray(x)
-
-    if q >= 2.0 or rate <= 0.0 or amplitude <= 0.0:
-        return np.full(x_arr.shape, NAN)
-
     cdf_ = q_exponential_cdf_(
         x=x, amplitude=amplitude, q=q, rate=rate, loc=loc, normalize=normalize
     )

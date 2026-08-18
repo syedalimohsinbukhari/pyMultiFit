@@ -42,7 +42,7 @@ class StudentsTDistribution(BaseDistribution):
     Generating a heavy-tailed Student's t-distribution (:math:`v=1, \mu=0, \sigma=1`), equivalent to a Cauchy distribution,
     with ``pyMultiFit`` and ``scipy``:
 
-    .. literalinclude:: ../../../examples/basic/student_t.py
+    .. literalinclude:: ../../../examples/basic/student_t_d.py
        :language: python
        :linenos:
        :lineno-start: 9
@@ -50,7 +50,7 @@ class StudentsTDistribution(BaseDistribution):
 
     Plotting **PDF** and **CDF**:
 
-    .. literalinclude:: ../../../examples/basic/student_t.py
+    .. literalinclude:: ../../../examples/basic/student_t_d.py
        :language: python
        :linenos:
        :lineno-start: 14
@@ -62,14 +62,14 @@ class StudentsTDistribution(BaseDistribution):
 
     Generating a scaled and translated Student's t-distribution approaching a Gaussian (:math:`v=100, \mu=-3, \sigma=2.5, A=2.0`):
 
-    .. literalinclude:: ../../../examples/basic/student_t.py
+    .. literalinclude:: ../../../examples/basic/student_t_d.py
        :language: python
        :lineno-start: 32
        :lines: 32
 
     Plotting **PDF** and **CDF**:
 
-    .. literalinclude:: ../../../examples/basic/student_t.py
+    .. literalinclude:: ../../../examples/basic/student_t_d.py
        :language: python
        :lineno-start: 34
        :lines: 34-49
