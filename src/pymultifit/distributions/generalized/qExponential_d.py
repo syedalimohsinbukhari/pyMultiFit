@@ -16,20 +16,75 @@ class QExponentialDistribution(BaseDistribution):
     r"""
     Class for :class:`~.QExponentialDistribution`.
 
+    .. note::
+        The :class:`~QExponentialDistribution` reduces to the standard :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`
+        when :math:`q = 1`.
+
     Parameters
     ----------
-    amplitude : float, default=1.0
+    amplitude :
         The amplitude or scaling factor of the distribution. Defaults to 1.0.
-    q : float, default=1.0
-        The entropic index parameter, :math:`q`. Must satisfy :math:`q < 2`.
-        When :math:`q \to 1`, the distribution reduces to the standard exponential distribution.
-    rate : float, default=1.0
-        The rate parameter, :math:`\lambda`. Defaults to 1.0. Must be strictly positive (:math:`\lambda > 0`).
-    loc : float, default=0.0
-        The location parameter, :math:`\mu`. Defaults to 0.0.
-    normalize : bool, default=False
+    q :
+        The entropic index parameter, :math:`q`.
+        Must satisfy :math:`q < 2`.
+    rate :
+        The rate parameter, :math:`\lambda`.
+        Defaults to 1.0.
+        Must be strictly positive (:math:`\lambda > 0`).
+    loc :
+        The location parameter, :math:`\mu`.
+        Defaults to 0.0.
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
+
+    Examples
+    --------
+    Importing libraries:
+
+    .. literalinclude:: ../../../examples/basic/qexponential.py
+       :language: python
+       :linenos:
+       :lineno-start: 3
+       :lines: 3-8
+
+    Generating a standard qExponential(:math:`q=1, \lambda=1`) distribution with ``pyMultiFit`` and ``scipy``:
+
+    .. literalinclude:: ../../../examples/basic/qexponential.py
+       :language: python
+       :linenos:
+       :lineno-start: 10
+       :lines: 10-13
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/qexponential.py
+       :language: python
+       :linenos:
+       :lineno-start: 15
+       :lines: 15-30
+
+    .. image:: ../../../images/q_exponential_example1.png
+       :alt: QExponential(1, 1, 0)
+       :align: center
+
+    Generating a translated qExponential(:math:`q=1.5, \lambda=1.3, \text{loc}=-3.3`) distribution:
+
+    .. literalinclude:: ../../../examples/basic/qexponential.py
+       :language: python
+       :lineno-start: 33
+       :lines: 33
+
+    Plotting **PDF** and **CDF**:
+
+    .. literalinclude:: ../../../examples/basic/qexponential.py
+       :language: python
+       :lineno-start: 35
+       :lines: 35-52
+
+    .. image:: ../../../images/q_exponential_example2.png
+       :alt: QExponential(1.5, 1.3, -3.3)
+       :align: center
     """
 
     def __init__(
@@ -47,8 +102,6 @@ class QExponentialDistribution(BaseDistribution):
         self.normalize = normalize
 
     def logpdf(self, x: ArrayLike) -> NDArray:
-        if self._is_invalid_param():
-            return np.full_like(x, np.nan, dtype=np.float64)
         return q_exponential_log_pdf_(
             x,
             amplitude=self.amplitude,
@@ -59,8 +112,6 @@ class QExponentialDistribution(BaseDistribution):
         )
 
     def pdf(self, x: ArrayLike) -> NDArray:
-        if self._is_invalid_param():
-            return np.full_like(x, np.nan, dtype=np.float64)
         return q_exponential_pdf_(
             x,
             amplitude=self.amplitude,
@@ -71,8 +122,6 @@ class QExponentialDistribution(BaseDistribution):
         )
 
     def cdf(self, x: ArrayLike) -> NDArray:
-        if self._is_invalid_param():
-            return np.full_like(x, np.nan, dtype=np.float64)
         return q_exponential_cdf_(
             x,
             amplitude=self.amplitude,
@@ -83,8 +132,6 @@ class QExponentialDistribution(BaseDistribution):
         )
 
     def logcdf(self, x: ArrayLike) -> NDArray:
-        if self._is_invalid_param():
-            return np.full_like(x, np.nan, dtype=np.float64)
         return q_exponential_log_cdf_(
             x,
             amplitude=self.amplitude,
@@ -96,10 +143,6 @@ class QExponentialDistribution(BaseDistribution):
 
     def stats(self) -> dict[str, float]:
         q, rate, loc = self.q, self.rate, self.loc
-
-        if self._is_invalid_param():
-            return NAN_DICT
-
         mode_ = loc
 
         # Mean exists for q < 1.5 (3 - 2q > 0)

@@ -9,7 +9,8 @@ from .exponential_d import ExponentialDistribution
 from .foldedNormal_d import FoldedNormalDistribution
 from .gamma_d import GammaDistribution
 from .gaussian_d import GaussianDistribution
-from .generalized import ScaledInverseChiSquareDistribution, SymmetricGeneralizedNormalDistribution
+from .generalized import (ScaledInverseChiSquareDistribution, SymmetricGeneralizedNormalDistribution,
+                          QExponentialDistribution)
 from .halfNormal_d import HalfNormalDistribution
 from .johnsonSU_d import JohnsonSUDistribution
 from .laplace_d import LaplaceDistribution

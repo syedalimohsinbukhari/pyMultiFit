@@ -62,6 +62,11 @@ __all__ = [
     "log_normal_cdf_",
     "log_normal_log_pdf_",
     "log_normal_log_cdf_",
+    "q_exponential_pdf_",
+    "q_exponential_log_pdf_",
+    "q_exponential_cdf_",
+    "q_exponential_log_cdf_",
+    "q_exp_to_gen_pareto",
     "scaled_inv_chi_square_pdf_",
     "scaled_inv_chi_square_log_pdf_",
     "scaled_inv_chi_square_cdf_",
@@ -69,6 +74,10 @@ __all__ = [
     "skew_normal_pdf_",
     "skew_normal_log_pdf_",
     "skew_normal_cdf_",
+    "students_t_pdf_",
+    "students_t_log_pdf_",
+    "students_t_cdf_",
+    "students_t_log_cdf_",
     "uniform_pdf_",
     "uniform_cdf_",
     "uniform_log_pdf_",
@@ -86,7 +95,6 @@ import scipy.special as ssp
 from custom_inherit import doc_inherit  # type: ignore
 from scipy.special import gamma
 from scipy.special.cython_special import poch
-from scipy.stats import t
 
 from .. import (
     INF,
@@ -103,12 +111,12 @@ from .. import (
     suppress_numpy_warnings,
     NAN,
     SQRT,
-    EXP, LOG_PI,
+    EXP, LOG_PI, EPSILON,
 )
 from ..typing import ArrayLike, NDArray
 
 
-def reject_x(x: ArrayLike, shp1=None, shp2=None, loc=0.0, scale=1.0) -> tuple[NDArray | None, bool]:
+def reject_x(x: ArrayLike, shp1=None, shp2=None, loc: float = 0.0, scale: float = 1.0) -> tuple[NDArray | None, bool]:
     for val in (shp1, shp2, scale):
         if val is not None and val <= 0:
             return None, True
@@ -162,7 +170,7 @@ def arc_sine_pdf_(
     """
     y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
-    if rej_:
+    if rej_ or amplitude <= 0:
         return np.full(x.shape, NAN)
     if amplitude <= 0:
         return np.full(x.shape, NAN)
@@ -2640,13 +2648,17 @@ def q_exponential_log_pdf_(
     x :
         Input array of values.
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     q :
-        The entropic index parameter, :math:`q`. Defaults to 1.0. Must satisfy :math:`q < 2`.
+        The entropic index parameter, :math:`q`.
+        Defaults to 1.0. Must satisfy :math:`q < 2`.
     rate :
-        The rate parameter, :math:`\lambda`. Defaults to 1.0. Must be strictly positive (:math:`\lambda > 0`).
+        The rate parameter, :math:`\lambda`.
+        Defaults to 1.0.
     loc :
-        The location parameter, :math:`\mu`. Defaults to 0.0.
+        The location parameter, :math:`\mu`.
+        Defaults to 0.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -2666,34 +2678,31 @@ def q_exponential_log_pdf_(
 
     .. math:: \ell(z) = \ln(A) + \frac{1}{1 - q} \ln\left[1 - (1 - q)\lambda z\right]
 
-    when unnormalized (:math:`\text{normalize} = \text{False}`). When :math:`q \to 1`, it recovers
-    the standard exponential logPDF:
+    when unnormalized (:math:`\text{normalize} = \text{False}`).
+    When :math:`q \to 1`, it recovers the standard exponential logPDF:
 
     .. math:: \ell(z) = \ln(\lambda) - \lambda z
     """
-    x_arr, rej_ = reject_x(x, q, rate, loc=loc)
+    y, rej_ = reject_x(x, q, rate, loc=loc)
 
-    if rej_ or q >= 2.0 or rate <= 0.0 or np.isnan(q) or np.isnan(rate) or amplitude <= 0.0:
-        return np.full(x_arr.shape, NAN)
+    if rej_ or q >= 2.0 or amplitude <= 0.0:
+        return np.full(y.shape, NAN)
 
-    z = x_arr - loc
+    f1 = np.log1p(1.0 - q) + LOG(rate)
 
-    f1 = LOG((2.0 - q) * rate) if normalize else 0.0
-
-    if np.isclose(q, 1.0):
-        f2 = -rate * z
+    if q == 1:
+        f2 = -rate * y
     else:
         q_diff = 1.0 - q
-        u = np.clip(q_diff * rate * z, None, 1.0 - 1e-15) if q < 1.0 else q_diff * rate * z
-        with np.errstate(invalid="ignore", divide="ignore"):
-            f2 = (1.0 / q_diff) * np.log1p(-u)
+        u = np.clip(q_diff * rate * y, None, 1.0 - EPSILON) if q < 1.0 else q_diff * rate * y
+        f2 = (1.0 / q_diff) * np.log1p(-u)
 
     log_pdf_ = f1 + f2
 
     if not normalize:
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
-    support_mask = (z >= 0.0) & (z <= 1.0 / ((1.0 - q) * rate)) if q < 1.0 else (z >= 0.0)
+    support_mask = (y >= 0.0) & (y <= 1.0 / ((1.0 - q) * rate)) if q < 1.0 else (y >= 0.0)
     return np.where(support_mask, log_pdf_, -INF)
 
 
@@ -2788,29 +2797,27 @@ def q_exponential_cdf_(
     scaled by :math:`A` when unnormalized. Evaluated using :obj:`numpy.expm1` and :obj:`numpy.log1p`
     to guarantee numerical precision near :math:`z \to 0` and :math:`q \to 1`.
     """
-    x_arr, rej_ = reject_x(x, q, rate, loc=loc)
+    y, rej_ = reject_x(x, q, rate, loc=loc)
 
-    if rej_ or q >= 2.0 or rate <= 0.0 or np.isnan(q) or np.isnan(rate) or amplitude <= 0.0:
-        return np.full(x_arr.shape, NAN)
+    if rej_ or q >= 2.0 or amplitude <= 0.0:
+        return np.full(y.shape, NAN)
 
-    z = x_arr - loc
     scale_factor = 1.0 if normalize else amplitude
 
     if np.isclose(q, 1.0):
-        f2 = -rate * z
+        f2 = -rate * y
     else:
         q_diff = 1.0 - q
         f1 = (2.0 - q) / q_diff
-        u = np.clip(q_diff * rate * z, None, 1.0 - 1e-15) if q < 1.0 else q_diff * rate * z
-        with np.errstate(invalid="ignore", divide="ignore"):
-            f2 = f1 * np.log1p(-u)
+        u = np.clip(q_diff * rate * y, None, 1.0 - 1e-15) if q < 1.0 else q_diff * rate * y
+        f2 = f1 * np.log1p(-u)
 
     cdf_vals = -scale_factor * np.expm1(f2)
-    cdf_ = np.where(z <= 0.0, 0.0, cdf_vals)
+    cdf_ = np.where(y <= 0.0, 0.0, cdf_vals)
 
     if q < 1.0:
         z_max = 1.0 / ((1.0 - q) * rate)
-        cdf_ = np.where(z >= z_max, scale_factor, cdf_)
+        cdf_ = np.where(y >= z_max, scale_factor, cdf_)
 
     return cdf_
 
@@ -3736,3 +3743,14 @@ def preprocess_input(x: ArrayLike, loc: float = 0.0, scale: float = 1.0) -> NDAr
         return np.array([])
 
     return (x - loc) / scale
+
+
+def q_exp_to_gen_pareto(q: float, rate: float, loc: float = 0.0):
+    if q >= 2:
+        raise ValueError("q must be < 2 for a normalizable q-exponential.")
+    if rate <= 0:
+        raise ValueError("rate must be > 0.")
+
+    c = (q - 1) / (2 - q)
+    scale = 1.0 / ((2 - q) * rate)
+    return {"c": c, "loc": loc, "scale": scale}
