@@ -220,7 +220,7 @@ def compute_individual_ci_mixed(
         param_index = 0
         for model_idx, model in enumerate(model_list):
             n_par = fitter_object._instantiate_n_par(model=model)  # each model has its own n_par
-            model_params = boot_params[param_index: param_index + n_par]
+            model_params = boot_params[param_index : param_index + n_par]
             model = model_list[model_idx]
             model_class = fitter_object._instantiate_class(model=model)  # each class can be difference
 
@@ -281,7 +281,11 @@ def compute_ci_bounds(
     if not overall_ci and not individual_ci:
         raise ValueError("At least one of 'overall_ci' or 'individual_ci' must be True.")
 
-    x_ = np.asarray(x_range) if x_range is not None else np.linspace(*np.asarray(fitter_object.x_values)[[0, -1]], num=1_000)
+    x_ = (
+        np.asarray(x_range)
+        if x_range is not None
+        else np.linspace(*np.asarray(fitter_object.x_values)[[0, -1]], num=1_000)
+    )
 
     _rng = _sanitize_generator(rng_engine=rng_engine, seed=seed)
     mv_parameters = _rng.multivariate_normal(mean=fitter_object.params, cov=fitter_object.covariance, size=n_bootstrap)

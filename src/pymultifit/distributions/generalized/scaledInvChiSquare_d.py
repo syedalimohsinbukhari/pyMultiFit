@@ -1,5 +1,7 @@
 """Created on Feb 02 03:46:43 2025"""
 
+from ... import INF, SQRT, _md_scipy_like, NAN_DICT
+from ...typing import ArrayLike, NDArray
 from ..backend import BaseDistribution
 from ..utilities_d import (
     scaled_inv_chi_square_cdf_,
@@ -7,8 +9,6 @@ from ..utilities_d import (
     scaled_inv_chi_square_log_pdf_,
     scaled_inv_chi_square_pdf_,
 )
-from ... import _md_scipy_like, SQRT, INF, NAN_DICT
-from ...typing import ArrayLike, NDArray
 
 
 class ScaledInverseChiSquareDistribution(BaseDistribution):

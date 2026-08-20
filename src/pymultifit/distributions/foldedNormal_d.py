@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from scipy.special import erf
 
-from .backend import BaseDistribution
-from .utilities_d import folded_normal_cdf_, folded_normal_log_cdf_, folded_normal_log_pdf_, folded_normal_pdf_
 from .. import EXP, NAN_DICT, SQRT, SQRT_TWO, SQRT_TWO_BY_PI, _md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import folded_normal_cdf_, folded_normal_log_cdf_, folded_normal_log_pdf_, folded_normal_pdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):

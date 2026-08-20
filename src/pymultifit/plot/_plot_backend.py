@@ -15,9 +15,9 @@ from ..exceptions import AxesError
 from ..typing import NDArray
 
 if TYPE_CHECKING:
-    from . import FitPlotter
     from ..fitters import MixedDataFitter
     from ..fitters.backend import BaseFitter
+    from . import FitPlotter
 
 FIG_SIZE = (10, 6)
 
@@ -141,13 +141,7 @@ def _fit_and_residual(
     # manually turn off the xticks on the fit plot
     ax1.tick_params(axis="x", bottom=False, labelbottom=False)
 
-    _resid(
-        plot_object=plot_object,
-        x_label=x_label,
-        axis=ax2,
-        data_label="",
-        is_scatter=is_scatter_residual,
-    )
+    _resid(plot_object=plot_object, x_label=x_label, axis=ax2, data_label="", is_scatter=is_scatter_residual)
     # no need for residual legend when it is used with the fitted plot
     ax2.legend_ = None
 
@@ -271,7 +265,7 @@ def _prediction_interval(
     n, k = len(x), len(params)
 
     residuals = fitter_object.get_residuals()
-    sigma = np.sqrt(np.sum(residuals ** 2) / max(n - k, 1))
+    sigma = np.sqrt(np.sum(residuals**2) / max(n - k, 1))
     fitted = fitter_object._n_fitter(fitter_object.x_values, *params)
 
     axis = _single_axis_sanitizer(axis=axis)
@@ -309,8 +303,7 @@ def _prediction_interval(
 
 
 def _obj_resolver(
-    plot_object: "FitPlotter | None" = None,
-    fitter_object: "BaseFitter | MixedDataFitter | None" = None,
+    plot_object: "FitPlotter | None" = None, fitter_object: "BaseFitter | MixedDataFitter | None" = None
 ) -> tuple["FitPlotter", "BaseFitter | MixedDataFitter"]:
     if plot_object is None and fitter_object is None:
         raise ValueError("At least one of plot_object or fitter_object must be provided.")
@@ -378,28 +371,26 @@ def _qq_compare(
     label_left: str | None = None,
     label_right: str | None = None,
     plot_title: str = "Q-Q Plot Comparison",
-    axes: tuple[Axes, Axes] | None = None
+    axes: tuple[Axes, Axes] | None = None,
 ) -> tuple[Axes, Axes]:
     if axes is None:
-        _, (ax_l, ax_r) = plt.subplots(
-            nrows=1, ncols=2, figsize=(12, 6), sharey=True
-        )
+        _, (ax_l, ax_r) = plt.subplots(nrows=1, ncols=2, figsize=(12, 6), sharey=True)
     elif not isinstance(axes, list | tuple) or len(axes) != 2:
         raise AxesError("There must be two axes for fitter and residuals to plot upon.")
     else:
         ax_l, ax_r = axes
 
     if label_left is None:
-        label_left = f'Q-Q plot | {fitter_left.__class__.__name__}'
+        label_left = f"Q-Q plot | {fitter_left.__class__.__name__}"
     if label_right is None:
-        label_right = f'Q-Q plot | {fitter_right.__class__.__name__}'
+        label_right = f"Q-Q plot | {fitter_right.__class__.__name__}"
 
     _qq(fitter_object=fitter_left, plot_title=label_left, axis=ax_l)
     _qq(fitter_object=fitter_right, plot_title=label_right, axis=ax_r)
 
     # manually mute the right plot for its y-axis label and ticks
-    ax_r.tick_params(axis='y', left=False, labelleft=False)
-    ax_r.set_ylabel('')
+    ax_r.tick_params(axis="y", left=False, labelleft=False)
+    ax_r.set_ylabel("")
 
     ax_l.get_figure().suptitle(plot_title)
 

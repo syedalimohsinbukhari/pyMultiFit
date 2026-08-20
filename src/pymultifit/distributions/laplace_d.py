@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution
-from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
 from .. import NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
 
 
 class LaplaceDistribution(BaseDistribution):

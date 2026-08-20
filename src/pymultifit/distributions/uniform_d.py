@@ -98,7 +98,7 @@ class UniformDistribution(BaseDistribution):
         :class:`~.UniformDistribution`
             An instance of normalized :class:`~.UniformDistribution`.
         """
-        return cls(low=loc, high=scale, normalize=True)
+        return cls(low=loc, high=loc + scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "UniformDistribution":
@@ -117,7 +117,7 @@ class UniformDistribution(BaseDistribution):
         :class:`~.UniformDistribution`
             An instance of normalized :class:`~.UniformDistribution`.
         """
-        return cls(low=loc, high=scale, normalize=True)
+        return cls(low=loc, high=loc + scale, normalize=True)
 
     def pdf(self, x: ArrayLike) -> NDArray:
         return uniform_pdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
@@ -132,7 +132,7 @@ class UniformDistribution(BaseDistribution):
         return uniform_log_cdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
     def stats(self) -> dict[str, float]:
-        low, high = self.low, self.low + self.high
+        low, high = self.low, self.high
 
         if low >= high:
             return NAN_DICT

@@ -2,10 +2,11 @@
 
 from scipy.special import gammaln
 
+from ... import EXP, LOG, SQRT, _md_scipy_like
+from ...typing import ArrayLike, NDArray
 from ..backend import BaseDistribution
 from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
-from ... import _md_scipy_like, LOG, EXP, SQRT
-from ...typing import ArrayLike, NDArray
+
 
 class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     r"""

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution
-from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
 from .. import NAN_DICT, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, _md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
 
 
 class HalfNormalDistribution(BaseDistribution):

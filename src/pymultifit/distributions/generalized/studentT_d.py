@@ -1,14 +1,9 @@
 """Created on July 28 11:15:23 2026"""
 
 from ..backend import BaseDistribution
+from ..utilities_d import students_t_cdf_, students_t_log_cdf_, students_t_log_pdf_, students_t_pdf_
 from ... import INF, NAN, NAN_DICT, SQRT
 from ...typing import ArrayLike, NDArray
-from ..utilities_d import (
-    students_t_cdf_,
-    students_t_log_cdf_,
-    students_t_log_pdf_,
-    students_t_pdf_,
-)
 
 
 class StudentsTDistribution(BaseDistribution):
@@ -17,15 +12,20 @@ class StudentsTDistribution(BaseDistribution):
 
     Parameters
     ----------
-    amplitude : float, default=1.0
-        The amplitude or scaling factor of the distribution. Defaults to 1.0.
-    v : float, default=1.0
-        Degrees of freedom parameter, :math:`v`. Must be strictly positive (:math:`v > 0`).
-    scale : float, default=1.0
-        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
-    loc : float, default=0.0
-        The location parameter, :math:`\mu`. Defaults to 0.0.
-    normalize : bool, default=False
+    amplitude :
+        The amplitude or scaling factor of the distribution.
+        Defaults to 1.0.
+    v :
+        Degrees of freedom parameter, :math:`v`.
+        Must be strictly positive (:math:`v > 0`).
+    scale :
+        The scale parameter, :math:`\sigma`.
+        Defaults to 1.0.
+        Must be strictly positive.
+    loc :
+        The location parameter, :math:`\mu`.
+        Defaults to 0.0.
+    normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
@@ -80,12 +80,7 @@ class StudentsTDistribution(BaseDistribution):
     """
 
     def __init__(
-        self,
-        amplitude: float = 1.0,
-        v: float = 1.0,
-        scale: float = 1.0,
-        loc: float = 0.0,
-        normalize: bool = False,
+        self, amplitude: float = 1.0, v: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
     ):
         if v <= 0:
             raise ValueError(f"Degrees of freedom v must be > 0, got {v}")
@@ -100,42 +95,22 @@ class StudentsTDistribution(BaseDistribution):
 
     def logpdf(self, x: ArrayLike) -> NDArray:
         return students_t_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            v=self.v,
-            scale=self.scale,
-            loc=self.loc,
-            normalize=self.normalize,
+            x, amplitude=self.amplitude, v=self.v, scale=self.scale, loc=self.loc, normalize=self.normalize
         )
 
     def pdf(self, x: ArrayLike) -> NDArray:
         return students_t_pdf_(
-            x,
-            amplitude=self.amplitude,
-            v=self.v,
-            scale=self.scale,
-            loc=self.loc,
-            normalize=self.normalize,
+            x, amplitude=self.amplitude, v=self.v, scale=self.scale, loc=self.loc, normalize=self.normalize
         )
 
     def cdf(self, x: ArrayLike) -> NDArray:
         return students_t_cdf_(
-            x,
-            amplitude=self.amplitude,
-            v=self.v,
-            scale=self.scale,
-            loc=self.loc,
-            normalize=self.normalize,
+            x, amplitude=self.amplitude, v=self.v, scale=self.scale, loc=self.loc, normalize=self.normalize
         )
 
     def logcdf(self, x: ArrayLike) -> NDArray:
         return students_t_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            v=self.v,
-            scale=self.scale,
-            loc=self.loc,
-            normalize=self.normalize,
+            x, amplitude=self.amplitude, v=self.v, scale=self.scale, loc=self.loc, normalize=self.normalize
         )
 
     def stats(self) -> dict[str, float]:
@@ -146,11 +121,13 @@ class StudentsTDistribution(BaseDistribution):
 
         mean_ = loc if v > 1 else NAN
         mode_ = loc
-        variance_ = (scale**2 * (v / (v - 2.0))) if v > 2 else (INF if v > 1 else NAN)
 
-        return {
-            "mean": mean_,
-            "mode": mode_,
-            "variance": variance_,
-            "std": SQRT(variance_) if v > 2 else NAN,
-        }
+        if 1 < v <= 2:
+            variance_ = INF
+        elif v > 2:
+            variance_ = v / (v - 2.0)
+            variance_ = scale ** 2 * variance_
+        else:
+            variance_ = NAN
+
+        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

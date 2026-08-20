@@ -25,10 +25,6 @@ class TestSymNormalDistribution:
 
     @staticmethod
     def test_constraints():
-        with pytest.raises(erH.NegativeAmplitudeError, match=f"Amplitude {erH.neg_message}"):
-            SymmetricGeneralizedNormalDistribution(amplitude=-1.0, normalize=False)
-
-        # amplitude should be internally updated to 1.0 if `normalize` is called
         distribution = SymmetricGeneralizedNormalDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
 

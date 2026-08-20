@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from numpy import cosh, expm1, sinh
 
-from .backend import BaseDistribution
-from .utilities_d import johnsonSU_cdf_, johnsonSU_log_cdf_, johnsonSU_log_pdf_, johnsonSU_pdf_
 from .. import EXP, NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import johnsonSU_cdf_, johnsonSU_log_cdf_, johnsonSU_log_pdf_, johnsonSU_pdf_
 
 
 class JohnsonSUDistribution(BaseDistribution):

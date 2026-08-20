@@ -2,15 +2,11 @@
 
 import numpy as np
 
-from ..backend import BaseDistribution
 from ... import INF, NAN, NAN_DICT, SQRT
 from ...typing import ArrayLike, NDArray
-from ..utilities_d import (
-    q_exponential_cdf_,
-    q_exponential_log_cdf_,
-    q_exponential_log_pdf_,
-    q_exponential_pdf_,
-)
+from ..backend import BaseDistribution
+from ..utilities_d import q_exponential_cdf_, q_exponential_log_cdf_, q_exponential_log_pdf_, q_exponential_pdf_
+
 
 class QExponentialDistribution(BaseDistribution):
     r"""
@@ -88,12 +84,7 @@ class QExponentialDistribution(BaseDistribution):
     """
 
     def __init__(
-        self,
-        amplitude: float = 1.0,
-        q: float = 1.0,
-        rate: float = 1.0,
-        loc: float = 0.0,
-        normalize: bool = False,
+        self, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
     ):
         self.amplitude = amplitude
         self.q = q
@@ -103,42 +94,22 @@ class QExponentialDistribution(BaseDistribution):
 
     def logpdf(self, x: ArrayLike) -> NDArray:
         return q_exponential_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            q=self.q,
-            rate=self.rate,
-            loc=self.loc,
-            normalize=self.normalize,
+            x, amplitude=self.amplitude, q=self.q, rate=self.rate, loc=self.loc, normalize=self.normalize
         )
 
     def pdf(self, x: ArrayLike) -> NDArray:
         return q_exponential_pdf_(
-            x,
-            amplitude=self.amplitude,
-            q=self.q,
-            rate=self.rate,
-            loc=self.loc,
-            normalize=self.normalize,
+            x, amplitude=self.amplitude, q=self.q, rate=self.rate, loc=self.loc, normalize=self.normalize
         )
 
     def cdf(self, x: ArrayLike) -> NDArray:
         return q_exponential_cdf_(
-            x,
-            amplitude=self.amplitude,
-            q=self.q,
-            rate=self.rate,
-            loc=self.loc,
-            normalize=self.normalize,
+            x, amplitude=self.amplitude, q=self.q, rate=self.rate, loc=self.loc, normalize=self.normalize
         )
 
     def logcdf(self, x: ArrayLike) -> NDArray:
         return q_exponential_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            q=self.q,
-            rate=self.rate,
-            loc=self.loc,
-            normalize=self.normalize,
+            x, amplitude=self.amplitude, q=self.q, rate=self.rate, loc=self.loc, normalize=self.normalize
         )
 
     def stats(self) -> dict[str, float]:
@@ -159,9 +130,4 @@ class QExponentialDistribution(BaseDistribution):
         else:
             variance_ = NAN
 
-        return {
-            "mean": mean_,
-            "mode": mode_,
-            "variance": variance_,
-            "std": SQRT(variance_) if q < (4.0 / 3.0) else NAN,
-        }
+        return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_) if q < (4.0 / 3.0) else NAN}

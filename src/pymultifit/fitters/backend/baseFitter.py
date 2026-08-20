@@ -11,11 +11,11 @@ from matplotlib.axes import Axes
 from numpy.random import Generator
 from scipy.optimize import Bounds, curve_fit
 
-from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
-from ..utilities_f import parameter_logic, sanity_check
 from ... import epsilon
 from ...plot import FitPlotter
 from ...typing import ArrayLike, NDArray, Params_
+from ..utilities_f import parameter_logic, sanity_check
+from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
 
 
 class BaseFitter:
@@ -69,7 +69,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par:]
+            provided_secondary_params = params[self.pn_par :]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -494,8 +494,9 @@ class BaseFitter:
         )
 
         if plot:
-            axis = self.plotter.plot_confidence_intervals(ci_levels=ci_levels, results=results, overall_ci=overall_ci,
-                                                          individual_ci=individual_ci, axis=axis)
+            axis = self.plotter.plot_confidence_intervals(
+                ci_levels=ci_levels, results=results, overall_ci=overall_ci, individual_ci=individual_ci, axis=axis
+            )
 
             return results, axis
 
