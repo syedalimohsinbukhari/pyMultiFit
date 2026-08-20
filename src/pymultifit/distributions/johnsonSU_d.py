@@ -34,7 +34,7 @@ class JohnsonSUDistribution(BaseDistribution):
     --------
     Importing libraries
 
-    .. literalinclude:: ../../../examples/basic/johnsonsu.py
+    .. literalinclude:: ../../../examples/basic/johnsonSU.py
        :language: python
        :linenos:
        :lineno-start: 3
@@ -42,7 +42,7 @@ class JohnsonSUDistribution(BaseDistribution):
 
     Generating a standard normalized :class:`~.JohnsonSUDistribution` with ``pyMultiFit`` and ``scipy``.
 
-    .. literalinclude:: ../../../examples/basic/johnsonsu.py
+    .. literalinclude:: ../../../examples/basic/johnsonSU.py
        :language: python
        :linenos:
        :lineno-start: 9
@@ -50,31 +50,31 @@ class JohnsonSUDistribution(BaseDistribution):
 
     Plotting **PDF** and **CDF**
 
-    .. literalinclude:: ../../../examples/basic/johnsonsu.py
+    .. literalinclude:: ../../../examples/basic/johnsonSU.py
        :language: python
        :linenos:
        :lineno-start: 14
        :lines: 14-29
 
-    .. image:: ../../../images/johnsonsu_example1.png
+    .. image:: ../../../images/johnsonSU_example1.png
        :alt: Johnson SU distribution (standard)
        :align: center
 
     Generating an unnormalized scaled :class:`~.JohnsonSUDistribution` with ``amplitude = 5.0``.
 
-    .. literalinclude:: ../../../examples/basic/johnsonsu.py
+    .. literalinclude:: ../../../examples/basic/johnsonSU.py
        :language: python
        :lineno-start: 32
        :lines: 32
 
     Plotting **PDF** and **CDF**
 
-    .. literalinclude:: ../../../examples/basic/johnsonsu.py
+    .. literalinclude:: ../../../examples/basic/johnsonSU.py
        :language: python
        :lineno-start: 34
        :lines: 34-49
 
-    .. image:: ../../../images/johnsonsu_example2.png
+    .. image:: ../../../images/johnsonSU_example2.png
        :alt: Johnson SU distribution (scaled amplitude)
        :align: center
     """

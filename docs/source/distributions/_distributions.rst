@@ -122,6 +122,7 @@ Non-distribution function
    qExponentialDistribution <qExponential_d>
    ScaledInverseChiSquareDistribution <scaledInvChiSquare_d>
    SkewNormalDistribution   <skewNormal_d>
+   StudentsTDistribution   <studentsT_d>
    SymGeneralizedNormalDistribution <genNorm_d>
    UniformDistribution      <uniform_d>
    DistributionUtilities    <utilities_d>
