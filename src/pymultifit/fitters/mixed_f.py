@@ -2,7 +2,7 @@
 
 import itertools
 import warnings
-from typing import Callable, Sequence
+from typing import Callable, Sequence, override
 
 import numpy as np
 from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
@@ -253,7 +253,8 @@ class MixedDataFitter(BaseFitter):
 
         return param_dict
 
-    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None):
+    @override
+    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None): # type-ignore
         """
         Fit the data.
 
@@ -372,9 +373,10 @@ class MixedDataFitter(BaseFitter):
         -------
         dict :
             A dictionary containing:
+
                 - "parameters": Nested dictionary of parameter values for each model.
                 - "errors": Nested dictionary of errors for each model (if ``get_errors=True``).
-            Otherwise, returns just the parameters directly.
+                - Otherwise, returns just the parameters directly.
         """
         parameters = self._parameter_extractor(self.params)
         errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
