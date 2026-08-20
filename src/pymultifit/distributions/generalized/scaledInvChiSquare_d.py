@@ -42,7 +42,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
     Generating a standard :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution` (:math:`\nu=1, \tau^2=1, \mu=0`)
      with ``pyMultiFit`` and ``scipy`` (where :math:`\nu=1` yields the inverse gamma parameterization :math:`a=\frac{\nu}{2}, \text{scale}=\frac{\nu \tau^2}{2}`):
 
-    .. literalinclude:: ../../../examples/basic/scaled_inv_chi2.py
+    .. literalinclude:: ../../../examples/basic/scaledinvchi2.py
        :language: python
        :linenos:
        :lineno-start: 9
@@ -50,7 +50,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
     Plotting **PDF** and **CDF**:
 
-    .. literalinclude:: ../../../examples/basic/scaled_inv_chi2.py
+    .. literalinclude:: ../../../examples/basic/scaledinvchi2.py
        :language: python
        :linenos:
        :lineno-start: 14
@@ -62,14 +62,14 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
     Generating a scaled and translated :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution` with Gaussian variance hyperparameters (:math:`\nu=5, \tau^2=2.5, \mu=-3`):
 
-    .. literalinclude:: ../../../examples/basic/scaled_inv_chi2.py
+    .. literalinclude:: ../../../examples/basic/scaledinvchi2.py
        :language: python
        :lineno-start: 32
        :lines: 32
 
     Plotting **PDF** and **CDF**:
 
-    .. literalinclude:: ../../../examples/basic/scaled_inv_chi2.py
+    .. literalinclude:: ../../../examples/basic/scaledinvchi2.py
        :language: python
        :lineno-start: 34
        :lines: 34-49

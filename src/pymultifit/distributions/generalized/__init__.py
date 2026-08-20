@@ -3,7 +3,7 @@
 from .genNorm_d import SymmetricGeneralizedNormalDistribution
 from .qExponential_d import QExponentialDistribution
 from .scaledInvChiSquare_d import ScaledInverseChiSquareDistribution
-from .studentT_d import StudentsTDistribution
+from .studentsT_d import StudentsTDistribution
 
 __all__ = [
     "SymmetricGeneralizedNormalDistribution",
