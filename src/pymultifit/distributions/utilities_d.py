@@ -5,7 +5,6 @@ from __future__ import annotations
 __all__ = [
     "_beta_expr",
     "_pdf_scaling",
-    "preprocess_input",
     "arc_sine_pdf_",
     "arc_sine_cdf_",
     "arc_sine_log_pdf_",
@@ -62,6 +61,11 @@ __all__ = [
     "log_normal_cdf_",
     "log_normal_log_pdf_",
     "log_normal_log_cdf_",
+    "q_exponential_pdf_",
+    "q_exponential_log_pdf_",
+    "q_exponential_cdf_",
+    "q_exponential_log_cdf_",
+    "q_exp_to_gen_pareto",
     "scaled_inv_chi_square_pdf_",
     "scaled_inv_chi_square_log_pdf_",
     "scaled_inv_chi_square_cdf_",
@@ -69,6 +73,10 @@ __all__ = [
     "skew_normal_pdf_",
     "skew_normal_log_pdf_",
     "skew_normal_cdf_",
+    "students_t_pdf_",
+    "students_t_log_pdf_",
+    "students_t_cdf_",
+    "students_t_log_cdf_",
     "uniform_pdf_",
     "uniform_cdf_",
     "uniform_log_pdf_",
@@ -78,44 +86,67 @@ __all__ = [
     "cubic",
 ]
 
+from collections.abc import Sequence
 from typing import Callable
 
 import numpy as np
-import scipy.special as ssp
+import scipy
 from custom_inherit import doc_inherit  # type: ignore
+from scipy.special import (
+    gamma,
+    poch,
+    xlog1py,
+    xlogy,
+    betaln,
+    betainc,
+    gammaln,
+    expm1,
+    gammainc,
+    ndtr,
+    log_ndtr,
+    beta,
+    erf,
+    owens_t, rgamma, gammaincc,
+)
 
 from .. import (
+    EPSILON,
+    EXP,
     INF,
     LOG,
+    LOG1P,
+    LOG_PI,
     LOG_SQRT_TWO_BY_PI,
     LOG_SQRT_TWO_PI,
     LOG_TWO,
+    NAN,
     PI,
+    SQRT,
     SQRT_TWO,
     SQRT_TWO_BY_PI,
     SQRT_TWO_PI,
     TWO_BY_PI,
     doc_style,
     suppress_numpy_warnings,
-    NAN,
-    SQRT,
-    EXP,
 )
 from ..typing import ArrayLike, NDArray
 
 
-def reject_x(x: ArrayLike, shp1=None, shp2=None, loc=0, scale=1) -> tuple[NDArray | None, bool]:
+def full_nan(x: int | Sequence[int], y: float = NAN) -> NDArray:
+    return np.full(shape=x, fill_value=y)
+
+
+def reject_x(x: ArrayLike, shp1=None, shp2=None, loc: float = 0.0, scale: float = 1.0) -> tuple[NDArray | None, bool]:
+    x = np.asarray(x, dtype=float)
+
     for val in (shp1, shp2, scale):
         if val is not None and val <= 0:
-            return None, True
+            return x, True
 
     if x.size == 0:
-        return None, True
+        return np.asarray([]), True
 
-    x = np.asarray(x) - loc
-    x /= scale
-
-    return x, False
+    return (x - loc) / scale, False
 
 
 @suppress_numpy_warnings()
@@ -128,7 +159,7 @@ def arc_sine_pdf_(
     Parameters
     ----------
     x :
-        Input array of values where PDF is evaluated.
+        Input array of values.
     amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     loc :
@@ -136,7 +167,7 @@ def arc_sine_pdf_(
     scale :
         The scale parameter, specifying the width of the distribution. Defaults to 1.0.
     normalize :
-        If True, the distribution is normalized so that the total area under the PDF equals 1.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
     Returns
@@ -156,10 +187,10 @@ def arc_sine_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\text{scale}`.
     """
-    y, rej_ = reject_x(x=x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     c1 = (y > 0) & (y < 1)
     c2 = y == 0
@@ -199,18 +230,20 @@ def arc_sine_log_pdf_(
     y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     c1 = (y > 0) & (y < 1)
     c2 = y == 0
     c3 = y == 1
 
-    z = y * (1 - y)
-
-    log_pdf_ = np.select(condlist=[c1, c2, c3], choicelist=[LOG(1 / PI / SQRT(z)), INF, INF], default=-INF)
+    log_pdf_ = np.select(
+        condlist=[c1, c2, c3], choicelist=[-LOG_PI - 0.5 * LOG(y) - 0.5 * LOG1P(-y), INF, INF], default=-INF
+    )
     log_pdf_ -= LOG(scale)
 
     if not normalize:
+        if amplitude < 0:
+            return full_nan(np.shape(y))
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     return log_pdf_
@@ -239,7 +272,7 @@ def arc_sine_cdf_(
     y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
@@ -270,7 +303,7 @@ def arc_sine_log_cdf_(
     y, rej_ = reject_x(x=x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     c1 = (y > 0) & (y < 1)
     c2 = y < 1
@@ -294,17 +327,17 @@ def beta_pdf_(
     Parameters
     ----------
     x :
-        Input array of values where PDF is evaluated.
+        Input array of values.
     amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     alpha :
-        The :math:`\alpha` parameter. Default is 1.0.
+        The :math:`\alpha` parameter. Defaults to 1.0.
     beta_ :
-        The :math:`\beta` parameter. Default is 1.0.
+        The :math:`\beta` parameter. Defaults to 1.0.
     loc :
-        The location parameter, for shifting. Default is 0.0.
+        The location parameter, for shifting. Defaults to 0.0.
     scale :
-        The scale parameter, for scaling. Default is 1.0.
+        The scale parameter, for scaling. Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -312,7 +345,7 @@ def beta_pdf_(
     Returns
     -------
     NDArray
-        Array of the same shape as `x`, containing the evaluated values.
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----
@@ -320,7 +353,7 @@ def beta_pdf_(
 
     .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 - y)^{\beta - 1}}{B(\alpha, \beta)}
 
-    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`ssp.beta`), and :math:`y` is the
+    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`beta`), and :math:`y` is the
     transformed value of :math:`x` such that:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -330,7 +363,7 @@ def beta_pdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     conditions, main = _beta_expr(y=y, a=alpha, b=beta_, un_log=True)
 
@@ -362,7 +395,7 @@ def beta_log_pdf_(
 
     .. math:: \ell(y) = (\alpha - 1)\ln(y) + (\beta - 1)\ln(1 - y) - \ln(\text{Beta}(\alpha, \beta))
 
-    where :math:`B(\alpha, \beta)` is the :obj:`~ssp.beta` function, and :math:`y` is the
+    where :math:`B(\alpha, \beta)` is the :obj:`~beta` function, and :math:`y` is the
     transformed value of :math:`x` such that:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -372,7 +405,7 @@ def beta_log_pdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     conditions, main = _beta_expr(y=y, a=alpha, b=beta_)
 
@@ -380,6 +413,8 @@ def beta_log_pdf_(
     log_pdf_ -= LOG(scale)
 
     if not normalize:
+        if amplitude < 0:
+            return full_nan(np.shape(y))
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     return log_pdf_
@@ -414,7 +449,7 @@ def beta_cdf_(
 
     .. math:: F(y) = I_y(\alpha, \beta)
 
-    where :math:`I_y(\alpha, \beta)` is the :obj:`~ssp.betainc` function, and :math:`y` is the transformed
+    where :math:`I_y(\alpha, \beta)` is the :obj:`~betainc` function, and :math:`y` is the transformed
     value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -424,9 +459,9 @@ def beta_cdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=ssp.betainc(alpha, beta_, y))
+    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=betainc(alpha, beta_, y))
 
 
 @suppress_numpy_warnings()
@@ -449,7 +484,7 @@ def beta_log_cdf_(
 
     .. math:: \mathcal{L}(y) = \ln I_y(\alpha, \beta)
 
-    where :math:`I_y(\alpha, \beta)` is the :obj:`~ssp.betainc` function, and :math:`y` is the transformed
+    where :math:`I_y(\alpha, \beta)` is the :obj:`~betainc` function, and :math:`y` is the transformed
     value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -459,9 +494,9 @@ def beta_log_cdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(ssp.betainc(alpha, beta_, y)))
+    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(betainc(alpha, beta_, y)))
 
 
 @suppress_numpy_warnings()
@@ -480,17 +515,17 @@ def beta_prime_pdf_(
     Parameters
     ----------
     x :
-        Input array of values where PDF is evaluated.
+        Input array of values.
     amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     alpha :
-        The :math:`\alpha` parameter. Default is 1.0.
+        The :math:`\alpha` parameter. Defaults to 1.0.
     beta_ :
-        The :math:`\beta` parameter. Default is 1.0.
+        The :math:`\beta` parameter. Defaults to 1.0.
     loc :
-        The location parameter, for shifting. Default is 0.0.
+        The location parameter, for shifting. Defaults to 0.0.
     scale :
-        The scale parameter, for scaling. Default is 1.0.
+        The scale parameter, for scaling. Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -498,7 +533,7 @@ def beta_prime_pdf_(
     Returns
     -------
     NDArray
-        Array of the same shape as `x`, containing the evaluated values.
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----
@@ -506,7 +541,7 @@ def beta_prime_pdf_(
 
     .. math:: f(y; \alpha, \beta) = \frac{y^{\alpha - 1} (1 + y)^{-(\alpha + \beta)}}{B(\alpha, \beta)}
 
-    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`ssp.beta`), and :math:`y` is the
+    where :math:`B(\alpha, \beta)` is the Beta function (see, :obj:`beta`), and :math:`y` is the
     transformed value of :math:`x` such that:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -516,9 +551,9 @@ def beta_prime_pdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
-    log_expr = ssp.xlogy(alpha - 1.0, y) - ssp.xlog1py(alpha + beta_, y) - ssp.betaln(alpha, beta_)
+    log_expr = xlogy(alpha - 1.0, y) - xlog1py(alpha + beta_, y) - betaln(alpha, beta_)
     pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[EXP(log_expr), NAN], default=0.0)
     pdf_ /= scale
 
@@ -547,7 +582,7 @@ def beta_prime_log_pdf_(
 
     .. math:: \ell(y) = (\alpha - 1)\ln(y) - (\alpha + \beta)\ln(1 - y) - \ln(\text{Beta}(\alpha, \beta))
 
-    where :math:`B(\alpha, \beta)` is the :obj:`~ssp.beta` function, and :math:`y` is the
+    where :math:`B(\alpha, \beta)` is the :obj:`~beta` function, and :math:`y` is the
     transformed value of :math:`x` such that:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -557,13 +592,15 @@ def beta_prime_log_pdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
-    expr = ssp.xlogy(alpha - 1.0, y) - ssp.xlog1py(alpha + beta_, y) - ssp.betaln(alpha, beta_)
+    expr = xlogy(alpha - 1.0, y) - xlog1py(alpha + beta_, y) - betaln(alpha, beta_)
     log_pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[expr, NAN], default=-INF)
     log_pdf_ -= LOG(scale)
 
     if not normalize:
+        if amplitude < 0:
+            return full_nan(np.shape(y))
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     return log_pdf_
@@ -596,7 +633,7 @@ def beta_prime_cdf_(
 
     .. math:: F(y) = I_z(\alpha, \beta)
 
-    where :math:`z = \dfrac{y}{1+y}`, :math:`I_z(\alpha, \beta)` is the :obj:`~ssp.betainc` function,
+    where :math:`z = \dfrac{y}{1+y}`, :math:`I_z(\alpha, \beta)` is the :obj:`~betainc` function,
     and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -606,10 +643,10 @@ def beta_prime_cdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     z = y / (1 + y)
-    return np.where(y > 0, ssp.betainc(alpha, beta_, z), 0)
+    return np.where(y > 0, betainc(alpha, beta_, z), 0)
 
 
 @doc_inherit(parent=beta_prime_cdf_, style=doc_style)
@@ -631,7 +668,7 @@ def beta_prime_log_cdf_(
 
     .. math:: \mathcal{L}(y) = \ln\left[I_z(\alpha, \beta)\right]
 
-    where :math:`z = \dfrac{y}{1+y}`, :math:`I_z(\alpha, \beta)` is the :obj:`~ssp.betainc` function,
+    where :math:`z = \dfrac{y}{1+y}`, :math:`I_z(\alpha, \beta)` is the :obj:`~betainc` function,
     and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -641,10 +678,10 @@ def beta_prime_log_cdf_(
     y, rej_ = reject_x(x, alpha, beta_, loc, scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     z = y / (1 + y)
-    return np.where(y > 0, LOG(ssp.betainc(alpha, beta_, z)), -INF)
+    return np.where(y > 0, LOG(betainc(alpha, beta_, z)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -686,7 +723,7 @@ def chi_square_pdf_(
 
     .. math:: f(y\ |\ k) = \dfrac{y^{(k/2) - 1} e^{-y/2}}{2^{k/2} \Gamma(k/2)}
 
-    where :math:`\Gamma(\cdot)` is the :obj:`~ssp.gamma` function, and :math:`y` is the transformed value of :math:`x`, defined as:
+    where :math:`\Gamma(\cdot)` is the :obj:`~gamma` function, and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
 
@@ -695,11 +732,11 @@ def chi_square_pdf_(
     y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     df_half = degree_of_freedom / 2.0
 
-    pdf_ = np.where(y > 0, EXP(_chi2(y=y, df_half=df_half)), 0)
+    pdf_ = np.where(y > 0, EXP(_chi2(y=y, df_half=df_half)), 0.0)
     pdf_ /= scale
 
     if not normalize:
@@ -708,8 +745,8 @@ def chi_square_pdf_(
     return pdf_
 
 
-def _chi2(y, df_half):
-    return ssp.xlogy(df_half - 1, y) - (y / 2) - ssp.gammaln(df_half) - (LOG_TWO * df_half)
+def _chi2(y: NDArray, df_half: float):
+    return xlogy(df_half - 1, y) - (y / 2) - gammaln(df_half) - (LOG_TWO * df_half)
 
 
 @suppress_numpy_warnings()
@@ -731,7 +768,7 @@ def chi_square_log_pdf_(
 
     .. math:: \ell(y\ |\ k) = \left(\dfrac{k}{2} - 1\right)\ln(y) - \dfrac{y}{2} - \dfrac{k}{2}\ln(2) - \ln\Gamma\left(\dfrac{k}{2}\right)
 
-    where :math:`\ln\Gamma(\cdot)` is the :obj:`~ssp.gammaln` function,
+    where :math:`\ln\Gamma(\cdot)` is the :obj:`~gammaln` function,
     and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
@@ -742,7 +779,9 @@ def chi_square_log_pdf_(
     y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     df_half = degree_of_freedom / 2.0
 
@@ -770,9 +809,9 @@ def chi_square_cdf_(
 
     Parameters
     ----------
-    amplitude
+    amplitude :
         For API consistency only.
-    normalize
+    normalize :
         For API consistency only.
 
     Notes
@@ -781,7 +820,7 @@ def chi_square_cdf_(
 
     .. math:: F(y) = \gamma\left(\dfrac{\nu}{2}, \dfrac{y}{2}\right)
 
-    where, :math:`\gamma\left(\cdot, \cdot\right)` is the :obj:`~ssp.gammainc` lower regularized incomplete
+    where, :math:`\gamma\left(\cdot, \cdot\right)` is the :obj:`~gammainc` lower regularized incomplete
     gamma function, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
@@ -791,9 +830,11 @@ def chi_square_cdf_(
     y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y > 0, ssp.gammainc(degree_of_freedom / 2, y / 2), 0)
+    return np.where(y > 0, gammainc(degree_of_freedom / 2, y / 2), 0)
 
 
 @suppress_numpy_warnings()
@@ -815,7 +856,7 @@ def chi_square_log_cdf_(
 
     .. math:: \mathcal{L}(y) = \ln\gamma\left(\dfrac{\nu}{2}, \dfrac{y}{2}\right)
 
-    where, :math:`\gamma\left(\cdot, \cdot\right)` is the :obj:`~ssp.gammainc` lower regularized incomplete
+    where, :math:`\gamma\left(\cdot, \cdot\right)` is the :obj:`~gammainc` lower regularized incomplete
     gamma function, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\text{scale}}
@@ -825,9 +866,11 @@ def chi_square_log_cdf_(
     y, rej_ = reject_x(x, degree_of_freedom, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y > 0, LOG(ssp.gammainc(degree_of_freedom / 2, y / 2)), -INF)
+    return np.where(y > 0, LOG(gammainc(degree_of_freedom / 2, y / 2)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -861,7 +904,7 @@ def cubic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float
 
     where, :math:`a`, :math:`b`, :math:`c`, and :math:`d` are the cubic coefficients.
     """
-    return a * x**3 + b * x**2 + c * x + d
+    return a * x ** 3 + b * x ** 2 + c * x + d
 
 
 @suppress_numpy_warnings()
@@ -911,7 +954,9 @@ def exponential_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=rate)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     pdf_ = np.where(y >= 0, EXP(-y), 0)
     pdf_ /= rate
@@ -958,7 +1003,9 @@ def exponential_log_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=rate)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     log_pdf_ = np.where(y >= 0, -y, -INF)
     log_pdf_ -= LOG(rate)
@@ -1000,9 +1047,11 @@ def exponential_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=rate)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y >= 0, -ssp.expm1(-y), 0)
+    return np.where(y >= 0, -expm1(-y), 0)
 
 
 @suppress_numpy_warnings()
@@ -1029,9 +1078,11 @@ def exponential_log_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=rate)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y >= 0, LOG(-ssp.expm1(-y)), -INF)
+    return np.where(y >= 0, LOG(-expm1(-y)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -1083,7 +1134,9 @@ def folded_normal_pdf_(
     y, rej_ = reject_x(x, mean, loc=loc, scale=sigma)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     pdf_ = np.where(
         y >= 0, gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True), 0
@@ -1125,7 +1178,9 @@ def folded_normal_log_pdf_(
     y, rej_ = reject_x(x, shp1=mean, loc=loc, scale=sigma)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     log_pdf_ = np.where(
         y >= 0, LOG(gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True)), -INF
@@ -1176,7 +1231,9 @@ def folded_normal_cdf_(
     print(f"{mean=} {sigma=} {rej_=}")
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     q = (y + mean) / SQRT_TWO
     r = (y - mean) / SQRT_TWO
@@ -1204,7 +1261,7 @@ def folded_normal_log_cdf_(
     .. math:: \mathcal{L}(y) = -\ln(2) + \ln\left[\text{erf}\left(\dfrac{q}{\sqrt{2}}\right) +
               \text{erf}\left(\dfrac{r}{\sqrt{2}}\right)\right]
 
-    where :math:`q = y + \mu`, :math:`r = y - \mu`, :math:`\text{erf}` is :obj:`~ssp.erf` function and
+    where :math:`q = y + \mu`, :math:`r = y - \mu`, :math:`\text{erf}` is :obj:`~erf` function and
     :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\sigma}.
@@ -1214,7 +1271,9 @@ def folded_normal_log_cdf_(
     y, rej_ = reject_x(x, shp1=mean, loc=loc, scale=sigma)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     q = (y + mean) / SQRT_TWO
     r = (y - mean) / SQRT_TWO
@@ -1248,7 +1307,7 @@ def _folded(x: ArrayLike, mean: float, loc: float, scale: float, g_func: Callabl
     y, rej_ = reject_x(x, mean, scale, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     g1 = g_func(x=y, mean=mean, normalize=True)
     g2 = g_func(x=y, mean=-mean, normalize=True)
@@ -1292,7 +1351,9 @@ def gamma_pdf_(
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     pdf_ = _gamma(x=y, a=alpha, un_log=True)
     pdf_ /= theta
@@ -1317,7 +1378,9 @@ def gamma_log_pdf_(
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     log_pdf_ = _gamma(x=y, a=alpha)
     log_pdf_ -= LOG(theta)
@@ -1329,7 +1392,7 @@ def gamma_log_pdf_(
 
 
 def _gamma(x, a, un_log=False):
-    value = np.where(x >= 0, ssp.xlogy(a - 1.0, x) - x - ssp.gammaln(a), -INF)
+    value = np.where(x >= 0, xlogy(a - 1.0, x) - x - gammaln(a), -INF)
     return EXP(value) if un_log else value
 
 
@@ -1356,9 +1419,11 @@ def gamma_cdf_(
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y > 0, ssp.gammainc(alpha, y), 0)
+    return np.where(y > 0, gammainc(alpha, y), 0)
 
 
 @suppress_numpy_warnings()
@@ -1380,7 +1445,7 @@ def gamma_log_cdf_(
 
     .. math:: \mathcal{L}(y) = \ln\left[\gamma(\alpha, y)\right]
 
-    where :math:`\gamma(\cdot, \cdot)` is the :obj:`~ssp.gammainc` lower regularized incomplete
+    where :math:`\gamma(\cdot, \cdot)` is the :obj:`~gammainc` lower regularized incomplete
     gamma function, and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \text{loc}}{\theta}
@@ -1390,9 +1455,11 @@ def gamma_log_cdf_(
     y, rej_ = reject_x(x, alpha, loc=loc, scale=theta)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return LOG(np.where(y > 0, ssp.gammainc(alpha, y), 0))
+    return LOG(np.where(y > 0, gammainc(alpha, y), 0))
 
 
 @suppress_numpy_warnings()
@@ -1432,9 +1499,11 @@ def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
     y, rej_ = reject_x(x, loc=mean, scale=std)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    pdf_ = EXP(-0.5 * y**2) / SQRT_TWO_PI
+    pdf_ = EXP(-0.5 * y ** 2) / SQRT_TWO_PI
     pdf_ /= std
 
     if not normalize:
@@ -1463,9 +1532,11 @@ def gaussian_log_pdf_(
     y, rej_ = reject_x(x, loc=mean, scale=std)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    log_pdf_ = -(y**2) / 2.0 - LOG_SQRT_TWO_PI
+    log_pdf_ = -(y ** 2) / 2.0 - LOG_SQRT_TWO_PI
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -1484,7 +1555,7 @@ def gaussian_cdf_(
 
     .. important::
 
-        The calculation of gaussian CDF is done using :obj:`ssp.ndtr` function.
+        The calculation of gaussian CDF is done using :obj:`ndtr` function.
 
     Parameters
     ----------
@@ -1503,9 +1574,12 @@ def gaussian_cdf_(
 
     The final CDF is expressed as :math:`F(x)`.
     """
-    if std <= 0:
-        return np.full(x.shape, NAN)
-    return ssp.ndtr((x - mean) / std)
+    y, rej_ = reject_x(x, loc=mean, scale=std)
+
+    if rej_:
+        return full_nan(np.shape(y))
+
+    return ndtr(y)
 
 
 @suppress_numpy_warnings()
@@ -1518,7 +1592,7 @@ def gaussian_log_cdf_(
 
     .. important::
 
-        The calculation of gaussian logCDF is done using :obj:`ssp.log_ndtr` function.
+        The calculation of gaussian logCDF is done using :obj:`log_ndtr` function.
 
     Notes
     -----
@@ -1529,9 +1603,12 @@ def gaussian_log_cdf_(
 
     The final logCDF is expressed as :math:`\mathcal{L}(x)`.
     """
-    if std <= 0:
-        return np.full(x.shape, NAN)
-    return ssp.log_ndtr((x - mean) / std)
+    y, rej_ = reject_x(x, loc=mean, scale=std)
+
+    if rej_:
+        return full_nan(np.shape(y))
+
+    return log_ndtr(y)
 
 
 @suppress_numpy_warnings()
@@ -1548,16 +1625,16 @@ def gumbel_pdf_(
     amplitude :
         The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     mu :
-        The location parameter, :math:`\text{loc}`. Defaults to 0.0.
+        The location parameter, :math:`\mu`. Defaults to 0.0.
     beta_ :
-        The scale parameter, :math:`\text{scale}`. Defaults to 1.0.
+        The scale parameter, :math:`\beta`. Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
     Returns
     -------
-    ArrayLike
+    NDArray
         Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
@@ -1576,7 +1653,7 @@ def gumbel_pdf_(
     y, rej_ = reject_x(x, loc=mu, scale=beta_)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     pdf_ = EXP(-y - EXP(-y))
     pdf_ /= beta_
@@ -1611,7 +1688,7 @@ def gumbel_log_pdf_(
     y, rej_ = reject_x(x, loc=mu, scale=beta_)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     log_pdf_ = -y - EXP(-y)
     log_pdf_ -= LOG(beta_)
@@ -1646,7 +1723,7 @@ def gumbel_cdf_(
     y, rej_ = reject_x(x, loc=mu, scale=beta_)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     return EXP(-EXP(-y))
 
@@ -1675,7 +1752,7 @@ def gumbel_log_cdf_(
     y, rej_ = reject_x(x, loc=mu, scale=beta_)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     return -EXP(-y)
 
@@ -1726,9 +1803,11 @@ def half_normal_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * EXP(-0.5 * y**2), 0)
+    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * EXP(-0.5 * y ** 2), 0)
     pdf_ /= sigma
 
     if not normalize:
@@ -1760,9 +1839,11 @@ def half_normal_log_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y**2, -INF)
+    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y ** 2, -INF)
     log_pdf_ -= LOG(sigma)
 
     if not normalize:
@@ -1801,9 +1882,11 @@ def half_normal_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y >= 0, ssp.erf(y / SQRT_TWO), 0)
+    return np.where(y >= 0, erf(y / SQRT_TWO), 0)
 
 
 @suppress_numpy_warnings()
@@ -1829,9 +1912,11 @@ def half_normal_log_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=sigma)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y >= 0, LOG(ssp.erf(y / SQRT_TWO)), -INF)
+    return np.where(y >= 0, LOG(erf(y / SQRT_TWO)), -INF)
 
 
 @suppress_numpy_warnings()
@@ -1850,9 +1935,9 @@ def johnsonSU_pdf_(
     Parameters
     ----------
     x :
-        Input array of values where PDF is evaluated.
+        Input array of values.
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is True.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     gamma :
         The location parameter in the transformed z-space. Defaults to 1.0.
     delta :
@@ -1862,13 +1947,13 @@ def johnsonSU_pdf_(
     lambda_ :
         The scale parameter for the original variable. Defaults to 1.0.
     normalize :
-        If True, the distribution is normalized so the total area under the PDF equals 1.
-        Defaults to False.
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Returns
     -------
     NDArray
-        Array of the same shape as ``x`` with evaluated PDF values.
+        Array of the same shape as :math:`x`, containing the evaluated values.
 
     Notes
     -----
@@ -1883,10 +1968,12 @@ def johnsonSU_pdf_(
     y, rej_ = reject_x(x, delta, loc=xi, scale=lambda_)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     f1 = delta / SQRT_TWO_PI
-    f2 = np.sqrt(1 + y**2)
+    f2 = np.sqrt(1 + y ** 2)
     f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
 
     pdf_ = f1 / f2 * f3
@@ -1925,10 +2012,12 @@ def johnsonSU_log_pdf_(
     y, rej_ = reject_x(x, delta, loc=xi, scale=lambda_)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
-    f2 = -0.5 * np.log1p(y**2)
+    f2 = -0.5 * np.log1p(y ** 2)
     f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
 
     log_pdf_ = f1 + f2 + f3
@@ -1972,9 +2061,11 @@ def johnsonSU_cdf_(
     y, rej_ = reject_x(x, delta, loc=xi, scale=lambda_)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return ssp.ndtr(gamma + delta * np.arcsinh(y))
+    return ndtr(gamma + delta * np.arcsinh(y))
 
 
 @suppress_numpy_warnings()
@@ -1997,14 +2088,16 @@ def johnsonSU_log_cdf_(
 
     .. math:: \mathcal{L}(x) = \ln\Phi\left(\gamma + \delta\,\operatorname{asinh}\left(\dfrac{x - \xi}{\lambda}\right)\right).
 
-    This function uses :obj:`ssp.log_ndtr` for numerically stable evaluation.
+    This function uses :obj:`log_ndtr` for numerically stable evaluation.
     """
     y, rej_ = reject_x(x, delta, loc=xi, scale=lambda_)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return ssp.log_ndtr(gamma + delta * np.arcsinh(y))
+    return log_ndtr(gamma + delta * np.arcsinh(y))
 
 
 @suppress_numpy_warnings()
@@ -2048,7 +2141,9 @@ def laplace_pdf_(
     y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     pdf_ = (1 / 2) * EXP(-np.abs(y))
     pdf_ /= diversity
@@ -2082,7 +2177,9 @@ def laplace_log_pdf_(
     y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     log_pdf_ = LOG(0.5 * EXP(-np.abs(y)))
     log_pdf_ -= LOG(diversity)
@@ -2128,7 +2225,9 @@ def laplace_cdf_(
     y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     return np.where(y > 0, 1.0 - 0.5 * EXP(-y), 0.5 * EXP(y))
 
@@ -2154,7 +2253,9 @@ def laplace_log_cdf_(
     y, rej_ = reject_x(x, loc=mean, scale=diversity)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     return np.where(y > 0, np.log1p(-0.5 * EXP(-y)), -LOG_TWO + y)
 
@@ -2233,11 +2334,13 @@ def log_normal_pdf_(
     y, rej_ = reject_x(x, mean, std, loc=loc)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     q = (LOG(y) - LOG(mean)) / std
 
-    pdf_ = np.where(y > 0, 1 / y / EXP(q**2 / 2) / SQRT_TWO_PI, 0)
+    pdf_ = np.where(y > 0, 1 / y / EXP(q ** 2 / 2) / SQRT_TWO_PI, 0)
     pdf_ /= std
 
     if not normalize:
@@ -2270,11 +2373,13 @@ def log_normal_log_pdf_(
     y, rej_ = reject_x(x, mean, std, loc=loc)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     q = (LOG(y) - LOG(mean)) / std
 
-    log_pdf_ = np.where(y > 0, -LOG(y) - (q**2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
+    log_pdf_ = np.where(y > 0, -LOG(y) - (q ** 2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -2296,7 +2401,7 @@ def log_normal_cdf_(
     amplitude :
         For API consistency only.
     normalize :
-        For API consistency only
+        For API consistency only.
 
     Returns
     -------
@@ -2311,7 +2416,7 @@ def log_normal_cdf_(
         .. math::
             F(x) = \Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)
 
-        which can be calculated via :obj:`ssp.ndtr` function with ``ndtr(y)``, where :math:`y` is the
+        which can be calculated via :obj:`ndtr` function with ``ndtr(y)``, where :math:`y` is the
         transformed value of :math:`x`, defined as:
 
         .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
@@ -2319,9 +2424,11 @@ def log_normal_cdf_(
     y, rej_ = reject_x(x, mean, std, loc=loc)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y > 0, ssp.ndtr((LOG(y) - LOG(mean)) / std), 0)
+    return np.where(y > 0, ndtr((LOG(y) - LOG(mean)) / std), 0)
 
 
 @suppress_numpy_warnings()
@@ -2340,7 +2447,7 @@ def log_normal_log_cdf_(
         .. math::
             \mathcal{L}(x) = \ln\left[\Phi\left(\dfrac{\ln x - \mu}{\sigma}\right)\right]
 
-        which can be calculated via :obj:`ssp.log_ndtr` function function with ``log_ndtr(y)``, where :math:`y`
+        which can be calculated via :obj:`log_ndtr` function function with ``log_ndtr(y)``, where :math:`y`
         is the transformed value of :math:`x`, defined as:
 
         .. math:: y = \dfrac{\ln(x - \text{loc}) - \mu}{\sigma}.
@@ -2350,9 +2457,11 @@ def log_normal_log_cdf_(
     y, rej_ = reject_x(x, mean, std, loc=loc)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return np.where(y > 0, ssp.log_ndtr((LOG(y) - LOG(mean)) / std), -INF)
+    return np.where(y > 0, log_ndtr((LOG(y) - LOG(mean)) / std), -INF)
 
 
 @suppress_numpy_warnings()
@@ -2390,17 +2499,13 @@ def uniform_pdf_(
     Where :math:`\beta = a + b` consistent with ``loc`` and ``scale`` factors and the final PDF is expressed as,
     :math:`f(x)`.
     """
-    x = np.asarray(a=x, dtype=float)
+    scale = high - low
+    y, rej_ = reject_x(x, loc=low, scale=scale)
 
-    if x.size == 0:
-        return x
+    if rej_ or scale <= 0:
+        return full_nan(np.shape(y))
 
-    high_ = high + low
-
-    if high <= 0:
-        return np.full(x.shape, NAN)
-
-    pdf_ = np.where((x >= low) & (x <= high_), 1 / high, 0)
+    pdf_ = np.where(np.logical_or(y < 0, y > 1), 0.0, 1.0 / scale)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -2425,19 +2530,17 @@ def uniform_log_pdf_(
     where :math:`\beta = a + b` is consistent with ``loc`` and ``scale`` factors, and the final logPDF is expressed as,
     :math:`\ell(x)`.
     """
-    x = np.asarray(a=x, dtype=float)
+    scale = high - low
+    y, rej_ = reject_x(x, loc=low, scale=scale)
 
-    if x.size == 0:
-        return x
+    if rej_ or scale <= 0:
+        return full_nan(np.shape(y))
 
-    high_ = high + low
-
-    if high <= 0:
-        return np.full(x.shape, NAN)
-
-    log_pdf_ = np.where((x >= low) & (x <= high_), -LOG(high), -INF)
+    log_pdf_ = np.where(np.logical_or(y < 0, y > 1), -INF, -LOG(scale))
 
     if not normalize:
+        if amplitude < 0:
+            return full_nan(np.shape(y))
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     return log_pdf_
@@ -2468,15 +2571,11 @@ def uniform_cdf_(
                         1 &,& x > b
                         \end{cases}
     """
-    y = preprocess_input(x=x, loc=low, scale=high)
+    scale = high - low
+    y, rej_ = reject_x(x, loc=low, scale=scale)
 
-    if y.size == 0:
-        return y
-
-    high_ = high + low
-
-    if high <= 0:
-        return np.full(x.shape, NAN)
+    if rej_ or scale <= 0:
+        return full_nan(np.shape(y))
 
     return np.select(condlist=[y < 0, y > 1], choicelist=[0, 1], default=y)
 
@@ -2501,17 +2600,164 @@ def uniform_log_cdf_(
 
     The final logCDF is expressed as, :math:`\mathcal{L}(x)`.
     """
-    y = preprocess_input(x=x, loc=low, scale=high)
+    scale = high - low
+    y, rej_ = reject_x(x, loc=low, scale=scale)
 
-    if y.size == 0:
-        return y
-
-    high_ = high + low
-
-    if high <= 0:
-        return np.full(x.shape, NAN)
+    if rej_ or scale <= 0:
+        return full_nan(np.shape(y))
 
     return np.select(condlist=[y < 0, y > 1], choicelist=[-INF, 0], default=LOG(y))
+
+
+@suppress_numpy_warnings()
+def q_exponential_log_pdf_(
+    x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> NDArray:
+    r"""
+    Compute logPDF of :class:`~pymultifit.distributions.generalized.q_exponential.QExponentialDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
+    q :
+        The entropic index parameter, :math:`q`.
+        Defaults to 1.0. Must satisfy :math:`q < 2`.
+    rate :
+        The rate parameter, :math:`\lambda`.
+        Defaults to 1.0.
+    loc :
+        The location parameter, :math:`\mu`.
+        Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The q-exponential logPDF for :math:`z = x - \mu \ge 0` is defined as:
+
+    .. math:: \ell(z) = \ln(2 - q) + \ln(\lambda) + \frac{1}{1 - q} \ln\left[1 - (1 - q)\lambda z\right]
+
+    when normalized, and as:
+
+    .. math:: \ell(z) = \ln(A) + \frac{1}{1 - q} \ln\left[1 - (1 - q)\lambda z\right]
+
+    when unnormalized (:math:`\text{normalize} = \text{False}`).
+    When :math:`q \to 1`, it recovers the standard exponential logPDF:
+
+    .. math:: \ell(z) = \ln(\lambda) - \lambda z
+    """
+    y, rej_ = reject_x(x, q, rate, loc=loc)
+
+    if rej_ or q >= 2.0 or amplitude < 0.0:
+        return np.full(y.shape, NAN)
+
+    f1 = np.log1p(1.0 - q) + LOG(rate)
+
+    if q == 1:
+        f2 = -rate * y
+    else:
+        q_diff = 1.0 - q
+        u = np.clip(q_diff * rate * y, None, 1.0 - EPSILON) if q < 1.0 else q_diff * rate * y
+        f2 = (1.0 / q_diff) * np.log1p(-u)
+
+    log_pdf_ = f1 + f2
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    support_mask = (y >= 0.0) & (y <= 1.0 / ((1.0 - q) * rate)) if q < 1.0 else (y >= 0.0)
+    return np.where(support_mask, log_pdf_, -INF)
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
+def q_exponential_pdf_(
+    x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> NDArray:
+    r"""
+    Compute PDF of :class:`~pymultifit.distributions.generalized.q_exponential.QExponentialDistribution`.
+
+    Notes
+    -----
+    The q-exponential PDF is calculated via exponentiation of logPDF:
+
+    .. math:: f(x) = \exp\left[\ell(x)\right]
+
+    where :math:`\ell(x)` is evaluated by :func:`q_exponential_log_pdf_`.
+    """
+    log_pdf_ = q_exponential_log_pdf_(x, amplitude=amplitude, q=q, rate=rate, loc=loc, normalize=normalize)
+    return EXP(log_pdf_)
+
+
+def _eqx(x, q, _log: bool = True):
+    qm1 = 1.0 - q
+    qm1_ = 1 / qm1
+    if _log:
+        return xlog1py(qm1_, qm1 * x)
+    else:
+        return (1 + qm1 * x) ** qm1_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
+def q_exponential_cdf_(
+    x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> NDArray:
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.generalized.q_exponential.QExponentialDistribution`.
+
+    Notes
+    -----
+    The q-exponential CDF for :math:`z = x - \mu \ge 0` is defined as:
+
+    .. math:: F(z) = 1 - \left[1 - (1 - q)\lambda z\right]_+^{\frac{2 - q}{1 - q}}
+
+    scaled by :math:`A` when unnormalized. Evaluated using :obj:`numpy.expm1` and :obj:`numpy.log1p`
+    to guarantee numerical precision near :math:`z \to 0` and :math:`q \to 1`.
+    """
+    y, rej_ = reject_x(x, q, rate, loc=loc)
+
+    if rej_ or q >= 2.0 or amplitude < 0.0:
+        return full_nan(np.shape(y))
+
+    if q == 1:
+        f2 = -rate * y
+    else:
+        q_diff = 1.0 - q
+        f1 = (2.0 - q) / q_diff
+        f2 = f1 * LOG1P(-q_diff * rate * y)
+
+    return np.where(y <= 0.0, 0.0, -np.expm1(f2))
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
+def q_exponential_log_cdf_(
+    x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> NDArray:
+    r"""
+    Compute logCDF of :class:`~pymultifit.distributions.generalized.q_exponential.QExponentialDistribution`.
+
+    Notes
+    -----
+    The q-exponential logCDF is defined as:
+
+    .. math:: \mathcal{L}(x) = \ln\left[ F(x) \right]
+
+    where :math:`F(x)` is the cumulative distribution function evaluated by :func:`q_exponential_cdf_`.
+    """
+    cdf_ = q_exponential_cdf_(x=x, amplitude=amplitude, q=q, rate=rate, loc=loc, normalize=normalize)
+    return LOG(cdf_)
 
 
 @suppress_numpy_warnings()
@@ -2530,7 +2776,7 @@ def scaled_inv_chi_square_pdf_(
     df :
         The degree of freedom. Defaults to 1.0.
     scale :
-        The scale parameter, for scaling. Defaults to 1.0,
+        The scale parameter, for scaling. Defaults to 1.0.
     loc :
         The location parameter, for shifting. Defaults to 0.0.
     normalize :
@@ -2558,17 +2804,19 @@ def scaled_inv_chi_square_pdf_(
     y, rej_ = reject_x(x, df, scale, loc=loc)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     tau2 = scale / df
     df_half = df / 2
 
-    f1 = np.power(tau2 * df_half, df_half) * ssp.rgamma(df_half)
+    f1 = np.power(tau2 * df_half, df_half) * rgamma(df_half)
     f2 = EXP(-(df * tau2) / (2 * y)) / np.power(y, 1 + df_half)
 
     pdf_ = np.where(y > 0, f1 * f2, 0)
 
     if not normalize:
+        if amplitude < 0:
+            return full_nan(np.shape(y))
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
     return pdf_
@@ -2593,7 +2841,7 @@ def scaled_inv_chi_square_log_pdf_(
 
     .. math:: \ell(y) = \ln(\tau^2\nu_2) - \ln\Gamma(\nu_2) - (1+\nu_2)\ln(\nu) - \dfrac{\nu\tau^2}{2y}
 
-    where :math:`\ln` is the natural logarithm, :math:`\ln\Gamma(\cdot)` is the :obj:`~ssp.gammaln` function,
+    where :math:`\ln` is the natural logarithm, :math:`\ln\Gamma(\cdot)` is the :obj:`~gammaln` function,
     :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}` and :math:`y` is the transformed value of
     :math:`x`, defined as:
 
@@ -2604,17 +2852,19 @@ def scaled_inv_chi_square_log_pdf_(
     y, rej_ = reject_x(x, df, scale, loc=loc)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     tau2 = scale / df
     df_half = df / 2
 
-    f1 = ssp.xlogy(df_half, tau2 * df_half) - ssp.gammaln(df_half)
-    f2 = -(tau2 * df) / (2 * y) - ssp.xlogy(1 + df_half, y)
+    f1 = xlogy(df_half, tau2 * df_half) - gammaln(df_half)
+    f2 = -(tau2 * df) / (2 * y) - xlogy(1 + df_half, y)
 
     log_pdf_ = np.where(y > 0, f1 + f2, -INF)
 
     if not normalize:
+        if amplitude < 0:
+            return full_nan(np.shape(y))
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     return log_pdf_
@@ -2647,7 +2897,7 @@ def scaled_inv_chi_square_cdf_(
     .. math:: F(y) = \Gamma\left(\nu_2, \dfrac{\tau^2\nu_2}{y}\right)
 
     where :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}`, :math:`\Gamma(a, b)` is the regularized
-    upper gamma function, see :obj:`ssp.gammaincc`,and :math:`y` is the transformed value of :math:`x`,
+    upper gamma function, see :obj:`gammaincc`,and :math:`y` is the transformed value of :math:`x`,
     defined as:
 
     .. math:: y = x - \text{loc}
@@ -2657,12 +2907,14 @@ def scaled_inv_chi_square_cdf_(
     y, rej_ = reject_x(x, df, scale, loc=loc)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     tau2 = scale / df
     df_half = df / 2
 
-    return np.where(y > 0, ssp.gammaincc(df_half, (tau2 * df_half) / y), 0)
+    return np.where(y > 0, gammaincc(df_half, (tau2 * df_half) / y), 0)
 
 
 @suppress_numpy_warnings()
@@ -2685,7 +2937,7 @@ def scaled_inv_chi_square_log_cdf_(
     .. math:: \mathcal{L}(y) = \ln\left[\Gamma\left(\nu_2, \dfrac{\tau^2\nu_2}{y}\right)\right]
 
     where :math:`\nu_2 = \dfrac{\nu}{2}`, :math:`\tau^2 = \dfrac{\phi}{\nu}`, :math:`\Gamma(a, b)` is the regularized
-    upper gamma function, see :obj:`ssp.gammaincc`,and :math:`y` is the transformed value of :math:`x`,
+    upper gamma function, see :obj:`gammaincc`,and :math:`y` is the transformed value of :math:`x`,
     defined as:
 
     .. math:: y = x - \text{loc}
@@ -2695,12 +2947,176 @@ def scaled_inv_chi_square_log_cdf_(
     y, rej_ = reject_x(x, df, scale, loc=loc)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     tau2 = scale / df
     df_half = df / 2
 
-    return np.where(y > 0, LOG(ssp.gammaincc(df_half, (tau2 * df_half) / y)), -INF)
+    return np.where(y > 0, LOG(gammaincc(df_half, (tau2 * df_half) / y)), -INF)
+
+
+@suppress_numpy_warnings()
+def students_t_log_pdf_(
+    x: ArrayLike, amplitude: float = 1.0, v: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
+) -> NDArray:
+    r"""
+    Compute logPDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Parameters
+    ----------
+    x :
+        Input array of values.
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+    v :
+        Degrees of freedom parameter, :math:`v`. Defaults to 1.0. Must be strictly positive (:math:`v > 0`).
+    scale :
+        The scale parameter, :math:`\sigma`. Defaults to 1.0. Must be strictly positive.
+    loc :
+        The location parameter, :math:`\mu`. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
+
+    Returns
+    -------
+    NDArray
+        Array of the same shape as :math:`x`, containing the evaluated values.
+
+    Notes
+    -----
+    The Student's t logPDF is defined as:
+
+    .. math:: \ell(y) = \ln\Gamma\left(\frac{v+1}{2}\right) - \ln\Gamma\left(\frac{v}{2}\right) - \frac{1}{2}\ln(\pi v) - \ln(\sigma) - \frac{v+1}{2} \ln\left(1 + \frac{y^2}{v}\right)
+
+    where :math:`\ln` is the natural logarithm, :math:`\ln\Gamma(\cdot)` is the :obj:`~gammaln` function,
+    and :math:`y` is the transformed value of :math:`x`, defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\sigma}
+
+    The final logPDF is expressed as :math:`\ell(y)`.
+    """
+    y, rej_ = reject_x(x, v, loc=loc, scale=scale)
+
+    if rej_:
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
+
+    nu_half = v / 2
+    nu_half_ = nu_half + 0.5
+
+    f1 = LOG(poch(nu_half, 0.5))
+    f2 = 0.5 * (LOG_PI + LOG(v))
+    f3 = nu_half_ * np.log1p(y ** 2 / v)
+
+    log_pdf_ = f1 - f2 - f3 - LOG(scale)
+
+    if not normalize:
+        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+
+    return log_pdf_
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=students_t_log_pdf_, style=doc_style)
+def students_t_pdf_(
+    x: ArrayLike, amplitude: float = 1.0, v: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> NDArray:
+    r"""
+    Compute PDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Notes
+    -----
+    The Student's t PDF is calculated via exponentiation of logPDF:
+
+    .. math:: f(y) = \exp\left[\ell(y)\right]
+
+    where :math:`\ell(y)` is the logPDF evaluated by :func:`students_t_log_pdf_`.
+    """
+    log_pdf_ = students_t_log_pdf_(x, amplitude=amplitude, v=v, scale=scale, loc=loc, normalize=normalize)
+    return EXP(log_pdf_)
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=students_t_log_pdf_, style=doc_style)
+def students_t_cdf_(
+    x: ArrayLike, amplitude: float = 1.0, v: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
+) -> NDArray:
+    r"""
+    Compute CDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Parameters
+    ----------
+    amplitude :
+        For API consistency only.
+    normalize :
+        For API consistency only.
+
+    Notes
+    -----
+    The Student's t CDF is calculated via exponentiation of logCDF:
+
+    .. math:: F(y) = \exp\left[\mathcal{L}(y)\right]
+
+    where :math:`\mathcal{L}(y)` is the logCDF evaluated by :func:`students_t_log_cdf_`.
+    """
+    y, rej_ = reject_x(x, v, loc=loc, scale=scale)
+
+    if rej_:
+        return full_nan(np.shape(y))
+
+    nu_half = v / 2
+    nu_half_ = nu_half + 0.5
+
+    f1 = y * gamma(nu_half_)
+    f2 = (v * PI) ** 0.5 * gamma(nu_half)
+    f3 = scipy.special.hyp2f1(1 / 2, nu_half_, 3 / 2, -(y ** 2) / v)
+
+    return 0.5 + (f1 / f2) * f3
+
+
+@suppress_numpy_warnings()
+@doc_inherit(parent=students_t_log_pdf_, style=doc_style)
+def students_t_log_cdf_(
+    x: ArrayLike, amplitude: float = 1.0, v: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
+) -> NDArray:
+    r"""
+    Compute logCDF of :class:`~pymultifit.distributions.student_t_d.StudentsTDistribution`.
+
+    Parameters
+    ----------
+    amplitude :
+        For API consistency only.
+    normalize :
+        For API consistency only.
+
+    Notes
+    -----
+    The Student's t logCDF is defined as:
+
+    .. math:: \mathcal{L}(y) = \ln\left[ F(y) \right]
+
+    where :math:`F(y)` is the cumulative distribution function evaluated using SciPy's
+    underlying standard distributions, and :math:`y` is the transformed value of :math:`x`,
+    defined as:
+
+    .. math:: y = \dfrac{x - \mu}{\sigma}
+
+    The final logCDF is expressed as :math:`\mathcal{L}(y)`.
+    """
+    y, rej_ = reject_x(x, v, loc=loc, scale=scale)
+
+    if rej_:
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
+
+    cdf_ = students_t_cdf_(x=x, amplitude=amplitude, v=v, loc=loc, scale=scale)
+
+    return LOG(cdf_)
 
 
 @suppress_numpy_warnings()
@@ -2720,13 +3136,18 @@ def skew_normal_pdf_(
     x :
         Input array of values.
     amplitude :
-        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF.
+        Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     shape :
-        The shape parameter, :math:`\alpha`. Defaults to 0.0.
+        The shape parameter, :math:`\alpha`.
+        Defaults to 0.0.
     loc :
-        The location parameter, :math:`\xi`. Defaults to 0.0.
+        The location parameter, :math:`\xi`.
+        Defaults to 0.0.
     scale :
-        The scale parameter, :math:`\omega`. Defaults to 1.0,
+        The scale parameter, :math:`\omega`.
+        Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -2740,12 +3161,11 @@ def skew_normal_pdf_(
     -----
     The SkewNormal PDF is defined as:
 
-    .. math:: f(y\ |\ \alpha, \xi, \omega) =
-             2\phi(y)\Phi(\alpha y)
+    .. math:: f(y\ |\ \alpha, \xi, \omega) = 2\phi(y)\Phi(\alpha y)
 
-    where, :math:`\phi(y)` and :math:`\Phi(\alpha y)` are the
-    :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` PDF and CDF defined at :math:`y` and
-    :math:`\alpha y` respectively. Additionally, :math:`y` is the transformed value of :math:`x`, defined as:
+    where, :math:`\phi(y)` and :math:`\Phi(\alpha y)` are the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
+    PDF and CDF defined at :math:`y` and :math:`\alpha y` respectively.
+    Additionally, :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \dfrac{x - \xi}{\omega}
 
@@ -2754,7 +3174,7 @@ def skew_normal_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     pdf_ = 2 * gaussian_pdf_(x=y, normalize=True) * gaussian_cdf_(x=shape * y, normalize=True)
     pdf_ /= scale
@@ -2795,12 +3215,14 @@ def skew_normal_log_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     log_pdf_ = LOG_TWO + gaussian_log_pdf_(x=y, normalize=True) + gaussian_log_cdf_(x=shape * y, normalize=True)
     log_pdf_ -= LOG(scale)
 
     if not normalize:
+        if amplitude <= 0:
+            return full_nan(np.shape(y))
         log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
 
     return log_pdf_
@@ -2827,12 +3249,12 @@ def skew_normal_cdf_(
         For API consistency only.
 
     Notes
-    ------
+    -----
     The SkewNormal CDF is defined as:
 
     .. math:: F(y) = \Phi(y) - 2T(y, \alpha)
 
-    where, :math:`T` is the Owen's T function, see :obj:`ssp.owens_t`, and
+    where, :math:`T` is the Owen's T function, see :obj:`owens_t`, and
     :math:`\Phi(\cdot)` is the :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` CDF function, and
     :math:`y` is the transformed value of :math:`x`, defined as:
 
@@ -2843,9 +3265,11 @@ def skew_normal_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
-    return gaussian_cdf_(x=y, normalize=True) - 2 * ssp.owens_t(y, shape)
+    return gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
 
 
 @suppress_numpy_warnings()
@@ -2865,13 +3289,13 @@ def sym_gen_normal_pdf_(
     x :
         Input array of values.
     amplitude :
-        The amplitude of the PDF, defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
     shape :
         The shape parameter, :math:`\beta`. Defaults to 1.0.
     loc :
         The location parameter, :math:`\mu`. Defaults to 0.0.
     scale :
-        The scale parameter, :math:`\alpha`. Defaults to 1.0,
+        The scale parameter, :math:`\alpha`. Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -2887,7 +3311,7 @@ def sym_gen_normal_pdf_(
 
     .. math:: f(y\ |\ \beta, \mu, \alpha) = \dfrac{\beta}{2\Gamma(1/\beta)}\exp\left(-|y|^\beta\right)
 
-    where, :math:`\Gamma` is the :obj:`ssp.gamma` function, and :math:`y` is the transformed value of
+    where, :math:`\Gamma` is the :obj:`gamma` function, and :math:`y` is the transformed value of
     :math:`x`, defined as:
 
     .. math:: y = \frac{x - \mu}{\alpha}
@@ -2897,11 +3321,13 @@ def sym_gen_normal_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     _, _, beta = loc, scale, shape
 
-    log_pdf_ = beta / 2 / ssp.gamma(1 / beta) * EXP(-np.power(np.abs(y), beta))
+    log_pdf_ = beta / 2 / gamma(1 / beta) * EXP(-np.power(np.abs(y), beta))
     log_pdf_ /= scale
 
     if not normalize:
@@ -2929,7 +3355,7 @@ def sym_gen_normal_log_pdf_(
 
     .. math:: \ell(y\ |\ \beta, \mu, \alpha) = \ln(\beta) - \ln(2) - \ln\Gamma\left(\dfrac{1}{\beta}\right) - |y|^\beta
 
-    where, :math:`\Gamma` is the :obj:`ssp.gamma` function, and :math:`y` is the transformed value of
+    where, :math:`\Gamma` is the :obj:`gamma` function, and :math:`y` is the transformed value of
     :math:`x`, defined as:
 
     .. math:: y = \frac{x - \mu}{\alpha}
@@ -2939,11 +3365,11 @@ def sym_gen_normal_log_pdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
 
     _, _, beta = loc, scale, shape
 
-    log_pdf_ = LOG(beta) - LOG_TWO - ssp.gammaln(1 / beta) - np.power(np.abs(y), beta)
+    log_pdf_ = LOG(beta) - LOG_TWO - gammaln(1 / beta) - np.power(np.abs(y), beta)
     log_pdf_ -= LOG(scale)
 
     if not normalize:
@@ -2973,13 +3399,13 @@ def sym_gen_normal_cdf_(
         For API consistency only.
 
     Notes
-    ------
+    -----
     The SymmetricGeneralizedNormalDistribution CDF is defined as:
 
     .. math:: F(y) = \dfrac{1}{2} + \dfrac{\text{sign}(y)}{2}\gamma\left(\dfrac{1}{\beta},|y|^\beta\,\right)
 
     where :math:`\gamma(\cdot,\cdot)` is the regularized lower incomplete gamma function, see
-    :obj:`~ssp.gammainc`, and :math:`y` is the transformed value of :math:`x`, defined as:
+    :obj:`~gammainc`, and :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
 
@@ -2988,11 +3414,13 @@ def sym_gen_normal_cdf_(
     y, rej_ = reject_x(x, loc=loc, scale=scale)
 
     if rej_:
-        return np.full(x.shape, NAN)
+        return full_nan(np.shape(y))
+    if amplitude < 0:
+        return full_nan(np.shape(y))
 
     _, _, beta = loc, scale, shape
 
-    return 0.5 + np.sign(y) * 0.5 * ssp.gammainc(1 / beta, np.power(np.abs(y), beta))
+    return 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, np.power(np.abs(y), beta))
 
 
 @suppress_numpy_warnings()
@@ -3015,7 +3443,7 @@ def sym_gen_normal_log_cdf_(
     .. math:: \mathcal{L}(y) =
      \ln\left[\dfrac{1}{2} + \dfrac{\text{sign}(y)}{2}\gamma\left(\dfrac{1}{\beta},|y|^\beta\,\right)\right]
 
-    where :math:`\gamma(\cdot,\cdot)` is the lower incomplete gamma function, see :obj:`~ssp.gammainc`, and
+    where :math:`\gamma(\cdot,\cdot)` is the lower incomplete gamma function, see :obj:`~gammainc`, and
     :math:`y` is the transformed value of :math:`x`, defined as:
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
@@ -3057,7 +3485,7 @@ def quadratic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> N
 
     where, :math:`a`, :math:`b`, and :math:`c` are the quadratic coefficients.
     """
-    return a * x**2 + b * x + c
+    return a * x ** 2 + b * x + c
 
 
 @suppress_numpy_warnings()
@@ -3068,20 +3496,20 @@ def _beta_expr(y: ArrayLike, a: float, b: float, un_log: bool = False):
     undefined_1 = (y == 1) & (b <= 1)
     special_case = (y == 1) & (a == 1) & (b == 1)
 
-    expr = ssp.xlog1py(b - 1.0, -y) + ssp.xlogy(a - 1, y) - ssp.betaln(a, b)
-    expr2 = np.power(y, a - 1) * np.power(1.0 - y, b - 1.0) / ssp.beta(a, b)
+    expr = xlog1py(b - 1.0, -y) + xlogy(a - 1, y) - betaln(a, b)
+    expr2 = np.power(y, a - 1) * np.power(1.0 - y, b - 1.0) / beta(a, b)
 
     return [special_case, undefined_0 | undefined_1, in_range], expr2 if un_log else expr
 
 
 @suppress_numpy_warnings()
 def _folded_cdf(q: float, r: float) -> float:
-    _f = 0.5 * (ssp.erf(r) + ssp.erf(q))
+    _f = 0.5 * (erf(r) + erf(q))
     return _f.astype(float)
 
 
 @suppress_numpy_warnings()
-def _pdf_scaling(pdf_: ArrayLike, amplitude: float) -> NDArray:
+def _pdf_scaling(pdf_: NDArray, amplitude: float) -> NDArray:
     """Scales a given PDF by a specified amplitude, normalizing it relative to its maximum value.
 
     Parameters
@@ -3096,38 +3524,25 @@ def _pdf_scaling(pdf_: ArrayLike, amplitude: float) -> NDArray:
     NdArray
         The scaled PDF array.
     """
-    with np.errstate(all="ignore"):
-        return amplitude * (pdf_ / np.max(pdf_))
-
-
-@suppress_numpy_warnings()
-def _log_pdf_scaling(log_pdf_: ArrayLike, amplitude: float) -> NDArray:
-    with np.errstate(all="ignore"):
-        return LOG(amplitude) + (log_pdf_ - np.max(log_pdf_))
-
+    max_ = np.max(pdf_)
+    if max_ == 0:
+        return np.zeros_like(pdf_)
+    return amplitude * (pdf_ / max_)
 
 @suppress_numpy_warnings()
-def preprocess_input(x: ArrayLike, loc: float = 0.0, scale: float = 1.0) -> NDArray:
-    """
-    Preprocess the input array, checking for scalar input, handling empty arrays, and loc-scale normalizaing the data.
+def _log_pdf_scaling(log_pdf_: NDArray, amplitude: float) -> NDArray:
+    max_ = np.max(log_pdf_)
+    if max_ == -INF:
+        return np.full_like(log_pdf_, -INF)
+    return LOG(amplitude) + log_pdf_ - np.max(log_pdf_)
 
-    Parameters
-    ----------
-    x :
-        Input data.
-    loc :
-        The location parameter, for shifting, defaults to 0.0.
-    scale :
-        The scale parameter, for scaling, defaults to 1.0,
 
-    Returns
-    -------
-    NDArray
-        loc-scale shifted numpy array.
-    """
-    x = np.asarray(a=x, dtype=float)
+def q_exp_to_gen_pareto(q: float, rate: float, loc: float = 0.0):
+    if q >= 2:
+        raise ValueError("q must be < 2 for a normalizable q-exponential.")
+    if rate <= 0:
+        raise ValueError("rate must be > 0.")
 
-    if x.size == 0:
-        return np.array([])
-
-    return (x - loc) / scale
+    c = (q - 1) / (2 - q)
+    scale = 1.0 / ((2 - q) * rate)
+    return {"c": c, "loc": loc, "scale": scale}

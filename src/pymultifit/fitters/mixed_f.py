@@ -2,25 +2,13 @@
 
 import itertools
 import warnings
-from typing import Callable, Sequence
+from typing import Callable, Sequence, override
 
 import numpy as np
 from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
 from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external callers
 from scipy.optimize import Bounds, curve_fit
 
-# importing from files to avoid circular import
-from .backend import BaseFitter, compute_individual_ci_mixed
-from .chiSquare_f import ChiSquareFitter
-from .exponential_f import ExponentialFitter
-from .foldedNormal_f import FoldedNormalFitter
-from .gamma_f import GammaFitter
-from .gaussian_f import GaussianFitter
-from .halfNormal_f import HalfNormalFitter
-from .laplace_f import LaplaceFitter
-from .logNormal_f import LogNormalFitter
-from .polynomial_f import LineFitter
-from .skewNormal_f import SkewNormalFitter
 from .. import (
     CHI_SQUARE,
     EXPONENTIAL,
@@ -36,6 +24,19 @@ from .. import (
     epsilon,
 )
 from ..typing import NDArray, Params_
+
+# importing from files to avoid circular import
+from .backend import BaseFitter, compute_individual_ci_mixed
+from .chiSquare_f import ChiSquareFitter
+from .exponential_f import ExponentialFitter
+from .foldedNormal_f import FoldedNormalFitter
+from .gamma_f import GammaFitter
+from .gaussian_f import GaussianFitter
+from .halfNormal_f import HalfNormalFitter
+from .laplace_f import LaplaceFitter
+from .logNormal_f import LogNormalFitter
+from .polynomial_f import LineFitter
+from .skewNormal_f import SkewNormalFitter
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {
@@ -68,7 +69,7 @@ class MixedDataFitter(BaseFitter):
         if fitter_dictionary is not None:
             warnings.warn(
                 message="`fitter_dictionary` is deprecated and will be removed in a future release. "
-                        "Use `model_dictionary` instead.",
+                "Use `model_dictionary` instead.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -84,7 +85,7 @@ class MixedDataFitter(BaseFitter):
         elif resolved_dict is not None and list(resolved_dict.keys()) != model_list:
             warnings.warn(
                 message="`model_list` and `model_dictionary` keys differ. "
-                        "`model_list` takes precedence; consider omitting it and relying on `model_dictionary` keys.",
+                "`model_list` takes precedence; consider omitting it and relying on `model_dictionary` keys.",
                 category=UserWarning,
                 stacklevel=2,
             )
@@ -141,7 +142,7 @@ class MixedDataFitter(BaseFitter):
             for model in self.model_list:
                 model_class = self._instantiate_class(model=model)
                 n_par = self._instantiate_n_par(model=model)
-                y += model_class.fitter(x=x, params=list(params[param_index: param_index + n_par]))
+                y += model_class.fitter(x=x, params=list(params[param_index : param_index + n_par]))
                 param_index += n_par
 
             return y
@@ -247,12 +248,13 @@ class MixedDataFitter(BaseFitter):
                 param_dict[model] = []
 
             n_pars = self._instantiate_n_par(model=model)
-            param_dict[model].extend([values[p_index: p_index + n_pars]])
+            param_dict[model].extend([values[p_index : p_index + n_pars]])
             p_index += n_pars
 
         return param_dict
 
-    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None):
+    @override
+    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None): # type-ignore
         """
         Fit the data.
 
@@ -371,9 +373,10 @@ class MixedDataFitter(BaseFitter):
         -------
         dict :
             A dictionary containing:
+
                 - "parameters": Nested dictionary of parameter values for each model.
                 - "errors": Nested dictionary of errors for each model (if ``get_errors=True``).
-            Otherwise, returns just the parameters directly.
+                - Otherwise, returns just the parameters directly.
         """
         parameters = self._parameter_extractor(self.params)
         errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))

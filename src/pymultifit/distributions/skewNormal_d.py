@@ -4,20 +4,21 @@ from __future__ import annotations
 
 from numpy import sign
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import skew_normal_cdf_, skew_normal_log_pdf_, skew_normal_pdf_
-from .. import EXP, LOG, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, _md_scipy_like, NAN_DICT
+from .. import EXP, LOG, NAN_DICT, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, _md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .backend import errorHandling as erH
+from .utilities_d import skew_normal_cdf_, skew_normal_log_pdf_, skew_normal_pdf_
 
 
 class SkewNormalDistribution(BaseDistribution):
     r"""
-    Class for SkewNormal distribution.
+    Class for :class:`~.SkewNormalDistribution`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
     shape :
         The mean parameter, :math:`\mu`. Defaults to 0.0.
     scale :
@@ -27,11 +28,6 @@ class SkewNormalDistribution(BaseDistribution):
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -90,9 +86,6 @@ class SkewNormalDistribution(BaseDistribution):
         scale: float = 1.0,
         normalize: bool = False,
     ):
-        if not normalize and amplitude < 0.0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1 if normalize else amplitude
         self.shape = shape
         self.location = location
@@ -103,8 +96,8 @@ class SkewNormalDistribution(BaseDistribution):
     @classmethod
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "SkewNormalDistribution":
-        """
-        Instantiate SkewNormalDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.SkewNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -117,15 +110,15 @@ class SkewNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        SkewNormalDistribution
-            An instance of normalized SkewNormalDistribution.
+        :class:`~.SkewNormalDistribution`
+            An instance of normalized :class:`~.SkewNormalDistribution`.
         """
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "SkewNormalDistribution":
-        """
-        Instantiate SkewNormalDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.SkewNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -138,8 +131,8 @@ class SkewNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        SkewNormalDistribution
-            An instance of normalized SkewNormalDistribution.
+        :class:`~.SkewNormalDistribution`
+            An instance of normalized :class:`~.SkewNormalDistribution`.
         """
         return cls(shape=a, location=loc, scale=scale, normalize=True)
 

@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
-from .. import SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, _md_scipy_like, NAN_DICT
+from .. import NAN_DICT, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, _md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
 
 
 class HalfNormalDistribution(BaseDistribution):
     r"""
-    Class for halfnormal distribution.
+    Class for :class:`~.HalfNormalDistribution`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
     scale :
         The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
     loc :
@@ -23,11 +23,6 @@ class HalfNormalDistribution(BaseDistribution):
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -79,9 +74,6 @@ class HalfNormalDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1 if normalize else amplitude
         self.scale = scale
         self.loc = loc
@@ -91,8 +83,8 @@ class HalfNormalDistribution(BaseDistribution):
     @classmethod
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":
-        """
-        Instantiate HalfNormalDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.HalfNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -103,15 +95,15 @@ class HalfNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        HalfNormalDistribution
-            An instance of normalized HalfNormalDistribution.
+        :class:`~.HalfNormalDistribution`
+            An instance of normalized :class:`~.HalfNormalDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":
-        """
-        Instantiate HalfNormalDistribution with scipy parametrization.
+        r"""
+        Instantiate :class:`~.HalfNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -122,8 +114,8 @@ class HalfNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        HalfNormalDistribution
-            An instance of normalized HalfNormalDistribution.
+        :class:`~.HalfNormalDistribution`
+            An instance of normalized :class:`~.HalfNormalDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 

@@ -176,3 +176,4 @@ LYSO_Spectra/
 /docs/planning/**
 /app/*
 ITERATIVE_BUILDOUT**
+.mcp.json

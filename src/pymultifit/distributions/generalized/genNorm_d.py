@@ -2,15 +2,15 @@
 
 from scipy.special import gammaln
 
-from ..backend import BaseDistribution, errorHandling as erH
-from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
-from ... import _md_scipy_like, LOG, EXP, SQRT
+from ... import EXP, LOG, SQRT, _md_scipy_like
 from ...typing import ArrayLike, NDArray
+from ..backend import BaseDistribution
+from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
 
 
 class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     r"""
-    Class for SymmetricGeneralizedNormalDistribution.
+    Class for :class:`~.SymmetricGeneralizedNormalDistribution`.
 
     Parameters
     ----------
@@ -26,11 +26,6 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
-
     Examples
     --------
     Importing libraries:
@@ -41,7 +36,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
        :lineno-start: 3
        :lines: 3-7
 
-    Generating a standard SymmetricGeneralizedNormalDistribution(:math:`\beta=1, \mu=0, \alpha = 1`)
+    Generating a standard :class:`~.SymmetricGeneralizedNormalDistribution` (:math:`\beta=1, \mu=0, \alpha = 1`)
      with ``pyMultiFit`` and ``scipy``:
 
     .. literalinclude:: ../../../examples/basic/gennorm.py
@@ -62,7 +57,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
        :alt: GenNorm(1, 0, 1)
        :align: center
 
-    Generating a scaled and translated SymmetricGeneralizedNormalDistribution(:math:`\beta=2, \mu=-3, \alpha=5`):
+    Generating a scaled and translated :class:`~.SymmetricGeneralizedNormalDistribution` (:math:`\beta=2, \mu=-3, \alpha=5`):
 
     .. literalinclude:: ../../../examples/basic/gennorm.py
        :language: python
@@ -84,9 +79,6 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     def __init__(
         self, amplitude: float = 1.0, shape: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
     ):
-        if amplitude < 0 and not normalize:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.loc = loc
         self.scale = scale
@@ -98,7 +90,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, beta: float, loc: float = 0.0, scale: float = 1.0):
         """
-        Instantiate SymmetricGeneralizedNormalDistribution with scipy parametrization.
+        Instantiate :class:`~.SymmetricGeneralizedNormalDistribution` with scipy parametrization.
 
         Parameters
         ----------
@@ -111,15 +103,15 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        SymmetricGeneralizedNormalDistribution
-            An instance of normalized SymmetricGeneralizedNormalDistribution.
+        :class:`~.SymmetricGeneralizedNormalDistribution`
+            An instance of normalized :class:`~.SymmetricGeneralizedNormalDistribution`.
         """
         return cls(shape=beta, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, beta, loc: float = 0.0, scale: float = 1.0):
         """
-        Instantiate SymmetricGeneralizedNormalDistribution with scipy parametrization.
+        Instantiate :class:`~.SymmetricGeneralizedNormalDistribution` with scipy parametrization.
 
         Parameters
         ----------
@@ -132,63 +124,22 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
         Returns
         -------
-        SymmetricGeneralizedNormalDistribution
-            An instance of normalized SymmetricGeneralizedNormalDistribution.
+        :class:`~.SymmetricGeneralizedNormalDistribution`
+            An instance of normalized :class:`~.SymmetricGeneralizedNormalDistribution`.
         """
         return cls(shape=beta, loc=loc, scale=scale, normalize=True)
 
     def pdf(self, x: ArrayLike) -> NDArray:
-        """
-        Probability density function evaluated at x.
-
-        Parameters
-        ----------
-        x :
-            Quantiles where the PDF is evaluated.
-
-        Returns
-        -------
-        NDArray
-            Probability density function values evaluated at x.
-        """
         return sym_gen_normal_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
     def cdf(self, x: ArrayLike) -> NDArray:
-        """
-        Cumulative distribution function evaluated at x.
-
-        Parameters
-        ----------
-        x :
-            Quantiles where the CDF is evaluated.
-
-        Returns
-        -------
-        NDArray
-            Cumulative distribution function values evaluated at x.
-        """
         return sym_gen_normal_cdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
     def stats(self) -> dict[str, float]:
-        r"""
-        Compute descriptive summary statistics for the distribution.
-
-        Returns
-        -------
-        dict
-            A dictionary containing the calculated statistics.
-            Key mappings:
-
-            - "mean": The expected value, :math:`\mu`.
-            - "median": The median value, :math:`\mu`.
-            - "mode": The mode value, :math:`\mu`.
-            - "variance": The calculated variance, :math:`\sigma^2`.
-            - "std": The calculated standard deviation, :math:`\sigma`.
-        """
         mean_ = self.loc
         median_ = self.loc
         mode_ = self.loc

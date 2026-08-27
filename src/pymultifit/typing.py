@@ -10,4 +10,4 @@ NDArray = _NDArray[np.floating]
 ArrayLike = _ArrayLike
 
 RaggedParams = list[tuple[float, ...]]
-Params_ = RaggedParams | ArrayLike
+Params_ = RaggedParams | NDArray

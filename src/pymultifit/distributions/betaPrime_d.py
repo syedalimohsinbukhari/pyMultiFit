@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import beta_prime_cdf_, beta_prime_log_cdf_, beta_prime_log_pdf_, beta_prime_pdf_
 from .. import INF, NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import beta_prime_cdf_, beta_prime_log_cdf_, beta_prime_log_pdf_, beta_prime_pdf_
 
 
 class BetaPrimeDistribution(BaseDistribution):
     r"""
-    Class for BetaPrime distribution.
+    Class for :class:`~.BetaPrimeDistribution`.
 
     Parameters
     ----------
@@ -88,9 +88,6 @@ class BetaPrimeDistribution(BaseDistribution):
         scale: float = 1.0,
         normalize: bool = False,
     ):
-        if amplitude < 0 and normalize is False:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
@@ -102,7 +99,7 @@ class BetaPrimeDistribution(BaseDistribution):
     @classmethod
     def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaPrimeDistribution":
         r"""
-        Instantiate `BetaPrimeDistribution` with scipy parameterization.
+        Instantiate :class:`~.BetaPrimeDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
@@ -113,12 +110,12 @@ class BetaPrimeDistribution(BaseDistribution):
         loc :
             The location parameter. Defaults to 0.0.
         scale :
-            The scale parameter,. Defaults to 1.0.
+            The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        BetaPrimeDistribution
-            An instance of normalized BetaPrimeDistribution.
+        :class:`~.BetaPrimeDistribution`
+            An instance of normalized :class:`~.BetaPrimeDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 

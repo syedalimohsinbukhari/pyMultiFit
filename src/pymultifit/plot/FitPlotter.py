@@ -7,10 +7,10 @@ from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
-from plotez import plot_xy, lpc
+from plotez import lpc, plot_xy
 
-from ._plot_backend import _ci_plotter, _plot, _fit_and_residual, _param_correlation, _prediction_interval, _qq, _resid
 from ..fitters.backend import compute_ci_bounds
+from ._plot_backend import _ci_plotter, _fit_and_residual, _param_correlation, _plot, _prediction_interval, _qq, _resid
 
 
 class FitPlotter:
@@ -157,7 +157,7 @@ class FitPlotter:
         for i, model in enumerate(fitter.model_list):
             class_model = fitter._instantiate_class(model=model)
             n_par = fitter._instantiate_n_par(model=model)
-            pars = fitter.params[param_index: param_index + n_par]
+            pars = fitter.params[param_index : param_index + n_par]
             self._plot_component(
                 x=x,
                 y=class_model.fitter(x=x, params=list(pars)),
