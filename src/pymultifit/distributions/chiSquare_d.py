@@ -15,17 +15,23 @@ class ChiSquareDistribution(BaseDistribution):
     .. note::
         The :class:`~.ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
 
-        * :math:`\alpha\ (\text{shape}) = \text{dof} / 2`,
-        * :math:`\theta\ (\text{scale}) = 2`.
+        * :math:`\alpha_\text{gamma}\ (\text{shape}) = \text{dof} / 2`,
+        * :math:`\theta_\text{gamma}\ (\text{scale}) = 2`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     degree_of_freedom :
-        The degree of freedom for the chi-square distribution. Default is 1.0.
+        The degree of freedom for the chi-square distribution.
+        Default is 1.0.
     loc :
-        The location parameter, for shifting. Defaults to 0.0.
+        The location parameter, for shifting.
+        Defaults to 0.0.
+    scale :
+        The scale parameter, for scaling.
+        Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.

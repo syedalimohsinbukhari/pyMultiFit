@@ -15,18 +15,33 @@ class BetaDistribution(BaseDistribution):
     r"""
     Class for :class:`~.BetaDistribution`.
 
+    .. note::
+
+       The :class:`~.BetaDistribution` encompasses the following specific cases:
+
+       #. :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`
+            - :math:`\alpha = \beta = 0.5`
+
+       #. :class:`~pymultifit.distributions.uniform_d.UniformDistribution`
+            - :math:`\alpha = \beta = 1`
+
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if ``normalize`` is ``True``.
     alpha :
-        The :math:`\alpha` parameter. Defaults to 1.0.
+        The :math:`\alpha` parameter.
+        Defaults to 1.0.
     beta :
-        The :math:`\beta` parameter. Defaults to 1.0.
+        The :math:`\beta` parameter.
+        Defaults to 1.0.
     loc :
-        The location parameter, for shifting. Defaults to 0.0.
+        The location parameter, for shifting.
+        Defaults to 0.0.
     scale :
-        The scale parameter, for scaling. Defaults to 1.0.
+        The scale parameter, for scaling.
+        Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.

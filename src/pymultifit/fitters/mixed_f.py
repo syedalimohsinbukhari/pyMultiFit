@@ -1,8 +1,11 @@
 """Created on Aug 10 23:08:38 2024"""
 
+from __future__ import annotations
+
 import itertools
 import warnings
-from typing import Callable, Sequence, override
+from typing import Callable, Sequence, Any
+from typing_extensions import override
 
 import numpy as np
 from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
@@ -355,6 +358,7 @@ class MixedDataFitter(BaseFitter):
 
         self._plotter = None  # invalidate cached plotter after each fit
 
+    @override
     def get_model_parameters(self, model: str | None = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
@@ -378,7 +382,7 @@ class MixedDataFitter(BaseFitter):
                 - "errors": Nested dictionary of errors for each model (if ``get_errors=True``).
                 - Otherwise, returns just the parameters directly.
         """
-        parameters = self._parameter_extractor(self.params)
+        parameters = self._parameter_extractor(np.asarray(self.params))
         errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
 
         if not errors:

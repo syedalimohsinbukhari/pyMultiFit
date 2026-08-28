@@ -74,7 +74,7 @@ autodoc_type_aliases = {
     "Params_": "~pymultifit.typing.Params_",
 }
 autodoc_typehints_format = "short"
-autodoc_typehints = "signature"
+autodoc_typehints = "description"
 
 # Autosummary settings
 autosummary_generate = True
