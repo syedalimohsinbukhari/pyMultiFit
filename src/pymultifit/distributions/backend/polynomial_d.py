@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from . import BaseDistribution
-from ..utilities_d import cubic, line, quadratic
 from ...typing import ArrayLike, NDArray
+from ..utilities_d import cubic, line, quadratic
+from . import BaseDistribution
 
 
 class LineFunction(BaseDistribution):

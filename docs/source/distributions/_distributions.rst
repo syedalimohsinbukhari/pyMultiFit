@@ -61,7 +61,10 @@ Derived Distributions
    * - :class:`~logNormal_d.LogNormalDistribution`
      - Log-Normal distribution.
      - :math:`\dfrac{1}{x\sigma\sqrt{2\pi}}\exp\left[-\dfrac{(\ln x-\mu)^2}{2\sigma^2}\right]`
-   * - :class:`~generalized.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`
+   * - :class:`~qExponential_d.QExponentialDistribution`
+     - q-Exponential distribution.
+     - :math:`(2-q)\lambda\exp_q(-\lambda x)`
+   * - :class:`~generalized.qExponential_d.QExponentialDistribution`
      - Scaled inverse chi-squared distribution.
      - :math:`\dfrac{\tau^2(\nu/2)}{\Gamma(\nu/2)}\dfrac{1}{x^{1+(\nu/2)}}\exp\left[-\dfrac{\nu\tau^2}{2x}\right]`
    * - :class:`~skewNormal_d.SkewNormalDistribution`
@@ -116,8 +119,10 @@ Non-distribution function
    LaplaceDistribution      <laplace_d>
    LogNormalDistribution    <logNormal_d>
    Non-distribution functions <polynomial_d>
+   qExponentialDistribution <qExponential_d>
    ScaledInverseChiSquareDistribution <scaledInvChiSquare_d>
    SkewNormalDistribution   <skewNormal_d>
+   StudentsTDistribution   <studentsT_d>
    SymGeneralizedNormalDistribution <genNorm_d>
    UniformDistribution      <uniform_d>
    DistributionUtilities    <utilities_d>

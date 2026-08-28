@@ -3,8 +3,8 @@
 import functools
 
 import numpy as np
-import scipy.special as ssp
 from deprecation import deprecated as _deprecated
+from scipy.special import xlogy
 
 from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
 
@@ -48,13 +48,13 @@ def suppress_numpy_warnings():
 
 doc_style = "numpy_napoleon_with_merge"
 
-_UNSET = object()
-
+EXP = np.exp
 INF = np.inf
 LOG = np.log
-SQRT = np.sqrt
-EXP = np.exp
+LOG1P = np.log1p
 NAN = np.nan
+SQRT = np.sqrt
+XLOGY = xlogy
 
 # taken from https://stackoverflow.com/a/19141711
 EPSILON = np.finfo(float).eps
@@ -63,23 +63,23 @@ epsilon = SQRT(EPSILON)
 TWO = 2.0
 SQRT_TWO = SQRT(TWO)
 LOG_TWO = LOG(TWO)
-LOG_SQRT_TWO = ssp.xlogy(0.5, TWO)
+LOG_SQRT_TWO = XLOGY(0.5, TWO)
 
 PI = np.pi
 SQRT_PI = SQRT(PI)
 LOG_PI = LOG(PI)
-LOG_SQRT_PI = ssp.xlogy(0.5, PI)
+LOG_SQRT_PI = XLOGY(0.5, PI)
 
 TWO_PI = 2 * PI
 SQRT_TWO_PI = SQRT(TWO_PI)
 LOG_TWO_PI = LOG(TWO_PI)
-LOG_SQRT_TWO_PI = ssp.xlogy(0.5, TWO_PI)
+LOG_SQRT_TWO_PI = XLOGY(0.5, TWO_PI)
 
 INV_PI = 1.0 / PI
 TWO_BY_PI = 2.0 * INV_PI
 SQRT_TWO_BY_PI = SQRT(TWO_BY_PI)
 LOG_TWO_BY_PI = LOG(TWO_BY_PI)
-LOG_SQRT_TWO_BY_PI = ssp.xlogy(0.5, TWO_BY_PI)
+LOG_SQRT_TWO_BY_PI = XLOGY(0.5, TWO_BY_PI)
 
 GAUSSIAN = "gaussian"
 NORMAL = GAUSSIAN

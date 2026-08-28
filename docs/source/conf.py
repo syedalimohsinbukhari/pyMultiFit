@@ -74,7 +74,7 @@ autodoc_type_aliases = {
     "Params_": "~pymultifit.typing.Params_",
 }
 autodoc_typehints_format = "short"
-autodoc_typehints = "signature"
+autodoc_typehints = "description"
 
 # Autosummary settings
 autosummary_generate = True
@@ -97,7 +97,7 @@ html_last_updated_fmt = "%b %d, %Y"
 html_title = f"pyMultiFit {__version__}"
 html_short_title = "pyMultiFit"
 html_extra_path = []
-pygments_style = "colorful"
+pygments_style = "sphinx"
 add_function_parentheses = True
 html_show_sphinx = True
 html_show_copyright = True

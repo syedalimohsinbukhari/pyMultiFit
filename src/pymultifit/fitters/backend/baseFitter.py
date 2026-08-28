@@ -14,7 +14,7 @@ from scipy.optimize import Bounds, curve_fit
 from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
 from ..utilities_f import parameter_logic, sanity_check
 from ... import epsilon
-from ..._plot import FitPlotter
+from ...plot import FitPlotter
 from ...typing import ArrayLike, NDArray, Params_
 
 
@@ -25,8 +25,8 @@ class BaseFitter:
 
     def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
-        self.x_values = x_values
-        self.y_values = y_values
+        self.x_values: NDArray = x_values
+        self.y_values: NDArray = y_values
         self.max_iterations = max_iterations
 
         self.n_par: int = 0
@@ -48,7 +48,7 @@ class BaseFitter:
             self._plotter: FitPlotter = FitPlotter(self)
         return self._plotter
 
-    def _adjust_parameters(self, p0: Params_) -> Params_:
+    def _adjust_parameters(self, p0) -> Params_:
         """
         Adjust input parameters to include defaults for secondary parameters if missing.
 
@@ -69,7 +69,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par :]
+            provided_secondary_params = params[self.pn_par:]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -84,7 +84,7 @@ class BaseFitter:
 
         return adjusted_p0
 
-    def _fit_preprocessing(self, p0: Params_, frozen: list[bool] | None) -> tuple[NDArray, NDArray, NDArray]:
+    def _fit_preprocessing(self, p0, frozen: list[bool] | None) -> tuple[NDArray, NDArray, NDArray]:
         """
         Process frozen parameters and adjust bounds.
 
@@ -94,15 +94,13 @@ class BaseFitter:
             A list of initial guesses for the parameters of the models. For example, [(1, 1, 0), (3, 3, 2)].
         frozen :
             A list of booleans indicating which parameters are frozen.
-            Length must equal ``n_par`` (all parameters) or ``pn_par`` (primary parameters only — secondary
-            parameters such as ``loc`` are automatically treated as unfrozen).
+            Length must equal ``n_par`` (all parameters) or ``pn_par`` (primary parameters only — secondary parameters such as ``loc`` are automatically treated as unfrozen).
             When ``pn_par`` length is given, a :class:`UserWarning` is emitted to flag the auto-padding.
-            For example, for a distribution with ``n_par=4`` and ``pn_par=3``, passing ``[False, False, True]``
-            is equivalent to ``[False, False, True, False]``.
+            For example, for a distribution with ``n_par=4`` and ``pn_par=3``, passing ``[False, False, True]`` is equivalent to ``[False, False, True, False]``.
 
         Returns
         -------
-        tuple[NDArray, NDArray, NDArray[np.floating]]:
+        tuple[NDArray, NDArray, NDArray]:
             Adjusted lower and upper bounds, and flattened initial guesses.
         """
         # Get initial boundaries
@@ -139,7 +137,7 @@ class BaseFitter:
         frozen: list[bool] = frozen * self.n_fits
 
         # Flatten initial guesses
-        p0_flat = np.array(p0).flatten()
+        p0_flat = np.array(p0, dtype=float).flatten()
 
         # Adjust bounds for frozen parameters
         for i, is_frozen in enumerate(frozen):
@@ -170,7 +168,7 @@ class BaseFitter:
         """
         return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
-    def _n_fitter(self, x: ArrayLike, *params: Params_) -> NDArray:
+    def _n_fitter(self, x: NDArray, *params: Params_) -> NDArray:
         """
         Perform N-fitting by summing over multiple parameter sets.
 
@@ -190,7 +188,7 @@ class BaseFitter:
             An array containing the composite fitted values for the input ``x``.
         """
         y = np.zeros_like(x, dtype=float)
-        parameters: NDArray = np.reshape(np.array(params), newshape=(self.n_fits, self.n_par))
+        parameters: NDArray = np.reshape(np.array(params), (self.n_fits, self.n_par))
         for par in parameters:
             y += self.fitter(x=x, params=par.tolist())
         return y
@@ -314,29 +312,6 @@ class BaseFitter:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
 
-    def _evaluate_individual_component(self, x: ArrayLike, fit_index: int, params: Params_) -> NDArray:
-        """
-        Evaluate a single model component for CI calculation.
-
-        This method is used by ci_bounds() for individual_ci calculation.
-        Override in subclasses if special handling is needed (e.g., MixedDataFitter).
-
-        Parameters
-        ----------
-        x :
-            X-values at which to evaluate the model.
-        fit_index :
-            Index of the component model (0-based).
-        params :
-            Parameters for this specific component.
-
-        Returns
-        -------
-        NDArray :
-            Evaluated y-values for this component.
-        """
-        return self.fitter(x=x, params=params)
-
     def get_fitted_curve(self) -> NDArray:
         """
         Get the fitted values of the model.
@@ -376,7 +351,7 @@ class BaseFitter:
         return self.y_values - fitted_curve
 
     def get_model_parameters(self, select: tuple[int, Any] | None = None, errors: bool = False):
-        """
+        r"""
         Extract specific parameter values or their uncertainties from the fitting process.
 
         Parameters
@@ -392,7 +367,7 @@ class BaseFitter:
 
         Returns
         -------
-        NDArray | tuple[NDArray, NDArray[np.floating]]
+        NDArray | tuple[NDArray, NDArray]
             Parameter values (and optionally uncertainties) for the selected submodels.
 
         Raises
@@ -402,12 +377,13 @@ class BaseFitter:
 
         Notes
         -----
-            - The ``select`` parameter allows filtering by specific submodel indices. If ``None``, all submodels are used.
-            - When ``errors=True``, parameter means and uncertainties are returned as separate arrays of identical shape.
+        - The ``select`` parameter allows filtering by specific submodel indices. If ``None``, all submodels are used.
+        - When ``errors=True``, parameter means and uncertainties are returned as separate arrays of identical shape.
         """
         parameter_mean = self.get_value_error_pair(mean_values=True, std_values=errors)
 
         if not errors:
+            parameter_mean: NDArray
             selected = parameter_logic(par_array=parameter_mean, n_par=self.n_par, selected_models=select)
 
             return selected[:, range(self.n_par)].T
@@ -463,7 +439,7 @@ class BaseFitter:
         else:
             raise ValueError("Either 'mean_values' or 'std_values' must be True.")
 
-    def ci_bounds(
+    def confidence_intervals(
         self,
         ci_levels: float | tuple[float] | list[float],
         n_bootstrap: int = 5_000,
@@ -474,7 +450,7 @@ class BaseFitter:
         x_range: ArrayLike | None = None,
         plot: bool = False,
         axis: Axes | None = None,
-    ) -> dict:
+    ) -> dict | tuple[dict, Axes]:
         """Compute bootstrap confidence intervals for the fitted model.
 
         Parameters
@@ -517,14 +493,16 @@ class BaseFitter:
         )
 
         if plot:
-            self.plotter.plot_ci_bounds(
+            axis = self.plotter.plot_confidence_intervals(
                 ci_levels=ci_levels, results=results, overall_ci=overall_ci, individual_ci=individual_ci, axis=axis
             )
+
+            return results, axis
 
         return results
 
     def _compute_individual_ci(
-        self, x_: ArrayLike, mv_parameters: ArrayLike, bounds: list[tuple[int, tuple[float, float, float]]]
+        self, x_: NDArray, mv_parameters: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
         return compute_individual_ci_base(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 

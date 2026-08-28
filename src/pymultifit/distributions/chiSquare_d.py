@@ -2,30 +2,36 @@
 
 from __future__ import annotations
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
 from .. import NAN_DICT, SQRT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
 
 
 class ChiSquareDistribution(BaseDistribution):
     r"""
-    Class for :class:`ChiSquareDistribution` distribution.
+    Class for :class:`~.ChiSquareDistribution`.
 
     .. note::
-        The :class:`ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
+        The :class:`~.ChiSquareDistribution` is a special case of the :class:`~pymultifit.distributions.gamma_d.GammaDistribution`,
 
-        * :math:`\alpha\ (\text{shape}) = \text{dof} / 2`,
-        * :math:`\theta\ (\text{scale}) = 2`.
+        * :math:`\alpha_\text{gamma}\ (\text{shape}) = \text{dof} / 2`,
+        * :math:`\theta_\text{gamma}\ (\text{scale}) = 2`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     degree_of_freedom :
-        The degree of freedom for the chi-square distribution. Default is 1.0.
+        The degree of freedom for the chi-square distribution.
+        Default is 1.0.
     loc :
-        The location parameter, for shifting. Defaults to 0.0.
+        The location parameter, for shifting.
+        Defaults to 0.0.
+    scale :
+        The scale parameter, for scaling.
+        Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -57,7 +63,7 @@ class ChiSquareDistribution(BaseDistribution):
        :lines: 14-29
 
     .. image:: ../../../images/chi2_example1.png
-       :alt: Beta distribution (5, 30)
+       :alt: Chi-Square distribution (df=1)
        :align: center
 
     Generating a translated :math:`\chi^2(1)` distribution with :math:`\text{loc} = 3`.
@@ -75,7 +81,7 @@ class ChiSquareDistribution(BaseDistribution):
        :lines: 34-49
 
     .. image:: ../../../images/chi2_example2.png
-       :alt: Beta distribution (shifted and translated)
+       :alt: Chi-Square distribution (shifted and translated)
        :align: center
     """
 
@@ -87,9 +93,6 @@ class ChiSquareDistribution(BaseDistribution):
         scale: float = 1.0,
         normalize: bool = False,
     ):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1 if normalize else amplitude
         self.dof = degree_of_freedom
         self.loc = loc
@@ -101,42 +104,42 @@ class ChiSquareDistribution(BaseDistribution):
     @_md_scipy_like("v1.0.7")
     def scipy_like(cls, df: int | float, loc: float = 0.0, scale: float = 1.0) -> "ChiSquareDistribution":
         """
-        Instantiate ChiSquareDistribution with scipy parameterization.
+        Instantiate :class:`~.ChiSquareDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
         df :
-            The degree of freedom for the ChiSquare distribution.
+            The degree of freedom for the :class:`~.ChiSquareDistribution`.
         loc :
             The location parameter. Defaults to 0.0.
         scale :
-            The scale parameter. Defaults to 1.0
+            The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        ChiSquareDistribution
-            An instance of normalized ChiSquareDistribution.
+        :class:`~.ChiSquareDistribution`
+            An instance of normalized :class:`~.ChiSquareDistribution`.
         """
         return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, df: int | float, loc: float = 0.0, scale: float = 1.0) -> "ChiSquareDistribution":
         """
-        Instantiate ChiSquareDistribution with scipy parameterization.
+        Instantiate :class:`~.ChiSquareDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
         df :
-            The degree of freedom for the ChiSquare distribution.
+            The degree of freedom for the :class:`~.ChiSquareDistribution`.
         loc :
             The location parameter. Defaults to 0.0.
         scale :
-            The scale parameter. Defaults to 1.0
+            The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        ChiSquareDistribution
-            An instance of normalized ChiSquareDistribution.
+        :class:`~.ChiSquareDistribution`
+            An instance of normalized :class:`~.ChiSquareDistribution`.
         """
         return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 

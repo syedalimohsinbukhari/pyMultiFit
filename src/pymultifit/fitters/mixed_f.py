@@ -1,26 +1,17 @@
 """Created on Aug 10 23:08:38 2024"""
 
+from __future__ import annotations
+
 import itertools
 import warnings
-from typing import Callable, Sequence
+from typing import Callable, Sequence, Any
+from typing_extensions import override
 
 import numpy as np
 from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
 from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external callers
 from scipy.optimize import Bounds, curve_fit
 
-# importing from files to avoid circular import
-from .backend import BaseFitter, compute_individual_ci_mixed
-from .chiSquare_f import ChiSquareFitter
-from .exponential_f import ExponentialFitter
-from .foldedNormal_f import FoldedNormalFitter
-from .gamma_f import GammaFitter
-from .gaussian_f import GaussianFitter
-from .halfNormal_f import HalfNormalFitter
-from .laplace_f import LaplaceFitter
-from .logNormal_f import LogNormalFitter
-from .polynomial_f import LineFitter
-from .skewNormal_f import SkewNormalFitter
 from .. import (
     CHI_SQUARE,
     EXPONENTIAL,
@@ -36,6 +27,19 @@ from .. import (
     epsilon,
 )
 from ..typing import NDArray, Params_
+
+# importing from files to avoid circular import
+from .backend import BaseFitter, compute_individual_ci_mixed
+from .chiSquare_f import ChiSquareFitter
+from .exponential_f import ExponentialFitter
+from .foldedNormal_f import FoldedNormalFitter
+from .gamma_f import GammaFitter
+from .gaussian_f import GaussianFitter
+from .halfNormal_f import HalfNormalFitter
+from .laplace_f import LaplaceFitter
+from .logNormal_f import LogNormalFitter
+from .polynomial_f import LineFitter
+from .skewNormal_f import SkewNormalFitter
 
 # mock initialize the internal classes for auto MixedDataFitter class
 fitter_dict = {
@@ -178,28 +182,6 @@ class MixedDataFitter(BaseFitter):
         """
         return self.model_function(x, *params)
 
-    def _evaluate_individual_component(self, x: NDArray, fit_index: int, params: Params_) -> NDArray:
-        """
-        Override to evaluate a single model component for CI calculation.
-
-        Parameters
-        ----------
-        x :
-            X-values at which to evaluate the model.
-        fit_index :
-            Index of the component model in model_list (0-based).
-        params :
-            Parameters for this specific component.
-
-        Returns
-        -------
-        NDArray :
-            Evaluated y-values for this component.
-        """
-        model = self.model_list[fit_index]
-        model_class = self._instantiate_class(model=model)
-        return model_class.fitter(x=x, params=list(params))
-
     def _compute_individual_ci(
         self, x_: NDArray, mv_parameters: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
     ) -> dict:
@@ -274,7 +256,8 @@ class MixedDataFitter(BaseFitter):
 
         return param_dict
 
-    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None):
+    @override
+    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None): # type-ignore
         """
         Fit the data.
 
@@ -375,6 +358,7 @@ class MixedDataFitter(BaseFitter):
 
         self._plotter = None  # invalidate cached plotter after each fit
 
+    @override
     def get_model_parameters(self, model: str | None = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
@@ -393,11 +377,12 @@ class MixedDataFitter(BaseFitter):
         -------
         dict :
             A dictionary containing:
+
                 - "parameters": Nested dictionary of parameter values for each model.
                 - "errors": Nested dictionary of errors for each model (if ``get_errors=True``).
-            Otherwise, returns just the parameters directly.
+                - Otherwise, returns just the parameters directly.
         """
-        parameters = self._parameter_extractor(self.params)
+        parameters = self._parameter_extractor(np.asarray(self.params))
         errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
 
         if not errors:

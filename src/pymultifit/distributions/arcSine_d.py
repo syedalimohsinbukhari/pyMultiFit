@@ -7,16 +7,15 @@ from numpy import sqrt
 from .. import NAN_DICT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
-from .backend import errorHandling as erH
 from .utilities_d import arc_sine_cdf_, arc_sine_log_cdf_, arc_sine_log_pdf_, arc_sine_pdf_
 
 
 class ArcSineDistribution(BaseDistribution):
     r"""
-    Class for ArcSine distribution.
+    Class for :class:`~.ArcSineDistribution`.
 
     .. note::
-        The :class:`ArcSineDistribution` is a special case of :class:`~pymultifit.distributions.beta_d.BetaDistribution`,
+        The :class:`~.ArcSineDistribution` is a special case of :class:`~pymultifit.distributions.beta_d.BetaDistribution`,
 
         * :math:`\alpha_\text{beta} = 0.5`,
         * :math:`\lambda_\text{beta} = 0.5`.
@@ -33,11 +32,6 @@ class ArcSineDistribution(BaseDistribution):
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
 
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
-
     Examples
     --------
     Importing libraries
@@ -48,7 +42,7 @@ class ArcSineDistribution(BaseDistribution):
        :lineno-start: 3
        :lines: 3-7
 
-    Generating the ArcSine distribution with ``pyMultiFit`` and ``scipy``.
+    Generating the :class:`~.ArcSineDistribution` with ``pyMultiFit`` and ``scipy``.
 
     .. literalinclude:: ../../../examples/basic/arcSine.py
        :language: python
@@ -70,9 +64,6 @@ class ArcSineDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1 if normalize else amplitude
         self.loc = loc
         self.scale = scale
@@ -83,7 +74,7 @@ class ArcSineDistribution(BaseDistribution):
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "ArcSineDistribution":
         """
-        Instantiate `ArcSineDistribution` with scipy parameterization.
+        Instantiate :class:`~.ArcSineDistribution` with scipy parameterization.
 
         Parameters
         ----------
@@ -94,15 +85,15 @@ class ArcSineDistribution(BaseDistribution):
 
         Returns
         -------
-        ArcSineDistribution
-            An instance of normalized ArcSineDistribution.
+        :class:`~.ArcSineDistribution`
+            An instance of normalized :class:`~.ArcSineDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "ArcSineDistribution":
         """
-        Instantiate `ArcSineDistribution` with scipy parameterization.
+        Instantiate :class:`~.ArcSineDistribution` with scipy parameterization.
 
         Parameters
         ----------
@@ -113,8 +104,8 @@ class ArcSineDistribution(BaseDistribution):
 
         Returns
         -------
-        ArcSineDistribution
-            An instance of normalized ArcSineDistribution.
+        :class:`~.ArcSineDistribution`
+            An instance of normalized :class:`~.ArcSineDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 

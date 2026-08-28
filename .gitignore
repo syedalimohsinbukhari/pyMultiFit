@@ -175,3 +175,5 @@ LYSO_Spectra/
 # temporary removed for testing
 /docs/planning/**
 /app/*
+ITERATIVE_BUILDOUT**
+.mcp.json

@@ -8,34 +8,43 @@ from scipy.special import betaincinv
 from .. import NAN_DICT, _md_scipy_like
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
-from .backend import errorHandling as erH
 from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
 
 
 class BetaDistribution(BaseDistribution):
     r"""
-    Class for Beta distribution.
+    Class for :class:`~.BetaDistribution`.
+
+    .. note::
+
+       The :class:`~.BetaDistribution` encompasses the following specific cases:
+
+       #. :class:`~pymultifit.distributions.arcSine_d.ArcSineDistribution`
+            - :math:`\alpha = \beta = 0.5`
+
+       #. :class:`~pymultifit.distributions.uniform_d.UniformDistribution`
+            - :math:`\alpha = \beta = 1`
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if ``normalize`` is ``True``.
     alpha :
-        The :math:`\alpha` parameter. Defaults to 1.0.
+        The :math:`\alpha` parameter.
+        Defaults to 1.0.
     beta :
-        The :math:`\beta` parameter. Defaults to 1.0.
+        The :math:`\beta` parameter.
+        Defaults to 1.0.
     loc :
-        The location parameter, for shifting. Defaults to 0.0.
+        The location parameter, for shifting.
+        Defaults to 0.0.
     scale :
-        The scale parameter, for scaling. Defaults to 1.0.
+        The scale parameter, for scaling.
+        Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-
-    Raises
-    ------
-    NegativeAmplitudeError
-        If the provided value of amplitude is negative.
 
     Examples
     --------
@@ -95,9 +104,6 @@ class BetaDistribution(BaseDistribution):
         scale: float = 1.0,
         normalize: bool = False,
     ):
-        if amplitude < 0:
-            raise erH.NegativeAmplitudeError()
-
         self.amplitude = 1.0 if normalize else amplitude
         self.alpha = alpha
         self.beta = beta
@@ -110,7 +116,7 @@ class BetaDistribution(BaseDistribution):
     @_md_scipy_like("v1.0.7")
     def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
-        Instantiate `BetaDistribution` with scipy parameterization.
+        Instantiate :class:`~.BetaDistribution` with scipy parameterization.
 
         Parameters
         ----------
@@ -125,15 +131,15 @@ class BetaDistribution(BaseDistribution):
 
         Returns
         -------
-        BetaDistribution
-            An instance of normalized BetaDistribution.
+        :class:`~.BetaDistribution`
+            An instance of normalized :class:`~.BetaDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
         r"""
-        Instantiate `BetaDistribution` with scipy parameterization.
+        Instantiate :class:`~.BetaDistribution` with scipy parameterization.
 
         Parameters
         ----------
@@ -148,8 +154,8 @@ class BetaDistribution(BaseDistribution):
 
         Returns
         -------
-        BetaDistribution
-            An instance of normalized BetaDistribution.
+        :class:`~.BetaDistribution`
+            An instance of normalized :class:`~.BetaDistribution`.
         """
         return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 

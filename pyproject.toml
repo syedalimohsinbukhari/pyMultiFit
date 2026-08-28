@@ -19,6 +19,7 @@ dependencies = [
     "plotez",
     "scipy",
     "statsmodels",
+    "types-deprecated"
 ]
 keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
 classifiers = [

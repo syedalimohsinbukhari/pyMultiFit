@@ -1,7 +1,7 @@
 /* Optional: Ensure preformatted code wraps properly */
 pre, code {
-    white-space: pre-wrap;  /* Wrap long lines */
-    word-wrap: break-word;  /* Break long words */
+    white-space: pre-wrap; /* Wrap long lines */
+    word-wrap: break-word; /* Break long words */
 }
 
 .centered-table td, .centered-table th {
@@ -9,22 +9,24 @@ pre, code {
 }
 
 .bd-page-width {
-  max-width: 100%;  /* default is 88rem */
-/* Set the parent container to use Flexbox */
+    max-width: 100%; /* default is 88rem */
+    /* Set the parent container to use Flexbox */
 
-.bd-sidebar-primary {
-    width: 20%
+    .bd-sidebar-primary {
+        width: 20%
+    }
+
+    .bd-main .bd-content .bd-article-container {
+        max-width: 120em;
+        padding: 2.5em;
+    }
+
+    .bd-sidebar-secondary {
+        width: 25em;
+    }
+
+    .table {
+        vertical-align: middle;
+    }
 }
 
-.bd-main .bd-content .bd-article-container {
-    max-width: 100em;
-    padding: 2em;
-}
-
-.bd-sidebar-secondary {
-    width: 25em;
-}
-
-.table {
-    vertical-align: middle;
-}
