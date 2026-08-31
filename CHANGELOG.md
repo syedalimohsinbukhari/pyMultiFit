@@ -66,18 +66,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.8] - 2025-11-02
 
-**PRs:** [PR #111] · **Issues:** [issue #109]
+📄 **Milestone:** adds `CITATION.cff` and the DOI / pyOpenSci / JOSS status badges — marks the project's [Zenodo release](https://doi.org/10.5281/zenodo.17273507) and its paper submission to the [Journal of Open Source Software](https://github.com/openjournals/joss-reviews/issues/9295), following the [pyOpenSci peer review](https://github.com/pyOpenSci/software-submission/issues/233) completed in [1.0.7].
+
+**PRs:** [PR #105], [PR #106], [PR #111] · **Issues:** [issue #109]
 
 ### Added
 
 - Added `BetaPrimeDistribution` with full PDF/CDF/log-PDF/log-CDF support (`beta_prime_pdf_`, `beta_prime_cdf_`, `beta_prime_log_pdf_`, `beta_prime_log_cdf_`), an example script, tests, and a docs stub.
 - Added the `OneDArray` type alias (`Annotated[NDArray[np.float64], "1D array"]`) as a precise 1D-array type hint, now used across distribution/fitter/generator public signatures.
+- Added `CITATION.cff` and DOI / pyOpenSci peer-review / JOSS submission status badges to the README.
 
 ### Changed
 
 - Migrated public method/function signatures across all distributions, fitters, and generators from the loose `ListOrNdArray` alias to the new `OneDArray` type hint (`ListOrNdArray` itself remains defined and importable).
 - Removed the hand-maintained `utilities_d.pyi` stub file in favor of inline type hints.
 - Reformatted code across distributions/fitters/examples (consistent double-quoted strings, condensed multi-line calls) — no behavioral change.
+- Updated figures and section headings in the JOSS paper draft (`inst/paper.md`) and removed redundant figure captions from markdown images.
 
 ### Fixed
 
@@ -89,6 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.7] - 2025-10-05
 
+📄 **Milestone:** completes the [pyOpenSci peer-review cycle](https://github.com/pyOpenSci/software-submission/issues/233) — 39 review-response commits over Software Review issue #233 (May–Oct 2025) — and lands the initial JOSS paper draft (`inst/paper.md`, `inst/paper.bib`), paving the way for the [1.0.8] Zenodo/JOSS submission milestone.
+
 **PRs:** [PR #92], [PR #104] · **Issues:** [issue #88], [issue #102]
 
 ### Added
@@ -97,15 +103,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a `generalized` distributions subpackage housing `SymmetricGeneralizedNormalDistribution` and `ScaledInverseChiSquareDistribution`.
 - Added `.pyi` type-stub coverage for `distributions/utilities_d.py`, plus package-wide type hints/annotations across all distribution and fitter classes.
 - Added `mark_deprecated`/`md_scipy_like` decorators and `INF`/`LOG` shorthand constants to the top-level package.
-- Added a `noxfile.py` task runner, `CONTRIBUTING.md`, and `update_requirements_doc.py` developer tooling.
-- Added `paper/` example scripts (`distribution_.py`, `mg_fitter.py`, `mixed_paper.py`) supporting a JOSS/pyOpenSci paper submission.
+- Added a `noxfile.py` task runner, `CONTRIBUTING.md`, and `update_requirements_doc.py` developer tooling, in response to pyOpenSci review feedback.
+- Added the initial JOSS paper draft (`inst/paper.md`, `inst/paper.bib`) and `paper/` example scripts (`distribution_.py`, `mg_fitter.py`, `mixed_paper.py`) supporting the submission.
 
 ### Changed
 
-- Consolidated build metadata into `pyproject.toml` and removed the legacy `setup.py`.
+- Consolidated build metadata into `pyproject.toml` and removed the legacy `setup.py`, addressing pyOpenSci packaging requirements.
 - Refactored `distributions/utilities_d.py` and `MixedDataFitter` internals (`mixed_f.py`) — the latter split its monolithic `_instantiate_fitter` into `_instantiate_bounds`/`_instantiate_class`/`_instantiate_n_par` — without changing public `fit()`/`plot_fit()` call signatures.
 - `BaseFitter.__init__` now runs input validation via a new `sanity_check` helper before storing `x_values`/`y_values`.
-- Broad typing/formatting pass across all distributions and fitters (explicit return types, `ArrayLike`/`NDArray` typing) as part of a pyOpenSci review cycle.
+- Broad typing/formatting pass across all distributions and fitters (explicit return types, `ArrayLike`/`NDArray` typing) as part of the pyOpenSci review cycle.
 - Reworked `generators/generators.py` and its `__init__.py` exports.
 
 ### Fixed
@@ -427,6 +433,8 @@ Initial public release.
 [PR #86]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/86
 [PR #92]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/92
 [PR #104]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/104
+[PR #105]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/105
+[PR #106]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/106
 [PR #111]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/111
 [PR #112]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/112
 [PR #114]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/114
