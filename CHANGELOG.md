@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **PRs:** [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125] · **Issues:** [issue #89], [issue #90], [issue #94], [issue #95], [issue #99], [issue #100], [issue #117], [issue #118], [issue #119], [issue #121]
 
+🎓 *Entries marked with a scholar hat were contributed by **Ahmed Bin Jawwad**, an intern at the Space and Astrophysics Research Lab (SARL), National Center of GIS and Space Applications (NCGSA), Institute of Space Technology (IST), Islamabad, Pakistan (Jul 6 – Aug 28, 2026).*
+
 ### Added
 
-- Added `QExponentialDistribution` and `StudentsTDistribution` to `pymultifit.distributions.generalized`.
+- Added `QExponentialDistribution` and `StudentsTDistribution` to `pymultifit.distributions.generalized`. 🎓
 - Added Gumbel PDF/log-PDF/CDF/log-CDF utility functions (`gumbel_pdf_`, `gumbel_log_pdf_`, `gumbel_cdf_`, `gumbel_log_cdf_`) to `distributions.utilities_d` — note: only the standalone utility functions shipped, not a public `GumbelDistribution` class.
 - Added a new `pymultifit.plot` subpackage (`FitPlotter`, `_plot_backend`) providing residual plots, Q-Q plots, confidence-interval bounds, prediction intervals, parameter-correlation plots, and gridlines on plot axes, exposed via a cached `BaseFitter.plotter` property.
 - Added a confidence-interval computation backend (`fitters.backend._ci_backend`: `compute_ci_bounds`, `compute_individual_ci_base`, `compute_individual_ci_mixed`).
@@ -24,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Unified all library docstrings to NumPy style throughout `distributions`, `fitters`, and `generators`, including a documentation/typing rework of `JohnsonSUDistribution`.
+- Unified all library docstrings to NumPy style throughout `distributions`, `fitters`, and `generators`, including a documentation/typing rework of `JohnsonSUDistribution`. 🎓 (majority)
 - Overhauled type hints across the codebase to modern `X | None` / `from __future__ import annotations` syntax; consolidated ad-hoc type aliases into `pymultifit.typing`.
 - `MixedDataFitter` now subclasses `BaseFitter` instead of duplicating its logic, unifying residual/CI/plotting support across all fitters.
 - Swapped the `deprecated`/`Deprecated` (`deprecated.sphinx`) dependency for `deprecation`; internal `mark_deprecated`/`md_scipy_like` helpers reworked accordingly.
