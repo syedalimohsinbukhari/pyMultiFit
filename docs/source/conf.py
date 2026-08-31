@@ -22,6 +22,7 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
+    "myst_parser",
     "sphinx_copybutton",
     "nbsphinx",
     "nbsphinx_link",
