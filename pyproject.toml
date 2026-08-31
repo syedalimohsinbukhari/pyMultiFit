@@ -66,6 +66,7 @@ dev = [
     "build",
     "memory_profiler",
     "sphinx",
+    "myst-parser",
     "docutils<0.21",
     "sphinx-rtd-theme",
     "pydata-sphinx-theme",
