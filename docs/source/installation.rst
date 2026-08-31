@@ -6,12 +6,13 @@ Whether you're a user or a developer, follow the steps below to get started quic
 
 **pyMultiFit** depends on a few core libraries to ensure smooth functionality:
 
-- `numpy<2.1.0 <https://numpy.org>`_
+- `numpy <https://numpy.org>`_
 - `matplotlib <https://matplotlib.org>`_
 - `scipy <https://scipy.org>`_
-- `mpyez <https://github.com/syedalimohsinbukhari/mpyez>`_
+- `plotez <https://github.com/syedalimohsinbukhari/plotez>`_
+- `tqdm <https://tqdm.github.io>`_
 - `custom-inherit <https://github.com/rsokl/custom_inherit>`_
-- `Deprecated <https://github.com/laurent-laporte-pro/deprecated>`_
+- `deprecation <https://github.com/briancurtin/deprecation>`_
 
 -------------------------------
 

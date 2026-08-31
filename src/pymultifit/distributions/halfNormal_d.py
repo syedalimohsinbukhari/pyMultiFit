@@ -1,32 +1,28 @@
 """Created on Dec 04 03:57:18 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
-import numpy as np
-
-from .backend import errorHandling as erH, BaseDistribution
-from .utilities_d import half_normal_pdf_, half_normal_cdf_, half_normal_log_pdf_, half_normal_log_cdf_
-from .. import md_scipy_like
+from .. import NAN_DICT, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, _md_scipy_like
+from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
 
 
 class HalfNormalDistribution(BaseDistribution):
     r"""
-    Class for halfnormal distribution.
+    Class for :class:`~.HalfNormalDistribution`.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param scale: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    :type scale: float, optional
-
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+    Parameters
+    ----------
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    scale :
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    loc :
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Examples
     --------
@@ -77,17 +73,7 @@ class HalfNormalDistribution(BaseDistribution):
        :align: center
     """
 
-    def __init__(
-        self,
-        amplitude: float = 1.0,
-        scale: float = 1.0,
-        loc: float = 0.0,
-        normalize: bool = False,
-    ):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-        if scale < 0:
-            raise erH.NegativeScaleError()
+    def __init__(self, amplitude: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False):
         self.amplitude = 1 if normalize else amplitude
         self.scale = scale
         self.loc = loc
@@ -95,92 +81,66 @@ class HalfNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> 'HalfNormalDistribution':
-        """
-        Instantiate HalfNormalDistribution with scipy parametrization.
+    @_md_scipy_like("1.0.7")
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":
+        r"""
+        Instantiate :class:`~.HalfNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        HalfNormalDistribution
-            An instance of normalized HalfNormalDistribution.
+        :class:`~.HalfNormalDistribution`
+            An instance of normalized :class:`~.HalfNormalDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> 'HalfNormalDistribution':
-        """
-        Instantiate HalfNormalDistribution with scipy parametrization.
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":
+        r"""
+        Instantiate :class:`~.HalfNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        HalfNormalDistribution
-            An instance of normalized HalfNormalDistribution.
+        :class:`~.HalfNormalDistribution`
+            An instance of normalized :class:`~.HalfNormalDistribution`.
         """
         return cls(loc=loc, scale=scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return half_normal_pdf_(
-            x,
-            amplitude=self.amplitude,
-            sigma=self.scale,
-            loc=self.loc,
-            normalize=self.norm,
-        )
+    def pdf(self, x: ArrayLike) -> NDArray:
+        return half_normal_pdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
-        return half_normal_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            sigma=self.scale,
-            loc=self.loc,
-            normalize=self.norm,
-        )
+    def logpdf(self, x: ArrayLike) -> NDArray:
+        return half_normal_log_pdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return half_normal_cdf_(
-            x,
-            amplitude=self.amplitude,
-            sigma=self.scale,
-            loc=self.loc,
-            normalize=self.norm,
-        )
+    def cdf(self, x: ArrayLike) -> NDArray:
+        return half_normal_cdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
-        return half_normal_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            sigma=self.scale,
-            loc=self.loc,
-            normalize=self.norm,
-        )
+    def logcdf(self, x: ArrayLike) -> NDArray:
+        return half_normal_log_cdf_(x, amplitude=self.amplitude, sigma=self.scale, loc=self.loc, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         s_, l_ = self.scale, self.loc
 
-        mean_ = np.sqrt(2 / np.pi)
+        if s_ <= 0:
+            return NAN_DICT
+
+        mean_ = SQRT_TWO_BY_PI
         mode_ = 0
 
-        variance_ = 1 - (2 / np.pi)
+        variance_ = 1 - TWO_BY_PI
         variance_ *= s_**2
 
-        return {
-            "mean": (s_ * mean_) + l_,
-            "mode": mode_,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": (s_ * mean_) + l_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

@@ -1,33 +1,30 @@
 """Created on Aug 03 21:02:45 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
-import numpy as np
-
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import (log_normal_cdf_, log_normal_pdf_, log_normal_log_pdf_, log_normal_log_cdf_,
-                          suppress_numpy_warnings)
-from .. import md_scipy_like
+from .. import EXP, NAN_DICT, SQRT, _md_scipy_like, suppress_numpy_warnings
+from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
 
 
 class LogNormalDistribution(BaseDistribution):
     r"""
-    Class for LogNormal distribution.
+    Class for :class:`~.LogNormalDistribution`.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param mu: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type mu: float, optional
-
-    :param std: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    :type std: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
+    Parameters
+    ----------
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    mu :
+        The mean parameter, :math:`\mu`. Defaults to 1.0.
+    std :
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    loc :
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Examples
     --------
@@ -79,101 +76,91 @@ class LogNormalDistribution(BaseDistribution):
     """
 
     def __init__(
-        self,
-        amplitude: float = 1.0,
-        mu: float = 1.0,
-        std: float = 1.0,
-        loc: float = 0.0,
-        normalize: bool = False,
+        self, amplitude: float = 1.0, mu: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
     ):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
-        if std <= 0:
-            raise erH.NegativeStandardDeviationError()
         self.amplitude = 1.0 if normalize else amplitude
-        self.mu = np.log(mu)
+        self.mu = mu
         self.std = std
         self.loc = loc
 
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
-    def scipy_like(cls, s, loc: float = 0.0, scale: float = 1.0) -> 'LogNormalDistribution':
-        """
-        Instantiate LogNormalDistribution with scipy parametrization.
+    @_md_scipy_like("1.0.7")
+    def scipy_like(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
+        r"""
+        Instantiate :class:`~.LogNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
-        s: float
+        s :
             The shape parameter.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        LogNormalDistribution
-            An instance of normalized LogNormalDistribution.
+        :class:`~.LogNormalDistribution`
+            An instance of normalized :class:`~.LogNormalDistribution`.
         """
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, s, loc: float = 0.0, scale: float = 1.0) -> 'LogNormalDistribution':
-        """
-        Instantiate LogNormalDistribution with scipy parametrization.
+    def from_scipy_params(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
+        r"""
+        Instantiate :class:`~.LogNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
-        s: float
+        s :
             The shape parameter.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        LogNormalDistribution
-            An instance of normalized LogNormalDistribution.
+        :class:`~.LogNormalDistribution`
+            An instance of normalized :class:`~.LogNormalDistribution`.
         """
         return cls(std=s, mu=scale, loc=loc, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return log_normal_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return log_normal_log_pdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return log_normal_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return log_normal_log_cdf_(
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
     @suppress_numpy_warnings()
-    def stats(self) -> Dict[str, float]:
-        m, s, l_ = np.exp(self.mu), self.std, self.loc
+    def stats(self) -> dict[str, float]:
+        m, s, l_ = self.mu, self.std, self.loc
+
+        if m <= 0 or s <= 0:
+            return NAN_DICT
 
         # copied from scipy source-code,
         # simpler implementations give reasonable higher values > 10^100 but scipy gives np.inf,
         # so I'm shortcutting it by taking scipy implementation here directly.
-        p = np.exp(s * s)
-        mean_ = np.sqrt(p)
+        p = EXP(s * s)
+        mean_ = SQRT(p)
         variance_ = p * (p - 1)
         variance_ *= m**2
 
-        return {
-            "mean": (m * mean_) + l_,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": (m * mean_) + l_, "variance": variance_, "std": SQRT(variance_)}

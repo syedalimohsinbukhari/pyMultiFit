@@ -171,3 +171,9 @@ LYSO_Spectra/
 /**/extra*.py
 /**/extra
 .vscode
+
+# temporary removed for testing
+/docs/planning/**
+/app/*
+ITERATIVE_BUILDOUT**
+.mcp.json

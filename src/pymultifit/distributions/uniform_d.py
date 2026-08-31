@@ -1,31 +1,28 @@
 """Created on Dec 11 20:40:15 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
-import numpy as np
-
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import uniform_cdf_, uniform_pdf_, uniform_log_pdf_, uniform_log_cdf_
-from .. import md_scipy_like
+from .backend import BaseDistribution
+from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
+from .. import NAN_DICT, SQRT, _md_scipy_like
+from ..typing import ArrayLike, NDArray
 
 
 class UniformDistribution(BaseDistribution):
     r"""
-    Class for Uniform Distribution.
+    Class for :class:`~.UniformDistribution`.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param low: Lower bound of distribution.
-    :type low: float, optional
-
-    :param high: Upper bound of distribution.
-    :type high: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1. Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
+    Parameters
+    ----------
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    low :
+        Lower bound of distribution. Defaults to 0.0.
+    high :
+        Upper bound of distribution. Defaults to 1.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+        Defaults to ``False``.
 
     Examples
     --------
@@ -77,8 +74,6 @@ class UniformDistribution(BaseDistribution):
     """
 
     def __init__(self, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
         self.amplitude = 1 if normalize else amplitude
         self.low = low
         self.high = high
@@ -86,93 +81,64 @@ class UniformDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0):
-        """
-        Instantiate UniformDistribution with scipy parametrization.
+    @_md_scipy_like("1.0.7")
+    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "UniformDistribution":
+        r"""
+        Instantiate :class:`~.UniformDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        UniformDistribution
-            An instance of normalized UniformDistribution.
+        :class:`~.UniformDistribution`
+            An instance of normalized :class:`~.UniformDistribution`.
         """
-        return cls(low=loc, high=scale, normalize=True)
+        return cls(low=loc, high=loc + scale, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0):
-        """
-        Instantiate UniformDistribution with scipy parametrization.
+    def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "UniformDistribution":
+        r"""
+        Instantiate :class:`~.UniformDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        UniformDistribution
-            An instance of normalized UniformDistribution.
+        :class:`~.UniformDistribution`
+            An instance of normalized :class:`~.UniformDistribution`.
         """
-        return cls(low=loc, high=scale, normalize=True)
+        return cls(low=loc, high=loc + scale, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_pdf_(
-            x,
-            amplitude=self.amplitude,
-            low=self.low,
-            high=self.high,
-            normalize=self.norm,
-        )
+    def pdf(self, x: ArrayLike) -> NDArray:
+        return uniform_pdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            low=self.low,
-            high=self.high,
-            normalize=self.norm,
-        )
+    def logpdf(self, x: ArrayLike) -> NDArray:
+        return uniform_log_pdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def cdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_cdf_(
-            x,
-            amplitude=self.amplitude,
-            low=self.low,
-            high=self.high,
-            normalize=self.norm,
-        )
+    def cdf(self, x: ArrayLike) -> NDArray:
+        return uniform_cdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def logcdf(self, x: np.ndarray) -> np.ndarray:
-        return uniform_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            low=self.low,
-            high=self.high,
-            normalize=self.norm,
-        )
+    def logcdf(self, x: ArrayLike) -> NDArray:
+        return uniform_log_cdf_(x, amplitude=self.amplitude, low=self.low, high=self.high, normalize=self.norm)
 
-    def stats(self) -> Dict[str, float]:
-        low, high = self.low, self.low + self.high
+    def stats(self) -> dict[str, float]:
+        low, high = self.low, self.high
 
-        if low == high:
-            return {"mean": np.nan, "median": np.nan, "variance": np.nan, "std": np.nan}
+        if low >= high:
+            return NAN_DICT
 
         mean_ = 0.5 * (low + high)
         median_ = mean_
-        variance_ = (1 / 12.0) * (high - low)**2
+        variance_ = (1 / 12.0) * (high - low) ** 2
 
-        return {
-            "mean": mean_,
-            "median": median_,
-            "variance": variance_,
-            "std": np.sqrt(variance_),
-        }
+        return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

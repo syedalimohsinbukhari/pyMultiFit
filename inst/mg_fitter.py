@@ -37,5 +37,5 @@ mg_fitter.fit(params_guess)
 
 # plotting the fitted model
 mg_fitter.plot_fit(show_individuals=True)
-plt.savefig('./mg_fit_paper.png', dpi=300)
+plt.savefig("./mg_fit_paper.png", dpi=300)
 plt.show()

@@ -12,7 +12,7 @@ URL_OVERRIDES = {
     "numpy": "https://numpy.org",
     "scipy": "https://scipy.org",
     "matplotlib": "https://matplotlib.org",
-    "mpyez": "https://github.com/syedalimohsinbukhari/mpyez",
+    "plotez": "https://github.com/syedalimohsinbukhari/plotez",
     "custom-inherit": "https://github.com/rsokl/custom_inherit",
     "deprecated": "https://github.com/laurent-laporte-pro/deprecated",
 }
@@ -41,9 +41,6 @@ block = "\n" + "\n".join(formatted) + "\n\n"
 # Replace block between markers
 content = INSTALL_RST.read_text()
 updated = re.sub(
-    r"(?s)(^\s*\.\. BEGIN REQUIREMENTS\s*$)(.*?)(^\s*\.\. END REQUIREMENTS\s*$)",
-    block,
-    content,
-    flags=re.DOTALL,
+    r"(?s)(^\s*\.\. BEGIN REQUIREMENTS\s*$)(.*?)(^\s*\.\. END REQUIREMENTS\s*$)", block, content, flags=re.DOTALL
 )
 INSTALL_RST.write_text(updated)

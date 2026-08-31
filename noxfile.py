@@ -15,8 +15,9 @@ CODE_LOCATIONS = ["src/pymultifit/", "src/tests/", "noxfile.py"]
 @nox.session
 def lint(session):
     """Lint the code using Ruff and Pylint."""
-    session.install(".", "ruff", "pylint")
-    session.run("ruff", "check", *CODE_LOCATIONS, "--no-fix")
+    session.install(".", "black", "pylint")
+    for path in CODE_LOCATIONS:
+        session.run("black", path, "-C", "-l", "120", "-t", "py39")
     session.run("pylint", CODE_LOCATIONS[0], "--rcfile=./.pylintrc", "--fail-under=7")
 
 

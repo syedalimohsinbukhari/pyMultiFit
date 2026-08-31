@@ -11,7 +11,3 @@ Available for use
 .. autofunction:: parameter_logic
 .. autofunction:: sanity_check
 
-Internal functions
-------------------
-
-.. autofunction:: _plot_fit

@@ -1,38 +1,32 @@
 """Created on Dec 04 03:42:42 2024"""
 
-from typing import Dict
+from __future__ import annotations
 
-import numpy as np
-from numpy import ndarray
 from scipy.special import erf
 
-from .backend import BaseDistribution, errorHandling as erH
-from .utilities_d import folded_normal_cdf_, folded_normal_pdf_, folded_normal_log_pdf_, folded_normal_log_cdf_
-from .. import md_scipy_like
+from .. import EXP, NAN_DICT, SQRT, SQRT_TWO, SQRT_TWO_BY_PI, _md_scipy_like
+from ..typing import ArrayLike, NDArray
+from .backend import BaseDistribution
+from .utilities_d import folded_normal_cdf_, folded_normal_log_cdf_, folded_normal_log_pdf_, folded_normal_pdf_
 
 
 class FoldedNormalDistribution(BaseDistribution):
     r"""
-    Class for FoldedNormal distribution.
+    Class for :class:`~.FoldedNormalDistribution`.
 
-    :param amplitude: The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
-    :type amplitude: float, optional
-
-    :param mu: The mean parameter, :math:`\mu`. Defaults to 0.0.
-    :type mu: float, optional
-
-    :param sigma: The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
-    :type sigma: float, optional
-
-    :param loc: The location parameter, for shifting. Defaults to 0.0.
-    :type loc: float, optional
-
-    :param normalize: If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
+    Parameters
+    ----------
+    amplitude :
+        The amplitude of the PDF. Defaults to 1.0. Ignored if ``normalize`` is ``True``.
+    mu :
+        The mean parameter, :math:`\mu`. Defaults to 0.0.
+    sigma :
+        The standard deviation parameter, :math:`\sigma`. Defaults to 1.0.
+    loc :
+        The location parameter, for shifting. Defaults to 0.0.
+    normalize :
+        If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
-    :type normalize: bool, optional
-
-    :raise NegativeAmplitudeError: If the provided value of amplitude is negative.
-    :raise NegativeStandardDeviationError: If the provided value of standard deviation is negative.
 
     Examples
     --------
@@ -84,15 +78,8 @@ class FoldedNormalDistribution(BaseDistribution):
     """
 
     def __init__(
-        self,
-        amplitude: float = 1.0,
-        mu: float = 0.0,
-        sigma: float = 1.0,
-        loc: float = 0.0,
-        normalize: bool = False,
+        self, amplitude: float = 1.0, mu: float = 0.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
     ):
-        if not normalize and amplitude <= 0:
-            raise erH.NegativeAmplitudeError()
         self.amplitude = 1.0 if normalize else amplitude
         self.mu = mu
         self.sigma = sigma
@@ -101,101 +88,80 @@ class FoldedNormalDistribution(BaseDistribution):
         self.norm = normalize
 
     @classmethod
-    @md_scipy_like('1.0.7')
-    def scipy_like(cls, c, loc: float = 0.0, scale: float = 1.0) -> 'FoldedNormalDistribution':
+    @_md_scipy_like("1.0.7")
+    def scipy_like(cls, c: float, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
         r"""
-        Instantiate FoldedNormalDistribution with scipy parametrization.
+        Instantiate :class:`~.FoldedNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
-        c: float
+        c :
             The shape parameter.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        FoldedNormalDistribution
-            An instance of normalized FoldedNormalDistribution.
+        :class:`~.FoldedNormalDistribution`
+            An instance of normalized :class:`~.FoldedNormalDistribution`.
         """
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
     @classmethod
-    def from_scipy_params(cls, c, loc: float = 0.0, scale: float = 1.0) -> 'FoldedNormalDistribution':
+    def from_scipy_params(cls, c: float, loc: float = 0.0, scale: float = 1.0) -> "FoldedNormalDistribution":
         r"""
-        Instantiate FoldedNormalDistribution with scipy parametrization.
+        Instantiate :class:`~.FoldedNormalDistribution` with ``scipy`` parameterization.
 
         Parameters
         ----------
-        c: float
+        c :
             The shape parameter.
-        loc: float, optional
+        loc :
             The location parameter. Defaults to 0.0.
-        scale: float, optional
+        scale :
             The scale parameter. Defaults to 1.0.
 
         Returns
         -------
-        FoldedNormalDistribution
-            An instance of normalized FoldedNormalDistribution.
+        :class:`~.FoldedNormalDistribution`
+            An instance of normalized :class:`~.FoldedNormalDistribution`.
         """
         return cls(mu=c, sigma=scale, loc=loc, normalize=True)
 
-    def pdf(self, x: np.ndarray) -> np.ndarray:
+    def pdf(self, x: ArrayLike) -> NDArray:
         return folded_normal_pdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            sigma=self.sigma,
-            loc=self.loc,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def logpdf(self, x: ndarray) -> ndarray:
+    def logpdf(self, x: ArrayLike) -> NDArray:
         return folded_normal_log_pdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            sigma=self.sigma,
-            loc=self.loc,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def cdf(self, x: ndarray) -> ndarray:
+    def cdf(self, x: ArrayLike) -> NDArray:
         return folded_normal_cdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            sigma=self.sigma,
-            loc=self.loc,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def logcdf(self, x: ndarray) -> ndarray:
+    def logcdf(self, x: ArrayLike) -> NDArray:
         return folded_normal_log_cdf_(
-            x,
-            amplitude=self.amplitude,
-            mean=self.mu,
-            sigma=self.sigma,
-            loc=self.loc,
-            normalize=self.norm,
+            x, amplitude=self.amplitude, mean=self.mu, sigma=self.sigma, loc=self.loc, normalize=self.norm
         )
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> dict[str, float]:
         mean_, std_ = self.mu, self.sigma
 
-        sqrt_ = (2 / np.pi)**0.5
+        if std_ <= 0:
+            return NAN_DICT
+        elif mean_ <= 0:
+            return NAN_DICT
 
-        f1 = sqrt_ * np.exp(-0.5 * mean_**2)
-        f2 = mean_ * erf(mean_ / np.sqrt(2))
+        f1 = SQRT_TWO_BY_PI * EXP(-0.5 * mean_**2)
+        f2 = mean_ * erf(mean_ / SQRT_TWO)
 
         mu_y = f1 + f2
         var_y = mean_**2 + 1 - mu_y**2
 
-        return {
-            "mean": (std_ * mu_y) + self.loc,
-            "variance": var_y * std_**2,
-            "std": np.sqrt(var_y * std_**2),
-        }
+        return {"mean": (std_ * mu_y) + self.loc, "variance": var_y * std_**2, "std": SQRT(var_y * std_**2)}
