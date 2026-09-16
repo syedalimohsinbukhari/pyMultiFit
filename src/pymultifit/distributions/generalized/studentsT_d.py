@@ -1,5 +1,7 @@
 """Created on July 28 11:15:23 2026"""
 
+from __future__ import annotations
+
 from ..backend import BaseDistribution
 from ..utilities_d import students_t_cdf_, students_t_log_cdf_, students_t_log_pdf_, students_t_pdf_
 from ... import INF, NAN, NAN_DICT, SQRT
@@ -39,8 +41,8 @@ class StudentsTDistribution(BaseDistribution):
        :lineno-start: 3
        :lines: 3-7
 
-    Generating a heavy-tailed Student's t-distribution (:math:`v=1, \mu=0, \sigma=1`), equivalent to a Cauchy distribution,
-    with ``pyMultiFit`` and ``scipy``:
+    Generating a heavy-tailed Student's t-distribution (:math:`v=1`), equivalent to a Cauchy distribution, with
+    ``pyMultiFit`` and ``scipy``:
 
     .. literalinclude:: ../../../examples/basic/studentsT.py
        :language: python
@@ -60,7 +62,7 @@ class StudentsTDistribution(BaseDistribution):
        :alt: StudentsT(1, 0, 1)
        :align: center
 
-    Generating a scaled and translated Student's t-distribution approaching a Gaussian (:math:`v=100, \mu=-3, \sigma=2.5, A=2.0`):
+    Generating a scaled and translated Student's t-distribution approaching a Gaussian (:math:`\nu=3, \mu=3, \sigma=1.5`):
 
     .. literalinclude:: ../../../examples/basic/studentsT.py
        :language: python
@@ -75,7 +77,7 @@ class StudentsTDistribution(BaseDistribution):
        :lines: 34-49
 
     .. image:: ../../../images/students_T_example2.png
-       :alt: StudentsT(100, -3, 2.5, A=2.0)
+       :alt: StudentsT(3, 3, 1.5)
        :align: center
     """
 

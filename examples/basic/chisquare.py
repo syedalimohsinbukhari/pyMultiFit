@@ -2,12 +2,9 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from plotez import update_style
 from scipy.stats import chi2
 
 from pymultifit.distributions import ChiSquareDistribution
-
-update_style()
 
 x_values = np.linspace(start=-8, stop=8, num=10_000)
 

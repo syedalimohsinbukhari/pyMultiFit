@@ -1,11 +1,13 @@
 """Created on Jan 29 15:42:23 2025"""
 
+from __future__ import annotations
+
 from scipy.special import gammaln
 
-from ... import EXP, LOG, SQRT, _md_scipy_like
-from ...typing import ArrayLike, NDArray
 from ..backend import BaseDistribution
 from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
+from ... import EXP, LOG, SQRT, _md_scipy_like
+from ...typing import ArrayLike, NDArray
 
 
 class SymmetricGeneralizedNormalDistribution(BaseDistribution):
@@ -15,13 +17,17 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     shape :
-        The shape parameter, :math:`\beta`. Defaults to 1.0.
+        The shape parameter, :math:`\beta`.
+        Defaults to 1.0.
     loc :
-        The shape parameter, :math:`\mu`. Defaults to 0.0.
+        The shape parameter, :math:`\mu`.
+        Defaults to 0.0.
     scale :
-        The standard deviation parameter, :math:`\alpha`. Defaults to 1.0.
+        The standard deviation parameter, :math:`\alpha`.
+        Defaults to 1.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -30,14 +36,13 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
     --------
     Importing libraries:
 
-    .. literalinclude:: ../../../examples/basic/gaussian.py
+    .. literalinclude:: ../../../examples/basic/gennorm.py
        :language: python
        :linenos:
        :lineno-start: 3
        :lines: 3-7
 
-    Generating a standard :class:`~.SymmetricGeneralizedNormalDistribution` (:math:`\beta=1, \mu=0, \alpha = 1`)
-     with ``pyMultiFit`` and ``scipy``:
+    Generating a standard SymmetricGeneralizedNormalDistribution(:math:`\beta=1`) with ``pyMultiFit`` and ``scipy``:
 
     .. literalinclude:: ../../../examples/basic/gennorm.py
        :language: python
@@ -57,7 +62,7 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
        :alt: GenNorm(1, 0, 1)
        :align: center
 
-    Generating a scaled and translated :class:`~.SymmetricGeneralizedNormalDistribution` (:math:`\beta=2, \mu=-3, \alpha=5`):
+    Generating a scaled and translated SymmetricGeneralizedNormalDistribution(:math:`\beta=2, \mu=-3, \alpha=5`):
 
     .. literalinclude:: ../../../examples/basic/gennorm.py
        :language: python

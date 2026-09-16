@@ -1,11 +1,11 @@
 """Created on August 12 11:26:00 2026"""
 
-import numpy as np
+from __future__ import annotations
 
-from ... import INF, NAN, NAN_DICT, SQRT
-from ...typing import ArrayLike, NDArray
 from ..backend import BaseDistribution
 from ..utilities_d import q_exponential_cdf_, q_exponential_log_cdf_, q_exponential_log_pdf_, q_exponential_pdf_
+from ... import INF, NAN, SQRT
+from ...typing import ArrayLike, NDArray
 
 
 class QExponentialDistribution(BaseDistribution):
@@ -124,7 +124,7 @@ class QExponentialDistribution(BaseDistribution):
 
         # Variance exists for q < 4/3 (4 - 3q > 0)
         if q < (4.0 / 3.0):
-            variance_ = 1.0 / ((rate**2) * ((3.0 - 2.0 * q) ** 2) * (4.0 - 3.0 * q))
+            variance_ = 1.0 / ((rate ** 2) * ((3.0 - 2.0 * q) ** 2) * (4.0 - 3.0 * q))
         elif q < 1.5:
             variance_ = INF
         else:

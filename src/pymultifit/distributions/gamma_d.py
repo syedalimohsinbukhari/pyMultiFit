@@ -16,10 +16,12 @@ class GammaDistribution(BaseDistribution):
        The :class:`~.GammaDistribution` encompasses the following specific cases:
 
        #. :class:`~pymultifit.distributions.exponential_d.ExponentialDistribution`:
-           - :math:`\alpha = 1`, and
-           - :math:`\theta_\text{gamma} = \dfrac{1}{\lambda_\text{expon}}`.
+
+          - :math:`\alpha = 1`, and
+          - :math:`\theta_\text{gamma} = \dfrac{1}{\lambda_\text{expon}}`.
 
        #. :class:`~pymultifit.distributions.uniform_d.UniformDistribution`:
+
           - :math:`\alpha = 1`, and
           - :math:`\theta = 1`.
 

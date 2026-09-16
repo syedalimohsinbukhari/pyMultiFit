@@ -1,7 +1,7 @@
 """Created on Feb 02 03:46:43 2025"""
 
-from ... import INF, SQRT, _md_scipy_like, NAN_DICT
-from ...typing import ArrayLike, NDArray
+from __future__ import annotations
+
 from ..backend import BaseDistribution
 from ..utilities_d import (
     scaled_inv_chi_square_cdf_,
@@ -9,22 +9,28 @@ from ..utilities_d import (
     scaled_inv_chi_square_log_pdf_,
     scaled_inv_chi_square_pdf_,
 )
+from ... import INF, SQRT, _md_scipy_like, NAN_DICT
+from ...typing import ArrayLike, NDArray
 
 
 class ScaledInverseChiSquareDistribution(BaseDistribution):
     r"""
-    Class for :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution`.
+    Class for :class:`~.ScaledInverseChiSquareDistribution`.
 
     Parameters
     ----------
     amplitude :
-        The amplitude of the PDF. Defaults to 1.0. Ignored if **normalize** is ``True``.
+        The amplitude of the PDF. Defaults to 1.0.
+        Ignored if **normalize** is ``True``.
     df :
-        Degrees of freedom parameter, :math:`\nu`. Defaults to 1.0.
+        Degrees of freedom parameter, :math:`\nu`.
+        Defaults to 1.0.
     scale :
-        Scale parameter, :math:`s^2`. Defaults to 1.0.
+        Scale parameter, :math:`s^2`.
+        Defaults to 1.0.
     loc :
-        Location/translation parameter, :math:`\mu`. Defaults to 0.0.
+        Location/translation parameter, :math:`\mu`.
+        Defaults to 0.0.
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
@@ -33,14 +39,14 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
     --------
     Importing libraries:
 
-    .. literalinclude:: ../../../examples/basic/gaussian.py
+    .. literalinclude:: ../../../examples/basic/scaledinvchi2.py
        :language: python
        :linenos:
        :lineno-start: 3
        :lines: 3-7
 
-    Generating a standard :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution` (:math:`\nu=1, \tau^2=1, \mu=0`)
-     with ``pyMultiFit`` and ``scipy`` (where :math:`\nu=1` yields the inverse gamma parameterization :math:`a=\frac{\nu}{2}, \text{scale}=\frac{\nu \tau^2}{2}`):
+    Generating a standard ScaledInverseChiSquareDistribution(:math:`\nu=3, \mu=0, s^2=1`) with ``pyMultiFit`` and ``scipy``
+    (where :math:`\nu=3` yields the inverse gamma parameterization :math:`a=\nu/2, \text{scale}=s^2/2`):
 
     .. literalinclude:: ../../../examples/basic/scaledinvchi2.py
        :language: python
@@ -60,7 +66,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
        :alt: ScaledInvChi2(1, 1, 0)
        :align: center
 
-    Generating a scaled and translated :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution` with Gaussian variance hyperparameters (:math:`\nu=5, \tau^2=2.5, \mu=-3`):
+    Generating a scaled and translated ScaledInverseChiSquareDistribution(:math:`\nu=3, \mu=3, s^2=2`) distribution:
 
     .. literalinclude:: ../../../examples/basic/scaledinvchi2.py
        :language: python
@@ -94,7 +100,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
     @_md_scipy_like("1.0.7")
     def scipy_like(cls, a: float, loc: float = 0.0, scale=1.0):
         """
-        Instantiate :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution` with scipy parametrization.
+        Instantiate :class:'~.ScaledInverseChiSquareDistribution` with scipy parametrization.
 
         Parameters
         ----------
@@ -107,15 +113,15 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
         Returns
         -------
-        :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution`
-            An instance of normalized :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution`.
+        :class:'~.ScaledInverseChiSquareDistribution`
+            An instance of normalized :class:'~.ScaledInverseChiSquareDistribution`.
         """
         return cls(df=a, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, loc: float = 0.0, scale=1.0):
         """
-        Instantiate :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution` with scipy parametrization.
+        Instantiate :class:'~.ScaledInverseChiSquareDistribution` with scipy parametrization.
 
         Parameters
         ----------
@@ -128,8 +134,8 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
         Returns
         -------
-        :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution`
-            An instance of normalized :class:'~pymultifit.distributions.generalized.ScaledInverseChiSquareDistribution`.
+        :class:'~.ScaledInverseChiSquareDistribution`
+            An instance of normalized :class:'~.ScaledInverseChiSquareDistribution`.
         """
         return cls(df=a, loc=loc, scale=scale, normalize=True)
 
@@ -161,7 +167,7 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
         mean_ = (v * tau2) / (v - 2)
         mode_ = (v * tau2) / (v + 2)
-        variance_ = (2 * v**2 * tau2**2) / ((v - 2) ** 2 * (v - 4))
+        variance_ = (2 * v ** 2 * tau2 ** 2) / ((v - 2) ** 2 * (v - 4))
 
         return {
             "mean": mean_ + loc if v > 2 else INF,
