@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import NAN_DICT, SQRT, _md_scipy_like
+from .. import NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import gamma_cdf_, gamma_log_cdf_, gamma_log_pdf_, gamma_pdf_
@@ -97,28 +97,6 @@ class GammaDistribution(BaseDistribution):
         self.loc = loc
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "GammaDistribution":
-        r"""
-        Instantiate :class:`~.GammaDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        a :
-            The shape parameter.
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scaling parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.GammaDistribution`
-            An instance of normalized :class:`~.GammaDistribution`.
-        """
-        return cls(shape=a, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "GammaDistribution":

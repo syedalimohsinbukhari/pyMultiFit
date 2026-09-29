@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import NAN_DICT, SQRT, _md_scipy_like
+from .. import NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import laplace_cdf_, laplace_log_cdf_, laplace_log_pdf_, laplace_pdf_
@@ -79,26 +79,6 @@ class LaplaceDistribution(BaseDistribution):
         self.b = diversity
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "LaplaceDistribution":
-        r"""
-        Instantiate :class:`~.LaplaceDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.LaplaceDistribution`
-            An instance of normalized :class:`~.LaplaceDistribution`.
-        """
-        return cls(mean=loc, diversity=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "LaplaceDistribution":

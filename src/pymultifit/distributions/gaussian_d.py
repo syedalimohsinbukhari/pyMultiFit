@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import NAN_DICT, _md_scipy_like
+from .. import NAN_DICT
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import gaussian_cdf_, gaussian_log_cdf_, gaussian_log_pdf_, gaussian_pdf_
@@ -78,26 +78,6 @@ class GaussianDistribution(BaseDistribution):
         self.mu = mu
         self.std_ = std
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "GaussianDistribution":
-        r"""
-        Instantiate :class:`~.GaussianDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        loc :
-            The mean parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.GaussianDistribution`
-            An instance of normalized :class:`~.GaussianDistribution`.
-        """
-        return cls(mu=loc, std=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "GaussianDistribution":

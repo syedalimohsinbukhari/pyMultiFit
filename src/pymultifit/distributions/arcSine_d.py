@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from numpy import sqrt
 
-from .. import NAN_DICT, _md_scipy_like
+from .. import NAN_DICT
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import arc_sine_cdf_, arc_sine_log_cdf_, arc_sine_log_pdf_, arc_sine_pdf_
@@ -69,26 +69,6 @@ class ArcSineDistribution(BaseDistribution):
         self.scale = scale
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "ArcSineDistribution":
-        """
-        Instantiate :class:`~.ArcSineDistribution` with scipy parameterization.
-
-        Parameters
-        ----------
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.ArcSineDistribution`
-            An instance of normalized :class:`~.ArcSineDistribution`.
-        """
-        return cls(loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "ArcSineDistribution":

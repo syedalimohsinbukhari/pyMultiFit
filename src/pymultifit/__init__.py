@@ -28,10 +28,6 @@ def mark_deprecated(ver_: str, new: str):
     return _decorator
 
 
-def _md_scipy_like(ver_: str, new: str = "from_scipy_params"):
-    return mark_deprecated(ver_=ver_, new=new)
-
-
 def suppress_numpy_warnings():
     """A decorator that suppresses NumPy warnings using ``np.errstate``."""
 

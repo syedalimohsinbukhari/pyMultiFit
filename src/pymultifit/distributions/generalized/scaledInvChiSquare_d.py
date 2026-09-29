@@ -9,7 +9,7 @@ from ..utilities_d import (
     scaled_inv_chi_square_log_pdf_,
     scaled_inv_chi_square_pdf_,
 )
-from ... import INF, SQRT, _md_scipy_like, NAN_DICT
+from ... import INF, SQRT, NAN_DICT
 from ...typing import ArrayLike, NDArray
 
 
@@ -95,28 +95,6 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
 
         self.loc = loc
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, a: float, loc: float = 0.0, scale=1.0):
-        """
-        Instantiate :class:'~.ScaledInverseChiSquareDistribution` with scipy parametrization.
-
-        Parameters
-        ----------
-        a :
-            The degrees of freedom parameter.
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:'~.ScaledInverseChiSquareDistribution`
-            An instance of normalized :class:'~.ScaledInverseChiSquareDistribution`.
-        """
-        return cls(df=a, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, loc: float = 0.0, scale=1.0):

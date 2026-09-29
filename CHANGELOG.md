@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dropped Python 3.9 support — `requires-python` raised from `>=3.9` to `>=3.10`; added a 3.12 classifier.
 - Removed the top-level type aliases `pymultifit.OneDArray`, `ListOrNdArray`, `ParamTuple`, `Params_` from `pymultifit/__init__.py`, replaced by `pymultifit.typing.{ArrayLike, NDArray, Params_, RaggedParams}`. Code importing these names from the package root will break.
-- `pymultifit.mark_deprecated`'s companion `md_scipy_like` was renamed to the private `_md_scipy_like`, removing it from the public API.
+- Removed the deprecated `scipy_like()` classmethod from every distribution in `pymultifit.distributions` (including `generalized`), along with its `md_scipy_like` decorator helper (`pymultifit.mark_deprecated`'s companion, which was made private as `_md_scipy_like` earlier in this release and is now gone entirely); use `from_scipy_params()` instead, which takes the same arguments.
 - Removed `BaseFitter._covariance()`; covariance is now accessed via the `covariance` attribute directly.
 - Replaced the `mpyez` plotting dependency with `plotez`; external code importing `mpyez.backend.uPlotting.LinePlot` / `mpyez.ezPlotting.plot_xy` through pyMultiFit's imports will need to switch to `plotez`.
 

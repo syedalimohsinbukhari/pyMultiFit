@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import LOG_TWO, NAN_DICT, SQRT, _md_scipy_like
+from .. import LOG_TWO, NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import exponential_cdf_, exponential_log_cdf_, exponential_log_pdf_, exponential_pdf_
@@ -86,26 +86,6 @@ class ExponentialDistribution(BaseDistribution):
         self.loc = loc
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "ExponentialDistribution":
-        r"""
-        Instantiate :class:`~.ExponentialDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The rate parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.ExponentialDistribution`
-            An instance of normalized :class:`~.ExponentialDistribution`.
-        """
-        return cls(loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "ExponentialDistribution":

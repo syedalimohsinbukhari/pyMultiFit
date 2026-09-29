@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import EXP, NAN_DICT, SQRT, _md_scipy_like, suppress_numpy_warnings
+from .. import EXP, NAN_DICT, SQRT, suppress_numpy_warnings
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
@@ -84,28 +84,6 @@ class LogNormalDistribution(BaseDistribution):
         self.loc = loc
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
-        r"""
-        Instantiate :class:`~.LogNormalDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        s :
-            The shape parameter.
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.LogNormalDistribution`
-            An instance of normalized :class:`~.LogNormalDistribution`.
-        """
-        return cls(std=s, mu=scale, loc=loc, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, s: float, loc: float = 0.0, scale: float = 1.0) -> "LogNormalDistribution":
