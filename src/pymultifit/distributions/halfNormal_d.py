@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import NAN_DICT, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, _md_scipy_like
+from .. import NAN_DICT, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import half_normal_cdf_, half_normal_log_cdf_, half_normal_log_pdf_, half_normal_pdf_
@@ -79,26 +79,6 @@ class HalfNormalDistribution(BaseDistribution):
         self.loc = loc
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":
-        r"""
-        Instantiate :class:`~.HalfNormalDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.HalfNormalDistribution`
-            An instance of normalized :class:`~.HalfNormalDistribution`.
-        """
-        return cls(loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "HalfNormalDistribution":

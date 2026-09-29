@@ -5,7 +5,7 @@ from __future__ import annotations
 from numpy import sqrt
 from scipy.special import betaincinv
 
-from .. import NAN_DICT, _md_scipy_like
+from .. import NAN_DICT
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import beta_cdf_, beta_log_cdf_, beta_log_pdf_, beta_pdf_
@@ -111,30 +111,6 @@ class BetaDistribution(BaseDistribution):
         self.scale = scale
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("v1.0.7")
-    def scipy_like(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":
-        r"""
-        Instantiate :class:`~.BetaDistribution` with scipy parameterization.
-
-        Parameters
-        ----------
-        a :
-            The shape parameter, :math:`\alpha`.
-        b :
-            The shape parameter, :math:`\beta`.
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter,. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.BetaDistribution`
-            An instance of normalized :class:`~.BetaDistribution`.
-        """
-        return cls(alpha=a, beta=b, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, b: float, loc: float = 0.0, scale: float = 1.0) -> "BetaDistribution":

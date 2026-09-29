@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from numpy import sign
 
-from .. import EXP, LOG, NAN_DICT, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI, _md_scipy_like
+from .. import EXP, LOG, NAN_DICT, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .backend import errorHandling as erH
@@ -92,28 +92,6 @@ class SkewNormalDistribution(BaseDistribution):
         self.scale = scale
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "SkewNormalDistribution":
-        r"""
-        Instantiate :class:`~.SkewNormalDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        a :
-            The skewness parameter.
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.SkewNormalDistribution`
-            An instance of normalized :class:`~.SkewNormalDistribution`.
-        """
-        return cls(shape=a, location=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, a: float, loc: float = 0.0, scale: float = 1.0) -> "SkewNormalDistribution":

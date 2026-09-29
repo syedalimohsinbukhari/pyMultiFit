@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .backend import BaseDistribution
 from .utilities_d import uniform_cdf_, uniform_log_cdf_, uniform_log_pdf_, uniform_pdf_
-from .. import NAN_DICT, SQRT, _md_scipy_like
+from .. import NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
 
 
@@ -79,26 +79,6 @@ class UniformDistribution(BaseDistribution):
         self.high = high
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, loc: float = 0.0, scale: float = 1.0) -> "UniformDistribution":
-        r"""
-        Instantiate :class:`~.UniformDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.UniformDistribution`
-            An instance of normalized :class:`~.UniformDistribution`.
-        """
-        return cls(low=loc, high=loc + scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, loc: float = 0.0, scale: float = 1.0) -> "UniformDistribution":

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .. import NAN_DICT, SQRT, _md_scipy_like
+from .. import NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import chi_square_cdf_, chi_square_log_cdf_, chi_square_log_pdf_, chi_square_pdf_
@@ -99,28 +99,6 @@ class ChiSquareDistribution(BaseDistribution):
         self.scale = scale
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("v1.0.7")
-    def scipy_like(cls, df: int | float, loc: float = 0.0, scale: float = 1.0) -> "ChiSquareDistribution":
-        """
-        Instantiate :class:`~.ChiSquareDistribution` with ``scipy`` parameterization.
-
-        Parameters
-        ----------
-        df :
-            The degree of freedom for the :class:`~.ChiSquareDistribution`.
-        loc :
-            The location parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.ChiSquareDistribution`
-            An instance of normalized :class:`~.ChiSquareDistribution`.
-        """
-        return cls(degree_of_freedom=df, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, df: int | float, loc: float = 0.0, scale: float = 1.0) -> "ChiSquareDistribution":

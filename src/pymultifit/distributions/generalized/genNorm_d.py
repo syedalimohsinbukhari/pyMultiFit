@@ -6,7 +6,7 @@ from scipy.special import gammaln
 
 from ..backend import BaseDistribution
 from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
-from ... import EXP, LOG, SQRT, _md_scipy_like
+from ... import EXP, LOG, SQRT
 from ...typing import ArrayLike, NDArray
 
 
@@ -90,28 +90,6 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         self.shape = shape
 
         self.norm = normalize
-
-    @classmethod
-    @_md_scipy_like("1.0.7")
-    def scipy_like(cls, beta: float, loc: float = 0.0, scale: float = 1.0):
-        """
-        Instantiate :class:`~.SymmetricGeneralizedNormalDistribution` with scipy parametrization.
-
-        Parameters
-        ----------
-        beta :
-            The shape parameter.
-        loc :
-            The mean parameter. Defaults to 0.0.
-        scale :
-            The scale parameter. Defaults to 1.0.
-
-        Returns
-        -------
-        :class:`~.SymmetricGeneralizedNormalDistribution`
-            An instance of normalized :class:`~.SymmetricGeneralizedNormalDistribution`.
-        """
-        return cls(shape=beta, loc=loc, scale=scale, normalize=True)
 
     @classmethod
     def from_scipy_params(cls, beta, loc: float = 0.0, scale: float = 1.0):
