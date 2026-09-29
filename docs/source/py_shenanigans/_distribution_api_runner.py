@@ -2,8 +2,19 @@
 
 from docs.source.py_shenanigans._distribution_api_template import generate_distribution_rst_simple
 
-dist_names = ['ArcSine', 'Beta', 'ChiSquare', 'Exponential', 'FoldedNormal', 'Gaussian', 'HalfNormal', 'Laplace',
-              'LogNormal', 'SkewNormal', 'Uniform']
+dist_names = [
+    "ArcSine",
+    "Beta",
+    "ChiSquare",
+    "Exponential",
+    "FoldedNormal",
+    "Gaussian",
+    "HalfNormal",
+    "Laplace",
+    "LogNormal",
+    "SkewNormal",
+    "Uniform",
+]
 
 for dist in dist_names:
     module_name, rst_content = generate_distribution_rst_simple(dist)

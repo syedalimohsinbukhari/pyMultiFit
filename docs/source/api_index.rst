@@ -14,7 +14,7 @@ The documentation first goes through a birdseye view for these three modules, fo
    :hidden:
 
    distributions/_distributions
-   fitters/_fitters
+.. fitters/_fitters
    generators/_generators
    others/_error_handling
    others/_constants

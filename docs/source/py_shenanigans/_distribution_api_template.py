@@ -3,10 +3,10 @@ import re
 
 def convert_to_snake_case(input_string):
     # Use regular expression to find the capital letters and split the string
-    parts = re.findall(r'[A-Z][a-z]*', input_string)
+    parts = re.findall(r"[A-Z][a-z]*", input_string)
 
     # Join the parts with underscores and lowercase the entire string
-    return '_'.join(parts).lower()
+    return "_".join(parts).lower()
 
 
 def generate_distribution_rst_simple(distribution_name):

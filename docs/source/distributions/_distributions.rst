@@ -31,6 +31,9 @@ Derived Distributions
    * - :class:`~beta_d.BetaDistribution`
      - Beta distribution.
      - :math:`\dfrac{1}{B(\alpha,\beta)}x^{\alpha-1}(1-x)^{\beta-1}`
+   * - :class:`~betaPrime_d.BetaPrimeDistribution`
+     - Beta prime distribution.
+     - :math:`\dfrac{1}{B(\alpha,\beta)}x^{\alpha-1}(1+x)^{-\alpha-\beta}`
    * - :class:`~chiSquare_d.ChiSquareDistribution`
      - ChiSquare distribution.
      - :math:`\dfrac{1}{2^{k/2}\Gamma(k/2)}x^{\frac{k}{2}-1}\exp\left[-\dfrac{x}{2}\right]`
@@ -49,13 +52,19 @@ Derived Distributions
    * - :class:`~halfNormal_d.HalfNormalDistribution`
      - Half-Normal distribution.
      - :math:`\dfrac{1}{\sigma}\sqrt{\dfrac{2}{\pi}}\exp\left[-\dfrac{x^2}{2\sigma^2}\right]`
+   * - :class:`~johnsonSU_d.JohnsonSUDistribution`
+     - Johnson SU distribution.
+     - :math:`\dfrac{\delta}{\lambda\sqrt{2\pi}\sqrt{1+z^2}}\exp\left[-\dfrac{1}{2}\left(\gamma+\delta\sinh^{-1}(z)\right)^2\right]`
    * - :class:`~laplace_d.LaplaceDistribution`
      - Laplace distribution.
      - :math:`\dfrac{1}{2b}\exp\left[-\dfrac{|x-\mu|}{b}\right]`
    * - :class:`~logNormal_d.LogNormalDistribution`
      - Log-Normal distribution.
      - :math:`\dfrac{1}{x\sigma\sqrt{2\pi}}\exp\left[-\dfrac{(\ln x-\mu)^2}{2\sigma^2}\right]`
-   * - :class:`~generalized.scaledInvChiSquare_d.ScaledInverseChiSquareDistribution`
+   * - :class:`~qExponential_d.QExponentialDistribution`
+     - q-Exponential distribution.
+     - :math:`(2-q)\lambda\exp_q(-\lambda x)`
+   * - :class:`~generalized.qExponential_d.QExponentialDistribution`
      - Scaled inverse chi-squared distribution.
      - :math:`\dfrac{\tau^2(\nu/2)}{\Gamma(\nu/2)}\dfrac{1}{x^{1+(\nu/2)}}\exp\left[-\dfrac{\nu\tau^2}{2x}\right]`
    * - :class:`~skewNormal_d.SkewNormalDistribution`
@@ -99,17 +108,21 @@ Non-distribution function
    BaseDistribution         <baseDistribution>
    ArcSineDistribution      <arcSine_d>
    BetaDistribution         <beta_d>
+   BetaPrimeDistribution    <betaPrime_d>
    ChiSquareDistribution    <chiSquare_d>
    ExponentialDistribution  <exponential_d>
    FoldedNormalDistribution <foldedNormal_d>
    GammaDistribution        <gamma_d>
    GaussianDistribution     <gaussian_d>
    HalfNormalDistribution   <halfNormal_d>
+   JohnsonSUDistribution    <johnsonSU_d>
    LaplaceDistribution      <laplace_d>
    LogNormalDistribution    <logNormal_d>
    Non-distribution functions <polynomial_d>
+   qExponentialDistribution <qExponential_d>
    ScaledInverseChiSquareDistribution <scaledInvChiSquare_d>
    SkewNormalDistribution   <skewNormal_d>
+   StudentsTDistribution   <studentsT_d>
    SymGeneralizedNormalDistribution <genNorm_d>
    UniformDistribution      <uniform_d>
    DistributionUtilities    <utilities_d>

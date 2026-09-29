@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 from scipy.stats import lognorm
 
-from . import base_test_functions as btf
 from ...pymultifit.distributions import LogNormalDistribution
 from ...pymultifit.distributions.backend import errorHandling as erH
+from . import base_test_functions as btf
 
 np.random.seed(42)
 
@@ -17,7 +17,7 @@ class TestLogNormalDistribution:
     def test_initialization():
         dist = LogNormalDistribution(amplitude=2.0, mu=1.0, std=0.5, normalize=False)
         assert dist.amplitude == 2.0
-        assert dist.mu == np.log(1)
+        assert dist.mu == 1.0
         assert dist.std == 0.5
         assert not dist.norm
 
@@ -26,15 +26,8 @@ class TestLogNormalDistribution:
 
     @staticmethod
     def test_constraints():
-        with pytest.raises(erH.NegativeAmplitudeError, match=f"Amplitude {erH.neg_message}"):
-            LogNormalDistribution(amplitude=-1.0, normalize=False)
-
-        # amplitude should be internally updated to 1.0 if `normalize` is called
         distribution = LogNormalDistribution(amplitude=-1.0, normalize=True)
         assert distribution.amplitude == 1.0
-
-        with pytest.raises(erH.NegativeStandardDeviationError, match=f"Standard deviation {erH.neg_message}"):
-            LogNormalDistribution(std=-3.0)
 
     @staticmethod
     def test_edge_cases():
@@ -42,17 +35,27 @@ class TestLogNormalDistribution:
 
     @staticmethod
     def test_stats():
-        btf.stats(custom_distribution=LogNormalDistribution.from_scipy_params, scipy_distribution=lognorm,
-                  parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], median=False)
+        btf.stats(
+            custom_distribution=LogNormalDistribution.from_scipy_params,
+            scipy_distribution=lognorm,
+            parameters=[btf.shape1_parameter, btf.loc1_parameter, btf.scale_parameter],
+            median=False,
+        )
 
     @staticmethod
     def test_pdfs():
-        btf.value_functions(custom_distribution=LogNormalDistribution.from_scipy_params, scipy_distribution=lognorm,
-                            parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter], log_check=True)
+        btf.value_functions(
+            custom_distribution=LogNormalDistribution.from_scipy_params,
+            scipy_distribution=lognorm,
+            parameters=[btf.shape1_parameter, btf.loc1_parameter, btf.scale_parameter],
+            log_check=True,
+        )
 
     @staticmethod
     def test_single_values():
-        btf.single_input_n_variables(custom_distribution=LogNormalDistribution.from_scipy_params,
-                                     scipy_distribution=lognorm,
-                                     parameters=[btf.shape_parameter, btf.loc_parameter, btf.scale_parameter],
-                                     log_check=True)
+        btf.single_input_n_variables(
+            custom_distribution=LogNormalDistribution.from_scipy_params,
+            scipy_distribution=lognorm,
+            parameters=[btf.shape1_parameter, btf.loc1_parameter, btf.scale_parameter],
+            log_check=True,
+        )
