@@ -50,7 +50,7 @@ beautifulsoup4==4.15.0
 black==26.5.1
 bleach==6.4.0
     # via nbconvert
-build==1.6.0
+build==1.6.1
 certifi==2026.7.22
     # via
     #   httpcore
