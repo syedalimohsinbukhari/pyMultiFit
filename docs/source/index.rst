@@ -33,6 +33,12 @@ Key Features
 4. **Statistical Distributions**
    Provides built-in statistical distributions that can be easily incorporated into your workflows.
 
+5. **Fit Diagnostics and Plotting**
+   Plot the fit and its components, residuals, Q-Q plots, bootstrap confidence intervals, prediction intervals and parameter-correlation heatmaps straight from any fitter (see :doc:`plotting`).
+
+6. **Mixed Models and Frozen Parameters**
+   :class:`~pymultifit.fitters.mixed_f.MixedDataFitter` fits a sum of *different* models at once, and individual parameters can be frozen during a fit.
+
 Benefits
 --------
 
@@ -52,6 +58,7 @@ With **pyMultiFit**, you can focus more on analyzing your data and less on redef
 
    installation
    tutorials
+   plotting
    api_index
    changelog
    benchmarks/benchmarks

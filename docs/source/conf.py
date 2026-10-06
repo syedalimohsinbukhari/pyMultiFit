@@ -83,7 +83,9 @@ add_module_names = False
 html_show_sourcelink = False
 
 plot_include_source = True
-plot_formats = ["png"]
+plot_formats = [("png", 100)]
+plot_html_show_formats = False
+plot_rcparams = {"figure.figsize": (10, 5)}
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "**.ipynb_checkpoints", "**.ipynb", "**.md5"]
@@ -121,7 +123,7 @@ html_context = {
     "doc_path": "docs/source",
     "github_project": "pyMultiFit",
     "github_repo": "pymultifit",
-    "github_version": "doc",
+    "github_version": "main",
 }
 
 

@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned up the `GammaDistribution` and `GammaFitter` docstrings: `scale` is documented as scipy's `scale` (the rate is `1/scale`) and stale shape/rate (`SR`/`SS`, `λ`) wording was removed.
 - Renamed `examples/gamma_sr.py` to `examples/gamma.py`; the combined fit-and-residuals examples (`gamma.py`, `residuals_gaussian.py`, `residuals_mixed.py`) now create their own axes and pass `axes=(ax_fit, ax_res)` to `plot_fit_and_residuals`.
 - Removed unused `Axes` and `plotez` imports from `fitters/mixed_f.py`.
+- Documentation: added API pages for `pymultifit.plot`, `pymultifit.result` and `pymultifit.ci`, a plotting guide with figures generated at build time, and refreshed the `MixedDataFitter`, `GammaFitter`, installation and index pages. The API index toctree no longer hides the fitters, generators, errors and constants pages.
 
 ### Fixed
 

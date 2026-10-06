@@ -141,7 +141,7 @@ class FitPlotter:
         ci_levels :
             CI percentage level(s) to plot (e.g., 95 or [68, 95, 99]).
         results :
-            Pre-computed CI dictionary returned by :meth:`BaseFitter.ci_bounds`.
+            Pre-computed CI dictionary returned by :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals`.
             When None, the CI is computed internally, defaults to None.
         n_bootstrap :
             Number of bootstrap samples to use when computing the CI.
@@ -219,9 +219,9 @@ class FitPlotter:
         y_label :
             The y-axis label, defaults to "Y".
         plot_title :
-            The title for the PI plot, defaults to "Plot".
+            The title for the plot, defaults to "Plot".
         data_label :
-            THe label for the plotted data, defaults to "Data".
+            The label for the plotted data, defaults to "Data".
         fit_label :
             The label for the fitted curve, defaults to "Total Fit".
         is_scatter :
@@ -269,9 +269,9 @@ class FitPlotter:
         y_label :
             The y-axis label, defaults to "Y".
         plot_title :
-            The title for the PI plot, defaults to "Plot".
+            The title for the figure, defaults to "Fit and Residuals".
         data_label :
-            THe label for the plotted data, defaults to "Data".
+            The label for the plotted data, defaults to "Data".
         fit_label :
             The label for the fitted curve, defaults to "Total Fit".
         is_scatter :
@@ -413,9 +413,9 @@ class FitPlotter:
         y_label :
             Label for the y-axis, defaults to "Y".
         plot_title :
-            Residual plot title, defaults to "Residuals".
+            Residual plot title, defaults to "".
         data_label :
-            Data label for the residuals, defaults to "".
+            Data label for the residuals, defaults to "Residuals".
         is_scatter :
             When True, the raw data is plotted as a scatter plot instead of a line, defaults to False.
         axis :

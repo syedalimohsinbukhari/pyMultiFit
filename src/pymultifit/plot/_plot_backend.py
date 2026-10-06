@@ -350,6 +350,33 @@ def _qq_compare(
     plot_title: str = "Q-Q Plot Comparison",
     axes: tuple[Axes, Axes] | None = None,
 ) -> tuple[Axes, Axes]:
+    """Draw the Q-Q plots of the residuals of two fitters side by side.
+
+    Parameters
+    ----------
+    fitter_left :
+        The fitted fitter whose residuals are drawn on the left.
+    fitter_right :
+        The fitted fitter whose residuals are drawn on the right.
+    label_left :
+        Title of the left panel. Defaults to ``"Q-Q plot | <class name>"``.
+    label_right :
+        Title of the right panel. Defaults to ``"Q-Q plot | <class name>"``.
+    plot_title :
+        The figure's overall title, defaults to "Q-Q Plot Comparison".
+    axes :
+        Two axes to draw on. If ``None``, a 1x2 figure with a shared y-axis is created.
+
+    Returns
+    -------
+    tuple[Axes, Axes]
+        The left and right axes.
+
+    Raises
+    ------
+    AxesError
+        If ``axes`` is not a pair of axes.
+    """
     if axes is None:
         _, (ax_l, ax_r) = plt.subplots(nrows=1, ncols=2, figsize=(12, 6), sharey=True)
     elif not isinstance(axes, list | tuple) or len(axes) != 2:

@@ -13,6 +13,8 @@ Base Class
    * - :class:`~pymultifit.fitters.backend.baseFitter.BaseFitter`
      - The base class for multi-fitting functionality.
 
+Every fitter exposes :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.to_result` (see :doc:`/results/_results`), a cached :attr:`~pymultifit.fitters.backend.baseFitter.BaseFitter.plotter` (see :doc:`/plot/_plot`), and :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals` (see :doc:`/ci/_ci`).
+
 Standalone Fitter
 -----------------
 
@@ -44,7 +46,7 @@ Derived Fitters
    * - :class:`~pymultifit.fitters.foldedNormal_f.FoldedNormalFitter`
      - Folded Normal fitter.
    * - :class:`~pymultifit.fitters.gamma_f.GammaFitter`
-     - Gamma fitter with shape and rate parametrization.
+     - Gamma fitter with shape and scale parametrization (``scipy``'s ``a`` and ``scale``).
    * - :class:`~pymultifit.fitters.gaussian_f.GaussianFitter`
      - Gaussian fitter.
    * - :class:`~pymultifit.fitters.halfNormal_f.HalfNormalFitter`

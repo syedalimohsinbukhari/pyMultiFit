@@ -62,7 +62,7 @@ fig2, ax2 = plt.subplots(figsize=(12, 6))
 ax2.scatter(x, y, alpha=0.5, s=20, label="Data", color="gray", zorder=3)
 
 # Plot fitted curve on extended domain
-y_extended = fitter._n_fitter(x_extended, *fitter.params)
+y_extended = fitter.to_result().model(x_extended)
 ax2.plot(x_extended, y_extended, "k-", linewidth=2, label="Fitted model", zorder=4)
 
 # Plot CI bounds on extended domain
