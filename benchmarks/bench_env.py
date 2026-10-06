@@ -37,6 +37,9 @@ SIMD_OF_INTEREST = ("sse42", "avx", "avx2", "fma", "fma3", "avx512f", "avx512cd"
 MUST_MATCH = ("python", "packages", "uv_lock_sha256", "git_commit", "git_dirty", "threads_env", "numpy_build")
 
 
+_LIMITS: list = []  # keeps threadpoolctl limits alive
+
+
 def lock_environment(core: int | None = 0, seed_hash: int = 0) -> dict:
     """Set threads to 1 and pin to one core. Must run before numpy/scipy are imported to take effect on BLAS."""
     for var in THREAD_VARS:
@@ -47,9 +50,20 @@ def lock_environment(core: int | None = 0, seed_hash: int = 0) -> dict:
         allowed = sorted(os.sched_getaffinity(0))
         pinned = allowed[core % len(allowed)]
         os.sched_setaffinity(0, {pinned})
-    if "numpy" in sys.modules:
-        print("warning: numpy was imported before lock_environment(); BLAS thread limits may not apply.", file=sys.stderr)
-    return {"threads": 1, "pinned_cpu": pinned}
+    late = "numpy" in sys.modules
+    if late:
+        try:  # works after numpy is loaded, if threadpoolctl is installed
+            from threadpoolctl import threadpool_limits
+
+            _LIMITS.append(threadpool_limits(limits=1))
+            late = False
+        except ImportError:
+            print(
+                "warning: numpy was imported before lock_environment() and threadpoolctl is missing; BLAS threads are not "
+                "limited (pure ufunc timings such as pdf/cdf are unaffected). Restart the kernel, or run as a plain script.",
+                file=sys.stderr,
+            )
+    return {"threads": 1, "pinned_cpu": pinned, "blas_limited": not late}
 
 
 def _read(path: str) -> str | None:
