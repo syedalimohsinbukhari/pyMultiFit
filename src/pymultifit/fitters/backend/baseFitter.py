@@ -259,7 +259,7 @@ class BaseFitter:
         frozen :
             A list of booleans indicating whether each parameter is frozen.
         """
-        if isinstance(p0[0], float):
+        if isinstance(p0[0], int | float | np.number):
             # flat list — use n_par to split
             if len(p0) % self.n_par != 0:
                 raise ValueError(f"p0 length {len(p0)} not divisible by n_par={self.n_par}")

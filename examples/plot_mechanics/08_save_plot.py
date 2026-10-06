@@ -29,8 +29,8 @@ path1 = fitter.plotter.save_plot("fit_result.png", figure=fig1)
 print(f"PNG  saved → {path1}")
 
 # -- Example 2: save as PDF ---------------------------------------------------
-fig2, (ax_fit, ax_res) = fitter.plotter.plot_fit_and_residuals(show_individuals=True)
-path2 = fitter.plotter.save_plot("fit_and_residuals.pdf", figure=fig2)
+ax_fit, ax_res = fitter.plotter.plot_fit_and_residuals(show_individuals=True)
+path2 = fitter.plotter.save_plot("fit_and_residuals.pdf")
 print(f"PDF  saved → {path2}")
 
 # -- Example 3: save as SVG (vector, ideal for publications) -----------------

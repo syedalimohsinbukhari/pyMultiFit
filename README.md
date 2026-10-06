@@ -1,3 +1,5 @@
+![banner](./pymultifit-logo.png)
+
 # `pyMultiFit`
 
 - [`pyMultiFit`](#pymultifit)
