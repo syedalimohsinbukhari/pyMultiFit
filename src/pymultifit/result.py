@@ -29,7 +29,7 @@ class Component:
     n_par: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class FitResult:
     """An immutable description of a (possibly not yet performed) fit.
 
@@ -48,6 +48,11 @@ class FitResult:
         The additive components of the model, in the order their parameters appear in ``params``.
     param_labels :
         One display label per entry of ``params``.
+
+    Notes
+    -----
+    The arrays are copied on construction and made read-only, so a result is a true snapshot. Results compare and hash
+    by identity (``eq=False``), because comparing arrays element-wise is not a meaningful equality for a fit.
     """
 
     x: NDArray
@@ -56,6 +61,16 @@ class FitResult:
     covariance: NDArray | None
     components: tuple[Component, ...]
     param_labels: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        # a result is a snapshot: keep private, read-only copies so that later in-place changes to a fitter's arrays
+        # (or to the arrays passed in) can never alter it
+        for name in ("x", "y", "params", "covariance"):
+            value = getattr(self, name)
+            if value is not None:
+                snapshot = np.array(value, copy=True)
+                snapshot.flags.writeable = False
+                object.__setattr__(self, name, snapshot)
 
     @property
     def n_fits(self) -> int:
@@ -133,3 +148,8 @@ class FitResult:
             self.require_fit()
             params = self.params
         return (self.x if x is None else np.asarray(x)), np.asarray(params)
+
+
+def as_result(obj) -> FitResult:
+    """Return ``obj`` if it is a :class:`FitResult`, otherwise the result of its ``to_result()`` (i.e. a fitter)."""
+    return obj if isinstance(obj, FitResult) else obj.to_result()

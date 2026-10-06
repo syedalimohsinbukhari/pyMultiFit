@@ -529,6 +529,43 @@ class BaseFitter:
         is_scatter: bool = False,
         axis: Axes | None = None,
     ) -> Axes:
+        """
+        Plot the fitted composite model on top of the raw data.
+
+        Shortcut for :meth:`FitPlotter.plot_fit() <pymultifit.plot.FitPlotter.FitPlotter.plot_fit>` on the fitter's
+        :attr:`plotter`.
+
+        Parameters
+        ----------
+        show_individuals :
+            When ``True``, each component is plotted separately as a dashed line, labelled with its fitted parameters.
+            Defaults to ``False``.
+        x_label :
+            The x-axis label, defaults to "X".
+        y_label :
+            The y-axis label, defaults to "Y".
+        plot_title :
+            The title of the plot, defaults to "Plot".
+        data_label :
+            The label for the plotted data, defaults to "Data".
+        fit_label :
+            The label for the fitted curve, defaults to "Total Fit".
+        is_scatter :
+            When ``True``, the raw data is plotted as a scatter plot instead of a line, defaults to ``False``.
+        axis :
+            The matplotlib axis object on which the plot is to be drawn.
+            If ``None``, an axis object is generated and returned, defaults to ``None``.
+
+        Returns
+        -------
+        Axes
+            The matplotlib axis object on which the plot was drawn.
+
+        Raises
+        ------
+        RuntimeError
+            If the fit has not been performed yet.
+        """
         return self.plotter.plot_fit(
             show_individuals=show_individuals,
             x_label=x_label,

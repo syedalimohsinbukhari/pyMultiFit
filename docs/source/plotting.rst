@@ -109,7 +109,7 @@ Q-Q plot
 --------
 
 :meth:`~pymultifit.plot.FitPlotter.plot_qq_plot` compares the residuals with a normal distribution; the Pearson ``r`` in the legend is a quick gauge, and systematic curvature points to a wrong model family.
-:func:`~pymultifit.plot.qq_compare` puts the Q-Q plots of two fitters side by side.
+:func:`~pymultifit.plot.qq_compare` puts the Q-Q plots of two fitters (or their :class:`~pymultifit.result.FitResult`) side by side.
 
 .. plot::
    :context: close-figs
@@ -126,6 +126,7 @@ Confidence intervals
 --------------------
 
 :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals` computes bootstrap confidence intervals (see :doc:`/ci/_ci`); with ``plot=True`` it also draws them.
+Levels can be given as percentages or decimals (``95``, ``95.0``, ``0.95``, ``[68, 0.95]``) and the bands never overwrite the labels and title already on the axes.
 Several levels are drawn as nested bands, and ``individual_ci=True`` adds one band per component.
 
 .. plot::

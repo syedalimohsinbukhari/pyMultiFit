@@ -139,7 +139,7 @@ class FitPlotter:
         Parameters
         ----------
         ci_levels :
-            CI percentage level(s) to plot (e.g., 95 or [68, 95, 99]).
+            CI level(s) to plot, as percentages or decimals (e.g., 95, 0.95 or [68, 95, 99]).
         results :
             Pre-computed CI dictionary returned by :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals`.
             When None, the CI is computed internally, defaults to None.
@@ -328,10 +328,10 @@ class FitPlotter:
 
     def plot_prediction_intervals(
         self,
-        pi_level: int | list[int] = 95,
-        x_label: str = "X",
-        y_label: str = "Y",
-        plot_title: str = "PI",
+        pi_level: float | list[float] = 95,
+        x_label: str | None = None,
+        y_label: str | None = None,
+        plot_title: str | None = None,
         axis: Axes | None = None,
     ) -> Axes:
         r"""Plot prediction intervals for new individual observations.
@@ -350,14 +350,14 @@ class FitPlotter:
         Parameters
         ----------
         pi_level :
-            Prediction interval level(s) as percentages.
-            Pass a single integer or a list of integers for multiple bands, defaults to 95.
+            Prediction interval level(s), as percentages (``95``, ``95.0``) or decimals (``0.95``).
+            Pass a single level or a list of levels for multiple bands, defaults to 95.
         x_label :
-            The x-axis label, defaults to X.
+            The x-axis label. If ``None``, the axis' existing label is kept, or "X" for a new axis.
         y_label :
-            The y-axis label, defaults to Y.
+            The y-axis label. If ``None``, the axis' existing label is kept, or "Y" for a new axis.
         plot_title :
-            The title for the PI plot, defaults to PI.
+            The title of the plot. If ``None``, the axis' existing title is kept, or "PI" for a new axis.
         axis :
             The matplotlib axis object on which the plot is to be drawn.
             If None, an axis object is generated and returned, defaults to None.

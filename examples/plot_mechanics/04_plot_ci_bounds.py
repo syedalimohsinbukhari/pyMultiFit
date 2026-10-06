@@ -1,4 +1,4 @@
-"""plot_ci_bounds() — bootstrap confidence intervals.
+"""plot_confidence_intervals() — bootstrap confidence intervals.
 
 Demonstrates:
   - Single CI level (95%)
@@ -8,7 +8,7 @@ Demonstrates:
 """
 
 import numpy as np
-from matplotlib import pyplot as plt, axis
+from matplotlib import pyplot as plt
 
 from pymultifit.fitters import GaussianFitter
 from pymultifit.generators import multi_gaussian
@@ -21,7 +21,7 @@ y = multi_gaussian(x, params=params, noise_level=0.7)
 fitter = GaussianFitter(x, y)
 fitter.fit([(8, -4, 1.5), (6, 4, 2)])
 
-# -- Example 1: Overall CI at 95% with plot_ci_bounds() -----------------------
+# -- Example 1: Overall CI at 95% with plot_confidence_intervals() -----------------------
 print("Running bootstrap (Example 1)…")
 results_95 = fitter.confidence_intervals(ci_levels=95, n_bootstrap=200, overall_ci=True, individual_ci=False, seed=42)
 
@@ -53,7 +53,6 @@ results_ind, ax3 = fitter.confidence_intervals(
 )
 
 fitter.plotter.plot_fit(show_individuals=True, axis=ax3)
-# fitter.plotter.plot_ci_bounds(results=results_ind, ci_levels=95, overall_ci=False, individual_ci=True, axis=ax3)
 ax3.set_title("95% CI per individual component")
 plt.tight_layout()
 

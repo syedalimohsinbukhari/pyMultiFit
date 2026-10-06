@@ -71,13 +71,13 @@ def _ci_to_percentiles(ci_lvls: float | int | Iterable[float]) -> list[tuple[int
     """
     bounds: list[tuple[int, tuple[float, float, float]]] = []
 
-    if isinstance(ci_lvls, float | int):
+    if isinstance(ci_lvls, int | float | np.integer | np.floating):
         ci_lvls = [float(ci_lvls)]
     elif isinstance(ci_lvls, tuple):
         ci_lvls = list(ci_lvls)
 
     for ci in ci_lvls:
-        ci_original = int(ci) if ci > 1 else int(ci * 100)
+        ci_original = int(round(ci)) if ci > 1 else int(round(ci * 100))
         ci = ci / 100 if ci > 1 else ci
 
         if not (0 < ci < 1):
@@ -90,6 +90,25 @@ def _ci_to_percentiles(ci_lvls: float | int | Iterable[float]) -> list[tuple[int
         bounds.append((ci_original, (lower, 0.5, upper)))
 
     return bounds
+
+
+def ci_level_labels(levels: float | int | Iterable[float]) -> list[int]:
+    """Integer percentage labels of CI / PI levels, e.g. ``[0.68, 95.0]`` -> ``[68, 95]``.
+
+    These are the integers used in the keys of the dictionary returned by :func:`compute_ci_bounds`
+    (``overall_ci_<label>``, ``individual_ci_<label>``).
+
+    Parameters
+    ----------
+    levels :
+        A single level or an iterable of levels, in percentage (95, 95.0) or decimal (0.95) form.
+
+    Raises
+    ------
+    ValueError
+        If any level is not strictly between 0 and 100 percent.
+    """
+    return [label for label, _ in _ci_to_percentiles(levels)]
 
 
 # ---------------------------------------------------------------------------

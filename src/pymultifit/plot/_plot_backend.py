@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
@@ -10,8 +12,9 @@ from matplotlib.axes import Axes
 from plotez import ebc, lpc, plot_errorband, plot_xy, spc
 from scipy.stats import norm, pearsonr, t
 
+from ..ci import ci_level_labels
 from ..exceptions import AxesError
-from ..result import FitResult
+from ..result import FitResult, as_result
 from ..typing import NDArray
 
 if TYPE_CHECKING:
@@ -48,16 +51,14 @@ def _ci_plotter(
     individual_ci: bool,
     axis: Axes | None,
 ) -> Axes:
-    if isinstance(ci_levels, int):
-        ci_levels = [ci_levels]
-
-    ci_levels: list
+    # the same integer labels compute_ci_bounds used for its result keys, whatever format the levels were given in
+    levels = ci_level_labels(ci_levels)
 
     # Extract x_range from results
     x_range = results.get("x_range", result.x)
 
     # Create alpha values for multiple CI levels (lighter for wider intervals)
-    alphas = np.linspace(0.45, 0.15, len(ci_levels))
+    alphas = np.linspace(0.45, 0.15, len(levels))
 
     def _helper(given_ci: dict, data_label: str, alpha_val: float):
         """Helper to plot a single CI band."""
@@ -74,28 +75,29 @@ def _ci_plotter(
 
     axis = _single_axis_sanitizer(axis=axis)
 
-    if overall_ci:
-        for ci, alpha_ in zip(ci_levels, alphas):
-            label = f"{ci}% CI (overall)"
-            ci_key = f"overall_ci_{ci}"
+    with _keep_axis_text(axis, defaults=("X", "Y", "")):
+        if overall_ci:
+            for ci, alpha_ in zip(levels, alphas):
+                label = f"{ci}% CI (overall)"
+                ci_key = f"overall_ci_{ci}"
 
-            if ci_key not in results:
-                raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
+                if ci_key not in results:
+                    raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
 
-            ci_data = results[ci_key]
-            _helper(given_ci=ci_data, data_label=label, alpha_val=alpha_)
+                ci_data = results[ci_key]
+                _helper(given_ci=ci_data, data_label=label, alpha_val=alpha_)
 
-    if individual_ci:
-        for ci, alpha_ in zip(ci_levels, alphas):
-            ci_key = f"individual_ci_{ci}"
+        if individual_ci:
+            for ci, alpha_ in zip(levels, alphas):
+                ci_key = f"individual_ci_{ci}"
 
-            if ci_key not in results:
-                raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
+                if ci_key not in results:
+                    raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
 
-            ci_data = results[ci_key]
-            for idx, fit_ci in enumerate(ci_data):
-                label = f"{ci}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
-                _helper(given_ci=fit_ci, data_label=label, alpha_val=alpha_)
+                ci_data = results[ci_key]
+                for idx, fit_ci in enumerate(ci_data):
+                    label = f"{ci}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
+                    _helper(given_ci=fit_ci, data_label=label, alpha_val=alpha_)
 
     axis.legend()
     _grid(axis)
@@ -144,6 +146,26 @@ def _fit_and_residual(
     ax2.legend_ = None
 
     return ax1, ax2
+
+
+@contextmanager
+def _keep_axis_text(
+    axis: Axes,
+    overrides: tuple[str | None, str | None, str | None] = (None, None, None),
+    defaults: tuple[str, str, str] = ("X", "Y", ""),
+) -> Iterator[None]:
+    """Keep the x label, y label and title of ``axis`` across calls that reset them (``plotez`` always does).
+
+    On exit each text is, in order of preference, the given override, the text the axis had before, or the default.
+    """
+    before = (axis.get_xlabel(), axis.get_ylabel(), axis.get_title())
+    try:
+        yield
+    finally:
+        for setter, override, kept, default in zip(
+            (axis.set_xlabel, axis.set_ylabel, axis.set_title), overrides, before, defaults
+        ):
+            setter(override if override is not None else (kept or default))
 
 
 def _grid(axis: Axes):
@@ -241,10 +263,10 @@ def _plot(
 
 def _prediction_interval(
     result: FitResult,
-    pi_level: int | list[int] = 95,
-    x_label: str = "X",
-    y_label: str = "Y",
-    plot_title: str = "PI",
+    pi_level: float | list[float] = 95,
+    x_label: str | None = None,
+    y_label: str | None = None,
+    plot_title: str | None = None,
     axis: Axes | None = None,
     **kwargs,
 ) -> Axes:
@@ -252,9 +274,7 @@ def _prediction_interval(
 
     x, params = np.asarray(result.x), np.asarray(result.params)
 
-    pi_levels = sorted(
-        [pi_level] if isinstance(pi_level, int) else list(pi_level), reverse=True  # widest band drawn first
-    )
+    pi_levels = sorted(ci_level_labels(pi_level), reverse=True)  # widest band drawn first
 
     n, k = len(x), len(params)
 
@@ -266,29 +286,28 @@ def _prediction_interval(
 
     pi_colors = [plt.get_cmap("YlOrBr")(v) for v in np.linspace(0.35, 0.75, len(pi_levels))]
 
-    for pi, col_ in zip(pi_levels, pi_colors):
-        alpha_stat = 1 - pi / 100
-        t_crit = t.ppf(1 - alpha_stat / 2, df=max(n - k, 1))
-        axis = plot_errorband(
+    # explicit labels win, otherwise the text already on the axis is kept (plotez would reset it)
+    with _keep_axis_text(axis, overrides=(x_label, y_label, plot_title), defaults=("X", "Y", "PI")):
+        for pi, col_ in zip(pi_levels, pi_colors):
+            alpha_stat = 1 - pi / 100
+            t_crit = t.ppf(1 - alpha_stat / 2, df=max(n - k, 1))
+            axis = plot_errorband(
+                x_data=result.x,
+                y_data=fitted,
+                y_lower=fitted - t_crit * sigma,
+                y_upper=fitted + t_crit * sigma,
+                line_config=lpc(c=FIT_COLOR, zorder=10),
+                band_config=ebc(c=col_, label=f"{pi}% PI"),
+                axis=axis,
+            )
+
+        axis = plot_xy(
             x_data=result.x,
-            y_data=fitted,
-            y_lower=fitted - t_crit * sigma,
-            y_upper=fitted + t_crit * sigma,
-            line_config=lpc(c=FIT_COLOR, zorder=10),
-            band_config=ebc(c=col_, label=f"{pi}% PI"),
+            y_data=result.y,
+            plot_config=spc(s=SCATTER_SIZE, alpha=SCATTER_ALPHA, c=SCATTER_COLOR),
+            is_scatter=True,
             axis=axis,
         )
-
-    axis = plot_xy(
-        x_data=result.x,
-        y_data=result.y,
-        plot_config=spc(s=SCATTER_SIZE, alpha=SCATTER_ALPHA, c=SCATTER_COLOR),
-        is_scatter=True,
-        x_label=x_label,
-        y_label=y_label,
-        plot_title=plot_title,
-        axis=axis,
-    )
 
     axis.legend()
     _grid(axis)
@@ -365,9 +384,9 @@ def _qq_compare(
     Parameters
     ----------
     fitter_left :
-        The fitted fitter whose residuals are drawn on the left.
+        The fitted fitter (or its :class:`~pymultifit.result.FitResult`) whose residuals are drawn on the left.
     fitter_right :
-        The fitted fitter whose residuals are drawn on the right.
+        The fitted fitter (or its :class:`~pymultifit.result.FitResult`) whose residuals are drawn on the right.
     label_left :
         Title of the left panel. Defaults to ``"Q-Q plot | <class name>"``.
     label_right :
@@ -399,8 +418,8 @@ def _qq_compare(
     if label_right is None:
         label_right = f"Q-Q plot | {fitter_right.__class__.__name__}"
 
-    _qq(result=fitter_left.to_result(), plot_title=label_left, axis=ax_l)
-    _qq(result=fitter_right.to_result(), plot_title=label_right, axis=ax_r)
+    _qq(result=as_result(fitter_left), plot_title=label_left, axis=ax_l)
+    _qq(result=as_result(fitter_right), plot_title=label_right, axis=ax_r)
 
     # manually mute the right plot for its y-axis label and ticks
     ax_r.tick_params(axis="y", left=False, labelleft=False)
