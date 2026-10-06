@@ -305,7 +305,7 @@ nbsphinx==0.9.8
 nbsphinx-link==1.4.1
 nest-asyncio2==1.7.2
     # via ipykernel
-notebook==7.6.2
+notebook==7.6.3
     # via jupyter
 notebook-shim==0.2.4
     # via
