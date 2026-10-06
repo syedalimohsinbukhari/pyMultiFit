@@ -30,6 +30,7 @@ X = np.array([-1e3, -10, -1, -0.5, 0, 1e-12, 0.25, 0.5, 1, 1.5, 2, 5, 50, 1e3, 1
 POSITIVE = [0.5, 1.0, 2.0, 10.0]
 LOCATIONS = [-1.0, 0.0, 1.0]
 COEFFICIENTS = [-2.0, 0.0, 1.0, 5.0]
+Q_VALUES = [0.5, 0.9, 1.0, 1.1, 1.5, 1.9]  # the q-exponential is only defined for q < 2, both q < 1 and 1 < q < 2 matter
 
 
 def _grid(parameter: str) -> list[float]:
@@ -37,6 +38,8 @@ def _grid(parameter: str) -> list[float]:
         return LOCATIONS
     if parameter in ("a", "b", "c", "d", "slope", "intercept"):
         return COEFFICIENTS
+    if parameter == "q":
+        return Q_VALUES
     return POSITIVE
 
 
@@ -69,3 +72,12 @@ def test_no_numpy_warnings(name):
                     function(X.copy(), **kwargs)
                 except RuntimeWarning as warning:  # pragma: no cover - only reached on a regression
                     pytest.fail(f"{name}({kwargs}) warned: {warning}")
+
+
+@pytest.mark.parametrize("q", Q_VALUES)
+@pytest.mark.parametrize("x", [-1e3, -3.0, -1.0, -1e-9, 0.0, 1e-9, 1.0, 1e6])
+def test_q_exponential_log_pdf_is_silent_outside_the_support(q, x):
+    """np.log1p(-u) warned for q > 1 and x < 0 (u > 1 there) until the scipy log1p was used."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        U.q_exponential_log_pdf_(np.array([x]), q=q, rate=1.0)

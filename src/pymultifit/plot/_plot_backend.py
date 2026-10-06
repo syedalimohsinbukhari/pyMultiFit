@@ -12,6 +12,7 @@ from matplotlib.axes import Axes
 from plotez import ebc, lpc, plot_errorband, plot_xy, spc
 from scipy.stats import norm, pearsonr, t
 
+from .. import SQRT
 from ..ci import ci_level_labels
 from ..exceptions import AxesError
 from ..result import FitResult, as_result
@@ -185,7 +186,7 @@ def _param_correlation(
     cov_matrix: NDArray
     params: NDArray
 
-    std = np.sqrt(np.diag(cov_matrix))
+    std = SQRT(np.diag(cov_matrix))
     outer = np.outer(std, std)
     with np.errstate(invalid="ignore", divide="ignore"):
         corr = np.where(outer > 0, cov_matrix / outer, 0.0)
@@ -279,7 +280,7 @@ def _prediction_interval(
     n, k = len(x), len(params)
 
     residuals = result.residuals()
-    sigma = np.sqrt(np.sum(residuals**2) / max(n - k, 1))
+    sigma = SQRT(np.sum(residuals**2) / max(n - k, 1))
     fitted = result.model()
 
     axis = _single_axis_sanitizer(axis=axis)
