@@ -155,6 +155,16 @@ def _exp_neg(y: NDArray) -> NDArray:
     return np.exp(np.minimum(-y, 709.7))
 
 
+def _log_pos(a: NDArray) -> NDArray:
+    """``xlogy(1.0, a)`` for ``a >= 0``: ``log(a)``, ``-inf`` at 0, NaN stays NaN, only ``a > 0`` is evaluated.
+
+    No warning and about a quarter faster than ``xlogy`` on large arrays. Unlike ``xlogy`` it gives ``-inf``, not NaN, for
+    ``a < 0``, so use it only where the argument cannot be negative.
+    """
+    a = np.asarray(a, dtype=float)
+    return np.log(a, out=np.full(a.shape, -INF), where=~(a <= 0))
+
+
 def _abs_pow(ay: NDArray, beta: float) -> NDArray:
     """``ay ** beta`` for ``ay >= 0`` and ``beta > 0`` without the overflow warning: saturates at ~e^709 instead."""
     return np.power(np.minimum(ay, math.exp(min(709.0 / beta, 700.0))), beta)
@@ -748,8 +758,13 @@ def chi_square_pdf_(
 
     df_half = degree_of_freedom / 2.0
 
-    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
-    pdf_ = np.where(y > 0, EXP(_chi2(y=ys, df_half=df_half)), 0.0)
+    # only the support is evaluated, so nothing outside it can warn and the (mostly empty) rest is not touched
+    c = y > 0
+    if c.all():
+        pdf_ = np.asarray(EXP(_chi2(y=y, df_half=df_half)))  # 0-d array for a scalar input, as np.where gave
+    else:
+        pdf_ = np.zeros(np.shape(y))
+        pdf_[c] = EXP(_chi2(y=y[c], df_half=df_half))
     pdf_ /= scale
 
     if not normalize:
@@ -2343,9 +2358,15 @@ def log_normal_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+    # only the support is evaluated (``where=c``), so nothing outside it can warn and no extra array pass is needed
+    c = y > 0
+    z = np.zeros(np.shape(y))
+    np.log(y, out=z, where=c)
+    z -= LOG(mean)
+    z /= std
 
-    return np.where(y > 0, ndtr((LOG(ys) - LOG(mean)) / std), 0)
+    cdf_ = np.zeros(np.shape(y))
+    return ndtr(z, out=cdf_, where=c)
 
 
 @doc_inherit(parent=log_normal_cdf_, style=doc_style)
@@ -2516,7 +2537,9 @@ def uniform_log_cdf_(
     if rej_ or scale <= 0:
         return full_nan(np.shape(y))
 
-    return np.select(condlist=[y < 0, y > 1], choicelist=[-INF, 0], default=xlogy(1.0, y))
+    log_cdf_ = _log_pos(y)  # -inf for y < 0 as well
+    log_cdf_[y > 1] = 0
+    return log_cdf_
 
 
 def q_exponential_log_pdf_(
@@ -2663,7 +2686,8 @@ def q_exponential_log_cdf_(
     where :math:`F(x)` is the cumulative distribution function evaluated by :func:`q_exponential_cdf_`.
     """
     cdf_ = q_exponential_cdf_(x=x, amplitude=amplitude, q=q, rate=rate, loc=loc, normalize=normalize)
-    return xlogy(1.0, cdf_)
+    log_cdf_ = _log_pos(cdf_)
+    return log_cdf_[()] if log_cdf_.ndim == 0 else log_cdf_
 
 
 def scaled_inv_chi_square_pdf_(
