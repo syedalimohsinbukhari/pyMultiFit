@@ -87,7 +87,7 @@ def main():
     parser.add_argument("--repeats", type=int, default=40)
     parser.add_argument("-o", "--output", type=Path, default=None, help="CSV path (default: results/<run>/xlogy_vs_log.csv)")
     args = parser.parse_args()
-    output = args.output or results_dir() / "xlogy_vs_log.csv"
+    output = args.output or results_dir(write_env=False) / "xlogy_vs_log.csv"  # joins the run folder of this commit, keeps its env.json
 
     rows = []
     for name, (make, (lo, hi)) in CASES.items():

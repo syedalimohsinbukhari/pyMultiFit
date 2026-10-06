@@ -144,8 +144,30 @@ def _numpy_build() -> dict:
         return {"error": repr(exc)}
 
 
+def _package_file() -> str | None:
+    """Where ``import pymultifit`` resolves to, without importing it (it would load numpy before the lock)."""
+    try:
+        from importlib.util import find_spec
+
+        spec = find_spec("pymultifit")
+        return spec.origin if spec else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def resolve_ref(ref: str) -> str | None:
+    """Full commit hash of a git ref (branch, tag, hash) of this repository, ``None`` if it does not exist."""
+    try:
+        result = subprocess.run(["git", "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"], cwd=ROOT,
+                                capture_output=True, text=True, check=True)
+        return result.stdout.strip() or None
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
 def capture() -> dict:
     lock = ROOT / "uv.lock"
+    git = _git()
     return {
         "captured_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "hostname": socket.gethostname(),
@@ -160,7 +182,11 @@ def capture() -> dict:
         "packages": _packages(),
         "numpy_build": _numpy_build(),
         "uv_lock_sha256": hashlib.sha256(lock.read_bytes()).hexdigest() if lock.exists() else None,
-        **_git(),
+        # git_commit is the benchmark code (the checkout); package_commit is the pymultifit under test, which differs only
+        # in a baseline run (run_benchmarks.py --baseline-ref sets BENCH_PACKAGE_COMMIT and puts that checkout on the path)
+        "package_commit": os.environ.get("BENCH_PACKAGE_COMMIT") or git["git_commit"],
+        "pymultifit_file": _package_file(),
+        **git,
     }
 
 
@@ -168,13 +194,18 @@ RESULTS_ROOT = Path(os.environ.get("BENCH_RESULTS_ROOT") or Path(__file__).paren
 
 
 def run_name(env: dict) -> str:
-    """Folder name of a run: ``<hostname>_<short commit>``, with ``_dirty`` appended for an uncommitted tree."""
-    name = f"{env['hostname']}_{(env['git_commit'] or 'nogit')[:7]}" + ("_dirty" if env["git_dirty"] else "")
+    """Folder name of a run: ``<hostname>_<short commit>``, ``_dirty`` appended for an uncommitted tree.
+
+    A baseline run (old pymultifit, current benchmark code) is ``<hostname>_<package commit>_on_<benchmark commit>``.
+    """
+    harness = (env["git_commit"] or "nogit")[:7]
+    package = (env.get("package_commit") or env["git_commit"] or "nogit")[:7]
+    name = f"{env['hostname']}_{package}" + (f"_on_{harness}" if package != harness else "") + ("_dirty" if env["git_dirty"] else "")
     return name.lower().replace("-", "_")
 
 
-def results_dir(env: dict | None = None, root: Path | None = None) -> Path:
-    """Create ``results/<run name>/``, write ``env.json`` into it and return the folder.
+def results_dir(env: dict | None = None, root: Path | None = None, write_env: bool = True) -> Path:
+    """Create ``results/<run name>/``, write ``env.json`` into it (unless ``write_env`` is False) and return the folder.
 
     Every benchmark output of one run goes into this folder, so runs on different machines or commits never overwrite
     each other and each CSV set travels with the environment that produced it.
@@ -182,7 +213,8 @@ def results_dir(env: dict | None = None, root: Path | None = None) -> Path:
     env = env or capture()
     folder = (root or RESULTS_ROOT) / run_name(env)
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / "env.json").write_text(json.dumps(env, indent=2) + "\n")
+    if write_env:
+        (folder / "env.json").write_text(json.dumps(env, indent=2) + "\n")
     return folder
 
 

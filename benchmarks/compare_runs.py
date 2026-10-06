@@ -82,8 +82,12 @@ def _env_lines(new: Path, ref: Path) -> list[str]:
         a, b = (json.loads((p / "env.json").read_text()) for p in (new, ref))
     except FileNotFoundError:
         return ["_env.json is missing in one of the runs, software match not checked._"]
-    lines = [f"- new: {a['hostname']} | {a['cpu']['model']} | commit {(a['git_commit'] or '?')[:7]}",
-             f"- reference: {b['hostname']} | {b['cpu']['model']} | commit {(b['git_commit'] or '?')[:7]}"]
+    def commit(env: dict) -> str:
+        package, harness = (env.get("package_commit") or env["git_commit"] or "?")[:7], (env["git_commit"] or "?")[:7]
+        return package if package == harness else f"{package} (benchmark code {harness})"
+
+    lines = [f"- new: {a['hostname']} | {a['cpu']['model']} | commit {commit(a)}",
+             f"- reference: {b['hostname']} | {b['cpu']['model']} | commit {commit(b)}"]
     bad = [k for k in MUST_MATCH if a.get(k) != b.get(k) and k not in ("git_commit", "git_dirty")]
     bad += [f"numpy_build.{k}" for k in ("blas", "NPY_DISABLE_CPU_FEATURES") if a["numpy_build"].get(k) != b["numpy_build"].get(k)]
     lines.append("- software stacks match" if not bad else f"- **software differs: {', '.join(bad)}**, timings are not directly comparable")
