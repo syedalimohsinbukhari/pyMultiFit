@@ -23,6 +23,12 @@ from ...pymultifit.generators import multi_gaussian, multiple_models
 
 ORACLE = Path(__file__).parent / "data" / "ci_oracle.npz"
 
+# ``curve_fit`` is only reproducible to optimizer precision across platforms / BLAS / SciPy builds (~1e-8 relative on
+# values that are close to zero, e.g. residuals), so the oracle is compared at 1e-6. A real regression, such as a wrong
+# parameter slice or a changed RNG order, shifts the arrays by orders of magnitude more than that.
+RTOL = 1e-6
+ATOL = 1e-6
+
 _G1 = (10.0, -5.0, 1.5)
 _G2 = (6.0, 3.0, 2.0)
 _LINE = (0.5, 2.0)
@@ -86,4 +92,4 @@ def test_public_output_matches_oracle(name):
 
     assert sorted(keys) == sorted(current), "set of returned arrays changed"
     for key in keys:
-        np.testing.assert_allclose(current[key], expected[key], rtol=1e-9, atol=1e-12, err_msg=key)
+        np.testing.assert_allclose(current[key], expected[key], rtol=RTOL, atol=ATOL, err_msg=key)
