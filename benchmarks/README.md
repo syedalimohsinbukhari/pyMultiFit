@@ -109,7 +109,7 @@ uv run python bench_env.py compare results/<a>/env.json results/<b>/env.json   #
 | `functions.py` | timing, plotting and `slugify` helpers used by the notebooks |
 | `bench_env.py` | `lock_environment`, `capture`, reject checks, `compare` (also a CLI) |
 | `compare_runs.py` | the comparison report between two runs |
-| `xlogy_vs_log.py` | end-to-end cost of `xlogy(1.0, a)` against a plain log in the four log-CDFs |
+| `xlogy_vs_log.py` | end-to-end cost of `XLOGY(1.0, a)` against a masked / plain log in the log-CDFs that still use it (beta, half normal; uniform, q-exponential and laplace are controls) |
 | `summary.ipynb` | heatmaps and summaries; set `RESULTS` in its first code cell to the run to summarise |
 | `accuracy.ipynb` | accuracy against scipy |
 | `arcSine_*.py` | implementation variants of the arcsine functions (`variation_plots/`) |

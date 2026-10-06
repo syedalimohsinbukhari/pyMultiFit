@@ -1,7 +1,11 @@
-"""Does ``xlogy(1.0, a)`` cost anything compared to a plain log in the log-CDFs that use it?
+"""Does ``XLOGY(1.0, a)`` cost anything compared to a plain log in the log-CDFs that still use it?
 
-Every function is timed end to end (through the distribution class, as in ``speed.ipynb``), with ``utilities_d.xlogy``
-temporarily replaced by a variant. Only calls of the form ``xlogy(1.0, a)`` are replaced, which is all these functions use.
+Every function is timed end to end (through the distribution class, as in ``speed.ipynb``), with ``utilities_d.XLOGY``
+temporarily replaced by a variant. Only calls of the form ``XLOGY(1.0, a)`` are replaced, which is all these functions use.
+
+``uniform_log_cdf_`` and ``q_exponential_log_cdf_`` no longer call ``XLOGY`` (they use ``_log_pos``, the masked variant
+below, since this script showed it is 10-33 % faster there), so together with ``laplace`` they are controls: all variants
+must give ~1.00x for them. ``beta`` and ``half_normal`` still use ``XLOGY(1.0, ...)``.
 
 Variants
 --------
@@ -14,7 +18,7 @@ Usage (from ``benchmarks/``)::
     uv run python xlogy_vs_log.py                 # sizes 1e3, 1e5, 1e6; writes results/<run>/xlogy_vs_log.csv
     uv run python xlogy_vs_log.py --repeats 100
 
-``laplace`` is a control: its log-CDF no longer uses ``xlogy``, so it must not change between variants.
+Controls (no ``XLOGY`` any more): uniform, q_exponential, laplace. Still using it: beta, half_normal.
 """
 
 import argparse
@@ -37,6 +41,7 @@ CASES = {
     "uniform": (lambda: p_dist.UniformDistribution.from_scipy_params(loc=-3, scale=2), (-4.0, 0.0)),
     "q_exponential": (lambda: p_dist.QExponentialDistribution(q=1.5, rate=1.0, normalize=True), (-1.0, 8.0)),
     "laplace": (lambda: p_dist.LaplaceDistribution.from_scipy_params(loc=-3, scale=3), (-30.0, 30.0)),
+    "half_normal": (lambda: p_dist.HalfNormalDistribution.from_scipy_params(scale=2), (-1.0, 12.0)),
 }
 
 
@@ -57,17 +62,17 @@ def _xlogy_log(a, b):
         return np.log(b)
 
 
-_ORIGINAL = utilities_d.xlogy
+_ORIGINAL = utilities_d.XLOGY
 VARIANTS = {"xlogy": _xlogy_current, "masked": _xlogy_masked, "log": _xlogy_log}
 
 
 @contextmanager
 def patched(variant):
-    utilities_d.xlogy = VARIANTS[variant]
+    utilities_d.XLOGY = VARIANTS[variant]
     try:
         yield
     finally:
-        utilities_d.xlogy = _ORIGINAL
+        utilities_d.XLOGY = _ORIGINAL
 
 
 def median_time(func, x, repeats, warmup=3):
