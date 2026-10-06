@@ -1,6 +1,8 @@
 """Created on Dec 31 05:45:40 2024"""
 
+import re
 import time
+from pathlib import Path
 from timeit import default_timer as timer
 
 import numpy as np
@@ -13,6 +15,13 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from pymultifit import EPSILON
+
+
+def slugify(text: str) -> str:
+    """Lower-case snake_case file name part; ``-3`` becomes ``m3`` and ``2.2`` becomes ``2p2`` so no parameter is lost."""
+    text = re.sub(r"(?<![A-Za-z0-9])-(?=\d)", "m", text)
+    text = re.sub(r"(?<=\d)\.(?=\d)", "p", text)
+    return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
 
 
 def test_and_plot(general_case, edge_case, custom_dist, scipy_dist, title):
@@ -102,7 +111,7 @@ def plot_accuracy(x, results, title_suffix):
     plt.grid(True)
 
     plt.tight_layout()
-    # plt.savefig('plots/{title_suffix}.png'.format(title_suffix=title_suffix))
+    # plt.savefig(f'plots/accuracy/{slugify(title_suffix)}.png')
 
 
 #####################################################################################################################################################
@@ -136,7 +145,8 @@ def evaluate_speed(custom_dist, scipy_dist, n_points_list, compute_cdf=False, re
     return median_times_class, median_times_scipy
 
 
-def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix, save_as="speed_comparison"):
+def plot_speed_and_ratios(n_points_list, times_class, times_scipy, function, label):
+    """Plot the timings and their ratio; ``function`` is ``"PDF"`` or ``"CDF"``, ``label`` names the distribution."""
     n_points_list = np.array(n_points_list)
 
     mean_c = np.array([np.mean(i) for i in times_class])  # each entry is already a median
@@ -147,13 +157,13 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
     plt.figure(figsize=(10, 4))
 
     plt.subplot(1, 2, 1)
-    plt.plot(n_points_list, mean_c, "o-", ms=3, label="Custom (Mean)", color="blue")
-    plt.plot(n_points_list, mean_s, "s-", ms=3, label="SciPy (Mean)", color="orange")
+    plt.plot(n_points_list, mean_c, "o-", ms=3, label="Custom (median)", color="blue")
+    plt.plot(n_points_list, mean_s, "s-", ms=3, label="SciPy (median)", color="orange")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Number of Points")
     plt.ylabel("Execution Time (s)")
-    plt.title(f"Speed Comparison: Custom vs SciPy ({title_suffix})")
+    plt.title(f"{label}: {function} speed, custom vs SciPy")
     plt.legend()
     plt.grid(True)
 
@@ -161,26 +171,27 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix,
     x_smooth, y_smooth = lowess_results[:, 0], lowess_results[:, 1]
 
     plt.subplot(1, 2, 2)
-    plt.plot(n_points_list, ratio_means, "x-", ms=4, label="Ratio (Mean)", color="purple")
+    plt.plot(n_points_list, ratio_means, "x-", ms=4, label="Ratio (median)", color="purple")
     plt.plot(x_smooth, y_smooth, "r--", lw=2, alpha=0.75, label="LOESS Fit")
     plt.xscale("log")
     plt.xlabel("Number of Points")
     plt.ylabel("Speed Ratio (Custom/SciPy)")
     plt.axhline(y=1, color="k", linestyle=":", label="Ratio = 1")
-    plt.title(f"Speed Ratio: Custom/SciPy ({'Example Title'})")
+    plt.title(f"{label}: {function} speed ratio, custom/SciPy")
     plt.legend()
     plt.grid(True)
 
     plt.tight_layout()
-    plt.savefig(f"plots/{save_as}_{title_suffix}.png")
+    Path("plots/speed").mkdir(parents=True, exist_ok=True)
+    plt.savefig(f"plots/speed/{slugify(label)}_{function.lower()}.png")
 
 
 def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = 15):
     p_times_class, p_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
-    plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF Computations", save_as)
+    plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF", save_as)
 
     c_times_class, c_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, True, repetitions)
-    plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF Computations", save_as)
+    plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF", save_as)
 
     return (p_times_class, c_times_class), (p_times_scipy, c_times_scipy)
 
@@ -438,7 +449,7 @@ def plot_all_variations(
 
     # --- SAVE OR SHOW ---
     if save_fig:
-        plt.savefig(f"./variation_plots/{distribution_name}_combined_variations.png", dpi=300)
+        plt.savefig(f"./variation_plots/{slugify(distribution_name)}_combined_variations.png", dpi=300)
         plt.close()
     else:
         plt.show()

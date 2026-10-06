@@ -206,10 +206,14 @@ def arc_sine_pdf_(
     c2 = y == 0
     c3 = y == 1
 
-    ys = np.where(c1, y, 0.5)  # a value inside the support wherever y is outside it, so nothing below warns
-    z = ys * (1 - ys)
+    # only the support is evaluated (``where=c1``), so nothing outside it can warn and no extra array pass is needed
+    z = np.empty_like(y)
+    np.multiply(y, 1 - y, out=z, where=c1)
+    np.sqrt(z, out=z, where=c1)
 
-    pdf_ = np.select(condlist=[c1, c2, c3], choicelist=[1 / PI / SQRT(z), INF, INF], default=0.0)
+    pdf_ = np.zeros_like(y)
+    np.divide(1 / PI, z, out=pdf_, where=c1)
+    pdf_[c2 | c3] = INF
     pdf_ /= scale
 
     if not normalize:
@@ -246,11 +250,16 @@ def arc_sine_log_pdf_(
     c2 = y == 0
     c3 = y == 1
 
-    ys = np.where(c1, y, 0.5)  # a value inside the support wherever y is outside it, so nothing below warns
+    # only the support is evaluated (``where=c1``), so nothing outside it can warn and no extra array pass is needed
+    log_y = np.zeros_like(y)
+    np.log(y, out=log_y, where=c1)
+    log_1my = np.zeros_like(y)
+    np.log1p(-y, out=log_1my, where=c1)
+    np.subtract(-LOG_PI, 0.5 * log_y, out=log_y)
 
-    log_pdf_ = np.select(
-        condlist=[c1, c2, c3], choicelist=[-LOG_PI - 0.5 * LOG(ys) - 0.5 * LOG1P(-ys), INF, INF], default=-INF
-    )
+    log_pdf_ = np.full_like(y, -INF)
+    np.subtract(log_y, 0.5 * log_1my, out=log_pdf_, where=c1)
+    log_pdf_[c2 | c3] = INF
     log_pdf_ -= LOG(scale)
 
     if not normalize:

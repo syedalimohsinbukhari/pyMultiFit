@@ -1,0 +1,66 @@
+{
+  "captured_utc": "2026-10-06T17:55:31+00:00",
+  "hostname": "thinkpad-t530",
+  "os": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+  "python": "3.10.12",
+  "python_impl": "CPython",
+  "cpu": {
+    "model": "Intel(R) Core(TM) i7-3720QM CPU @ 2.60GHz",
+    "flags": [
+      "avx"
+    ],
+    "physical_cores": 4,
+    "logical_cpus": 8,
+    "caches_kb": {
+      "L1d": "32K",
+      "L1i": "32K",
+      "L2": "256K",
+      "L3": "6144K"
+    },
+    "governor": "performance",
+    "scaling_driver": "intel_cpufreq",
+    "energy_preference": null,
+    "max_mhz": "3600000",
+    "intel_no_turbo": "1",
+    "cpufreq_boost": null,
+    "smt_active": "1"
+  },
+  "affinity": [
+    0
+  ],
+  "threads_env": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1"
+  },
+  "pythonhashseed": "0",
+  "packages": {
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "pandas": "2.3.3",
+    "matplotlib": "3.10.9",
+    "pymultifit": "2.0.0",
+    "statsmodels": "0.15.0"
+  },
+  "numpy_build": {
+    "simd_enabled": [
+      "AVX",
+      "F16C",
+      "MMX",
+      "POPCNT",
+      "SSE",
+      "SSE2",
+      "SSE3",
+      "SSE41",
+      "SSE42",
+      "SSSE3"
+    ],
+    "NPY_DISABLE_CPU_FEATURES": null,
+    "blas": "scipy-openblas"
+  },
+  "uv_lock_sha256": "1726ee537a56e09da6f8195be05b6ac6ccb52382d958fd79395e53b35079c9cc",
+  "git_commit": "289566494962d780f4ac0515f17b9b7a89f790fc",
+  "git_dirty": false
+}
