@@ -190,12 +190,24 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, function, lab
     plt.savefig(f"plots/speed/{slugify(label)}_{function.lower()}.png")
 
 
+def _progress(message: str):
+    """Append a line to the file named by BENCH_PROGRESS (set by ``run_benchmarks.py``); the notebook itself prints nothing."""
+    path = os.environ.get("BENCH_PROGRESS")
+    if path:
+        with open(path, "a") as handle:
+            handle.write(f"{time.strftime('%H:%M:%S')} {message}\n")
+
+
 def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = DEFAULT_REPETITIONS):
+    start = timer()
     p_times_class, p_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
     plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF", save_as)
+    _progress(f"{save_as}: PDF done ({timer() - start:.0f} s)")
 
+    start = timer()
     c_times_class, c_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, True, repetitions)
     plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF", save_as)
+    _progress(f"{save_as}: CDF done ({timer() - start:.0f} s)")
 
     return (p_times_class, c_times_class), (p_times_scipy, c_times_scipy)
 
