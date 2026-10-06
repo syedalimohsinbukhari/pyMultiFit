@@ -1,19 +1,16 @@
-"""Created on May 21 00:00:00 2026"""
+"""Created on May 21 00:00:00 2026
+
+Bootstrap confidence intervals, computed from a :class:`~pymultifit.result.FitResult`."""
 
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.random import Generator
 
-from ...typing import ArrayLike, NDArray
-
-if TYPE_CHECKING:
-    from pymultifit.fitters import MixedDataFitter
-    from pymultifit.fitters.backend import BaseFitter
-
+from .result import FitResult
+from .typing import ArrayLike, NDArray
 
 # ---------------------------------------------------------------------------
 # RNG helper
@@ -142,22 +139,24 @@ def _curves_to_ci_results(
 
 
 # ---------------------------------------------------------------------------
-# Per-component CI strategies (one per fitter type)
+# Per-component CIs
 # ---------------------------------------------------------------------------
 
 
-def compute_individual_ci_base(
-    fitter_object: "BaseFitter",
-    mv_parameters: ArrayLike,
-    x_: ArrayLike,
+def compute_individual_ci(
+    result: FitResult,
+    mv_parameters: NDArray,
+    x_: NDArray,
     bounds: list[tuple[int, tuple[float, float, float]]],
 ) -> dict:
-    """Compute per-component CIs for a uniform ``BaseFitter`` (equal params per fit).
+    """Compute per-component CIs from bootstrapped flat parameter vectors.
+
+    Works for any mix of components, since each one is evaluated on its own slice of the parameter vector.
 
     Parameters
     ----------
-    fitter_object :
-        A fitted ``BaseFitter`` subclass.
+    result :
+        A fitted :class:`~pymultifit.result.FitResult`.
     mv_parameters :
         Bootstrap samples, shape ``(n_bootstrap, n_total_params)``.
     x_ :
@@ -171,63 +170,14 @@ def compute_individual_ci_base(
         ``{ci_value: [{"lower": ..., "median": ..., "upper": ...}, ...]}``
     """
     mv_parameters, x_ = np.asarray(mv_parameters), np.asarray(x_)
-
-    n_total_params = mv_parameters.shape[1]
-    params_per_fit = n_total_params // fitter_object.n_fits
-    params = mv_parameters.reshape((-1, fitter_object.n_fits, params_per_fit))
-    curves_ = np.zeros(shape=(params.shape[0], fitter_object.n_fits, x_.shape[0]))
-
-    for j_idx, j in enumerate(params):
-        for i_idx, i in enumerate(j):
-            curves_[j_idx, i_idx, :] = fitter_object.fitter(x=x_, params=i)
-
-    return _curves_to_ci_results(x_=x_, n_fits=fitter_object.n_fits, curves_=curves_, bounds=bounds)
-
-
-def compute_individual_ci_mixed(
-    fitter_object: "MixedDataFitter",
-    mv_parameters: NDArray,
-    x_: NDArray,
-    bounds: list[tuple[int, tuple[float, float, float]]],
-) -> dict:
-    """Compute per-component CIs for a ``MixedDataFitter`` (variable params per model).
-
-    Parameters
-    ----------
-    fitter_object :
-        A fitted ``MixedDataFitter`` instance.
-    mv_parameters :
-        Bootstrap samples, shape ``(n_bootstrap, n_total_params)``.
-    x_ :
-        Evaluation x-values.
-    bounds :
-        Output of :func:`_ci_to_percentiles`.
-
-    Returns
-    -------
-    dict
-        ``{ci_value: [{"lower": ..., "median": ..., "upper": ...}, ...]}``
-    """
-    n_bootstrap = mv_parameters.shape[0]
-    curves_ = np.zeros(shape=(n_bootstrap, fitter_object.n_fits, x_.shape[0]))
-
-    if isinstance(fitter_object.model_list, list):
-        model_list = fitter_object.model_list
-    else:
-        model_list = []
+    pairs = list(zip(result.components, result.slices()))
+    curves_ = np.zeros(shape=(mv_parameters.shape[0], result.n_fits, x_.shape[0]))
 
     for boot_idx, boot_params in enumerate(mv_parameters):
-        param_index = 0
-        for model_idx, model in enumerate(model_list):
-            n_par = fitter_object._instantiate_n_par(model=model)  # each model has its own n_par
-            model_params = boot_params[param_index : param_index + n_par]
-            model = model_list[model_idx]
-            model_class = fitter_object._instantiate_class(model=model)  # each class can be difference
+        for comp_idx, (comp, sl) in enumerate(pairs):
+            curves_[boot_idx, comp_idx, :] = comp.func(x_, list(boot_params[sl]))
 
-            curves_[boot_idx, model_idx, :] = model_class.fitter(x_, model_params)
-            param_index += n_par
-
-    return _curves_to_ci_results(x_=x_, n_fits=fitter_object.n_fits, curves_=curves_, bounds=bounds)
+    return _curves_to_ci_results(x_=x_, n_fits=result.n_fits, curves_=curves_, bounds=bounds)
 
 
 # ---------------------------------------------------------------------------
@@ -236,7 +186,7 @@ def compute_individual_ci_mixed(
 
 
 def compute_ci_bounds(
-    fitter_object: "BaseFitter | MixedDataFitter",
+    result: FitResult,
     ci_levels: float | int | tuple | list,
     n_bootstrap: int = 5_000,
     overall_ci: bool = True,
@@ -249,8 +199,8 @@ def compute_ci_bounds(
 
     Parameters
     ----------
-    fitter_object :
-        A fitted fitter exposing ``params``, ``covariance``, ``x_values``, ``_n_fitter``, and ``_compute_individual_ci``.
+    result :
+        A fitted :class:`~pymultifit.result.FitResult`, e.g. from ``fitter.to_result()``.
     ci_levels :
         CI level(s) as a percentage (e.g., 95 or [68, 95, 99]).
         Decimal form (0.95) is also accepted.
@@ -277,26 +227,24 @@ def compute_ci_bounds(
     ------
     ValueError
         If neither ``overall_ci`` nor ``individual_ci`` is ``True``.
+    RuntimeError
+        If the fit has not been performed yet.
     """
     if not overall_ci and not individual_ci:
         raise ValueError("At least one of 'overall_ci' or 'individual_ci' must be True.")
 
-    x_ = (
-        np.asarray(x_range)
-        if x_range is not None
-        else np.linspace(*np.asarray(fitter_object.x_values)[[0, -1]], num=1_000)
-    )
+    result.require_fit()
+
+    x_ = np.asarray(x_range) if x_range is not None else np.linspace(*np.asarray(result.x)[[0, -1]], num=1_000)
 
     _rng = _sanitize_generator(rng_engine=rng_engine, seed=seed)
-    mv_parameters = _rng.multivariate_normal(mean=fitter_object.params, cov=fitter_object.covariance, size=n_bootstrap)
+    mv_parameters = _rng.multivariate_normal(mean=result.params, cov=result.covariance, size=n_bootstrap)
 
     bounds = _ci_to_percentiles(ci_levels)
     results: dict = {"x_range": x_}
 
-    bounds: Iterable
-
     if overall_ci:
-        curves_ = np.array([fitter_object._n_fitter(x_, *j) for j in mv_parameters])
+        curves_ = np.array([result.model(x_, params) for params in mv_parameters])
         for ci_val, (lower_p, median_p, upper_p) in bounds:
             quantiles = np.quantile(curves_, q=[lower_p, median_p, upper_p], axis=0)
             if quantiles.shape[-1] != len(x_):
@@ -306,7 +254,7 @@ def compute_ci_bounds(
             results[f"overall_ci_{ci_val}"] = {"lower": quantiles[0], "median": quantiles[1], "upper": quantiles[2]}
 
     if individual_ci:
-        individual_ci_results = fitter_object._compute_individual_ci(x_=x_, mv_parameters=mv_parameters, bounds=bounds)
+        individual_ci_results = compute_individual_ci(result, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
         for ci_val in individual_ci_results:
             results[f"individual_ci_{ci_val}"] = individual_ci_results[ci_val]
 

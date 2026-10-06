@@ -43,15 +43,10 @@ This approach not only reduces the likelihood of errors but also improves code r
 
    Specifies the Laplace distribution type.
 
-.. py:data:: GAMMA_SR
+.. py:data:: GAMMA
    :type: str
 
-   Gamma distribution with shape-rate parameterization.
-
-.. py:data:: GAMMA_SS
-   :type: str
-
-   Gamma distribution with shape-scale parameterization.
+   Gamma distribution with shape-scale parameterization (``scipy``'s ``a``, ``scale``).
 
 .. py:data:: BETA
    :type: str

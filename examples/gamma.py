@@ -22,7 +22,11 @@ fitter.fit(p0=guess)
 
 f, ax = plt.subplots(1, 1, figsize=(12, 6))
 fitter.dry_run(axis=ax)
+f.tight_layout()
 
-f2, ax = fitter.plotter.plot_fit_and_residuals(show_individuals=True)
+f2, (ax_fit, ax_res) = plt.subplots(
+    nrows=2, ncols=1, figsize=(12, 7), sharex=True, gridspec_kw={"height_ratios": [3, 1]}
+)
+fitter.plotter.plot_fit_and_residuals(show_individuals=True, axes=(ax_fit, ax_res))
 f2.tight_layout()
 plt.show()

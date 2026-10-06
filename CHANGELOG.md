@@ -15,8 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `QExponentialDistribution` and `StudentsTDistribution` to `pymultifit.distributions.generalized`. 🎓
 - Added Gumbel PDF/log-PDF/CDF/log-CDF utility functions (`gumbel_pdf_`, `gumbel_log_pdf_`, `gumbel_cdf_`, `gumbel_log_cdf_`) to `distributions.utilities_d` — note: only the standalone utility functions shipped, not a public `GumbelDistribution` class.
-- Added a new `pymultifit.plot` subpackage (`FitPlotter`, `_plot_backend`) providing residual plots, Q-Q plots, confidence-interval bounds, prediction intervals, parameter-correlation plots, and gridlines on plot axes, exposed via a cached `BaseFitter.plotter` property.
-- Added a confidence-interval computation backend (`fitters.backend._ci_backend`: `compute_ci_bounds`, `compute_individual_ci_base`, `compute_individual_ci_mixed`).
+- Added a new `pymultifit.plot` subpackage (`FitPlotter`, `qq_compare`) providing fit and residual plots, Q-Q plots, confidence-interval bounds, prediction intervals, parameter-correlation plots, and gridlines on plot axes, exposed via a cached `BaseFitter.plotter` property. `FitPlotter` is built from an immutable `FitResult` and has no dependency on the fitter classes.
+- Added `pymultifit.ci.compute_ci_bounds`, which computes bootstrap confidence intervals (overall and per-component) from a `FitResult`.
+- Added `pymultifit.result` with `FitResult` and `Component`, an immutable description of a fit (data, parameters, covariance, additive components, parameter labels) providing `model()`, `residuals()`, `component_curve()`, `errors` and `slices()`.
+- Added `BaseFitter.to_result()` (overridden by `MixedDataFitter`) to build a `FitResult` from the current state of a fitter; it also works before `fit()`.
 - Added frozen-parameter fitting support across fitters, with auto-padding of a `pn_par`-length `frozen` mask to `n_par` length (emits a `UserWarning`).
 - Added an `is_scatter` option to `dry_run()`/plotting methods to render raw data as a scatter plot instead of a line.
 - Added `pymultifit.exceptions` module (`pyMultiFitErrors`, `AxesError`).
@@ -33,10 +35,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swapped the plotting dependency `mpyez` for `plotez` (`LinePlotConfig`, `plot_xy`).
 - Added `statsmodels` as a runtime dependency; added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
 - Relaxed the `numpy<2.1.0` upper version pin to an unconstrained `numpy` dependency.
+- Decoupled plotting and confidence-interval computation from the fitter classes: `pymultifit.plot`, `pymultifit.ci` and `pymultifit.result` no longer import `pymultifit.fitters`, removing the fitter ⇄ plotter circular dependency.
+- Merged the per-component CI strategies for `BaseFitter` and `MixedDataFitter` into one implementation that slices the parameter vector by component; output format and numerical results are unchanged.
+- Cleaned up the `GammaDistribution` and `GammaFitter` docstrings: `scale` is documented as scipy's `scale` (the rate is `1/scale`) and stale shape/rate (`SR`/`SS`, `λ`) wording was removed.
+- Renamed `examples/gamma_sr.py` to `examples/gamma.py`; the combined fit-and-residuals examples (`gamma.py`, `residuals_gaussian.py`, `residuals_mixed.py`) now create their own axes and pass `axes=(ax_fit, ax_res)` to `plot_fit_and_residuals`.
+- Removed unused `Axes` and `plotez` imports from `fitters/mixed_f.py`.
 
 ### Fixed
 
 - Tightened NumPy warning suppression in distribution utility functions to only ignore `invalid`/`divide` warnings instead of all warnings.
+- `GammaDistribution.stats()` returned `mode = 0` for shape < 1 regardless of `loc`; it now returns `loc`.
+- Docs: replaced the removed `GAMMA_SR` / `GAMMA_SS` constants with `GAMMA` in the constants reference.
 
 ### Breaking Changes
 

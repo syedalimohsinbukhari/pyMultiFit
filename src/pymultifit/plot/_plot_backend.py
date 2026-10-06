@@ -12,11 +12,10 @@ from scipy.stats import norm, pearsonr, t
 from statsmodels.graphics.gofplots import ProbPlot
 
 from ..exceptions import AxesError
+from ..result import FitResult
 from ..typing import NDArray
 
 if TYPE_CHECKING:
-    from ..fitters import MixedDataFitter
-    from ..fitters.backend import BaseFitter
     from . import FitPlotter
 
 FIG_SIZE = (10, 6)
@@ -43,7 +42,7 @@ RESID_FIG_SIZE = (12, 4)
 
 
 def _ci_plotter(
-    fitter_object: "BaseFitter | MixedDataFitter",
+    result: FitResult,
     results: dict,
     ci_levels: float | tuple[float] | list[float],
     overall_ci: bool,
@@ -56,7 +55,7 @@ def _ci_plotter(
     ci_levels: list
 
     # Extract x_range from results
-    x_range = results.get("x_range", fitter_object.x_values)
+    x_range = results.get("x_range", result.x)
 
     # Create alpha values for multiple CI levels (lighter for wider intervals)
     alphas = np.linspace(0.45, 0.15, len(ci_levels))
@@ -153,15 +152,14 @@ def _grid(axis: Axes):
 
 
 def _param_correlation(
-    plot_object: "FitPlotter",
-    fitter_object: "BaseFitter | MixedDataFitter",
+    result: FitResult,
     plot_title: str = "Parameter Correlation Matrix",
     param_labels: list[str] | None = None,
     axis: Axes | None = None,
 ) -> Axes:
-    plot_object._validate_fitted()
-    params = fitter_object.params
-    cov_matrix = fitter_object.covariance
+    result.require_fit()
+    params = result.params
+    cov_matrix = result.covariance
 
     cov_matrix: NDArray
     params: NDArray
@@ -173,7 +171,7 @@ def _param_correlation(
     np.clip(corr, -1.0, 1.0, out=corr)
 
     n_params = params.shape[0]
-    labels = param_labels or plot_object._default_param_labels()
+    labels = param_labels or list(result.param_labels)
     fig_size = max(4, n_params)
 
     if axis is None:
@@ -210,12 +208,11 @@ def _plot(
     is_scatter: bool = False,
     axis: Axes | None = None,
 ) -> Axes:
-    fitter_object = _validate(plot_object)
-    x, y = np.asarray(fitter_object.x_values), np.asarray(fitter_object.y_values)
+    result = _validate(plot_object)
+    x, y = np.asarray(result.x), np.asarray(result.y)
 
     axis = _single_axis_sanitizer(axis=axis)
 
-    params = fitter_object.params
     dl, tt = (data_label or "Data"), (fit_label or "Total fit")
 
     # The first catch of axis is necessary, the user might not pass an axis object, so the return from `plot_xy` is
@@ -225,11 +222,11 @@ def _plot(
     # Plot combined fit and/or individual component fits.
     # Behavior: if show_individuals and there's only one model component, draw only the individual fit.
     # Otherwise, draw the combined fit and, when requested, overlay individual fits.
-    if show_individuals and fitter_object.n_fits == 1:
+    if show_individuals and result.n_fits == 1:
         plot_object._plot_individual_fits(axis=axis)
     else:
         # draw combined fit
-        plot_xy(x_data=x, y_data=fitter_object._n_fitter(x, *params), data_label=tt, plot_config=lpc(c="k"), axis=axis)
+        plot_xy(x_data=x, y_data=result.model(x), data_label=tt, plot_config=lpc(c="k"), axis=axis)
         # optionally overlay individual fits when there are multiple components
         if show_individuals:
             plot_object._plot_individual_fits(axis=axis)
@@ -244,8 +241,7 @@ def _plot(
 
 
 def _prediction_interval(
-    plot_object: "FitPlotter",
-    fitter_object: "BaseFitter | MixedDataFitter",
+    result: FitResult,
     pi_level: int | list[int] = 95,
     x_label: str = "X",
     y_label: str = "Y",
@@ -253,10 +249,9 @@ def _prediction_interval(
     axis: Axes | None = None,
     **kwargs,
 ) -> Axes:
-    plot_object._validate_fitted()
-    params = fitter_object.params
+    result.require_fit()
 
-    x, params = np.asarray(fitter_object.x_values), np.asarray(params)
+    x, params = np.asarray(result.x), np.asarray(result.params)
 
     pi_levels = sorted(
         [pi_level] if isinstance(pi_level, int) else list(pi_level), reverse=True  # widest band drawn first
@@ -264,9 +259,9 @@ def _prediction_interval(
 
     n, k = len(x), len(params)
 
-    residuals = fitter_object.get_residuals()
+    residuals = result.residuals()
     sigma = np.sqrt(np.sum(residuals**2) / max(n - k, 1))
-    fitted = fitter_object._n_fitter(fitter_object.x_values, *params)
+    fitted = result.model()
 
     axis = _single_axis_sanitizer(axis=axis)
 
@@ -276,7 +271,7 @@ def _prediction_interval(
         alpha_stat = 1 - pi / 100
         t_crit = t.ppf(1 - alpha_stat / 2, df=max(n - k, 1))
         axis = plot_errorband(
-            x_data=fitter_object.x_values,
+            x_data=result.x,
             y_data=fitted,
             y_lower=fitted - t_crit * sigma,
             y_upper=fitted + t_crit * sigma,
@@ -286,8 +281,8 @@ def _prediction_interval(
         )
 
     axis = plot_xy(
-        x_data=fitter_object.x_values,
-        y_data=fitter_object.y_values,
+        x_data=result.x,
+        y_data=result.y,
         plot_config=spc(s=SCATTER_SIZE, alpha=SCATTER_ALPHA, c=SCATTER_COLOR),
         is_scatter=True,
         x_label=x_label,
@@ -302,30 +297,12 @@ def _prediction_interval(
     return axis
 
 
-def _obj_resolver(
-    plot_object: "FitPlotter | None" = None, fitter_object: "BaseFitter | MixedDataFitter | None" = None
-) -> tuple["FitPlotter", "BaseFitter | MixedDataFitter"]:
-    if plot_object is None and fitter_object is None:
-        raise ValueError("At least one of plot_object or fitter_object must be provided.")
-
-    if plot_object is None:
-        assert fitter_object is not None  # guaranteed by the raise above
-        plot_object = fitter_object.plotter
-    if fitter_object is None:
-        assert plot_object is not None  # guaranteed by the raise above
-        fitter_object = plot_object.fitter
-
-    return plot_object, fitter_object
-
-
 def _qq(
-    plot_object: "FitPlotter | None" = None,
-    fitter_object: "BaseFitter | MixedDataFitter | None" = None,
+    result: FitResult,
     plot_title: str = "QQ-Plot",
     axis: Axes | None = None,
 ) -> Axes:
-    plot_object, fitter_object = _obj_resolver(plot_object=plot_object, fitter_object=fitter_object)
-    residual = fitter_object.get_residuals()
+    residual = result.residuals()
 
     pp = ProbPlot(data=residual, dist=norm, fit=True)
     quantiles = pp.theoretical_quantiles
@@ -366,8 +343,8 @@ def _qq(
 
 
 def _qq_compare(
-    fitter_left: "BaseFitter | MixedDataFitter",
-    fitter_right: "BaseFitter | MixedDataFitter",
+    fitter_left,
+    fitter_right,
     label_left: str | None = None,
     label_right: str | None = None,
     plot_title: str = "Q-Q Plot Comparison",
@@ -385,8 +362,8 @@ def _qq_compare(
     if label_right is None:
         label_right = f"Q-Q plot | {fitter_right.__class__.__name__}"
 
-    _qq(fitter_object=fitter_left, plot_title=label_left, axis=ax_l)
-    _qq(fitter_object=fitter_right, plot_title=label_right, axis=ax_r)
+    _qq(result=fitter_left.to_result(), plot_title=label_left, axis=ax_l)
+    _qq(result=fitter_right.to_result(), plot_title=label_right, axis=ax_r)
 
     # manually mute the right plot for its y-axis label and ticks
     ax_r.tick_params(axis="y", left=False, labelleft=False)
@@ -397,13 +374,12 @@ def _qq_compare(
     return ax_l, ax_r
 
 
-def _validate(plot_object: "FitPlotter") -> "BaseFitter | MixedDataFitter":
-    # validate that the fitter exists and has been fit
-    f_obj = plot_object.fitter
-    if f_obj.params is None:
-        raise RuntimeError("Fit not performed yet. Call fit() first.")
+def _validate(plot_object: "FitPlotter") -> FitResult:
+    # validate that the fit has been performed
+    result = plot_object.result
+    result.require_fit()
 
-    return f_obj
+    return result
 
 
 def _resid(
@@ -415,14 +391,14 @@ def _resid(
     is_scatter: bool = False,
     axis: Axes | None = None,
 ) -> Axes:
-    fitter_object = _validate(plot_object)
-    x, y = np.asarray(fitter_object.x_values), np.asarray(fitter_object.y_values)
+    result = _validate(plot_object)
+    x = np.asarray(result.x)
 
     axis = _single_axis_sanitizer(axis=axis, figsize=RESID_FIG_SIZE)
 
     plot_xy(
         x_data=x,
-        y_data=fitter_object.get_residuals(),
+        y_data=result.residuals(),
         x_label=x_label,
         y_label=y_label,
         data_label=data_label,

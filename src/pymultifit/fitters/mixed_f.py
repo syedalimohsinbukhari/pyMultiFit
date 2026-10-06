@@ -8,8 +8,6 @@ from typing import Callable, Sequence, Any
 from typing_extensions import override
 
 import numpy as np
-from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
-from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external callers
 from scipy.optimize import Bounds, curve_fit
 
 from .. import (
@@ -26,10 +24,11 @@ from .. import (
     SKEW_NORMAL,
     epsilon,
 )
+from ..result import Component, FitResult
 from ..typing import NDArray, Params_
 
 # importing from files to avoid circular import
-from .backend import BaseFitter, compute_individual_ci_mixed
+from .backend import BaseFitter
 from .chiSquare_f import ChiSquareFitter
 from .exponential_f import ExponentialFitter
 from .foldedNormal_f import FoldedNormalFitter
@@ -182,10 +181,23 @@ class MixedDataFitter(BaseFitter):
         """
         return self.model_function(x, *params)
 
-    def _compute_individual_ci(
-        self, x_: NDArray, mv_parameters: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
-    ) -> dict:
-        return compute_individual_ci_mixed(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
+    def to_result(self) -> FitResult:
+        """Return an immutable :class:`~pymultifit.result.FitResult` describing the current state of the fit."""
+        components, labels = [], []
+        for i, model in enumerate(self.model_list):
+            model_class = self._instantiate_class(model=model)  # resolved once per component, not per evaluation
+            name = model.capitalize()
+            components.append(Component(label=name, func=model_class.fitter, n_par=model_class.n_par))
+            labels.extend(f"{name}_{i + 1}_p{j + 1}" for j in range(model_class.n_par))
+
+        return FitResult(
+            x=self.x_values,
+            y=self.y_values,
+            params=self.params,
+            covariance=self.covariance,
+            components=tuple(components),
+            param_labels=tuple(labels),
+        )
 
     def _get_bounds(self) -> tuple[NDArray, NDArray]:
         """

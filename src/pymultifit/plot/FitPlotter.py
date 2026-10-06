@@ -4,56 +4,27 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from plotez import lpc, plot_xy
 
-from ..fitters.backend import compute_ci_bounds
+from ..ci import compute_ci_bounds
+from ..result import FitResult
 from ._plot_backend import _ci_plotter, _fit_and_residual, _param_correlation, _plot, _prediction_interval, _qq, _resid
 
 
 class FitPlotter:
-    """Centralized plotting class for fitter objects.
+    """Centralized plotting class for fits.
 
     Parameters
     ----------
-    fitter :
-        A fitted (or pre-fit) fitter instance.
-        Must expose at minimum the attributes listed in ``_REQUIRED_ATTRS``.
-
-    Raises
-    ------
-    TypeError
-        If the supplied object is missing any required attribute.
+    result :
+        A :class:`~pymultifit.result.FitResult`, typically obtained from ``fitter.to_result()``.
+        It may be a pre-fit result, in which case only :meth:`dry_run` is usable.
     """
 
-    _REQUIRED_ATTRS = ("x_values", "y_values", "params", "n_fits", "n_par", "_n_fitter")
-
-    def __init__(self, fitter) -> None:
-        missing = [a for a in self._REQUIRED_ATTRS if not hasattr(fitter, a)]
-        if missing:
-            raise TypeError(f"Fitter is missing required attributes: {missing}")
-        self.fitter = fitter
-
-    def _default_param_labels(self) -> list[str]:
-        """Auto-generate parameter labels, model-aware for ``MixedDataFitter``.
-
-        Returns
-        -------
-        list[str]
-            Labels like ``["Gaussian_1_p1", "Gaussian_1_p2", "Line_2_p1"]`` for
-            mixed fitters, or ``["p1", "p2", ...]`` for single-model fitters.
-        """
-        if self._is_mixed_fitter():
-            labels = []
-            fitter = self.fitter
-            for i, model in enumerate(fitter.model_list):
-                n_par = fitter._instantiate_n_par(model=model)
-                for j in range(n_par):
-                    labels.append(f"{model.capitalize()}_{i + 1}_p{j + 1}")
-            return labels
-        return [f"p{i + 1}" for i in range(len(self.fitter.params))]
+    def __init__(self, result: FitResult) -> None:
+        self.result = result
 
     @staticmethod
     def _format_param(value, t_low: float = 0.001, t_high: float = 10_000.0) -> str:
@@ -79,9 +50,6 @@ class FitPlotter:
     def _get_color_cycle() -> list:
         """Return the active matplotlib color cycle, skipping the first color."""
         return plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
-
-    def _is_mixed_fitter(self) -> bool:
-        return hasattr(self.fitter, "model_list")
 
     @staticmethod
     def _plot_component(x, y, label: str, color: str, axis) -> None:
@@ -111,69 +79,33 @@ class FitPlotter:
             axis=axis,
         )
 
-    def _plot_individual_base(self, axis) -> None:
-        """Plot individual component fits for a ``BaseFitter`` subclass.
-
-        Parameters
-        ----------
-        axis :
-            Target axes object.
-        """
-        fitter = self.fitter
-        x = fitter.x_values
-        params = np.reshape(fitter.params, (fitter.n_fits, fitter.n_par))
-        colors = self._get_color_cycle()
-        class_name = fitter.__class__.__name__.replace("Fitter", "")
-
-        for i, par in enumerate(params):
-            self._plot_component(
-                x=x,
-                y=fitter.fitter(x=x, params=list(par)),
-                label=f"{class_name} {i + 1}({', '.join(self._format_param(v) for v in par)})",
-                color=colors[i % len(colors)],
-                axis=axis,
-            )
-
     def _plot_individual_fits(self, axis) -> None:
-        """Dispatch to the correct strategy based on the fitter type."""
-        if self._is_mixed_fitter():
-            self._plot_individual_mixed(axis)
-        else:
-            self._plot_individual_base(axis)
-
-    def _plot_individual_mixed(self, axis) -> None:
-        """Plot individual component fits for a ``MixedDataFitter``.
+        """Plot every component of the model as a dashed line on *axis*.
 
         Parameters
         ----------
         axis :
             Target axes object.
         """
-        fitter = self.fitter
-        x = fitter.x_values
+        result = self.result
         colors = self._get_color_cycle()
-        param_index = 0
 
-        for i, model in enumerate(fitter.model_list):
-            class_model = fitter._instantiate_class(model=model)
-            n_par = fitter._instantiate_n_par(model=model)
-            pars = fitter.params[param_index : param_index + n_par]
+        for i, (comp, pars) in enumerate(result.split(result.params)):
             self._plot_component(
-                x=x,
-                y=class_model.fitter(x=x, params=list(pars)),
-                label=f"{model.capitalize()} {i + 1}({', '.join(self._format_param(v) for v in pars)})",
+                x=result.x,
+                y=comp.func(result.x, list(pars)),
+                label=f"{comp.label} {i + 1}({', '.join(self._format_param(v) for v in pars)})",
                 color=colors[i % len(colors)],
                 axis=axis,
             )
-            param_index += n_par
 
     @staticmethod
     def _unwrap_plotter(plotter) -> Axes:
         return plotter[0] if isinstance(plotter, list) else plotter
 
-    def _validate_fitted(self) -> None:
-        if self.fitter.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
+    def _validate_fitted(self) -> FitResult:
+        self.result.require_fit()
+        return self.result
 
     def dry_run(self, axis: Axes | None = None, is_scatter: bool = False) -> None:
         """Plot raw x / y data for quick inspection before fitting.
@@ -185,7 +117,7 @@ class FitPlotter:
         is_scatter :
             When ``True``, the raw data is plotted as a scatter plot instead of a line
         """
-        axis = plot_xy(x_data=self.fitter.x_values, y_data=self.fitter.y_values, axis=axis, is_scatter=is_scatter)
+        axis = plot_xy(x_data=self.result.x, y_data=self.result.y, axis=axis, is_scatter=is_scatter)
         axis.get_figure().tight_layout()
 
     def plot_confidence_intervals(
@@ -241,7 +173,7 @@ class FitPlotter:
         """
         if results is None:
             results = compute_ci_bounds(
-                fitter_object=self.fitter,
+                result=self.result,
                 ci_levels=ci_levels,
                 n_bootstrap=n_bootstrap,
                 overall_ci=overall_ci,
@@ -252,7 +184,7 @@ class FitPlotter:
             )
 
         axis = _ci_plotter(
-            fitter_object=self.fitter,
+            result=self.result,
             results=results,
             ci_levels=ci_levels,
             overall_ci=overall_ci,
@@ -392,9 +324,7 @@ class FitPlotter:
         Axes :
             The axes on which the plot was drawn.
         """
-        return _param_correlation(
-            plot_object=self, fitter_object=self.fitter, param_labels=param_labels, plot_title=plot_title, axis=axis
-        )
+        return _param_correlation(result=self.result, param_labels=param_labels, plot_title=plot_title, axis=axis)
 
     def plot_prediction_intervals(
         self,
@@ -438,8 +368,7 @@ class FitPlotter:
             The matplotlib axis object on which the plot was drawn.
         """
         return _prediction_interval(
-            plot_object=self,
-            fitter_object=self.fitter,
+            result=self.result,
             pi_level=pi_level,
             x_label=x_label,
             y_label=y_label,
@@ -464,7 +393,7 @@ class FitPlotter:
         Axes
             The Matplotlib Axes object containing the Q-Q plot.
         """
-        return _qq(plot_object=self, plot_title=plot_title, axis=axis)
+        return _qq(result=self.result, plot_title=plot_title, axis=axis)
 
     def plot_residuals(
         self,

@@ -32,7 +32,7 @@ class GammaDistribution(BaseDistribution):
     shape :
         The shape parameter, :math:`\alpha`. Defaults to 1.0.
     scale :
-        The rate parameter, :math:`\theta`. Defaults to 1.0.
+        The scale parameter, :math:`\theta` (``scipy``'s ``scale``; the rate is :math:`1/\theta`). Defaults to 1.0.
     loc :
         The location parameter, for shifting. Defaults to 0.0.
     normalize :
@@ -49,7 +49,7 @@ class GammaDistribution(BaseDistribution):
        :lineno-start: 3
        :lines: 3-7
 
-    Generating a standard GammaSS(:math:`\alpha = 1.5, \lambda = 1`) distribution with ``pyMultiFit`` and ``scipy``:
+    Generating a standard Gamma(:math:`\alpha = 1.5, \theta = 1`) distribution with ``pyMultiFit`` and ``scipy``:
 
     .. literalinclude:: ../../../examples/basic/gamma_.py
        :language: python
@@ -69,7 +69,7 @@ class GammaDistribution(BaseDistribution):
        :alt: GammaSS(1.5, 1)
        :align: center
 
-    Generating a translated Gamma(:math:`\alpha=1.5, \lambda=0.2`) distribution with :math:`\text{loc} = 3`:
+    Generating a translated Gamma(:math:`\alpha=1.5, \theta=0.2`) distribution with :math:`\text{loc} = 3`:
 
     .. literalinclude:: ../../../examples/basic/gamma_.py
        :language: python
@@ -147,6 +147,6 @@ class GammaDistribution(BaseDistribution):
 
         mean_ = (s * r) + l_
         variance_ = s * r**2
-        mode_ = (s - 1) * r + l_ if s >= 1 else 0
+        mode_ = (s - 1) * r + l_ if s >= 1 else l_
 
         return {"mean": mean_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

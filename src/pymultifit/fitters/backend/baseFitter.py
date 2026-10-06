@@ -11,17 +11,18 @@ from matplotlib.axes import Axes
 from numpy.random import Generator
 from scipy.optimize import Bounds, curve_fit
 
-from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
 from ..utilities_f import parameter_logic, sanity_check
 from ... import epsilon
+from ...ci import compute_ci_bounds
 from ...plot import FitPlotter
+from ...result import Component, FitResult
 from ...typing import ArrayLike, NDArray, Params_
 
 
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    _plotter: FitPlotter | None
+    _plotter: FitPlotter | None = None
 
     def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -45,8 +46,24 @@ class BaseFitter:
         most recent fitted parameters.
         """
         if self._plotter is None:
-            self._plotter: FitPlotter = FitPlotter(self)
+            self._plotter: FitPlotter = FitPlotter(self.to_result())
         return self._plotter
+
+    def to_result(self) -> FitResult:
+        """Return an immutable :class:`~pymultifit.result.FitResult` describing the current state of the fit.
+
+        Before :meth:`fit` is called the result has no parameters and no components.
+        """
+        label = type(self).__name__.replace("Fitter", "")
+        components = tuple(Component(label=label, func=self.fitter, n_par=self.n_par) for _ in range(self.n_fits))
+        return FitResult(
+            x=self.x_values,
+            y=self.y_values,
+            params=self.params,
+            covariance=self.covariance,
+            components=components,
+            param_labels=tuple(f"p{i + 1}" for i in range(self.n_fits * self.n_par)),
+        )
 
     def _adjust_parameters(self, p0) -> Params_:
         """
@@ -482,7 +499,7 @@ class BaseFitter:
             ``{"x_range": ..., "overall_ci_<level>": {...}, "individual_ci_<level>": [...]}``
         """
         results = compute_ci_bounds(
-            fitter_object=self,
+            result=self.to_result(),
             ci_levels=ci_levels,
             n_bootstrap=n_bootstrap,
             overall_ci=overall_ci,
@@ -500,11 +517,6 @@ class BaseFitter:
             return results, axis
 
         return results
-
-    def _compute_individual_ci(
-        self, x_: NDArray, mv_parameters: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
-    ) -> dict:
-        return compute_individual_ci_base(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 
     def plot_fit(
         self,
