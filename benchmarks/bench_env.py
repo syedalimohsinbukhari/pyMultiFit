@@ -163,28 +163,63 @@ def capture() -> dict:
     }
 
 
+RESULTS_ROOT = Path(__file__).parent / "results"
+
+
+def run_name(env: dict) -> str:
+    """Folder name of a run: ``<hostname>_<short commit>``, with ``_dirty`` appended for an uncommitted tree."""
+    name = f"{env['hostname']}_{(env['git_commit'] or 'nogit')[:7]}" + ("_dirty" if env["git_dirty"] else "")
+    return name.lower().replace("-", "_")
+
+
 def results_dir(env: dict | None = None, root: Path | None = None) -> Path:
-    """Create ``results/<hostname>_<short commit>[_dirty]/``, write ``env.json`` into it and return the folder.
+    """Create ``results/<run name>/``, write ``env.json`` into it and return the folder.
 
     Every benchmark output of one run goes into this folder, so runs on different machines or commits never overwrite
     each other and each CSV set travels with the environment that produced it.
     """
     env = env or capture()
-    name = f"{env['hostname']}_{(env['git_commit'] or 'nogit')[:7]}" + ("_dirty" if env["git_dirty"] else "")
-    folder = (root or Path(__file__).parent / "results") / name.lower().replace("-", "_")
+    folder = (root or RESULTS_ROOT) / run_name(env)
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "env.json").write_text(json.dumps(env, indent=2) + "\n")
     return folder
 
 
-def warnings_for(env: dict) -> list[str]:
-    cpu, warn = env["cpu"], []
+def hardware_issues(env: dict) -> list[tuple[str, str]]:
+    """``(problem, fix)`` for every CPU setting that makes timings noisy. Settings that cannot be read are skipped."""
+    cpu, issues = env["cpu"], []
     if cpu["governor"] not in (None, "performance"):
-        warn.append(f"CPU governor is '{cpu['governor']}', use 'performance' (sudo cpupower frequency-set -g performance).")
+        issues.append((f"CPU governor is '{cpu['governor']}', not 'performance'",
+                       "echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"))
     if cpu["energy_preference"] not in (None, "performance"):
-        warn.append(f"Energy preference is '{cpu['energy_preference']}', set energy_performance_preference to 'performance'.")
-    if cpu["intel_no_turbo"] == "0" or cpu["cpufreq_boost"] == "1":
-        warn.append("Turbo/boost is on: clocks drift with load and temperature; disable it or accept more noise.")
+        issues.append((f"energy preference is '{cpu['energy_preference']}', not 'performance'",
+                       "echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference"))
+    if cpu["intel_no_turbo"] == "0":
+        issues.append(("turbo is on", "echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo"))
+    if cpu["cpufreq_boost"] == "1":
+        issues.append(("boost is on", "echo 0 | sudo tee /sys/devices/system/cpu/cpufreq/boost"))
+    return issues
+
+
+def reject_reasons(env: dict) -> list[str]:
+    """Why a real benchmark run must not start (empty list: it may). Never changes anything, it only says what to do."""
+    reasons = []
+    if env["git_dirty"] is None:
+        reasons.append("not a git checkout, so the run cannot be tied to a commit.")
+    elif env["git_dirty"]:
+        reasons.append("the working tree has uncommitted changes to tracked files.\n    fix: commit them, or discard them "
+                       "(git status shows which), then re-run.")
+    folder = RESULTS_ROOT / run_name({**env, "git_dirty": False})
+    if folder.exists():
+        reasons.append(f"a run for this machine and commit already exists: {folder.relative_to(RESULTS_ROOT.parent)}\n"
+                       f"    fix: commit something new, or delete that folder yourself if you really want to redo this commit.")
+    for problem, fix in hardware_issues(env):
+        reasons.append(f"{problem}.\n    fix: {fix}")
+    return reasons
+
+
+def warnings_for(env: dict) -> list[str]:
+    warn = [f"{problem}; fix: {fix}" for problem, fix in hardware_issues(env)]
     if env["git_dirty"]:
         warn.append("Working tree has uncommitted changes to tracked files.")
     if any(v != "1" for v in env["threads_env"].values()):
