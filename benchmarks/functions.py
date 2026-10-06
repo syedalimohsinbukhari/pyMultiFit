@@ -110,46 +110,36 @@ def plot_accuracy(x, results, title_suffix):
 #####################################################################################################################################################
 
 
-def evaluate_speed(custom_dist, scipy_dist, n_points_list, compute_cdf=False, repetitions=100):
-    avg_times_class = []
-    avg_times_scipy = []
+def _median_time(func, x, repetitions, warmup):
+    for _ in range(warmup):
+        func(x)
+
+    times = []
+    for _ in range(repetitions):
+        start = timer()
+        func(x)
+        times.append(timer() - start)
+    return np.median(times)
+
+
+def evaluate_speed(custom_dist, scipy_dist, n_points_list, compute_cdf=False, repetitions=100, warmup=3):
+    """Median runtime per number of points for the custom and the scipy distribution (``warmup`` untimed calls first)."""
+    method = "cdf" if compute_cdf else "pdf"
+    median_times_class = []
+    median_times_scipy = []
 
     for n_points in n_points_list:
         x = np.linspace(start=EPSILON, stop=10, num=n_points)
+        median_times_class.append(_median_time(getattr(custom_dist, method), x, repetitions, warmup))
+        median_times_scipy.append(_median_time(getattr(scipy_dist, method), x, repetitions, warmup))
 
-        class_times = []
-        for _ in range(repetitions):
-            if compute_cdf:
-                start_class = timer()
-                __ = custom_dist.cdf(x)
-                end_class = timer()
-            else:
-                start_class = timer()
-                __ = custom_dist.pdf(x)
-                end_class = timer()
-            class_times.append(end_class - start_class)
-        avg_times_class.append(np.mean(class_times))
-
-        scipy_times = []
-        for _ in range(repetitions):
-            if compute_cdf:
-                start_scipy = timer()
-                __ = scipy_dist.cdf(x)
-                end_scipy = timer()
-            else:
-                start_scipy = timer()
-                __ = scipy_dist.pdf(x)
-                end_scipy = timer()
-            scipy_times.append(end_scipy - start_scipy)
-        avg_times_scipy.append(np.mean(scipy_times))
-
-    return avg_times_class, avg_times_scipy
+    return median_times_class, median_times_scipy
 
 
 def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix, save_as="speed_comparison"):
     n_points_list = np.array(n_points_list)
 
-    mean_c = np.array([np.mean(i) for i in times_class])
+    mean_c = np.array([np.mean(i) for i in times_class])  # each entry is already a median
     mean_s = np.array([np.mean(i) for i in times_scipy])
 
     ratio_means = mean_c / mean_s
@@ -189,7 +179,7 @@ def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: 
     p_times_class, p_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
     plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF Computations", save_as)
 
-    c_times_class, c_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
+    c_times_class, c_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, True, repetitions)
     plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF Computations", save_as)
 
     return (p_times_class, c_times_class), (p_times_scipy, c_times_scipy)
@@ -346,8 +336,11 @@ def heatmap(m_df, s_df, label="PDF"):
     plt.show()
 
 
-def time_function(func, test_values, num_runs=500):
-    """Measure the average runtime for one function over multiple internal runs."""
+def time_function(func, test_values, num_runs=500, warmup=3):
+    """Measure the average runtime for one function over multiple internal runs (after ``warmup`` untimed calls)."""
+    for _ in range(warmup):
+        func(test_values)
+
     total_time = 0
     for _ in range(num_runs):
         start = time.perf_counter()
@@ -437,7 +430,7 @@ def plot_all_variations(
 
     # --- FINAL STYLING ---
     ax.set_ylabel("Time (log₁₀ seconds)")
-    ax.set_title(f"Runtime Comparison ({distribution_name}) — Averaged over {n_repeats} runs")
+    ax.set_title(f"Runtime Comparison ({distribution_name}) — Median of {n_repeats} repeats")
     ax.legend(loc="upper left")
     ax.grid(True, axis="y", linestyle=":", alpha=0.4)
 
