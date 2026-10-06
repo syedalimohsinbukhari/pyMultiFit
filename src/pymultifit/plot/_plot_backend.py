@@ -9,7 +9,6 @@ import numpy as np
 from matplotlib.axes import Axes
 from plotez import ebc, lpc, plot_errorband, plot_xy, spc
 from scipy.stats import norm, pearsonr, t
-from statsmodels.graphics.gofplots import ProbPlot
 
 from ..exceptions import AxesError
 from ..result import FitResult
@@ -297,6 +296,19 @@ def _prediction_interval(
     return axis
 
 
+def _normal_quantiles(data: NDArray) -> tuple[NDArray, NDArray]:
+    """Theoretical and sample quantiles of ``data`` against a normal distribution fitted to it.
+
+    The theoretical quantiles are those of the standard normal at the plotting positions ``i / (n + 1)``, and the
+    sample quantiles are the sorted data standardized with the fitted mean and standard deviation.
+    """
+    sorted_data = np.sort(np.asarray(data, dtype=float))
+    loc, scale = norm.fit(sorted_data)
+    theoretical = norm.ppf(np.arange(1.0, sorted_data.size + 1) / (sorted_data.size + 1))
+
+    return theoretical, (sorted_data - loc) / scale
+
+
 def _qq(
     result: FitResult,
     plot_title: str = "QQ-Plot",
@@ -304,9 +316,7 @@ def _qq(
 ) -> Axes:
     residual = result.residuals()
 
-    pp = ProbPlot(data=residual, dist=norm, fit=True)
-    quantiles = pp.theoretical_quantiles
-    values = pp.sample_quantiles
+    quantiles, values = _normal_quantiles(residual)
 
     q25, q75 = np.percentile(values, q=[25, 75])
     t_q25, t_q75 = norm.ppf([0.25, 0.75])

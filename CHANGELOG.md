@@ -33,21 +33,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MixedDataFitter` now subclasses `BaseFitter` instead of duplicating its logic, unifying residual/CI/plotting support across all fitters.
 - Swapped the `deprecated`/`Deprecated` (`deprecated.sphinx`) dependency for `deprecation`; internal `mark_deprecated`/`md_scipy_like` helpers reworked accordingly.
 - Swapped the plotting dependency `mpyez` for `plotez` (`LinePlotConfig`, `plot_xy`).
-- Added `statsmodels` as a runtime dependency; added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
+- Added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
 - Relaxed the `numpy<2.1.0` upper version pin to an unconstrained `numpy` dependency.
-- Decoupled plotting and confidence-interval computation from the fitter classes: `pymultifit.plot`, `pymultifit.ci` and `pymultifit.result` no longer import `pymultifit.fitters`, removing the fitter ⇄ plotter circular dependency.
-- Merged the per-component CI strategies for `BaseFitter` and `MixedDataFitter` into one implementation that slices the parameter vector by component; output format and numerical results are unchanged.
-- Cleaned up the `GammaDistribution` and `GammaFitter` docstrings: `scale` is documented as scipy's `scale` (the rate is `1/scale`) and stale shape/rate (`SR`/`SS`, `λ`) wording was removed.
-- Renamed `examples/gamma_sr.py` to `examples/gamma.py`; the combined fit-and-residuals examples (`gamma.py`, `residuals_gaussian.py`, `residuals_mixed.py`) now create their own axes and pass `axes=(ax_fit, ax_res)` to `plot_fit_and_residuals`.
-- Removed unused `Axes` and `plotez` imports from `fitters/mixed_f.py`.
-- Removed the `typing_extensions` `@override` decorators from `MixedDataFitter`, which were only a static-typing hint and relied on a package that was never a declared dependency.
-- Split the conda environment into `environment.yaml` (runtime) and `environment-dev.yaml` (runtime plus development tools), aligned with `pyproject.toml` (added `statsmodels`, `deprecation` and `types-deprecated`; dropped `tqdm` and `Deprecated` from the runtime environment), with a test that keeps them in sync.
-- Documentation: added API pages for `pymultifit.plot`, `pymultifit.result` and `pymultifit.ci`, a plotting guide with figures generated at build time, and refreshed the `MixedDataFitter`, `GammaFitter`, installation and index pages. The API index toctree no longer hides the fitters, generators, errors and constants pages.
+- Renamed `examples/gamma_sr.py` to `examples/gamma.py`.
+- Reworked the dependency files: `environment[dev].yaml` and `requirements[dev].txt` are now `environment-dev.yaml` and `requirements-dev.txt`, `requirements.txt` holds the runtime dependencies only (exported with `uv`), the runtime `environment.yaml` matches `pyproject.toml` (`deprecation`, `plotez`; no `tqdm`), `update_requirements_doc.py` was removed, and a test keeps the environment files in sync with `pyproject.toml`.
+- Documentation: added a plotting guide (figures generated at build time) and API pages for `pymultifit.plot`, `pymultifit.result` and `pymultifit.ci`; the `MixedDataFitter` page now lists all supported models; installation instructions and dependency lists were updated.
 
 ### Fixed
 
 - Tightened NumPy warning suppression in distribution utility functions to only ignore `invalid`/`divide` warnings instead of all warnings.
 - `GammaDistribution.stats()` returned `mode = 0` for shape < 1 regardless of `loc`; it now returns `loc`.
+- Corrected the `GammaDistribution` and `GammaFitter` documentation: `scale` is scipy's `scale` (the rate is `1/scale`), not a rate, and the stale `SR`/`SS` and `λ` wording was removed.
 - Docs: replaced the removed `GAMMA_SR` / `GAMMA_SS` constants with `GAMMA` in the constants reference.
 
 ### Breaking Changes

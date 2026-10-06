@@ -18,7 +18,6 @@ dependencies = [
     "numpy",
     "plotez",
     "scipy",
-    "statsmodels",
     "types-deprecated"
 ]
 keywords = ["fitting", "multi-modal", "gaussian", "lognormal", "skew", "curve fitting", "scipy"]
@@ -60,6 +59,7 @@ dev = [
     "pytest-cov",
     "seaborn",
     "pandas",
+    "statsmodels",
     "astropy",
     "jupyter",
     "notebook",

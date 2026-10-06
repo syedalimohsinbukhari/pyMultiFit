@@ -629,7 +629,6 @@ stack-data==0.6.3
 starlette==1.7.0
     # via sphinx-autobuild
 statsmodels==0.15.0
-    # via pymultifit
 terminado==0.18.1
     # via
     #   jupyter-server

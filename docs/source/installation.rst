@@ -10,7 +10,6 @@ Whether you're a user or a developer, follow the steps below to get started quic
 - `scipy <https://scipy.org>`_
 - `matplotlib <https://matplotlib.org>`_
 - `plotez <https://github.com/syedalimohsinbukhari/plotez>`_
-- `statsmodels <https://www.statsmodels.org>`_
 - `custom-inherit <https://github.com/rsokl/custom_inherit>`_
 - `deprecation <https://github.com/briancurtin/deprecation>`_
 

@@ -9,7 +9,6 @@ dependencies:
   - numpy
   - scipy
   - matplotlib
-  - statsmodels
   - pip
   - pip:
       - custom-inherit
