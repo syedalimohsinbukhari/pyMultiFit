@@ -14,6 +14,8 @@ Real run (no flag): after the pre-flight it creates ``results/<host>_<commit>/``
 ``run.log`` and a per-distribution ``progress.log`` in that folder, verifies the outputs exactly like the smoke run does (50 sizes instead of 4) and only then
 copies the plots to ``plots/speed/``. It writes ``status.json`` (ok / failed / interrupted, timings, commit). A failed
 or interrupted run leaves its folder behind; delete it yourself before running that commit again.
+After a successful run the result is compared (``compare_runs.py``) with ``--against <run folder>``, or by default with the
+latest other run of this machine, and the report is written to ``compare_<reference>.md`` in the run folder.
 
 ``--smoke``: executes the real ``speed.ipynb`` headless with tiny sizes and 2 repetitions in a temporary directory, then
 checks that every output exists and has the right shape and that the environment lock worked inside the kernel. It writes
@@ -26,6 +28,7 @@ Usage (from ``benchmarks/``)::
 
     uv run python run_benchmarks.py --smoke
     uv run python run_benchmarks.py
+    uv run python run_benchmarks.py --against sarl_gpu_ws_1_a6019cc_baseline
 """
 
 import argparse
@@ -39,7 +42,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import bench_env
-from bench_env import RESULTS_ROOT, capture, hardware_issues, lock_environment, reject_reasons, run_name
+from bench_env import RESULTS_ROOT, capture, hardware_issues, reject_reasons, run_name
+
+bench_env.lock_environment(core=0)  # threads=1 and one core, before anything below imports numpy (compare_runs imports pandas)
+
+import compare_runs  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 SMOKE_SIZES = 4  # keep in sync with speed.ipynb (BENCH_SMOKE)
@@ -124,7 +131,6 @@ def verify_smoke(workdir: Path) -> list[str]:
 
 
 def smoke() -> int:
-    lock_environment(core=0)
     env = capture()
     print(f"smoke run on {env['hostname']} (commit {(env['git_commit'] or 'none')[:7]}), tiny sizes, temporary directory")
     for problem, fix in hardware_issues(env):
@@ -170,14 +176,18 @@ def _snapshot() -> list[tuple]:
     return entries
 
 
-def preflight() -> tuple[int, dict]:
-    lock_environment(core=0)
+def preflight(against: str | None = None) -> tuple[int, dict]:
     env = capture()
     print(f"{env['hostname']} | {env['cpu']['model']} | commit {(env['git_commit'] or 'none')[:7]}")
 
     reasons = reject_reasons(env)
     if not smoke_marker(env).exists():
         reasons.append("no passing smoke run for this machine yet.\n    fix: uv run python run_benchmarks.py --smoke")
+    if against:
+        try:
+            compare_runs.resolve(against)
+        except FileNotFoundError as error:
+            reasons.append(f"--against: {error}\n    fix: pick a folder from {RESULTS_ROOT.relative_to(HERE.parent)}/, or leave --against out")
     if reasons:
         print(f"\nrun rejected ({len(reasons)} problem{'s' * (len(reasons) != 1)}):")
         for number, reason in enumerate(reasons, 1):
@@ -188,7 +198,7 @@ def preflight() -> tuple[int, dict]:
     return 0, env
 
 
-def full_run(env: dict, results_root: Path, plots_dir: Path, rows: int) -> int:
+def full_run(env: dict, results_root: Path, plots_dir: Path, rows: int, against: Path | None = None) -> int:
     """The real run. The destinations and ``rows`` are parameters only so the whole path can be tested cheaply."""
     started = datetime.now(timezone.utc)
     run = results_root / run_name(env)
@@ -235,19 +245,32 @@ def full_run(env: dict, results_root: Path, plots_dir: Path, rows: int) -> int:
     shutil.copytree(workdir / "plots" / "speed", plots_dir, dirs_exist_ok=True)
     shutil.rmtree(workdir)
     note(f"verified {N_CSV} CSVs and {N_PLOTS} plots; plots copied to {plots_dir}")
+    try:  # the comparison is a convenience: a problem in it never turns a good run into a failed one
+        reference = against or compare_runs.find_reference(run)
+        if reference is None:
+            note("no earlier run of this machine to compare with; later: uv run python compare_runs.py <new> <reference>")
+        else:
+            target, headline = compare_runs.write_report(run, reference)
+            for line in headline:
+                note(f"vs {reference.name}: {line}")
+            note(f"comparison written to {target}")
+    except Exception as error:  # noqa: BLE001
+        note(f"comparison skipped: {error}")
     return finish("ok", 0)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--smoke", action="store_true", help="test the pipeline with tiny sizes in a temporary directory")
+    parser.add_argument("--against", help="run folder (name in results/ or path) to compare with; default: latest other run of this machine")
     args = parser.parse_args()
     if args.smoke:
         return smoke()
-    code, env = preflight()
+    code, env = preflight(args.against)
     if code:
         return code
-    return full_run(env, RESULTS_ROOT, HERE / "plots" / "speed", FULL_SIZES)
+    against = compare_runs.resolve(args.against) if args.against else None
+    return full_run(env, RESULTS_ROOT, HERE / "plots" / "speed", FULL_SIZES, against)
 
 
 if __name__ == "__main__":
