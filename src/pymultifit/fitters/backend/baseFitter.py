@@ -164,27 +164,6 @@ class BaseFitter:
 
         return lb, ub, p0_flat
 
-    @staticmethod
-    def _format_param(value, t_low: float = 0.001, t_high: float = 10_000.0) -> str:
-        """
-        Formats the parameter value to scientific notation based on its magnitude.
-
-        Parameters
-        ----------
-        value :
-            The value of the parameter to be formatted.
-        t_low :
-            The lower bound below which the formatting should be applied to the value. Defaults to 0.001.
-        t_high :
-            The upper bound above which the formatting should be applied to the value. Defaults to 10,000.
-
-        Returns
-        -------
-        str :
-            A formatted string of the parameter value.
-        """
-        return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
-
     def _n_fitter(self, x: NDArray, *params: Params_) -> NDArray:
         """
         Perform N-fitting by summing over multiple parameter sets.
