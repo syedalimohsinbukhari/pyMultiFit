@@ -151,6 +151,7 @@ def capture() -> dict:
         "hostname": socket.gethostname(),
         "os": platform.platform(),
         "python": platform.python_version(),
+        "executable": sys.executable,
         "python_impl": platform.python_implementation(),
         "cpu": _cpu(),
         "affinity": sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None,
@@ -163,7 +164,7 @@ def capture() -> dict:
     }
 
 
-RESULTS_ROOT = Path(__file__).parent / "results"
+RESULTS_ROOT = Path(os.environ.get("BENCH_RESULTS_ROOT") or Path(__file__).parent / "results")  # override: smoke runs
 
 
 def run_name(env: dict) -> str:

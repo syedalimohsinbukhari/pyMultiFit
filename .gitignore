@@ -174,3 +174,6 @@ cython_debug/
 /docs/planning/**
 ITERATIVE_BUILDOUT**
 .mcp.json
+
+# per-machine smoke-run marker written by benchmarks/run_benchmarks.py --smoke
+benchmarks/results/.smoke_ok_*

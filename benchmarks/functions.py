@@ -1,5 +1,6 @@
 """Created on Dec 31 05:45:40 2024"""
 
+import os
 import re
 import time
 from pathlib import Path
@@ -15,6 +16,9 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from pymultifit import EPSILON
+
+# ``run_benchmarks.py --smoke`` sets BENCH_SMOKE=1: the same code path with 2 repetitions instead of 15
+DEFAULT_REPETITIONS = 2 if os.environ.get("BENCH_SMOKE") == "1" else 15
 
 
 def slugify(text: str) -> str:
@@ -186,7 +190,7 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, function, lab
     plt.savefig(f"plots/speed/{slugify(label)}_{function.lower()}.png")
 
 
-def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = 15):
+def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = DEFAULT_REPETITIONS):
     p_times_class, p_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
     plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF", save_as)
 
