@@ -11,18 +11,17 @@ log     : plain ``np.log`` under ``errstate``: the speed upper bound, NOT usable
 
 Usage (from ``benchmarks/``)::
 
-    uv run python xlogy_vs_log.py                 # sizes 1e3, 1e5, 1e6; writes xlogy_vs_log_<hostname>.csv
+    uv run python xlogy_vs_log.py                 # sizes 1e3, 1e5, 1e6; writes results/<run>/xlogy_vs_log.csv
     uv run python xlogy_vs_log.py --repeats 100
 
 ``laplace`` is a control: its log-CDF no longer uses ``xlogy``, so it must not change between variants.
 """
 
 import argparse
-import socket
 from contextlib import contextmanager
 from pathlib import Path
 
-from bench_env import lock_environment
+from bench_env import lock_environment, results_dir
 
 lock_environment(core=0)  # before numpy is imported
 
@@ -86,8 +85,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--sizes", type=int, nargs="+", default=[1_000, 100_000, 1_000_000])
     parser.add_argument("--repeats", type=int, default=40)
-    parser.add_argument("-o", "--output", type=Path, default=Path(f"xlogy_vs_log_{socket.gethostname()}.csv"))
+    parser.add_argument("-o", "--output", type=Path, default=None, help="CSV path (default: results/<run>/xlogy_vs_log.csv)")
     args = parser.parse_args()
+    output = args.output or results_dir() / "xlogy_vs_log.csv"
 
     rows = []
     for name, (make, (lo, hi)) in CASES.items():
@@ -111,8 +111,8 @@ def main():
             print(f"{row['function']:<22} n={n:>8}  xlogy {row['xlogy'] * 1e3:8.3f} ms  "
                   f"masked {row['masked/xlogy']:.2f}x  log {row['log/xlogy']:.2f}x")
 
-    pd.DataFrame(rows).to_csv(args.output, index=False)
-    print(f"wrote {args.output}")
+    pd.DataFrame(rows).to_csv(output, index=False)
+    print(f"wrote {output}")
 
 
 if __name__ == "__main__":

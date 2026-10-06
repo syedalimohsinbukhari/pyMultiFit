@@ -3,8 +3,8 @@
 Usage (from ``benchmarks/``)::
 
     uv sync --frozen                                  # identical library versions from uv.lock
-    uv run python bench_env.py capture                # writes env_<hostname>.json, prints warnings
-    uv run python bench_env.py compare env_a.json env_b.json
+    uv run python bench_env.py capture                # writes results/<host>_<commit>/env.json, prints warnings
+    uv run python bench_env.py compare results/a/env.json results/b/env.json
 
 In a notebook or script, call ``lock_environment()`` *before* importing numpy/scipy::
 
@@ -34,7 +34,7 @@ THREAD_VARS = ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NU
 SIMD_OF_INTEREST = ("sse42", "avx", "avx2", "fma", "fma3", "avx512f", "avx512cd", "avx512_skx")
 
 # keys that must be equal on both machines for timings to be comparable / these are expected to differ
-MUST_MATCH = ("python", "packages", "uv_lock_sha256", "git_commit", "git_dirty", "threads_env", "numpy_build")
+MUST_MATCH = ("python", "packages", "uv_lock_sha256", "git_commit", "git_dirty", "threads_env")
 
 
 _LIMITS: list = []  # keeps threadpoolctl limits alive
@@ -111,7 +111,9 @@ def _git() -> dict:
         except (OSError, subprocess.CalledProcessError):
             return None
 
-    status = run("status", "--porcelain", "--untracked-files=no")
+    # a run rewrites its own outputs (results, plots, notebook outputs); those must not make the tree "dirty"
+    ignore = [f":(exclude){p}" for p in ("benchmarks/results", "benchmarks/plots", "benchmarks/variation_plots", "*.ipynb")]
+    status = run("status", "--porcelain", "--untracked-files=no", "--", ".", *ignore)
     return {"git_commit": run("rev-parse", "HEAD"), "git_dirty": bool(status) if status is not None else None}
 
 
@@ -161,6 +163,20 @@ def capture() -> dict:
     }
 
 
+def results_dir(env: dict | None = None, root: Path | None = None) -> Path:
+    """Create ``results/<hostname>_<short commit>[_dirty]/``, write ``env.json`` into it and return the folder.
+
+    Every benchmark output of one run goes into this folder, so runs on different machines or commits never overwrite
+    each other and each CSV set travels with the environment that produced it.
+    """
+    env = env or capture()
+    name = f"{env['hostname']}_{(env['git_commit'] or 'nogit')[:7]}" + ("_dirty" if env["git_dirty"] else "")
+    folder = (root or Path(__file__).parent / "results") / name.lower().replace("-", "_")
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "env.json").write_text(json.dumps(env, indent=2) + "\n")
+    return folder
+
+
 def warnings_for(env: dict) -> list[str]:
     cpu, warn = env["cpu"], []
     if cpu["governor"] not in (None, "performance"):
@@ -184,6 +200,11 @@ def compare(a: dict, b: dict) -> int:
         if a.get(key) != b.get(key):
             bad += 1
             print(f"MISMATCH {key}:\n  A: {a.get(key)}\n  B: {b.get(key)}")
+    for key in ("blas", "NPY_DISABLE_CPU_FEATURES"):  # the SIMD set itself differs per CPU, so it is only reported below
+        if a["numpy_build"].get(key) != b["numpy_build"].get(key):
+            bad += 1
+            print(f"MISMATCH numpy_build.{key}:\n  A: {a['numpy_build'].get(key)}\n  B: {b['numpy_build'].get(key)}")
+    print("differs (expected) numpy SIMD:", sorted(set(a["numpy_build"]["simd_enabled"]) ^ set(b["numpy_build"]["simd_enabled"])))
     for key in ("model", "physical_cores", "flags", "governor", "scaling_driver", "energy_preference", "caches_kb"):
         print(f"differs (expected) cpu.{key}:\n  A: {a['cpu'].get(key)}\n  B: {b['cpu'].get(key)}" if a["cpu"].get(key) != b["cpu"].get(key) else f"same cpu.{key}")
     print("\nOK: software stacks match." if not bad else f"\n{bad} must-match field(s) differ; timings are not directly comparable.")
@@ -194,7 +215,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="cmd", required=True)
     cap = sub.add_parser("capture", help="record this machine's environment to JSON")
-    cap.add_argument("-o", "--output", type=Path, default=None)
+    cap.add_argument("-o", "--output", type=Path, default=None, help="JSON path (default: results/<run>/env.json)")
     cap.add_argument("--core", type=int, default=0, help="index (in the allowed set) of the core to pin to")
     cmp_ = sub.add_parser("compare", help="compare two captured JSON files")
     cmp_.add_argument("a", type=Path)
@@ -206,8 +227,11 @@ def main() -> int:
 
     lock_environment(core=args.core)  # numpy is imported lazily in _numpy_build(), after the limits are set
     env = capture()
-    out = args.output or Path(__file__).parent / f"env_{env['hostname']}.json"
-    out.write_text(json.dumps(env, indent=2) + "\n")
+    if args.output:
+        out = args.output
+        out.write_text(json.dumps(env, indent=2) + "\n")
+    else:
+        out = results_dir(env) / "env.json"
     print(f"{env['cpu']['model']} | {env['cpu']['physical_cores']}c/{env['cpu']['logical_cpus']}t | python {env['python']} "
           f"| numpy {env['packages']['numpy']} | scipy {env['packages']['scipy']}")
     print(f"SIMD used by numpy: {', '.join(env['numpy_build'].get('simd_enabled', []))}")
