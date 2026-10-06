@@ -80,6 +80,8 @@ def _cpu() -> dict:
         for i, (idx, kind) in enumerate((("1", "d"), ("1", "i"), ("2", ""), ("3", "")))
     }
     info["governor"] = _read("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
+    info["scaling_driver"] = _read("/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver")
+    info["energy_preference"] = _read("/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference")
     info["max_mhz"] = _read("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     # boost: intel_pstate no_turbo (1 = boost off) or acpi-cpufreq/amd boost (1 = boost on)
     info["intel_no_turbo"] = _read("/sys/devices/system/cpu/intel_pstate/no_turbo")
@@ -149,6 +151,8 @@ def warnings_for(env: dict) -> list[str]:
     cpu, warn = env["cpu"], []
     if cpu["governor"] not in (None, "performance"):
         warn.append(f"CPU governor is '{cpu['governor']}', use 'performance' (sudo cpupower frequency-set -g performance).")
+    if cpu["energy_preference"] not in (None, "performance"):
+        warn.append(f"Energy preference is '{cpu['energy_preference']}', set energy_performance_preference to 'performance'.")
     if cpu["intel_no_turbo"] == "0" or cpu["cpufreq_boost"] == "1":
         warn.append("Turbo/boost is on: clocks drift with load and temperature; disable it or accept more noise.")
     if env["git_dirty"]:
@@ -166,7 +170,7 @@ def compare(a: dict, b: dict) -> int:
         if a.get(key) != b.get(key):
             bad += 1
             print(f"MISMATCH {key}:\n  A: {a.get(key)}\n  B: {b.get(key)}")
-    for key in ("model", "physical_cores", "flags", "governor", "caches_kb"):
+    for key in ("model", "physical_cores", "flags", "governor", "scaling_driver", "energy_preference", "caches_kb"):
         print(f"differs (expected) cpu.{key}:\n  A: {a['cpu'].get(key)}\n  B: {b['cpu'].get(key)}" if a["cpu"].get(key) != b["cpu"].get(key) else f"same cpu.{key}")
     print("\nOK: software stacks match." if not bad else f"\n{bad} must-match field(s) differ; timings are not directly comparable.")
     return 1 if bad else 0
