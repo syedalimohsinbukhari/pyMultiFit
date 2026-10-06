@@ -5,7 +5,6 @@ from __future__ import annotations
 import itertools
 import warnings
 from typing import Callable, Sequence, Any
-from typing_extensions import override
 
 import numpy as np
 from scipy.optimize import Bounds, curve_fit
@@ -268,7 +267,6 @@ class MixedDataFitter(BaseFitter):
 
         return param_dict
 
-    @override
     def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None): # type-ignore
         """
         Fit the data.
@@ -370,7 +368,6 @@ class MixedDataFitter(BaseFitter):
 
         self._plotter = None  # invalidate cached plotter after each fit
 
-    @override
     def get_model_parameters(self, model: str | None = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.

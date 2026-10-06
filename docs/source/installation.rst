@@ -7,12 +7,14 @@ Whether you're a user or a developer, follow the steps below to get started quic
 **pyMultiFit** depends on a few core libraries to ensure smooth functionality:
 
 - `numpy <https://numpy.org>`_
-- `matplotlib <https://matplotlib.org>`_
 - `scipy <https://scipy.org>`_
+- `matplotlib <https://matplotlib.org>`_
 - `plotez <https://github.com/syedalimohsinbukhari/plotez>`_
-- `tqdm <https://tqdm.github.io>`_
+- `statsmodels <https://www.statsmodels.org>`_
 - `custom-inherit <https://github.com/rsokl/custom_inherit>`_
 - `deprecation <https://github.com/briancurtin/deprecation>`_
+
+Python 3.10 or newer is required.
 
 -------------------------------
 
@@ -128,28 +130,38 @@ Using Pip with Virtual Environment
 
 3. **Install dependencies**:
 
-   Use the `requirements[dev].txt` file to completely install all dependencies at once:
+   Use the ``requirements-dev.txt`` file (an export of the locked runtime *and* development dependencies, which also installs ``pymultifit`` in editable mode) to install everything at once:
 
    .. code-block:: bash
 
-      pip install -r requirements[dev].txt
+      pip install -r requirements-dev.txt
+
+   ``requirements.txt`` holds the runtime dependencies only.
+
+   Alternatively, if you use `uv <https://docs.astral.sh/uv>`_, ``uv sync`` creates the environment from ``pyproject.toml`` and ``uv.lock``.
 
 Using Conda
 ^^^^^^^^^^^
 
 1. **Create a Conda environment**:
 
-   Use the `environment.yml` file in the repository:
+   Use the ``environment-dev.yaml`` file in the repository (runtime dependencies plus the development tools; ``environment.yaml`` holds the runtime dependencies only):
 
    .. code-block:: bash
 
-      conda env create -f environment.yml
+      conda env create -f environment-dev.yaml
 
 2. **Activate the Conda environment**:
 
    .. code-block:: bash
 
-      conda activate multifit
+      conda activate pymultifit-dev
+
+3. **Install the library** from the checkout in editable mode:
+
+   .. code-block:: bash
+
+      pip install -e .
 
 **Next Steps**
 Now that you have installed **pyMultiFit**, head over to the :doc:`tutorials` section to start exploring its features and capabilities.

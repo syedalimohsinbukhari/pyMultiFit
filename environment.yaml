@@ -1,3 +1,5 @@
+# Runtime environment for pyMultiFit; install the library itself afterwards with `pip install pymultifit`
+# (or `pip install -e .` from a checkout). See `environment-dev.yaml` for development tools.
 name: pymultifit
 channels:
   - conda-forge
@@ -5,12 +7,12 @@ channels:
 dependencies:
   - python>=3.10
   - numpy
-  - matplotlib
   - scipy
-  - tqdm
-  - custom-inherit
-  - Deprecated
+  - matplotlib
+  - statsmodels
   - pip
   - pip:
+      - custom-inherit
+      - deprecation
       - plotez
-      - pymultifit
+      - types-deprecated
