@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from .. import EXP, NAN_DICT, SQRT, suppress_numpy_warnings
+import numpy as np
+
+from .. import EXP, NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .utilities_d import log_normal_cdf_, log_normal_log_cdf_, log_normal_log_pdf_, log_normal_pdf_
@@ -126,7 +128,6 @@ class LogNormalDistribution(BaseDistribution):
             x, amplitude=self.amplitude, mean=self.mu, std=self.std, loc=self.loc, normalize=self.norm
         )
 
-    @suppress_numpy_warnings()
     def stats(self) -> dict[str, float]:
         m, s, l_ = self.mu, self.std, self.loc
 
@@ -136,9 +137,12 @@ class LogNormalDistribution(BaseDistribution):
         # copied from scipy source-code,
         # simpler implementations give reasonable higher values > 10^100 but scipy gives np.inf,
         # so I'm shortcutting it by taking scipy implementation here directly.
-        p = EXP(s * s)
-        mean_ = SQRT(p)
-        variance_ = p * (p - 1)
-        variance_ *= m**2
+        # exp(s * s) and the products below overflow to inf for large s (about s > 26.6) or m, which is the correct value
+        # (scipy gives it too), so the overflow warning is silenced here and only here, this is not a hot path.
+        with np.errstate(over="ignore"):
+            p = EXP(s * s)
+            mean_ = SQRT(p)
+            variance_ = p * (p - 1)
+            variance_ = variance_ * (m * m)  # not ``m**2``: Python raises OverflowError for it when m > ~1e154
 
-        return {"mean": (m * mean_) + l_, "variance": variance_, "std": SQRT(variance_)}
+            return {"mean": (m * mean_) + l_, "variance": variance_, "std": SQRT(variance_)}

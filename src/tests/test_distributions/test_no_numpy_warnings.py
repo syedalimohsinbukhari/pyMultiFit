@@ -9,6 +9,7 @@ import inspect
 import itertools
 import re
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -47,8 +48,13 @@ def test_the_functions_were_discovered():
     assert len(NAMES) > 75, NAMES
 
 
-def test_the_suppression_decorator_is_not_used():
-    assert "suppress_numpy_warnings" not in inspect.getsource(U)
+def test_the_suppression_decorator_is_gone():
+    import pymultifit
+
+    package = Path(pymultifit.__file__).parent
+    users = [str(p.relative_to(package)) for p in package.rglob("*.py") if "suppress_numpy_warnings" in p.read_text()]
+    assert users == []
+    assert not hasattr(pymultifit, "suppress_numpy_warnings")
 
 
 @pytest.mark.parametrize("name", NAMES)
@@ -81,3 +87,30 @@ def test_q_exponential_log_pdf_is_silent_outside_the_support(q, x):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         U.q_exponential_log_pdf_(np.array([x]), q=q, rate=1.0)
+
+
+@pytest.mark.parametrize("std", [0.5, 1.0, 26.0, 27.0, 30.0, 100.0, 1e3, 1e155])
+@pytest.mark.parametrize("mu", [1.0, 1e100, 1e155, 1e200, 1e308])
+def test_log_normal_stats_overflows_silently_to_inf(std, mu):
+    """exp(std**2) and the products overflow for large std or mu: the right answer is inf, not a warning or an exception."""
+    from ...pymultifit.distributions import LogNormalDistribution
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        stats = LogNormalDistribution(std=std, mu=mu, loc=0.5).stats()
+
+    assert not any(np.isnan(v) for v in stats.values())
+    if std >= 30:
+        assert stats["mean"] == stats["variance"] == stats["std"] == np.inf
+
+
+def test_log_normal_stats_still_matches_scipy():
+    import scipy.stats as ss
+
+    from ...pymultifit.distributions import LogNormalDistribution
+
+    for std, mu, loc in [(0.5, 1.0, 0.0), (1.0, 2.0, 0.5), (3.0, 0.5, -1.0)]:
+        stats = LogNormalDistribution(std=std, mu=mu, loc=loc).stats()
+        reference = ss.lognorm(std, scale=mu, loc=loc)
+        assert stats["mean"] == pytest.approx(reference.mean(), rel=1e-12)
+        assert stats["variance"] == pytest.approx(reference.var(), rel=1e-12)
