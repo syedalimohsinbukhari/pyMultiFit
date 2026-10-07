@@ -114,3 +114,87 @@ def test_log_normal_stats_still_matches_scipy():
         reference = ss.lognorm(std, scale=mu, loc=loc)
         assert stats["mean"] == pytest.approx(reference.mean(), rel=1e-12)
         assert stats["variance"] == pytest.approx(reference.var(), rel=1e-12)
+
+
+# ``stats()`` of every distribution class, over a wide but realistic parameter grid (negative, zero, tiny and large values).
+# The shared ``btf.stats`` helper only draws 500 random triples from [-100, 100] and compares them with scipy: it neither
+# turns warnings into errors (scipy warns itself in the same call) nor reaches the degenerate values below.
+STATS_VALUES = [-10.0, -1.0, 0.0, 1e-6, 1e-3, 0.5, 1.0, 2.0, 4.0, 5.0, 10.0, 50.0, 100.0, 1e3, 1e6]
+
+
+def _distribution_classes():
+    from ...pymultifit import distributions as plain
+    from ...pymultifit.distributions import generalized
+    from ...pymultifit.distributions.backend import BaseDistribution
+
+    found = {}
+    for module in (plain, generalized):
+        for name, obj in vars(module).items():
+            if inspect.isclass(obj) and issubclass(obj, BaseDistribution) and obj is not BaseDistribution:
+                if "stats" in vars(obj):
+                    found[name] = obj
+    return found
+
+
+DISTRIBUTIONS = _distribution_classes()
+
+
+def test_every_distribution_with_stats_was_discovered():
+    assert len(DISTRIBUTIONS) >= 17, sorted(DISTRIBUTIONS)
+    assert {"StudentsTDistribution", "LogNormalDistribution", "SkewNormalDistribution"} <= set(DISTRIBUTIONS)
+
+
+@pytest.mark.parametrize("name", sorted(DISTRIBUTIONS))
+def test_stats_has_no_warnings_and_no_exceptions(name):
+    """Valid or not, a parameter set gives numbers (NaN / inf where undefined), never a warning or a Python exception.
+
+    Invalid parameters the constructor already rejects are skipped.
+    """
+    cls = DISTRIBUTIONS[name]
+    parameters = [p for p in inspect.signature(cls.__init__).parameters if p not in ("self", "amplitude", "normalize")]
+    combinations = list(itertools.product(STATS_VALUES, repeat=len(parameters)))
+    rng = np.random.default_rng(0)
+    if len(combinations) > 1500:
+        combinations = [combinations[i] for i in rng.choice(len(combinations), 1500, replace=False)]
+
+    checked = 0
+    for combination in combinations:
+        kwargs = dict(zip(parameters, combination))
+        try:
+            instance = cls(**kwargs)
+        except Exception:  # noqa: BLE001 - the constructor rejected invalid parameters
+            continue
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            try:
+                instance.stats()
+            except Exception as error:  # noqa: BLE001
+                pytest.fail(f"{name}({kwargs}).stats() raised {type(error).__name__}: {error}")
+        checked += 1
+
+    assert checked > 50, f"only {checked} parameter sets were valid, the grid does not exercise {name}"
+
+
+def test_stats_of_degenerate_but_valid_parameters():
+    """Each of these used to raise ZeroDivisionError or return nan while the parameters are valid."""
+    from ...pymultifit.distributions import (
+        JohnsonSUDistribution,
+        LogNormalDistribution,
+        ScaledInverseChiSquareDistribution,
+        SkewNormalDistribution,
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        # a skew normal with shape 0 is a normal distribution
+        stats = SkewNormalDistribution(shape=0.0, location=1.0, scale=2.0).stats()
+        assert (stats["mean"], stats["mode"], stats["variance"], stats["std"]) == (1.0, 1.0, 4.0, 2.0)
+        # the mean of a scaled inverse chi-square is infinite for df <= 2, the variance for df <= 4
+        assert ScaledInverseChiSquareDistribution(df=2.0, scale=1.0).stats()["mean"] == np.inf
+        stats = ScaledInverseChiSquareDistribution(df=4.0, scale=1.0).stats()
+        assert np.isfinite(stats["mean"]) and stats["variance"] == stats["std"] == np.inf
+        # Johnson SU with gamma = 0 is symmetric about xi even when exp(1 / (2 delta^2)) overflows
+        stats = JohnsonSUDistribution(gamma=0.0, delta=1e-3, xi=2.0, lambda_=50.0).stats()
+        assert stats["mean"] == stats["median"] == 2.0
+        # tiny std with a huge mu: the variance is huge, not nan
+        assert LogNormalDistribution(std=1e-10, mu=1e200, loc=10.0).stats()["variance"] == np.inf

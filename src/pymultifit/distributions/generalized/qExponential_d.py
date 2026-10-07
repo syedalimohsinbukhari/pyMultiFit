@@ -114,6 +114,10 @@ class QExponentialDistribution(BaseDistribution):
 
     def stats(self) -> dict[str, float]:
         q, rate, loc = self.q, self.rate, self.loc
+
+        if rate <= 0:
+            return {"mean": NAN, "mode": NAN, "variance": NAN, "std": NAN}
+
         mode_ = loc
 
         # Mean exists for q < 1.5 (3 - 2q > 0)

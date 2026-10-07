@@ -142,7 +142,7 @@ class LogNormalDistribution(BaseDistribution):
         with np.errstate(over="ignore"):
             p = EXP(s * s)
             mean_ = SQRT(p)
-            variance_ = p * (p - 1)
+            variance_ = p * np.expm1(s * s)  # p - 1 rounds to 0 for a tiny std, then 0 * inf was nan
             variance_ = variance_ * (m * m)  # not ``m**2``: Python raises OverflowError for it when m > ~1e154
 
             return {"mean": (m * mean_) + l_, "variance": variance_, "std": SQRT(variance_)}
