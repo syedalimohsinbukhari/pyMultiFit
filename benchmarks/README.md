@@ -38,13 +38,13 @@ Follow a long run with `tail -f results/<run>/progress.log` (one line per distri
 
 The script only reports and never changes or deletes anything of yours:
 
-| rejected when | what to do |
-|---|---|
-| the working tree has uncommitted changes | commit or discard them, then re-run |
-| `results/<host>_<commit>/` already exists | commit something new, or delete that folder yourself |
-| governor, boost/turbo or energy preference are not set for stable clocks | run the printed command |
-| no passing `--smoke` run on this machine | run `--smoke` |
-| `--against` / `--baseline-ref` point to something that does not exist | pick a real folder / ref |
+| rejected when                                                            | what to do                                           |
+|--------------------------------------------------------------------------|------------------------------------------------------|
+| the working tree has uncommitted changes                                 | commit or discard them, then re-run                  |
+| `results/<host>_<commit>/` already exists                                | commit something new, or delete that folder yourself |
+| governor, boost/turbo or energy preference are not set for stable clocks | run the printed command                              |
+| no passing `--smoke` run on this machine                                 | run `--smoke`                                        |
+| `--against` / `--baseline-ref` point to something that does not exist    | pick a real folder / ref                             |
 
 A failed or interrupted run leaves its folder behind (with `status.json` and `run.log`); delete it before running that
 commit again. On a failure of the notebook itself the temporary directory is kept and its path is printed.
@@ -102,14 +102,14 @@ uv run python bench_env.py compare results/<a>/env.json results/<b>/env.json   #
 
 ## Files
 
-| file | purpose |
-|---|---|
-| `run_benchmarks.py` | the whole protocol in one command (`--smoke`, `--baseline-ref`, `--against`) |
-| `speed.ipynb` | the benchmark itself; run headless by `run_benchmarks.py`, or interactively (run its first code cell first) |
-| `functions.py` | timing, plotting and `slugify` helpers used by the notebooks |
-| `bench_env.py` | `lock_environment`, `capture`, reject checks, `compare` (also a CLI) |
-| `compare_runs.py` | the comparison report between two runs |
-| `xlogy_vs_log.py` | end-to-end cost of `XLOGY(1.0, a)` against a masked / plain log in the log-CDFs that still use it (beta, half normal; uniform, q-exponential and laplace are controls) |
-| `summary.ipynb` | heatmaps and summaries; set `RESULTS` in its first code cell to the run to summarise |
-| `accuracy.ipynb` | accuracy against scipy |
-| `arcSine_*.py` | implementation variants of the arcsine functions (`variation_plots/`) |
+| file                | purpose                                                                                                                                                                |
+|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `run_benchmarks.py` | the whole protocol in one command (`--smoke`, `--baseline-ref`, `--against`)                                                                                           |
+| `speed.ipynb`       | the benchmark itself; run headless by `run_benchmarks.py`, or interactively (run its first code cell first)                                                            |
+| `functions.py`      | timing, plotting and `slugify` helpers used by the notebooks                                                                                                           |
+| `bench_env.py`      | `lock_environment`, `capture`, reject checks, `compare` (also a CLI)                                                                                                   |
+| `compare_runs.py`   | the comparison report between two runs                                                                                                                                 |
+| `xlogy_vs_log.py`   | end-to-end cost of `XLOGY(1.0, a)` against a masked / plain log in the log-CDFs that still use it (beta, half normal; uniform, q-exponential and laplace are controls) |
+| `summary.ipynb`     | heatmaps and summaries; set `RESULTS` in its first code cell to the run to summarise                                                                                   |
+| `accuracy.ipynb`    | accuracy against scipy                                                                                                                                                 |
+| `arcSine_*.py`      | implementation variants of the arcsine functions (`variation_plots/`)                                                                                                  |
