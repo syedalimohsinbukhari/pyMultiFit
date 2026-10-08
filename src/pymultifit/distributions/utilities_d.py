@@ -306,11 +306,11 @@ def arc_sine_cdf_(
         return full_nan(np.shape(y))
 
     c1 = (y > 0) & (y < 1)
-    c2 = y < 1
 
-    ys = np.where(c1, y, 0.5)  # a value inside the support wherever y is outside it, so nothing below warns
+    cdf_ = np.where(y < 1, 0.0, 1.0)
+    cdf_[c1] = TWO_BY_PI * np.arcsin(SQRT(y[c1]))  # evaluated only inside the support
 
-    return np.select(condlist=[c1, c2], choicelist=[TWO_BY_PI * np.arcsin(SQRT(ys)), 0.0], default=1.0)
+    return cdf_
 
 
 @doc_inherit(parent=arc_sine_cdf_, style=doc_style)
@@ -338,11 +338,11 @@ def arc_sine_log_cdf_(
         return full_nan(np.shape(y))
 
     c1 = (y > 0) & (y < 1)
-    c2 = y < 1
 
-    ys = np.where(c1, y, 0.5)  # a value inside the support wherever y is outside it, so nothing below warns
+    log_cdf_ = np.where(y < 1, -INF, 0.0)
+    log_cdf_[c1] = LOG(TWO_BY_PI * np.arcsin(SQRT(y[c1])))  # evaluated only inside the support
 
-    return np.select(condlist=[c1, c2], choicelist=[LOG(TWO_BY_PI * np.arcsin(SQRT(ys))), -INF], default=0.0)
+    return log_cdf_
 
 
 def beta_pdf_(
@@ -490,7 +490,12 @@ def beta_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=betainc(alpha, beta_, y))
+    inside = (y >= 0) & (y <= 1)
+
+    cdf_ = np.select(condlist=[y > 1, y < 0], choicelist=[1.0, 0.0], default=NAN)
+    cdf_[inside] = betainc(alpha, beta_, y[inside])  # evaluated only inside the support
+
+    return cdf_
 
 
 @doc_inherit(parent=beta_cdf_, style=doc_style)
@@ -524,7 +529,12 @@ def beta_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=XLOGY(1.0, betainc(alpha, beta_, y)))
+    inside = (y >= 0) & (y <= 1)
+
+    log_cdf_ = np.select(condlist=[y > 1, y < 0], choicelist=[0.0, -INF], default=NAN)
+    log_cdf_[inside] = XLOGY(1.0, betainc(alpha, beta_, y[inside]))  # evaluated only inside the support
+
+    return log_cdf_
 
 
 def beta_prime_pdf_(
@@ -3401,12 +3411,16 @@ def _beta_expr(y: ArrayLike, a: float, b: float, un_log: bool = False):
     undefined_1 = (y == 1) & (b <= 1)
     special_case = (y == 1) & (a == 1) & (b == 1)
 
-    ys = np.where(in_range, y, 0.5)  # a value inside the support wherever y is outside it, so nothing below warns
+    # evaluated only where y is inside the support; the rest is filled by the caller's np.select, so nothing below warns
+    ys = np.asarray(y, dtype=float)[in_range]
+    expr = np.zeros(np.shape(y))
 
-    expr = xlog1py(b - 1.0, -ys) + XLOGY(a - 1, ys) - betaln(a, b)
-    expr2 = np.power(ys, a - 1) * np.power(1.0 - ys, b - 1.0) / beta(a, b)
+    if un_log:
+        expr[in_range] = np.power(ys, a - 1) * np.power(1.0 - ys, b - 1.0) / beta(a, b)
+    else:
+        expr[in_range] = xlog1py(b - 1.0, -ys) + XLOGY(a - 1, ys) - betaln(a, b)
 
-    return [special_case, undefined_0 | undefined_1, in_range], expr2 if un_log else expr
+    return [special_case, undefined_0 | undefined_1, in_range], expr
 
 
 def _folded_cdf(q: float, r: float) -> float:
