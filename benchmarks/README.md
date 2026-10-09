@@ -112,4 +112,5 @@ uv run python bench_env.py compare results/<a>/env.json results/<b>/env.json   #
 | `xlogy_vs_log.py`   | end-to-end cost of `XLOGY(1.0, a)` against a masked / plain log in the log-CDFs that still use it (beta, half normal; uniform, q-exponential and laplace are controls) |
 | `summary.ipynb`     | heatmaps and summaries; set `RESULTS` in its first code cell to the run to summarise                                                                                   |
 | `accuracy.ipynb`    | accuracy against scipy                                                                                                                                                 |
+| `laplace_logpdf_underflow.py` | scipy's Laplace logPDF underflows for x above about 730 (the spike in `accuracy.ipynb`), pyMultiFit is exact                                                           |
 | `arcSine_*.py`      | implementation variants of the arcsine functions (`variation_plots/`)                                                                                                  |
