@@ -75,11 +75,9 @@ def plot_accuracy(x, results, title_suffix):
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (PDF)")
     plt.title(f"Absolute Difference:\nPDF {title_suffix}")
-    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
-    # if results.get('log_pdf_abs_diff') is not None:
     plt.subplot(2, 2, 2)
     plt.plot(x, results["log_pdf_abs_diff"], label="log PDF Absolute Diff", marker=".")
     plt.xscale("log")
@@ -87,7 +85,6 @@ def plot_accuracy(x, results, title_suffix):
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (log PDF)")
     plt.title(f"Absolute Difference:\nlog PDF {title_suffix}")
-    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
@@ -98,11 +95,9 @@ def plot_accuracy(x, results, title_suffix):
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (CDF)")
     plt.title(f"Absolute Difference:\nCDF {title_suffix}")
-    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
-    # if results.get('log_cdf_abs_diff') is not None:
     plt.subplot(2, 2, 4)
     plt.plot(x, results["log_cdf_abs_diff"], label="log CDF Absolute Diff", marker=".")
     plt.xscale("log")
@@ -110,12 +105,10 @@ def plot_accuracy(x, results, title_suffix):
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (log CDF)")
     plt.title(f"Absolute Difference:\nlog CDF {title_suffix}")
-    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
     plt.tight_layout()
-    # plt.savefig(f'plots/accuracy/{slugify(title_suffix)}.png')
 
 
 #####################################################################################################################################################
@@ -246,8 +239,8 @@ def plot_distribution_comparison(data_dict, title_labels=("PDF", "CDF")):
         ax[i].boxplot(log_data, meanline=True, showmeans=True)
         ax[i].set_xticklabels(xtick_labels, rotation=60, ha="center")
         ax[i].set_title(title)
+        ax[i].set_ylabel("Log[Time] [s]")
 
-    plt.xlabel("Log[Time] [s]")
     plt.tight_layout()
     plt.show()
 
@@ -290,7 +283,7 @@ def describe_data(data_list, labels=None, caption="PDF"):
 
     summary_list = []
 
-    for idx, data in enumerate(data_list):
+    for data in data_list:
         if not isinstance(data, pd.Series):
             data = pd.Series(data)
 
@@ -338,8 +331,8 @@ def heatmap(m_df, s_df, label="PDF"):
     raw_ratios = m_df / s_df
     raw_ratios.index = raw_ratios.index + 1
 
-    v_min = raw_ratios.min().min()
-    v_max = raw_ratios.max().max()
+    v_min = min(raw_ratios.min().min(), 1 - 1e-6)  # TwoSlopeNorm needs vmin < 1 < vmax, even when every ratio is below (or above) 1
+    v_max = max(raw_ratios.max().max(), 1 + 1e-6)
     norm = TwoSlopeNorm(vcenter=1, vmin=v_min, vmax=v_max)
 
     plt.figure(figsize=(16, 6))
@@ -437,8 +430,9 @@ def plot_all_variations(
         bbox_transform=ax.transAxes,
     )
 
+    rng = np.random.default_rng(0)  # the jitter only spreads the dots sideways, a fixed seed keeps the plots identical between runs
     for i in range(len(functions)):
-        jitter = (np.random.rand(n_repeats)) * 0.2 - 0.1  # centered jitter
+        jitter = rng.random(n_repeats) * 0.2 - 0.1  # centered jitter
         ax_inset.scatter(np.full(n_repeats, i) + jitter, log_times[:, i], color="black", alpha=0.1, s=20, zorder=3)
         ax_inset.errorbar(
             i, mean_log_times[i], yerr=std_log_times[i], color="r", fmt="o", markersize=5, zorder=4, capsize=5
@@ -447,11 +441,6 @@ def plot_all_variations(
     ax_inset.set_xticks(range(len(functions)))
     ax_inset.set_xticklabels([f"V{i + 1}" for i in range(len(functions))], fontsize=8)
     ax_inset.grid(True, linestyle=":", alpha=0.4)
-
-    # Adjust inset y-limits dynamically to zoom around scatter range
-    y_min = np.min(log_times)
-    y_max = np.max(log_times)
-    # ax_inset.set_ylim(y_min - 0.01, y_max + 0.01)
 
     # --- FINAL STYLING ---
     ax.set_ylabel("Time (log₁₀ seconds)")
