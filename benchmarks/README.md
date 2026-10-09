@@ -61,7 +61,7 @@ results/<host>_<short commit>/          baseline run: <host>_<ref>_on_<current c
     xlogy_vs_log.csv                    only if xlogy_vs_log.py was run
 plots/speed/                            plots of the latest run (lowercase snake_case names, overwritten by each run)
 plots/accuracy/                         accuracy plots
-variation_plots/                        implementation variants (the arcSine_*.py scripts)
+checks/                                 intern notebooks (q-exponential and Student-t checks)
 ```
 
 CSV layout: one row per number of points (`np.logspace(0.3, 6, 50)`), one column per distribution. `*_df` uses the default
@@ -91,8 +91,7 @@ uv run python bench_env.py compare results/<a>/env.json results/<b>/env.json   #
 - Same library versions (`uv sync --frozen`) and the same Python; `bench_env.py compare` shows any mismatch.
 - BLAS/OpenMP threads set to 1 and the process pinned to one core, before numpy is imported (`lock_environment`). The
   smoke and real runs verify this inside the notebook kernel.
-- 3 untimed warm-up calls, then the median of the repetitions (the variation plots: the mean of 500 runs per repeat, the
-  median across repeats).
+- 3 untimed warm-up calls, then the median of the repetitions.
 - PDF and CDF are timed separately. CSVs produced before the benchmark fix in `cffb5ea` held PDF timings in the CDF
   files, so they must not be compared with newer runs.
 - Seeds: the timing inputs are deterministic (`np.linspace`), so no seed affects them. Any random data added later should
@@ -113,4 +112,3 @@ uv run python bench_env.py compare results/<a>/env.json results/<b>/env.json   #
 | `summary.ipynb`     | heatmaps and summaries; set `RESULTS` in its first code cell to the run to summarise                                                                                   |
 | `accuracy.ipynb`    | accuracy against scipy                                                                                                                                                 |
 | `laplace_logpdf_underflow.py` | scipy's Laplace logPDF underflows for x above about 730 (the spike in `accuracy.ipynb`), pyMultiFit is exact                                                           |
-| `arcSine_*.py`      | implementation variants of the arcsine functions (`variation_plots/`)                                                                                                  |
