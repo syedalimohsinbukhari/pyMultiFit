@@ -9,12 +9,12 @@ from timeit import default_timer as timer
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import statsmodels.api as sm
 from matplotlib import pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
+from compare_runs import TAIL
 from pymultifit import EPSILON
 
 # ``run_benchmarks.py --smoke`` sets BENCH_SMOKE=1: the same code path with 2 repetitions instead of 15
@@ -153,16 +153,17 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, function, lab
     """Plot the timings and their ratio; ``function`` is ``"PDF"`` or ``"CDF"``, ``label`` names the distribution."""
     n_points_list = np.array(n_points_list)
 
-    mean_c = np.array([np.mean(i) for i in times_class])  # each entry is already a median
-    mean_s = np.array([np.mean(i) for i in times_scipy])
+    time_c = np.asarray(times_class, dtype=float)  # each entry is already a median over the repetitions
+    time_s = np.asarray(times_scipy, dtype=float)
 
-    ratio_means = mean_c / mean_s
+    ratio = time_c / time_s
+    plateau = np.median(ratio[-TAIL:])  # the number compare_runs.py reports: median over the largest sizes
 
     plt.figure(figsize=(10, 4))
 
     plt.subplot(1, 2, 1)
-    plt.plot(n_points_list, mean_c, "o-", ms=3, label="Custom (median)", color="blue")
-    plt.plot(n_points_list, mean_s, "s-", ms=3, label="SciPy (median)", color="orange")
+    plt.plot(n_points_list, time_c, "o-", ms=3, label="Custom (median)", color="blue")
+    plt.plot(n_points_list, time_s, "s-", ms=3, label="SciPy (median)", color="orange")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Number of Points")
@@ -171,12 +172,9 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, function, lab
     plt.legend()
     plt.grid(True)
 
-    lowess_results = sm.nonparametric.lowess(ratio_means, n_points_list, frac=0.3)
-    x_smooth, y_smooth = lowess_results[:, 0], lowess_results[:, 1]
-
     plt.subplot(1, 2, 2)
-    plt.plot(n_points_list, ratio_means, "x-", ms=4, label="Ratio (median)", color="purple")
-    plt.plot(x_smooth, y_smooth, "r--", lw=2, alpha=0.75, label="LOESS Fit")
+    plt.plot(n_points_list, ratio, "x-", ms=4, label="Ratio (median)", color="purple")
+    plt.hlines(plateau, n_points_list[-TAIL:][0], n_points_list[-1], colors="r", linestyles="--", lw=2, alpha=0.75, label=f"Median of the {TAIL} largest sizes: {plateau:.2f}")
     plt.xscale("log")
     plt.xlabel("Number of Points")
     plt.ylabel("Speed Ratio (Custom/SciPy)")
