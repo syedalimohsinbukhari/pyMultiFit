@@ -14,7 +14,6 @@ from matplotlib.colors import TwoSlopeNorm
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-from compare_runs import TAIL
 from pymultifit import EPSILON
 
 # ``run_benchmarks.py --smoke`` sets BENCH_SMOKE=1: the same code path with 2 repetitions instead of 15
@@ -150,7 +149,6 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, function, lab
     time_s = np.asarray(times_scipy, dtype=float)
 
     ratio = time_c / time_s
-    plateau = np.median(ratio[-TAIL:])  # the number compare_runs.py reports: median over the largest sizes
 
     plt.figure(figsize=(10, 4))
 
@@ -167,7 +165,6 @@ def plot_speed_and_ratios(n_points_list, times_class, times_scipy, function, lab
 
     plt.subplot(1, 2, 2)
     plt.plot(n_points_list, ratio, "x-", ms=4, label="Ratio (median)", color="purple")
-    plt.hlines(plateau, n_points_list[-TAIL:][0], n_points_list[-1], colors="r", linestyles="--", lw=2, alpha=0.75, label=f"Median of the {TAIL} largest sizes: {plateau:.2f}")
     plt.xscale("log")
     plt.xlabel("Number of Points")
     plt.ylabel("Speed Ratio (Custom/SciPy)")
