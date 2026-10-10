@@ -13,7 +13,7 @@ from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, sanity_check
 from ... import INF, SQRT, epsilon
-from ...ci import compute_ci_bounds
+from ...ci import ConfidenceIntervals, compute_ci_bounds
 from ...plot import FitPlotter
 from ...result import Component, FitResult
 from ...typing import ArrayLike, NDArray, Params_
@@ -441,61 +441,51 @@ class BaseFitter:
         n_bootstrap: int = 5_000,
         overall_ci: bool = True,
         individual_ci: bool = False,
-        seed: int | None = None,
-        rng_engine: Generator | None = None,
+        rng_engine: Generator | int | None = None,
         x_range: ArrayLike | None = None,
-        plot: bool = False,
-        axis: Axes | None = None,
-    ) -> dict | tuple[dict, Axes]:
+    ) -> ConfidenceIntervals:
         """Compute bootstrap confidence intervals for the fitted model.
+
+        A shortcut for :func:`~pymultifit.ci.compute_ci_bounds` on :meth:`to_result`. It only computes: draw the
+        returned object with :meth:`FitPlotter.plot_confidence_intervals()
+        <pymultifit.plot.FitPlotter.FitPlotter.plot_confidence_intervals>` on the fitter's :attr:`plotter`.
 
         Parameters
         ----------
         ci_levels :
-            CI level(s) as a percentage (e.g., 95 or [68, 95, 99]).
+            CI level(s) as a percentage (e.g., 95 or [68, 95, 99]), or as decimals (0.95).
         n_bootstrap :
             Bootstrap samples. Defaults to 5 000.
         overall_ci :
             Compute CI for the overall composite fit. Defaults to ``True``.
         individual_ci :
             Compute CI for each component. Defaults to ``False``.
-        seed :
-            Random seed (mutually exclusive with *rng_engine*).
         rng_engine :
-            NumPy Generator instance (mutually exclusive with *seed*).
+            A NumPy ``Generator``, or an integer seed for a new one. ``None`` draws fresh entropy. Pass the same
+            ``Generator`` to several calls for reproducible and independent results.
         x_range :
-            X-values at which to evaluate the CI.
-            Defaults to 1 000 points spanning the data range.
-        plot :
-            When ``True``, plot the CI bands immediately after computing them.
-            Defaults to ``False``.
-        axis :
-            Target axes for the optional plot (ignored when ``plot=False``).
+            X-values at which to evaluate the CI, evaluated together with the data's ``x`` so that the bands match the
+            fitted curve for any window. Defaults to 1 000 points spanning the data range.
 
         Returns
         -------
-        dict
-            ``{"x_range": ..., "overall_ci_<level>": {...}, "individual_ci_<level>": [...]}``
+        ConfidenceIntervals
+            The bands with their levels and x-values, see :class:`~pymultifit.ci.ConfidenceIntervals`.
+
+        Raises
+        ------
+        RuntimeError
+            If the fit has not been performed yet.
         """
-        results = compute_ci_bounds(
+        return compute_ci_bounds(
             result=self.to_result(),
             ci_levels=ci_levels,
             n_bootstrap=n_bootstrap,
             overall_ci=overall_ci,
             individual_ci=individual_ci,
-            seed=seed,
             rng_engine=rng_engine,
             x_range=x_range,
         )
-
-        if plot:
-            axis = self.plotter.plot_confidence_intervals(
-                ci_levels=ci_levels, results=results, overall_ci=overall_ci, individual_ci=individual_ci, axis=axis
-            )
-
-            return results, axis
-
-        return results
 
     def plot_fit(
         self,

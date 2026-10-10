@@ -125,34 +125,45 @@ Q-Q plot
 Confidence intervals
 --------------------
 
-:meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals` computes bootstrap confidence intervals (see :doc:`/ci/_ci`); with ``plot=True`` it also draws them.
-Levels can be given as percentages or decimals (``95``, ``95.0``, ``0.95``, ``[68, 0.95]``) and the bands never overwrite the labels and title already on the axes.
-Several levels are drawn as nested bands, and ``individual_ci=True`` adds one band per component.
+Confidence intervals come in two steps: :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals` computes the bootstrap intervals into a :class:`~pymultifit.ci.ConfidenceIntervals` object (see :doc:`/ci/_ci`), and :meth:`~pymultifit.plot.FitPlotter.plot_confidence_intervals` draws it.
+The object knows its levels and the parts it holds, so nothing has to be repeated when plotting, and it can be drawn as often as needed without recomputing it.
+Levels can be given as percentages or decimals (``95``, ``95.0``, ``0.95``, ``[68, 0.95]``), several levels are drawn as nested bands, ``individual_ci=True`` adds one band per component, and the bands never overwrite the labels and title already on the axes.
+Ask for all the levels at once: the extra levels are almost free.
 
 .. plot::
    :context: close-figs
    :include-source:
 
+   rng = np.random.default_rng(42)  # one generator for everything that draws random numbers
+
+   ci = nf.confidence_intervals(ci_levels=[68, 95], n_bootstrap=300, rng_engine=rng)
+
    fig, ax = plt.subplots(figsize=(10, 5))
    nf.plotter.plot_fit(axis=ax)
-   nf.confidence_intervals(ci_levels=[68, 95], n_bootstrap=300, seed=42, plot=True, axis=ax)
+   nf.plotter.plot_confidence_intervals(ci, axis=ax)
    ax.set_title("68% and 95% bootstrap confidence intervals")
    fig.tight_layout()
 
-The intervals can also be evaluated beyond the fitted range with ``x_range``, and an already computed result can be re-plotted without recomputing it:
+``rng_engine`` is a NumPy ``Generator``, or an integer seed for a new one; left out, every call draws fresh samples.
+For results that are reproducible and still independent, create one ``Generator`` and pass the same object to every call. A new ``default_rng(42)`` for each call would repeat the same draws.
+A band edge from a few hundred samples still moves by a few percent of the band width from seed to seed; ``ci.n_bootstrap`` records how many samples a result is based on.
+
+The intervals can also be evaluated beyond the fitted range with ``x_range``. The window is evaluated together with the fitted data, so the bands follow the fitted curve wherever it is, also in a window that leaves out a component's peak:
 
 .. plot::
    :context: close-figs
    :include-source:
 
    x_wide = np.linspace(-25, 25, 600)
-   results = nf.confidence_intervals(ci_levels=[68, 95], n_bootstrap=300, seed=42, x_range=x_wide)
+   ci_wide = nf.confidence_intervals(ci_levels=[68, 95], n_bootstrap=300, rng_engine=rng, x_range=x_wide)
 
    fig, ax = plt.subplots(figsize=(10, 5))
    nf.plotter.plot_fit(axis=ax)
-   nf.plotter.plot_confidence_intervals(ci_levels=[68, 95], results=results, axis=ax)
+   nf.plotter.plot_confidence_intervals(ci_wide, axis=ax)
    ax.set_title("Confidence intervals evaluated beyond the fitted range")
    fig.tight_layout()
+
+The overall and the individual bands of one object can be drawn separately with ``overall=False`` or ``individual=False``; asking for a part that was not computed raises a ``ValueError``.
 
 Prediction intervals
 --------------------
@@ -164,7 +175,7 @@ Prediction intervals
    :include-source:
 
    fig, ax = plt.subplots(figsize=(10, 5))
-   nf.plotter.plot_prediction_intervals(pi_level=[68, 95], axis=ax)
+   nf.plotter.plot_prediction_intervals(pi_levels=[68, 95], axis=ax)
    fig.tight_layout()
 
 Parameter correlations
@@ -201,6 +212,6 @@ The plotter is cached on the fitter and is rebuilt after every ``fit()``, so it 
 .. code-block:: text
 
    fitter  --to_result()-->  FitResult  -->  FitPlotter(result)
-                                  \--------->  compute_ci_bounds(result)
+                                  \--------->  compute_ci_bounds(result)  -->  ConfidenceIntervals  -->  plotter
 
 Because :mod:`pymultifit.plot`, :mod:`pymultifit.ci` and :mod:`pymultifit.result` do not import the fitters, they can be used with any object that can produce a ``FitResult``.

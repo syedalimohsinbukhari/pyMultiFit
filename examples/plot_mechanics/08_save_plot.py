@@ -47,7 +47,7 @@ print(f"Auto saved → {path4}  (.png appended)")
 
 # -- Example 5: extra savefig kwargs (transparent background) ----------------
 fig5, ax5 = plt.subplots(figsize=(10, 5))
-fitter.plotter.plot_prediction_intervals(pi_level=[90, 95], axis=ax5)
+fitter.plotter.plot_prediction_intervals(pi_levels=[90, 95], axis=ax5)
 path5 = fitter.plotter.save_plot("pi_transparent.png", figure=fig5, transparent=True, dpi=200)
 print(f"Transparent PNG saved → {path5}  (dpi=200)")
 

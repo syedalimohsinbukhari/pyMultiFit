@@ -17,7 +17,7 @@ import pytest
 from matplotlib.axes import Axes
 
 from ...pymultifit import GAUSSIAN, LINE
-from ...pymultifit.ci import ci_level_percents
+from ...pymultifit.ci import ConfidenceIntervals, normalize_levels
 from ...pymultifit.exceptions import AxesError
 from ...pymultifit.fitters import GaussianFitter
 from ...pymultifit.fitters.mixed_f import MixedDataFitter
@@ -123,27 +123,25 @@ class TestPlotMethods:
         assert shown == (list(fitter.to_result().param_labels) if given is None else given)
 
     def test_prediction_intervals(self, fitter):
-        assert isinstance(fitter.plotter.plot_prediction_intervals(pi_level=[68, 95]), Axes)
+        assert isinstance(fitter.plotter.plot_prediction_intervals(pi_levels=[68, 95]), Axes)
 
     @pytest.mark.parametrize("flags", [(True, False), (False, True), (True, True)])
     def test_confidence_intervals_plot(self, fitter, flags):
         overall, individual = flags
-        results, ax = fitter.confidence_intervals(
-            ci_levels=95, n_bootstrap=_N_BOOT, seed=1, overall_ci=overall, individual_ci=individual, plot=True
+        ci = fitter.confidence_intervals(
+            ci_levels=95, n_bootstrap=_N_BOOT, rng_engine=1, overall_ci=overall, individual_ci=individual
         )
+        ax = fitter.plotter.plot_confidence_intervals(ci)
         assert isinstance(ax, Axes)
-        assert ("overall_ci_95" in results) is overall
-        assert ("individual_ci_95" in results) is individual
+        assert (ci.overall is not None) is overall
+        assert (ci.individual is not None) is individual
+        assert ("overall_ci_95" in ci.as_dict()) is overall
+        assert ("individual_ci_95" in ci.as_dict()) is individual
 
-    def test_confidence_intervals_without_plot_returns_dict(self, fitter):
-        results = fitter.confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, seed=1)
-        assert isinstance(results, dict) and {"x_range", "overall_ci_95"} <= set(results)
-
-    def test_plot_confidence_intervals_get_value(self, fitter):
-        results, ax = fitter.plotter.plot_confidence_intervals(
-            ci_levels=95, n_bootstrap=_N_BOOT, seed=1, get_value=True
-        )
-        assert isinstance(results, dict) and isinstance(ax, Axes)
+    def test_confidence_intervals_returns_the_object(self, fitter):
+        ci = fitter.confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, rng_engine=1)
+        assert isinstance(ci, ConfidenceIntervals)
+        assert {"x_range", "overall_ci_95"} <= set(ci.as_dict())
 
     def test_dry_run(self, fitter):
         fitter.dry_run()
@@ -174,7 +172,7 @@ class TestBeforeFit:
             with pytest.raises(RuntimeError, match="Fit not performed"):
                 call()
         with pytest.raises(RuntimeError, match="Fit not performed"):
-            fitter.confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, seed=1)
+            fitter.confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, rng_engine=1)
 
 
 # ---------------------------------------------------------------------------
@@ -197,20 +195,21 @@ class TestIntervalLevelFormats:
         ids=str,
     )
     def test_confidence_interval_levels(self, fitter, levels, expected):
-        results, ax = fitter.confidence_intervals(ci_levels=levels, n_bootstrap=_N_BOOT, seed=1, plot=True)
-        assert {int(k.split("_")[-1]) for k in results if k.startswith("overall_ci_")} == expected
+        ci = fitter.confidence_intervals(ci_levels=levels, n_bootstrap=_N_BOOT, rng_engine=1)
+        ax = fitter.plotter.plot_confidence_intervals(ci)
+        assert set(ci.levels) == {float(level) for level in expected}
         legend = {t.get_text() for t in ax.get_legend().get_texts()}
         assert {f"{lvl}% CI (overall)" for lvl in expected} <= legend
 
     @pytest.mark.parametrize("levels", [95, 95.0, 0.95, [68, 95], [0.68, 0.95], (68.0, 95.0), np.int64(90)], ids=str)
     def test_prediction_interval_levels(self, fitter, levels):
-        ax = fitter.plotter.plot_prediction_intervals(pi_level=levels)
+        ax = fitter.plotter.plot_prediction_intervals(pi_levels=levels)
         assert isinstance(ax, Axes) and ax.get_legend() is not None
 
     @pytest.mark.parametrize("bad", [0, 100, 150, -5, [95, 0]])
     def test_invalid_prediction_interval_levels(self, fitter, bad):
         with pytest.raises(ValueError):
-            fitter.plotter.plot_prediction_intervals(pi_level=bad)
+            fitter.plotter.plot_prediction_intervals(pi_levels=bad)
 
 
 # ---------------------------------------------------------------------------
@@ -229,30 +228,27 @@ class TestOverlaysKeepAxisText:
 
     def test_confidence_interval_overlay(self, fitter):
         ax = self._fitted_axis(fitter)
-        fitter.plotter.plot_confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, seed=1, axis=ax)
-        assert _text(ax) == self.CUSTOM
-
-    def test_confidence_interval_overlay_via_fitter(self, fitter):
-        ax = self._fitted_axis(fitter)
-        fitter.confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, seed=1, plot=True, axis=ax)
+        ci = fitter.confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, rng_engine=1)
+        fitter.plotter.plot_confidence_intervals(ci, axis=ax)
         assert _text(ax) == self.CUSTOM
 
     def test_prediction_interval_overlay(self, fitter):
         ax = self._fitted_axis(fitter)
-        fitter.plotter.plot_prediction_intervals(pi_level=95, axis=ax)
+        fitter.plotter.plot_prediction_intervals(pi_levels=95, axis=ax)
         assert _text(ax) == self.CUSTOM
 
     def test_explicit_prediction_interval_text_wins(self, fitter):
         ax = self._fitted_axis(fitter)
-        fitter.plotter.plot_prediction_intervals(pi_level=95, x_label="a", y_label="b", plot_title="c", axis=ax)
+        fitter.plotter.plot_prediction_intervals(pi_levels=95, x_label="a", y_label="b", plot_title="c", axis=ax)
         assert _text(ax) == ("a", "b", "c")
 
     def test_fresh_axis_has_no_plotez_default_title(self, fitter):
-        ax = fitter.plotter.plot_confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, seed=1)
+        ci = fitter.confidence_intervals(ci_levels=95, n_bootstrap=_N_BOOT, rng_engine=1)
+        ax = fitter.plotter.plot_confidence_intervals(ci)
         assert ax.get_title() != "XY ErrorBand"
 
     def test_fresh_axis_prediction_interval_defaults(self, fitter):
-        ax = fitter.plotter.plot_prediction_intervals(pi_level=95)
+        ax = fitter.plotter.plot_prediction_intervals(pi_levels=95)
         assert _text(ax) == ("X", "Y", "PI")
 
 
@@ -322,11 +318,11 @@ class TestFitResultSnapshot:
 
 class TestExactIntervalLevels:
     def test_percents_keep_the_decimals_the_labels_round(self):
-        assert ci_level_percents([0.68, 95, 99.7, 0.995]) == [68.0, 95.0, 99.7, 99.5]
+        assert normalize_levels([0.68, 95, 99.7, 0.995]) == (68.0, 95.0, 99.5, 99.7)
 
     @pytest.mark.parametrize("levels", [[68, 95, 99.7], [0.68, 0.95, 0.997], 99.5])
     def test_prediction_interval_is_finite_and_labelled_exactly(self, fitter, levels):
-        ax = fitter.plotter.plot_prediction_intervals(pi_level=levels)
+        ax = fitter.plotter.plot_prediction_intervals(pi_levels=levels)
         texts = [t.get_text() for t in ax.get_legend().get_texts()]
         assert not any(t.startswith("100%") for t in texts)
         assert "99.7% PI" in texts or "99.5% PI" in texts
@@ -335,16 +331,17 @@ class TestExactIntervalLevels:
                 assert np.isfinite(path.vertices).all()
 
     def test_prediction_interval_width_follows_the_exact_level(self):
-        ax = _base().plotter.plot_prediction_intervals(pi_level=[68, 99.7])
+        ax = _base().plotter.plot_prediction_intervals(pi_levels=[68, 99.7])
         widths = []
         for collection in ax.collections[:2]:
             y = collection.get_paths()[0].vertices[:, 1]
             widths.append(y.max() - y.min())
         assert widths[0] > widths[1] > 0  # widest band is drawn first
 
-    def test_confidence_interval_legend_is_exact_and_keys_are_unchanged(self, fitter):
-        results, ax = fitter.confidence_intervals(ci_levels=[68, 99.7], n_bootstrap=_N_BOOT, seed=1, plot=True)
-        assert {"overall_ci_68", "overall_ci_100"} <= set(results)  # the keys stay whole percents
+    def test_confidence_interval_legend_and_keys_are_exact(self, fitter):
+        ci = fitter.confidence_intervals(ci_levels=[68, 99.7], n_bootstrap=_N_BOOT, rng_engine=1)
+        ax = fitter.plotter.plot_confidence_intervals(ci)
+        assert {"overall_ci_68", "overall_ci_99.7"} <= set(ci.as_dict())  # exact levels, 99.7 is not 100
         texts = {t.get_text() for t in ax.get_legend().get_texts()}
         assert {"68% CI (overall)", "99.7% CI (overall)"} <= texts
 
