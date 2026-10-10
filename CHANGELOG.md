@@ -35,13 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swapped the plotting dependency `mpyez` for `plotez` (`LinePlotConfig`, `plot_xy`).
 - Added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
 - Relaxed the `numpy<2.1.0` upper version pin to an unconstrained `numpy` dependency.
+- The functions in `distributions.utilities_d` no longer hide NumPy warnings behind the `suppress_numpy_warnings` decorator, which cost about 2-5 µs per call (up to ~10% of a single-point evaluation). They now evaluate only where the result is defined and use the warning-free `scipy.special` routines (`xlogy`, `log1p`), and a test keeps them warning-free.
 - Renamed `examples/gamma_sr.py` to `examples/gamma.py`.
 - Reworked the dependency files: `environment[dev].yaml` and `requirements[dev].txt` are now `environment-dev.yaml` and `requirements-dev.txt`, `requirements.txt` holds the runtime dependencies only (exported with `uv`), the runtime `environment.yaml` matches `pyproject.toml` (`deprecation`, `plotez`; no `tqdm`), `update_requirements_doc.py` was removed, and a test keeps the environment files in sync with `pyproject.toml`.
 - Documentation: added a plotting guide (figures generated at build time) and API pages for `pymultifit.plot`, `pymultifit.result` and `pymultifit.ci`; the `MixedDataFitter` page now lists all supported models; installation instructions and dependency lists were updated.
 
 ### Fixed
 
-- Tightened NumPy warning suppression in distribution utility functions to only ignore `invalid`/`divide` warnings instead of all warnings.
+- `laplace_log_pdf_` returned `-inf` far in the tails (more than ~745 scale units from the mean) instead of the correct large negative value.
+- `sym_gen_normal_pdf_`, `sym_gen_normal_log_pdf_`, `sym_gen_normal_cdf_` and `sym_gen_normal_log_cdf_` now return NaN for a non-positive `shape` (like the other distributions reject invalid parameters) instead of dividing by zero.
 - `GammaDistribution.stats()` returned `mode = 0` for shape < 1 regardless of `loc`; it now returns `loc`.
 - Corrected the `GammaDistribution` and `GammaFitter` documentation: `scale` is scipy's `scale` (the rate is `1/scale`), not a rate, and the stale `SR`/`SS` and `λ` wording was removed.
 - Docs: replaced the removed `GAMMA_SR` / `GAMMA_SS` constants with `GAMMA` in the constants reference.

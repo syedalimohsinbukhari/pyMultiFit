@@ -21,6 +21,7 @@ from .. import (
     LOG_NORMAL,
     NORMAL,
     SKEW_NORMAL,
+    SQRT,
     epsilon,
 )
 from ..result import Component, FitResult
@@ -392,7 +393,7 @@ class MixedDataFitter(BaseFitter):
                 - Otherwise, returns just the parameters directly.
         """
         parameters = self._parameter_extractor(np.asarray(self.params))
-        errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
+        errs = self._parameter_extractor(SQRT(np.diag(self.covariance)))
 
         if not errors:
             return parameters if model is None else parameters.get(model, [])

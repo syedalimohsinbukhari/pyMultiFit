@@ -1,7 +1,6 @@
 """Created on Jul 18 13:54:03 2024"""
 
-import numpy as np
-
+from .. import INF
 from ..distributions.utilities_d import skew_normal_pdf_
 from ..typing import ArrayLike
 from .backend import BaseFitter
@@ -17,8 +16,8 @@ class SkewNormalFitter(BaseFitter):
         self.n_par = 4
 
     def fit_boundaries(self):
-        lb = (0, -np.inf, -np.inf, 0)
-        ub = (np.inf, np.inf, np.inf, np.inf)
+        lb = (0, -INF, -INF, 0)
+        ub = (INF, INF, INF, INF)
         return lb, ub
 
     @staticmethod

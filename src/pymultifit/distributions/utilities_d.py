@@ -86,21 +86,25 @@ __all__ = [
     "cubic",
 ]
 
+import math
 from collections.abc import Sequence
 from typing import Callable
 
 import numpy as np
 import scipy
 from custom_inherit import doc_inherit  # type: ignore
+# Convention for the log / exp family: use the constants from ``pymultifit/__init__.py`` (LOG, EXP, LOG1P, SQRT, XLOGY, ...).
+# LOG1P (np.log1p) only where the argument is provably > -1, so its RuntimeWarning stays a tripwire for a broken domain
+# check; scipy's own ``log1p`` / ``xlog1py`` (silent for arguments <= -1) where it can reach -1 or below.
 from scipy.special import (
     gamma,
     poch,
     xlog1py,
-    xlogy,
     betaln,
     betainc,
     gammaln,
     expm1,
+    log1p,
     gammainc,
     ndtr,
     log_ndtr,
@@ -126,8 +130,8 @@ from .. import (
     SQRT_TWO_BY_PI,
     SQRT_TWO_PI,
     TWO_BY_PI,
+    XLOGY,
     doc_style,
-    suppress_numpy_warnings,
 )
 from ..typing import ArrayLike, NDArray
 
@@ -149,7 +153,26 @@ def reject_x(x: ArrayLike, shp1=None, shp2=None, loc: float = 0.0, scale: float 
     return (x - loc) / scale, False
 
 
-@suppress_numpy_warnings()
+def _exp_neg(y: NDArray) -> NDArray:
+    """``exp(-y)`` without the overflow warning: the exponent is capped at 709.7, i.e. the result saturates at ~1.6e308."""
+    return EXP(np.minimum(-y, 709.7))
+
+
+def _log_pos(a: NDArray) -> NDArray:
+    """``xlogy(1.0, a)`` for ``a >= 0``: ``log(a)``, ``-inf`` at 0, NaN stays NaN, only ``a > 0`` is evaluated.
+
+    No warning and about a quarter faster than ``xlogy`` on large arrays. Unlike ``xlogy`` it gives ``-inf``, not NaN, for
+    ``a < 0``, so use it only where the argument cannot be negative.
+    """
+    a = np.asarray(a, dtype=float)
+    return LOG(a, out=np.full(a.shape, -INF), where=~(a <= 0))
+
+
+def _abs_pow(ay: NDArray, beta: float) -> NDArray:
+    """``ay ** beta`` for ``ay >= 0`` and ``beta > 0`` without the overflow warning: saturates at ~e^709 instead."""
+    return np.power(np.minimum(ay, math.exp(min(709.0 / beta, 700.0))), beta)
+
+
 def arc_sine_pdf_(
     x: ArrayLike, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
 ) -> NDArray:
@@ -196,9 +219,14 @@ def arc_sine_pdf_(
     c2 = y == 0
     c3 = y == 1
 
-    z = y * (1 - y)
+    # only the support is evaluated (``where=c1``), so nothing outside it can warn and no extra array pass is needed
+    z = np.empty_like(y)
+    np.multiply(y, 1 - y, out=z, where=c1)
+    SQRT(z, out=z, where=c1)
 
-    pdf_ = np.select(condlist=[c1, c2, c3], choicelist=[1 / PI / SQRT(z), INF, INF], default=0.0)
+    pdf_ = np.zeros_like(y)
+    np.divide(1 / PI, z, out=pdf_, where=c1)
+    pdf_[c2 | c3] = INF
     pdf_ /= scale
 
     if not normalize:
@@ -207,7 +235,6 @@ def arc_sine_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
@@ -236,9 +263,16 @@ def arc_sine_log_pdf_(
     c2 = y == 0
     c3 = y == 1
 
-    log_pdf_ = np.select(
-        condlist=[c1, c2, c3], choicelist=[-LOG_PI - 0.5 * LOG(y) - 0.5 * LOG1P(-y), INF, INF], default=-INF
-    )
+    # only the support is evaluated (``where=c1``), so nothing outside it can warn and no extra array pass is needed
+    log_y = np.zeros_like(y)
+    LOG(y, out=log_y, where=c1)
+    log_1my = np.zeros_like(y)
+    LOG1P(-y, out=log_1my, where=c1)
+    np.subtract(-LOG_PI, 0.5 * log_y, out=log_y)
+
+    log_pdf_ = np.full_like(y, -INF)
+    np.subtract(log_y, 0.5 * log_1my, out=log_pdf_, where=c1)
+    log_pdf_[c2 | c3] = INF
     log_pdf_ -= LOG(scale)
 
     if not normalize:
@@ -247,7 +281,6 @@ def arc_sine_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_pdf_, style=doc_style)
 def arc_sine_cdf_(
     x: ArrayLike, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
@@ -273,12 +306,13 @@ def arc_sine_cdf_(
         return full_nan(np.shape(y))
 
     c1 = (y > 0) & (y < 1)
-    c2 = y < 1
 
-    return np.select(condlist=[c1, c2], choicelist=[TWO_BY_PI * np.arcsin(SQRT(y)), 0.0], default=1.0)
+    cdf_ = np.where(y < 1, 0.0, 1.0)
+    cdf_[c1] = TWO_BY_PI * np.arcsin(SQRT(y[c1]))  # evaluated only inside the support
+
+    return cdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=arc_sine_cdf_, style=doc_style)
 def arc_sine_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
@@ -304,12 +338,13 @@ def arc_sine_log_cdf_(
         return full_nan(np.shape(y))
 
     c1 = (y > 0) & (y < 1)
-    c2 = y < 1
 
-    return np.select(condlist=[c1, c2], choicelist=[LOG(TWO_BY_PI * np.arcsin(SQRT(y))), -INF], default=0.0)
+    log_cdf_ = np.where(y < 1, -INF, 0.0)
+    log_cdf_[c1] = LOG(TWO_BY_PI * np.arcsin(SQRT(y[c1])))  # evaluated only inside the support
+
+    return log_cdf_
 
 
-@suppress_numpy_warnings()
 def beta_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -374,7 +409,6 @@ def beta_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_log_pdf_(
     x: ArrayLike,
@@ -416,7 +450,6 @@ def beta_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=beta_pdf_, style=doc_style)
 def beta_cdf_(
     x: ArrayLike,
@@ -457,10 +490,14 @@ def beta_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[1, 0], default=betainc(alpha, beta_, y))
+    inside = (y >= 0) & (y <= 1)
+
+    cdf_ = np.select(condlist=[y > 1, y < 0], choicelist=[1.0, 0.0], default=NAN)
+    cdf_[inside] = betainc(alpha, beta_, y[inside])  # evaluated only inside the support
+
+    return cdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=beta_cdf_, style=doc_style)
 def beta_log_cdf_(
     x: ArrayLike,
@@ -492,10 +529,14 @@ def beta_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.select(condlist=[y > 1, y < 0], choicelist=[0, -INF], default=LOG(betainc(alpha, beta_, y)))
+    inside = (y >= 0) & (y <= 1)
+
+    log_cdf_ = np.select(condlist=[y > 1, y < 0], choicelist=[0.0, -INF], default=NAN)
+    log_cdf_[inside] = XLOGY(1.0, betainc(alpha, beta_, y[inside]))  # evaluated only inside the support
+
+    return log_cdf_
 
 
-@suppress_numpy_warnings()
 def beta_prime_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -549,7 +590,8 @@ def beta_prime_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    log_expr = xlogy(alpha - 1.0, y) - xlog1py(alpha + beta_, y) - betaln(alpha, beta_)
+    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+    log_expr = XLOGY(alpha - 1.0, ys) - xlog1py(alpha + beta_, ys) - betaln(alpha, beta_)
     pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[EXP(log_expr), NAN], default=0.0)
     pdf_ /= scale
 
@@ -559,7 +601,6 @@ def beta_prime_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=beta_prime_pdf_, style=doc_style)
 def beta_prime_log_pdf_(
     x: ArrayLike,
@@ -590,7 +631,7 @@ def beta_prime_log_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    expr = xlogy(alpha - 1.0, y) - xlog1py(alpha + beta_, y) - betaln(alpha, beta_)
+    expr = XLOGY(alpha - 1.0, y) - xlog1py(alpha + beta_, y) - betaln(alpha, beta_)
     log_pdf_ = np.select(condlist=[y > 0, (y == 0) & (alpha <= 1)], choicelist=[expr, NAN], default=-INF)
     log_pdf_ -= LOG(scale)
 
@@ -600,7 +641,6 @@ def beta_prime_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=beta_prime_pdf_, style=doc_style)
 def beta_prime_cdf_(
     x: ArrayLike,
@@ -639,7 +679,8 @@ def beta_prime_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    z = y / (1 + y)
+    ys = np.where(y > 0, y, 0.0)
+    z = ys / (1 + ys)
     return np.where(y > 0, betainc(alpha, beta_, z), 0)
 
 
@@ -674,11 +715,11 @@ def beta_prime_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    z = y / (1 + y)
-    return np.where(y > 0, LOG(betainc(alpha, beta_, z)), -INF)
+    ys = np.where(y > 0, y, 0.0)  # a value inside the support wherever y is outside it, so nothing below warns
+    z = ys / (1 + ys)
+    return np.where(y > 0, XLOGY(1.0, betainc(alpha, beta_, z)), -INF)
 
 
-@suppress_numpy_warnings()
 def chi_square_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -730,7 +771,13 @@ def chi_square_pdf_(
 
     df_half = degree_of_freedom / 2.0
 
-    pdf_ = np.where(y > 0, EXP(_chi2(y=y, df_half=df_half)), 0.0)
+    # only the support is evaluated, so nothing outside it can warn and the (mostly empty) rest is not touched
+    c = y > 0
+    if c.all():
+        pdf_ = np.asarray(EXP(_chi2(y=y, df_half=df_half)))  # 0-d array for a scalar input, as np.where gave
+    else:
+        pdf_ = np.zeros(np.shape(y))
+        pdf_[c] = EXP(_chi2(y=y[c], df_half=df_half))
     pdf_ /= scale
 
     if not normalize:
@@ -740,10 +787,9 @@ def chi_square_pdf_(
 
 
 def _chi2(y: NDArray, df_half: float):
-    return xlogy(df_half - 1, y) - (y / 2) - gammaln(df_half) - (LOG_TWO * df_half)
+    return XLOGY(df_half - 1, y) - (y / 2) - gammaln(df_half) - (LOG_TWO * df_half)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_log_pdf_(
     x: ArrayLike,
@@ -786,7 +832,6 @@ def chi_square_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_pdf_, style=doc_style)
 def chi_square_cdf_(
     x: ArrayLike,
@@ -827,7 +872,6 @@ def chi_square_cdf_(
     return np.where(y > 0, gammainc(degree_of_freedom / 2, y / 2), 0)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=chi_square_cdf_, style=doc_style)
 def chi_square_log_cdf_(
     x: ArrayLike,
@@ -858,10 +902,9 @@ def chi_square_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.where(y > 0, LOG(gammainc(degree_of_freedom / 2, y / 2)), -INF)
+    return np.where(y > 0, XLOGY(1.0, gammainc(degree_of_freedom / 2, y / 2)), -INF)
 
 
-@suppress_numpy_warnings()
 def cubic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float = 1.0) -> NDArray:
     r"""
     Computes the y-values of a cubic function given x-values.
@@ -895,7 +938,6 @@ def cubic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float
     return a * x ** 3 + b * x ** 2 + c * x + d
 
 
-@suppress_numpy_warnings()
 def exponential_pdf_(
     x: ArrayLike, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
 ) -> NDArray:
@@ -944,7 +986,8 @@ def exponential_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    pdf_ = np.where(y >= 0, EXP(-y), 0)
+    pdf_ = np.zeros_like(y)
+    EXP(-y, out=pdf_, where=y >= 0)  # only evaluated inside the support, so it cannot overflow
     pdf_ /= rate
 
     if not normalize:
@@ -953,7 +996,6 @@ def exponential_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -1000,7 +1042,6 @@ def exponential_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=exponential_pdf_, style=doc_style)
 def exponential_cdf_(
     x: ArrayLike, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -1036,7 +1077,6 @@ def exponential_cdf_(
     return np.where(y >= 0, -expm1(-y), 0)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=exponential_cdf_, style=doc_style)
 def exponential_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, lambda_: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -1062,10 +1102,9 @@ def exponential_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.where(y >= 0, LOG(-expm1(-y)), -INF)
+    return np.where(y >= 0, XLOGY(1.0, -expm1(-np.maximum(y, 0.0))), -INF)
 
 
-@suppress_numpy_warnings()
 def folded_normal_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -1127,7 +1166,6 @@ def folded_normal_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_log_pdf_(
     x: ArrayLike,
@@ -1159,7 +1197,9 @@ def folded_normal_log_pdf_(
         return full_nan(np.shape(y))
 
     log_pdf_ = np.where(
-        y >= 0, LOG(gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True)), -INF
+        y >= 0,
+        XLOGY(1.0, gaussian_pdf_(y, mean=mean, normalize=True) + gaussian_pdf_(y, mean=-mean, normalize=True)),
+        -INF,
     )
     log_pdf_ -= LOG(sigma)
 
@@ -1169,7 +1209,6 @@ def folded_normal_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_pdf_, style=doc_style)
 def folded_normal_cdf_(
     x: ArrayLike,
@@ -1204,8 +1243,6 @@ def folded_normal_cdf_(
     """
     y, rej_ = reject_x(x, shp1=mean, loc=loc, scale=sigma)
 
-    print(f"{mean=} {sigma=} {rej_=}")
-
     if rej_:
         return full_nan(np.shape(y))
 
@@ -1215,7 +1252,6 @@ def folded_normal_cdf_(
     return np.where(y >= 0, _folded_cdf(q=q, r=r), 0)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=folded_normal_cdf_, style=doc_style)
 def folded_normal_log_cdf_(
     x: ArrayLike,
@@ -1250,10 +1286,9 @@ def folded_normal_log_cdf_(
     q = (y + mean) / SQRT_TWO
     r = (y - mean) / SQRT_TWO
 
-    return np.where(y >= 0, LOG(_folded_cdf(q=q, r=r)), -INF)
+    return np.where(y >= 0, XLOGY(1.0, _folded_cdf(q=q, r=r)), -INF)
 
 
-@suppress_numpy_warnings()
 def _folded(x: ArrayLike, mean: float, loc: float, scale: float, g_func: Callable):
     r"""
     Precompute the gaussian part of :class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution`.
@@ -1287,7 +1322,6 @@ def _folded(x: ArrayLike, mean: float, loc: float, scale: float, g_func: Callabl
     return y >= 0, np.where(y >= 0, g1 + g2, 0)
 
 
-@suppress_numpy_warnings()
 def gamma_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -1334,7 +1368,6 @@ def gamma_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_pdf_, style=doc_style)
 def gamma_log_pdf_(
     x: ArrayLike,
@@ -1360,11 +1393,10 @@ def gamma_log_pdf_(
 
 
 def _gamma(x, a, un_log=False):
-    value = np.where(x >= 0, xlogy(a - 1.0, x) - x - gammaln(a), -INF)
+    value = np.where(x >= 0, XLOGY(a - 1.0, x) - x - gammaln(a), -INF)
     return EXP(value) if un_log else value
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_pdf_, style=doc_style)
 def gamma_cdf_(
     x: ArrayLike,
@@ -1392,7 +1424,6 @@ def gamma_cdf_(
     return np.where(y > 0, gammainc(alpha, y), 0)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gamma_cdf_, style=doc_style)
 def gamma_log_cdf_(
     x: ArrayLike,
@@ -1423,10 +1454,9 @@ def gamma_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return LOG(np.where(y > 0, gammainc(alpha, y), 0))
+    return XLOGY(1.0, np.where(y > 0, gammainc(alpha, y), 0))
 
 
-@suppress_numpy_warnings()
 def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=False) -> NDArray:
     r"""
     Compute PDF for :class:`~pymultifit.distributions.gaussian_d.GaussianDistribution`
@@ -1474,7 +1504,6 @@ def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
 def gaussian_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
@@ -1505,7 +1534,6 @@ def gaussian_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_pdf_, style=doc_style)
 def gaussian_cdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
@@ -1542,7 +1570,6 @@ def gaussian_cdf_(
     return ndtr(y)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gaussian_cdf_, style=doc_style)
 def gaussian_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, std: float = 1.0, normalize: bool = False
@@ -1571,7 +1598,6 @@ def gaussian_log_cdf_(
     return log_ndtr(y)
 
 
-@suppress_numpy_warnings()
 def gumbel_pdf_(
     x: ArrayLike, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
 ) -> NDArray:
@@ -1615,7 +1641,7 @@ def gumbel_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    pdf_ = EXP(-y - EXP(-y))
+    pdf_ = EXP(-y - _exp_neg(y))
     pdf_ /= beta_
 
     if not normalize:
@@ -1624,7 +1650,6 @@ def gumbel_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gumbel_pdf_, style=doc_style)
 def gumbel_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
@@ -1650,7 +1675,7 @@ def gumbel_log_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    log_pdf_ = -y - EXP(-y)
+    log_pdf_ = -y - _exp_neg(y)
     log_pdf_ -= LOG(beta_)
 
     if not normalize:
@@ -1659,7 +1684,6 @@ def gumbel_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gumbel_pdf_, style=doc_style)
 def gumbel_cdf_(
     x: ArrayLike, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
@@ -1685,10 +1709,9 @@ def gumbel_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return EXP(-EXP(-y))
+    return EXP(-_exp_neg(y))
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=gumbel_cdf_, style=doc_style)
 def gumbel_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, mu: float = 0.0, beta_: float = 1.0, normalize: bool = False
@@ -1714,10 +1737,9 @@ def gumbel_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return -EXP(-y)
+    return -_exp_neg(y)
 
 
-@suppress_numpy_warnings()
 def half_normal_pdf_(
     x: ArrayLike, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
 ) -> NDArray:
@@ -1774,7 +1796,6 @@ def half_normal_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -1808,7 +1829,6 @@ def half_normal_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_pdf_, style=doc_style)
 def half_normal_cdf_(
     x: ArrayLike, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -1843,7 +1863,6 @@ def half_normal_cdf_(
     return np.where(y >= 0, erf(y / SQRT_TWO), 0)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=half_normal_cdf_, style=doc_style)
 def half_normal_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, sigma: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -1868,10 +1887,9 @@ def half_normal_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.where(y >= 0, LOG(erf(y / SQRT_TWO)), -INF)
+    return np.where(y >= 0, XLOGY(1.0, erf(y / SQRT_TWO)), -INF)
 
 
-@suppress_numpy_warnings()
 def johnsonSU_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -1923,8 +1941,8 @@ def johnsonSU_pdf_(
         return full_nan(np.shape(y))
 
     f1 = delta / SQRT_TWO_PI
-    f2 = np.sqrt(1 + y ** 2)
-    f3 = np.exp(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
+    f2 = SQRT(1 + y ** 2)
+    f3 = EXP(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
 
     pdf_ = f1 / f2 * f3
     pdf_ /= lambda_
@@ -1935,7 +1953,6 @@ def johnsonSU_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=johnsonSU_pdf_, style=doc_style)
 def johnsonSU_log_pdf_(
     x: ArrayLike,
@@ -1965,7 +1982,7 @@ def johnsonSU_log_pdf_(
         return full_nan(np.shape(y))
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
-    f2 = -0.5 * np.log1p(y ** 2)
+    f2 = -0.5 * LOG1P(y ** 2)
     f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
 
     log_pdf_ = f1 + f2 + f3
@@ -1977,7 +1994,6 @@ def johnsonSU_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=johnsonSU_pdf_, style=doc_style)
 def johnsonSU_cdf_(
     x: ArrayLike,
@@ -2014,7 +2030,6 @@ def johnsonSU_cdf_(
     return ndtr(gamma + delta * np.arcsinh(y))
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=johnsonSU_cdf_, style=doc_style)
 def johnsonSU_log_cdf_(
     x: ArrayLike,
@@ -2044,7 +2059,6 @@ def johnsonSU_log_cdf_(
     return log_ndtr(gamma + delta * np.arcsinh(y))
 
 
-@suppress_numpy_warnings()
 def laplace_pdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
 ) -> NDArray:
@@ -2096,7 +2110,6 @@ def laplace_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
@@ -2121,7 +2134,7 @@ def laplace_log_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    log_pdf_ = LOG(0.5 * EXP(-np.abs(y)))
+    log_pdf_ = -LOG_TWO - np.abs(y)
     log_pdf_ -= LOG(diversity)
 
     if not normalize:
@@ -2130,7 +2143,6 @@ def laplace_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=laplace_pdf_, style=doc_style)
 def laplace_cdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
@@ -2167,10 +2179,11 @@ def laplace_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.where(y > 0, 1.0 - 0.5 * EXP(-y), 0.5 * EXP(y))
+    half_exp = 0.5 * EXP(-np.abs(y))  # never above 0.5, so it cannot overflow
+
+    return np.where(y > 0, 1.0 - half_exp, half_exp)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=laplace_cdf_, style=doc_style)
 def laplace_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 0.0, diversity: float = 1.0, normalize: bool = False
@@ -2193,10 +2206,11 @@ def laplace_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.where(y > 0, np.log1p(-0.5 * EXP(-y)), -LOG_TWO + y)
+    half_exp = 0.5 * EXP(-np.abs(y))  # never above 0.5, so it cannot overflow
+
+    return np.where(y > 0, LOG1P(-half_exp), -LOG_TWO + y)
 
 
-@suppress_numpy_warnings()
 def line(x: ArrayLike, slope: float = 1.0, intercept: float = 0.0) -> NDArray:
     r"""
     Computes the y-values of a line given x-values, slope, and intercept.
@@ -2226,7 +2240,6 @@ def line(x: ArrayLike, slope: float = 1.0, intercept: float = 0.0) -> NDArray:
     return slope * x + intercept
 
 
-@suppress_numpy_warnings()
 def log_normal_pdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
 ) -> NDArray:
@@ -2272,9 +2285,10 @@ def log_normal_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    q = (LOG(y) - LOG(mean)) / std
+    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+    q = (LOG(ys) - LOG(mean)) / std
 
-    pdf_ = np.where(y > 0, 1 / y / EXP(q ** 2 / 2) / SQRT_TWO_PI, 0)
+    pdf_ = np.where(y > 0, EXP(-(q ** 2) / 2) / ys / SQRT_TWO_PI, 0)
     pdf_ /= std
 
     if not normalize:
@@ -2283,7 +2297,6 @@ def log_normal_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2309,9 +2322,10 @@ def log_normal_log_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    q = (LOG(y) - LOG(mean)) / std
+    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+    q = (LOG(ys) - LOG(mean)) / std
 
-    log_pdf_ = np.where(y > 0, -LOG(y) - (q ** 2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
+    log_pdf_ = np.where(y > 0, -LOG(ys) - (q ** 2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -2320,7 +2334,6 @@ def log_normal_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_pdf_, style=doc_style)
 def log_normal_cdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2358,10 +2371,17 @@ def log_normal_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.where(y > 0, ndtr((LOG(y) - LOG(mean)) / std), 0)
+    # only the support is evaluated (``where=c``), so nothing outside it can warn and no extra array pass is needed
+    c = y > 0
+    z = np.zeros(np.shape(y))
+    LOG(y, out=z, where=c)
+    z -= LOG(mean)
+    z /= std
+
+    cdf_ = np.zeros(np.shape(y))
+    return ndtr(z, out=cdf_, where=c)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=log_normal_cdf_, style=doc_style)
 def log_normal_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, mean: float = 1.0, std: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2389,10 +2409,11 @@ def log_normal_log_cdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    return np.where(y > 0, log_ndtr((LOG(y) - LOG(mean)) / std), -INF)
+    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+
+    return np.where(y > 0, log_ndtr((LOG(ys) - LOG(mean)) / std), -INF)
 
 
-@suppress_numpy_warnings()
 def uniform_pdf_(
     x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
 ) -> NDArray:
@@ -2441,7 +2462,6 @@ def uniform_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
 def uniform_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
@@ -2472,7 +2492,6 @@ def uniform_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=uniform_pdf_, style=doc_style)
 def uniform_cdf_(
     x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
@@ -2506,7 +2525,6 @@ def uniform_cdf_(
     return np.select(condlist=[y < 0, y > 1], choicelist=[0, 1], default=y)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=uniform_cdf_, style=doc_style)
 def uniform_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, low: float = 0.0, high: float = 1.0, normalize: bool = False
@@ -2532,10 +2550,11 @@ def uniform_log_cdf_(
     if rej_ or scale <= 0:
         return full_nan(np.shape(y))
 
-    return np.select(condlist=[y < 0, y > 1], choicelist=[-INF, 0], default=LOG(y))
+    log_cdf_ = _log_pos(y)  # -inf for y < 0 as well
+    log_cdf_[y > 1] = 0
+    return log_cdf_
 
 
-@suppress_numpy_warnings()
 def q_exponential_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
 ) -> NDArray:
@@ -2587,14 +2606,15 @@ def q_exponential_log_pdf_(
     if rej_ or q >= 2.0 or amplitude < 0.0:
         return np.full(y.shape, NAN)
 
-    f1 = np.log1p(1.0 - q) + LOG(rate)
+    f1 = LOG1P(1.0 - q) + LOG(rate)
 
     if q == 1:
         f2 = -rate * y
     else:
         q_diff = 1.0 - q
         u = np.clip(q_diff * rate * y, None, 1.0 - EPSILON) if q < 1.0 else q_diff * rate * y
-        f2 = (1.0 / q_diff) * np.log1p(-u)
+        # scipy's log1p on purpose (not LOG1P): -u drops below -1 for q > 1 and y < 0, outside the support, and np.log1p warns
+        f2 = (1.0 / q_diff) * log1p(-u)
 
     log_pdf_ = f1 + f2
 
@@ -2605,7 +2625,6 @@ def q_exponential_log_pdf_(
     return np.where(support_mask, log_pdf_, -INF)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
 def q_exponential_pdf_(
     x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2634,7 +2653,6 @@ def _eqx(x, q, _log: bool = True):
         return (1 + qm1 * x) ** qm1_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
 def q_exponential_cdf_(
     x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2661,12 +2679,12 @@ def q_exponential_cdf_(
     else:
         q_diff = 1.0 - q
         f1 = (2.0 - q) / q_diff
-        f2 = f1 * LOG1P(-q_diff * rate * y)
+        # scipy's log1p on purpose (not LOG1P): it is silent for arguments <= -1, which occur beyond the support when q < 1
+        f2 = f1 * log1p(-q_diff * rate * y)
 
-    return np.where(y <= 0.0, 0.0, -np.expm1(f2))
+    return np.where(y <= 0.0, 0.0, -np.expm1(np.minimum(f2, 0.0)))  # f2 <= 0 wherever y > 0
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
 def q_exponential_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2683,10 +2701,10 @@ def q_exponential_log_cdf_(
     where :math:`F(x)` is the cumulative distribution function evaluated by :func:`q_exponential_cdf_`.
     """
     cdf_ = q_exponential_cdf_(x=x, amplitude=amplitude, q=q, rate=rate, loc=loc, normalize=normalize)
-    return LOG(cdf_)
+    log_cdf_ = _log_pos(cdf_)
+    return log_cdf_[()] if log_cdf_.ndim == 0 else log_cdf_
 
 
-@suppress_numpy_warnings()
 def scaled_inv_chi_square_pdf_(
     x: ArrayLike, amplitude: float = 1.0, df: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
 ):
@@ -2735,10 +2753,10 @@ def scaled_inv_chi_square_pdf_(
     tau2 = scale / df
     df_half = df / 2
 
-    f1 = np.power(tau2 * df_half, df_half) * rgamma(df_half)
-    f2 = EXP(-(df * tau2) / (2 * y)) / np.power(y, 1 + df_half)
+    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+    log_f = XLOGY(df_half, tau2 * df_half) - gammaln(df_half) - (tau2 * df) / (2 * ys) - XLOGY(1 + df_half, ys)
 
-    pdf_ = np.where(y > 0, f1 * f2, 0)
+    pdf_ = np.where(y > 0, EXP(log_f), 0)
 
     if not normalize:
         pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
@@ -2746,7 +2764,6 @@ def scaled_inv_chi_square_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_log_pdf_(
     x: ArrayLike,
@@ -2781,8 +2798,9 @@ def scaled_inv_chi_square_log_pdf_(
     tau2 = scale / df
     df_half = df / 2
 
-    f1 = xlogy(df_half, tau2 * df_half) - gammaln(df_half)
-    f2 = -(tau2 * df) / (2 * y) - xlogy(1 + df_half, y)
+    f1 = XLOGY(df_half, tau2 * df_half) - gammaln(df_half)
+    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+    f2 = -(tau2 * df) / (2 * ys) - XLOGY(1 + df_half, ys)
 
     log_pdf_ = np.where(y > 0, f1 + f2, -INF)
 
@@ -2792,7 +2810,6 @@ def scaled_inv_chi_square_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_cdf_(
     x: ArrayLike,
@@ -2834,10 +2851,11 @@ def scaled_inv_chi_square_cdf_(
     tau2 = scale / df
     df_half = df / 2
 
-    return np.where(y > 0, gammaincc(df_half, (tau2 * df_half) / y), 0)
+    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+
+    return np.where(y > 0, gammaincc(df_half, (tau2 * df_half) / ys), 0)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=scaled_inv_chi_square_pdf_, style=doc_style)
 def scaled_inv_chi_square_log_cdf_(
     x: ArrayLike,
@@ -2872,10 +2890,11 @@ def scaled_inv_chi_square_log_cdf_(
     tau2 = scale / df
     df_half = df / 2
 
-    return np.where(y > 0, LOG(gammaincc(df_half, (tau2 * df_half) / y)), -INF)
+    ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
+
+    return np.where(y > 0, XLOGY(1.0, gammaincc(df_half, (tau2 * df_half) / ys)), -INF)
 
 
-@suppress_numpy_warnings()
 def students_t_log_pdf_(
     x: ArrayLike, amplitude: float = 1.0, v: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
 ) -> NDArray:
@@ -2926,7 +2945,7 @@ def students_t_log_pdf_(
 
     f1 = LOG(poch(nu_half, 0.5))
     f2 = 0.5 * (LOG_PI + LOG(v))
-    f3 = nu_half_ * np.log1p(y ** 2 / v)
+    f3 = nu_half_ * LOG1P(y ** 2 / v)
 
     log_pdf_ = f1 - f2 - f3 - LOG(scale)
 
@@ -2936,7 +2955,6 @@ def students_t_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=students_t_log_pdf_, style=doc_style)
 def students_t_pdf_(
     x: ArrayLike, amplitude: float = 1.0, v: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2956,7 +2974,6 @@ def students_t_pdf_(
     return EXP(log_pdf_)
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=students_t_log_pdf_, style=doc_style)
 def students_t_cdf_(
     x: ArrayLike, amplitude: float = 1.0, v: float = 1.0, loc: float = 0.0, scale: float = 1.0, normalize: bool = False
@@ -2994,7 +3011,6 @@ def students_t_cdf_(
     return 0.5 + (f1 / f2) * f3
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=students_t_log_pdf_, style=doc_style)
 def students_t_log_cdf_(
     x: ArrayLike, amplitude: float = 1.0, v: float = 1.0, scale: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -3030,10 +3046,9 @@ def students_t_log_cdf_(
 
     cdf_ = students_t_cdf_(x=x, amplitude=amplitude, v=v, loc=loc, scale=scale)
 
-    return LOG(cdf_)
+    return XLOGY(1.0, cdf_)
 
 
-@suppress_numpy_warnings()
 def skew_normal_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -3099,7 +3114,6 @@ def skew_normal_pdf_(
     return pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_log_pdf_(
     x: ArrayLike,
@@ -3142,7 +3156,6 @@ def skew_normal_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=skew_normal_pdf_, style=doc_style)
 def skew_normal_cdf_(
     x: ArrayLike,
@@ -3184,7 +3197,6 @@ def skew_normal_cdf_(
     return gaussian_cdf_(x=y, normalize=True) - 2 * owens_t(y, shape)
 
 
-@suppress_numpy_warnings()
 def sym_gen_normal_pdf_(
     x: ArrayLike,
     amplitude: float = 1.0,
@@ -3230,14 +3242,14 @@ def sym_gen_normal_pdf_(
 
     The final PDF is expressed as :math:`f(y)/\alpha`.
     """
-    y, rej_ = reject_x(x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, shape, loc=loc, scale=scale)
 
     if rej_:
         return full_nan(np.shape(y))
 
     _, _, beta = loc, scale, shape
 
-    log_pdf_ = beta / 2 / gamma(1 / beta) * EXP(-np.power(np.abs(y), beta))
+    log_pdf_ = beta / 2 / gamma(1 / beta) * EXP(-_abs_pow(np.abs(y), beta))
     log_pdf_ /= scale
 
     if not normalize:
@@ -3246,7 +3258,6 @@ def sym_gen_normal_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
 def sym_gen_normal_log_pdf_(
     x: ArrayLike,
@@ -3272,14 +3283,14 @@ def sym_gen_normal_log_pdf_(
 
     The final logPDF is expressed as :math:`\ell(y)/\alpha`.
     """
-    y, rej_ = reject_x(x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, shape, loc=loc, scale=scale)
 
     if rej_:
         return full_nan(np.shape(y))
 
     _, _, beta = loc, scale, shape
 
-    log_pdf_ = LOG(beta) - LOG_TWO - gammaln(1 / beta) - np.power(np.abs(y), beta)
+    log_pdf_ = LOG(beta) - LOG_TWO - gammaln(1 / beta) - _abs_pow(np.abs(y), beta)
     log_pdf_ -= LOG(scale)
 
     if not normalize:
@@ -3288,7 +3299,6 @@ def sym_gen_normal_log_pdf_(
     return log_pdf_
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
 def sym_gen_normal_cdf_(
     x: ArrayLike,
@@ -3321,17 +3331,16 @@ def sym_gen_normal_cdf_(
 
     The final CDF is expressed as :math:`F(y)`.
     """
-    y, rej_ = reject_x(x, loc=loc, scale=scale)
+    y, rej_ = reject_x(x, shape, loc=loc, scale=scale)
 
     if rej_:
         return full_nan(np.shape(y))
 
     _, _, beta = loc, scale, shape
 
-    return 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, np.power(np.abs(y), beta))
+    return 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, _abs_pow(np.abs(y), beta))
 
 
-@suppress_numpy_warnings()
 @doc_inherit(parent=sym_gen_normal_cdf_, style=doc_style)
 def sym_gen_normal_log_cdf_(
     x: ArrayLike,
@@ -3361,10 +3370,9 @@ def sym_gen_normal_log_cdf_(
     """
     cdf_ = sym_gen_normal_cdf_(x=x, amplitude=amplitude, shape=shape, loc=loc, scale=scale, normalize=normalize)
 
-    return LOG(cdf_)
+    return XLOGY(1.0, cdf_)
 
 
-@suppress_numpy_warnings()
 def quadratic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> NDArray:
     r"""
     Computes the y-values of a quadratic function given x-values.
@@ -3396,7 +3404,6 @@ def quadratic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> N
     return a * x ** 2 + b * x + c
 
 
-@suppress_numpy_warnings()
 def _beta_expr(y: ArrayLike, a: float, b: float, un_log: bool = False):
     in_range = (y > 0) & (y < 1)
 
@@ -3404,19 +3411,23 @@ def _beta_expr(y: ArrayLike, a: float, b: float, un_log: bool = False):
     undefined_1 = (y == 1) & (b <= 1)
     special_case = (y == 1) & (a == 1) & (b == 1)
 
-    expr = xlog1py(b - 1.0, -y) + xlogy(a - 1, y) - betaln(a, b)
-    expr2 = np.power(y, a - 1) * np.power(1.0 - y, b - 1.0) / beta(a, b)
+    # evaluated only where y is inside the support; the rest is filled by the caller's np.select, so nothing below warns
+    ys = np.asarray(y, dtype=float)[in_range]
+    expr = np.zeros(np.shape(y))
 
-    return [special_case, undefined_0 | undefined_1, in_range], expr2 if un_log else expr
+    if un_log:
+        expr[in_range] = np.power(ys, a - 1) * np.power(1.0 - ys, b - 1.0) / beta(a, b)
+    else:
+        expr[in_range] = xlog1py(b - 1.0, -ys) + XLOGY(a - 1, ys) - betaln(a, b)
+
+    return [special_case, undefined_0 | undefined_1, in_range], expr
 
 
-@suppress_numpy_warnings()
 def _folded_cdf(q: float, r: float) -> float:
     _f = 0.5 * (erf(r) + erf(q))
     return _f.astype(float)
 
 
-@suppress_numpy_warnings()
 def _pdf_scaling(pdf_: NDArray, amplitude: float) -> NDArray:
     """Scales a given PDF by a specified amplitude, normalizing it relative to its maximum value.
 
@@ -3435,14 +3446,19 @@ def _pdf_scaling(pdf_: NDArray, amplitude: float) -> NDArray:
     max_ = np.max(pdf_)
     if max_ == 0:
         return np.zeros_like(pdf_)
+    if max_ == INF:  # unbounded density (e.g. alpha < 1): inf / inf is NaN, exactly as before, but silently
+        with np.errstate(invalid="ignore"):
+            return amplitude * (pdf_ / max_)
     return amplitude * (pdf_ / max_)
 
-@suppress_numpy_warnings()
 def _log_pdf_scaling(log_pdf_: NDArray, amplitude: float) -> NDArray:
     max_ = np.max(log_pdf_)
     if max_ == -INF:
         return np.full_like(log_pdf_, -INF)
-    return LOG(amplitude) + log_pdf_ - np.max(log_pdf_)
+    if max_ == INF or amplitude <= 0:  # unbounded density / degenerate amplitude: inf - inf, log(0), as before
+        with np.errstate(all="ignore"):
+            return LOG(amplitude) + log_pdf_ - max_
+    return LOG(amplitude) + log_pdf_ - max_
 
 
 def q_exp_to_gen_pareto(q: float, rate: float, loc: float = 0.0):

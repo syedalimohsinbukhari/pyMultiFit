@@ -99,14 +99,6 @@ class FitPlotter:
                 axis=axis,
             )
 
-    @staticmethod
-    def _unwrap_plotter(plotter) -> Axes:
-        return plotter[0] if isinstance(plotter, list) else plotter
-
-    def _validate_fitted(self) -> FitResult:
-        self.result.require_fit()
-        return self.result
-
     def dry_run(self, axis: Axes | None = None, is_scatter: bool = False) -> None:
         """Plot raw x / y data for quick inspection before fitting.
 

@@ -12,7 +12,7 @@ from numpy.random import Generator
 from scipy.optimize import Bounds, curve_fit
 
 from ..utilities_f import parameter_logic, sanity_check
-from ... import epsilon
+from ... import INF, SQRT, epsilon
 from ...ci import compute_ci_bounds
 from ...plot import FitPlotter
 from ...result import Component, FitResult
@@ -125,8 +125,8 @@ class BaseFitter:
             lb, ub = self.fit_boundaries()
         except NotImplementedError:
             # if they're not implemented, self-imposes -inf + inf boundaries
-            lb = np.repeat(-np.inf, repeats=self.n_fits)
-            ub = np.repeat(np.inf, repeats=self.n_fits)
+            lb = np.repeat(-INF, repeats=self.n_fits)
+            ub = np.repeat(INF, repeats=self.n_fits)
 
         # Resize bounds to match total parameters
         lb = np.resize(lb, new_shape=self.n_par * self.n_fits)
@@ -163,27 +163,6 @@ class BaseFitter:
                 ub[i] = p0_flat[i] + epsilon
 
         return lb, ub, p0_flat
-
-    @staticmethod
-    def _format_param(value, t_low: float = 0.001, t_high: float = 10_000.0) -> str:
-        """
-        Formats the parameter value to scientific notation based on its magnitude.
-
-        Parameters
-        ----------
-        value :
-            The value of the parameter to be formatted.
-        t_low :
-            The lower bound below which the formatting should be applied to the value. Defaults to 0.001.
-        t_high :
-            The upper bound above which the formatting should be applied to the value. Defaults to 10,000.
-
-        Returns
-        -------
-        str :
-            A formatted string of the parameter value.
-        """
-        return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
     def _n_fitter(self, x: NDArray, *params: Params_) -> NDArray:
         """
@@ -248,7 +227,7 @@ class BaseFitter:
         """
         if self.covariance is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return np.sqrt(np.diag(self.covariance))
+        return SQRT(np.diag(self.covariance))
 
     def dry_run(self, axis: Axes | None = None, is_scatter: bool = False):
         """
@@ -306,8 +285,8 @@ class BaseFitter:
 
     def _fit_boundaries(self) -> tuple[list[float], list[float]]:
         """Defines the internal distribution boundaries to be used by fitter."""
-        ub = np.repeat(np.inf, repeats=self.n_par).tolist()
-        lb = np.repeat(-np.inf, repeats=self.n_par).tolist()
+        ub = np.repeat(INF, repeats=self.n_par).tolist()
+        lb = np.repeat(-INF, repeats=self.n_par).tolist()
 
         return lb, ub
 

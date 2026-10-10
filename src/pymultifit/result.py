@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from . import SQRT
 from .typing import NDArray
 
 
@@ -86,7 +87,7 @@ class FitResult:
     def errors(self) -> NDArray:
         """Standard errors of the fitted parameters."""
         self.require_fit()
-        return np.sqrt(np.diag(self.covariance))
+        return SQRT(np.diag(self.covariance))
 
     def require_fit(self) -> None:
         """Raise ``RuntimeError`` if the fit has not been performed yet."""
