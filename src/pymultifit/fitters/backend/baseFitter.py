@@ -517,8 +517,8 @@ class BaseFitter:
         Parameters
         ----------
         show_individuals :
-            When ``True``, each component is plotted separately as a dashed line, labelled with its fitted parameters.
-            Defaults to ``False``.
+            When ``True``, each component is plotted as a dashed line, labelled with its fitted parameters, in addition
+            to the total fit (also for a model of one component). Defaults to ``False``.
         x_label :
             The x-axis label, defaults to "X".
         y_label :

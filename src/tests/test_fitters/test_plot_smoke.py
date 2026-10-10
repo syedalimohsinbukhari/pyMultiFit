@@ -17,6 +17,8 @@ import pytest
 from matplotlib.axes import Axes
 
 from ...pymultifit import GAUSSIAN, LINE
+from ...pymultifit.ci import ci_level_percents
+from ...pymultifit.exceptions import AxesError
 from ...pymultifit.fitters import GaussianFitter
 from ...pymultifit.fitters.mixed_f import MixedDataFitter
 from ...pymultifit.generators import multi_gaussian, multiple_models
@@ -35,6 +37,14 @@ def _base() -> GaussianFitter:
     y = multi_gaussian(_X, params=_G, noise_level=0.4) + np.random.default_rng(1).normal(0, 0.2, _X.size)
     fitter = GaussianFitter(_X, y)
     fitter.fit(p0=[(8, -4, 1.5), (6, 4, 2)])
+    return fitter
+
+
+@functools.cache
+def _single() -> GaussianFitter:
+    y = multi_gaussian(_X, params=[_G[0]], noise_level=0.4)
+    fitter = GaussianFitter(_X, y)
+    fitter.fit(p0=[(8, -4, 1.5)])
     return fitter
 
 
@@ -303,3 +313,148 @@ class TestFitResultSnapshot:
     def test_prefit_result_with_missing_arrays(self):
         result = GaussianFitter(_X, np.exp(-(_X**2) / 8)).to_result()
         assert isinstance(result, FitResult) and result.params is None and result.covariance is None
+
+
+# ---------------------------------------------------------------------------
+# regression: second plot review (exact interval levels, axes containers, total fit, save_plot, labels)
+# ---------------------------------------------------------------------------
+
+
+class TestExactIntervalLevels:
+    def test_percents_keep_the_decimals_the_labels_round(self):
+        assert ci_level_percents([0.68, 95, 99.7, 0.995]) == [68.0, 95.0, 99.7, 99.5]
+
+    @pytest.mark.parametrize("levels", [[68, 95, 99.7], [0.68, 0.95, 0.997], 99.5])
+    def test_prediction_interval_is_finite_and_labelled_exactly(self, fitter, levels):
+        ax = fitter.plotter.plot_prediction_intervals(pi_level=levels)
+        texts = [t.get_text() for t in ax.get_legend().get_texts()]
+        assert not any(t.startswith("100%") for t in texts)
+        assert "99.7% PI" in texts or "99.5% PI" in texts
+        for collection in ax.collections:
+            for path in collection.get_paths():
+                assert np.isfinite(path.vertices).all()
+
+    def test_prediction_interval_width_follows_the_exact_level(self):
+        ax = _base().plotter.plot_prediction_intervals(pi_level=[68, 99.7])
+        widths = []
+        for collection in ax.collections[:2]:
+            y = collection.get_paths()[0].vertices[:, 1]
+            widths.append(y.max() - y.min())
+        assert widths[0] > widths[1] > 0  # widest band is drawn first
+
+    def test_confidence_interval_legend_is_exact_and_keys_are_unchanged(self, fitter):
+        results, ax = fitter.confidence_intervals(ci_levels=[68, 99.7], n_bootstrap=_N_BOOT, seed=1, plot=True)
+        assert {"overall_ci_68", "overall_ci_100"} <= set(results)  # the keys stay whole percents
+        texts = {t.get_text() for t in ax.get_legend().get_texts()}
+        assert {"68% CI (overall)", "99.7% CI (overall)"} <= texts
+
+
+class TestAxesContainers:
+    @pytest.mark.parametrize("container", [tuple, list, np.array], ids=["tuple", "list", "ndarray"])
+    def test_fit_and_residuals(self, fitter, container):
+        _, axs = plt.subplots(2, 1)
+        a, b = fitter.plotter.plot_fit_and_residuals(axes=container(list(axs)) if container is not np.array else axs)
+        assert (a, b) == tuple(axs)
+
+    @pytest.mark.parametrize("container", [tuple, list, np.array], ids=["tuple", "list", "ndarray"])
+    def test_qq_compare(self, container):
+        _, axs = plt.subplots(1, 2)
+        a, b = qq_compare(
+            fitter_left=_base(), fitter_right=_mixed(), axes=container(list(axs)) if container is not np.array else axs
+        )
+        assert (a, b) == tuple(axs)
+
+    @pytest.mark.parametrize("bad", [(1, 2), ("a", "b"), [None, None], np.arange(2)], ids=str)
+    def test_not_axes_objects(self, fitter, bad):
+        with pytest.raises(AxesError, match="two axes"):
+            fitter.plotter.plot_fit_and_residuals(axes=bad)
+
+    def test_three_axes(self, fitter):
+        _, axs = plt.subplots(3, 1)
+        with pytest.raises(AxesError, match="two axes"):
+            fitter.plotter.plot_fit_and_residuals(axes=axs)
+
+
+class TestTotalFitWithIndividuals:
+    @staticmethod
+    def _labels(ax):
+        return ax.get_legend_handles_labels()[1]
+
+    @pytest.mark.parametrize("make", [_single, _base, _mixed], ids=["one component", "two", "mixed"])
+    def test_total_fit_is_always_drawn(self, make):
+        labels = self._labels(make().plotter.plot_fit(show_individuals=True))
+        assert "Total Fit" in labels
+        assert len(labels) == 2 + make().to_result().n_fits  # data, total fit and every component
+
+    def test_one_component_without_individuals_is_unchanged(self):
+        assert self._labels(_single().plotter.plot_fit()) == ["Data", "Total Fit"]
+
+    def test_fit_and_residuals_keeps_the_total_fit(self):
+        ax_fit, _ = _single().plotter.plot_fit_and_residuals(show_individuals=True)
+        assert "Total Fit" in self._labels(ax_fit)
+
+
+class TestIsScatter:
+    @pytest.mark.parametrize("value", [True, False, np.True_, (True, False), (False, True), [True, True]], ids=str)
+    def test_accepted_forms(self, fitter, value):
+        ax_fit, ax_res = fitter.plotter.plot_fit_and_residuals(is_scatter=value)
+        assert isinstance(ax_fit, Axes) and isinstance(ax_res, Axes)
+
+    def test_panels_are_chosen_independently(self):
+        fitter = _base()
+        scatter_fit, scatter_res = [], []
+        for value, store in (((True, False), scatter_fit), ((False, True), scatter_res)):
+            ax_fit, ax_res = fitter.plotter.plot_fit_and_residuals(is_scatter=value)
+            store.extend([len(ax_fit.collections), len(ax_res.collections)])
+        assert (
+            scatter_fit[0] > scatter_fit[1] and scatter_res[1] > scatter_res[0]
+        )  # points are collections, lines are not
+
+    @pytest.mark.parametrize("bad", [(True,), (True, False, True), "x", 3, None], ids=str)
+    def test_invalid_forms(self, fitter, bad):
+        with pytest.raises(ValueError, match="is_scatter"):
+            fitter.plotter.plot_fit_and_residuals(is_scatter=bad)
+
+
+class TestResidualLabel:
+    def test_default_y_label_matches_the_residual_panel(self, fitter):
+        alone = fitter.plotter.plot_residuals().get_ylabel()
+        _, panel = fitter.plotter.plot_fit_and_residuals()
+        assert alone == panel.get_ylabel() == r"$y - \hat{y}$"
+
+    def test_explicit_y_label_wins(self, fitter):
+        assert fitter.plotter.plot_residuals(y_label="Residual flux").get_ylabel() == "Residual flux"
+
+
+class TestSavePlotOptions:
+    def test_bbox_inches_and_format_can_be_given(self, fitter, tmp_path):
+        fitter.plot_fit()
+        path = FitPlotter.save_plot(str(tmp_path / "fig.png"), bbox_inches="tight", format="png")
+        assert (tmp_path / "fig.png").exists() and path.endswith("fig.png")
+
+    def test_format_overrides_a_missing_extension(self, fitter, tmp_path):
+        fitter.plot_fit()
+        path = FitPlotter.save_plot(str(tmp_path / "fig"), format="pdf")
+        assert path.endswith("fig.pdf") and (tmp_path / "fig.pdf").read_bytes().startswith(b"%PDF")
+
+    @pytest.mark.parametrize("name", ["fit_0.5", "model_v2.1", "run.2024"])
+    def test_a_dot_followed_by_digits_is_part_of_the_name(self, fitter, tmp_path, name):
+        fitter.plot_fit()
+        path = FitPlotter.save_plot(str(tmp_path / name))
+        assert path == str(tmp_path / f"{name}.png") and (tmp_path / f"{name}.png").exists()
+
+    def test_uppercase_extension_is_accepted(self, fitter, tmp_path):
+        fitter.plot_fit()
+        FitPlotter.save_plot(str(tmp_path / "fig.PNG"))
+        assert (tmp_path / "fig.PNG").exists()
+
+    def test_other_unknown_extensions_still_raise(self, tmp_path):
+        with pytest.raises(ValueError, match="Unsupported format"):
+            FitPlotter.save_plot(str(tmp_path / "fig.txt"))
+
+
+class TestColourCycle:
+    def test_single_colour_cycle_is_reused(self):
+        with plt.rc_context({"axes.prop_cycle": plt.cycler(color=["k"])}):
+            labels = _base().plotter.plot_fit(show_individuals=True).get_legend_handles_labels()[1]
+        assert len(labels) == 2 + _base().to_result().n_fits

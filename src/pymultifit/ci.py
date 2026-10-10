@@ -111,6 +111,26 @@ def ci_level_labels(levels: float | int | Iterable[float]) -> list[int]:
     return [label for label, _ in _ci_to_percentiles(levels)]
 
 
+def ci_level_percents(levels: float | int | Iterable[float]) -> list[float]:
+    """Exact percentages of CI / PI levels, e.g. ``[0.68, 99.7]`` -> ``[68.0, 99.7]``.
+
+    :func:`ci_level_labels` rounds to whole percents (``99.7`` becomes ``100``), which is right for the keys of the
+    dictionary of :func:`compute_ci_bounds` but not for a quantity computed from the level, like a prediction interval,
+    or for a legend text.
+
+    Parameters
+    ----------
+    levels :
+        A single level or an iterable of levels, in percentage (95, 95.0) or decimal (0.95) form.
+
+    Raises
+    ------
+    ValueError
+        If any level is not strictly between 0 and 100 percent.
+    """
+    return [round((upper - lower) * 100, 9) for _, (lower, _, upper) in _ci_to_percentiles(levels)]
+
+
 # ---------------------------------------------------------------------------
 # Shared quantile → results converter
 # ---------------------------------------------------------------------------

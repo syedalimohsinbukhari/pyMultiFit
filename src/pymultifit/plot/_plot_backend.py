@@ -13,7 +13,7 @@ from plotez import ebc, lpc, plot_errorband, plot_xy, spc
 from scipy.stats import norm, pearsonr, t
 
 from .. import SQRT
-from ..ci import ci_level_labels
+from ..ci import ci_level_labels, ci_level_percents
 from ..exceptions import AxesError
 from ..result import FitResult, as_result
 from ..typing import NDArray
@@ -54,6 +54,7 @@ def _ci_plotter(
 ) -> Axes:
     # the same integer labels compute_ci_bounds used for its result keys, whatever format the levels were given in
     levels = ci_level_labels(ci_levels)
+    percents = ci_level_percents(ci_levels)  # for the legend, 99.7 must not read 100
 
     # Extract x_range from results
     x_range = results.get("x_range", result.x)
@@ -78,8 +79,8 @@ def _ci_plotter(
 
     with _keep_axis_text(axis, defaults=("X", "Y", "")):
         if overall_ci:
-            for ci, alpha_ in zip(levels, alphas):
-                label = f"{ci}% CI (overall)"
+            for ci, percent, alpha_ in zip(levels, percents, alphas):
+                label = f"{percent:g}% CI (overall)"
                 ci_key = f"overall_ci_{ci}"
 
                 if ci_key not in results:
@@ -89,7 +90,7 @@ def _ci_plotter(
                 _helper(given_ci=ci_data, data_label=label, alpha_val=alpha_)
 
         if individual_ci:
-            for ci, alpha_ in zip(levels, alphas):
+            for ci, percent, alpha_ in zip(levels, percents, alphas):
                 ci_key = f"individual_ci_{ci}"
 
                 if ci_key not in results:
@@ -97,7 +98,7 @@ def _ci_plotter(
 
                 ci_data = results[ci_key]
                 for idx, fit_ci in enumerate(ci_data):
-                    label = f"{ci}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
+                    label = f"{percent:g}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
                     _helper(given_ci=fit_ci, data_label=label, alpha_val=alpha_)
 
     axis.legend()
@@ -122,10 +123,8 @@ def _fit_and_residual(
         _, (ax1, ax2) = plt.subplots(
             nrows=2, ncols=1, figsize=FIG_SIZE, sharex=True, gridspec_kw={"height_ratios": [3, 1]}
         )
-    elif not isinstance(axes, list | tuple) or len(axes) != 2:
-        raise AxesError("There must be two axes for fitter and residuals to plot upon.")
     else:
-        ax1, ax2 = axes
+        ax1, ax2 = _axes_pair(axes)
 
     _plot(
         plot_object=plot_object,
@@ -167,6 +166,18 @@ def _keep_axis_text(
             (axis.set_xlabel, axis.set_ylabel, axis.set_title), overrides, before, defaults
         ):
             setter(override if override is not None else (kept or default))
+
+
+def _axes_pair(axes) -> tuple[Axes, Axes]:
+    """The two axes of ``axes``, given as a tuple, a list or the array ``plt.subplots(2, 1)`` returns."""
+    if not isinstance(axes, list | tuple | np.ndarray) or np.size(axes) != 2:
+        raise AxesError("There must be two axes for fitter and residuals to plot upon.")
+
+    pair = tuple(np.ravel(axes))
+    if not all(isinstance(axis, Axes) for axis in pair):
+        raise AxesError("There must be two axes for fitter and residuals to plot upon.")
+
+    return pair
 
 
 def _grid(axis: Axes):
@@ -241,17 +252,10 @@ def _plot(
     # required to further working.
     plot_xy(x_data=x, y_data=y, data_label=dl, axis=axis, is_scatter=is_scatter, plot_config=lpc(alpha=0.75))
 
-    # Plot combined fit and/or individual component fits.
-    # Behavior: if show_individuals and there's only one model component, draw only the individual fit.
-    # Otherwise, draw the combined fit and, when requested, overlay individual fits.
-    if show_individuals and result.n_fits == 1:
+    # The total fit is always drawn, the individual components (also for a model of one component) go on top of it.
+    plot_xy(x_data=x, y_data=result.model(x), data_label=tt, plot_config=lpc(c="k"), axis=axis)
+    if show_individuals:
         plot_object._plot_individual_fits(axis=axis)
-    else:
-        # draw combined fit
-        plot_xy(x_data=x, y_data=result.model(x), data_label=tt, plot_config=lpc(c="k"), axis=axis)
-        # optionally overlay individual fits when there are multiple components
-        if show_individuals:
-            plot_object._plot_individual_fits(axis=axis)
 
     axis.set_xlabel(x_label)
     axis.set_ylabel(y_label)
@@ -275,7 +279,8 @@ def _prediction_interval(
 
     x, params = np.asarray(result.x), np.asarray(result.params)
 
-    pi_levels = sorted(ci_level_labels(pi_level), reverse=True)  # widest band drawn first
+    # exact levels (99.7 is not 100), the widest band is drawn first
+    pi_levels = sorted(ci_level_percents(pi_level), reverse=True)
 
     n, k = len(x), len(params)
 
@@ -298,7 +303,7 @@ def _prediction_interval(
                 y_lower=fitted - t_crit * sigma,
                 y_upper=fitted + t_crit * sigma,
                 line_config=lpc(c=FIT_COLOR, zorder=10),
-                band_config=ebc(c=col_, label=f"{pi}% PI"),
+                band_config=ebc(c=col_, label=f"{pi:g}% PI"),
                 axis=axis,
             )
 
@@ -409,10 +414,8 @@ def _qq_compare(
     """
     if axes is None:
         _, (ax_l, ax_r) = plt.subplots(nrows=1, ncols=2, figsize=(12, 6), sharey=True)
-    elif not isinstance(axes, list | tuple) or len(axes) != 2:
-        raise AxesError("There must be two axes for fitter and residuals to plot upon.")
     else:
-        ax_l, ax_r = axes
+        ax_l, ax_r = _axes_pair(axes)
 
     if label_left is None:
         label_left = f"Q-Q plot | {fitter_left.__class__.__name__}"

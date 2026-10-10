@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from plotez import lpc, plot_xy
@@ -48,8 +49,9 @@ class FitPlotter:
 
     @staticmethod
     def _get_color_cycle() -> list:
-        """Return the active matplotlib color cycle, skipping the first color."""
-        return plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
+        """Return the active matplotlib color cycle, skipping the first color (the data's), unless it is the only one."""
+        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+        return colors[1:] or colors
 
     @staticmethod
     def _plot_component(x, y, label: str, color: str, axis) -> None:
@@ -205,7 +207,8 @@ class FitPlotter:
         Parameters
         ----------
         show_individuals :
-            When True, each component is plotted separately.
+            When True, each component is plotted as a dashed line in addition to the total fit, also for a model of one
+            component.
         x_label :
             The x-axis label, defaults to "X".
         y_label :
@@ -247,7 +250,7 @@ class FitPlotter:
         plot_title: str = "Fit and Residuals",
         data_label: str = "Data",
         fit_label: str = "Total Fit",
-        is_scatter: tuple[bool, bool] = (False, False),
+        is_scatter: tuple[bool, bool] | bool = (False, False),
         axes: tuple[Axes, Axes] | None = None,
     ) -> tuple[Axes, Axes]:
         """Plot the fitted model and residuals in a two-panel figure.
@@ -255,7 +258,8 @@ class FitPlotter:
         Parameters
         ----------
         show_individuals :
-            When True, each component is plotted separately.
+            When True, each component is plotted as a dashed line in addition to the total fit, also for a model of one
+            component.
         x_label :
             The x-axis label, defaults to "X".
         y_label :
@@ -267,18 +271,28 @@ class FitPlotter:
         fit_label :
             The label for the fitted curve, defaults to "Total Fit".
         is_scatter :
-            When True, the raw data is plotted as a scatter plot instead of a line.
-            The tuple is shared with both fit plot and residual plots individually, both defaults to False.
+            Whether the data is drawn as scatter points instead of a line, as the pair ``(fit_panel, residual_panel)``
+            so that each panel is chosen independently, e.g. ``(False, True)`` draws the data as a line and the residuals
+            as points. A single bool applies to both panels. Defaults to ``(False, False)``.
         axes :
-            The matplotlib axis objects on which the fit and residuals are to be drawn.
-            If None, a 1x2 subplot will be generated with 3:1 height for fit and residuals.
+            The two matplotlib axes (fit, residuals) on which the plots are to be drawn, as a tuple, a list or the
+            array returned by ``plt.subplots(2, 1)``.
+            If None, a 2x1 subplot will be generated with 3:1 height for fit and residuals.
 
         Returns
         -------
         tuple[Axis, Axis]
             The set of axes on which the figure and residuals were drawn.
         """
-        is_scatter_plot, is_scatter_residual = is_scatter
+        if isinstance(is_scatter, bool | np.bool_):
+            is_scatter_plot = is_scatter_residual = bool(is_scatter)
+        else:
+            try:
+                is_scatter_plot, is_scatter_residual = is_scatter
+            except (TypeError, ValueError):
+                raise ValueError(
+                    f"is_scatter must be a bool or a pair (fit_panel, residual_panel), got {is_scatter!r}."
+                ) from None
         return _fit_and_residual(
             plot_object=self,
             show_individuals=show_individuals,
@@ -390,20 +404,21 @@ class FitPlotter:
     def plot_residuals(
         self,
         x_label: str = "X",
-        y_label: str = "Y",
+        y_label: str = r"$y - \hat{y}$",
         data_label: str = "Residuals",
         plot_title: str = "",
         is_scatter: bool = False,
         axis: Axes | None = None,
     ) -> Axes:
-        """Plot residuals (data − fitted model).
+        r"""Plot residuals (data − fitted model).
 
         Parameters
         ----------
         x_label :
             Label for the x-axis, defaults to "X".
         y_label :
-            Label for the y-axis, defaults to "Y".
+            Label for the y-axis, defaults to ``y - \hat{y}``, as on the residual panel of
+            :meth:`plot_fit_and_residuals`.
         plot_title :
             Residual plot title, defaults to "".
         data_label :
@@ -434,7 +449,8 @@ class FitPlotter:
         """Save the current (or provided) figure with format auto-detection.
 
         The output format is inferred from the file extension.  When the path
-        carries no extension, ``.png`` is appended automatically.
+        carries no extension, ``.png`` is appended automatically (a dot followed by digits only, like in
+        ``fit_0.5``, is part of the name and not an extension).
 
         Parameters
         ----------
@@ -447,7 +463,8 @@ class FitPlotter:
         dpi :
             Resolution in dots per inch.  Defaults to 150.
         **kwargs :
-            Forwarded directly to :func:`matplotlib.figure.Figure.savefig`.
+            Forwarded to :func:`matplotlib.figure.Figure.savefig`. ``bbox_inches`` defaults to ``"tight"``, and
+            ``format`` overrides the format taken from the extension.
 
         Returns
         -------
@@ -461,16 +478,23 @@ class FitPlotter:
         """
         _supported = {"png", "pdf", "svg", "eps", "jpg", "jpeg", "tiff", "tif"}
 
-        path = Path(filename)
-        ext = path.suffix.lower().lstrip(".")
+        requested = kwargs.pop("format", None)
 
-        if not ext:
-            ext = "png"
-            path = path.with_suffix(".png")
+        path = Path(filename)
+        suffix = path.suffix.lower().lstrip(".")
+        if not any(char.isalpha() for char in suffix):
+            suffix = ""  # no extension, or a dot inside the name ("fit_0.5")
+
+        ext = str(requested or suffix or "png").lower().lstrip(".")
 
         if ext not in _supported:
             raise ValueError(f"Unsupported format '.{ext}'. Supported formats: {sorted(_supported)}")
 
+        if not suffix:
+            path = path.with_name(f"{path.name}.{ext}")
+
+        kwargs.setdefault("bbox_inches", "tight")
+
         fig = figure or plt.gcf()
-        fig.savefig(path, format=ext, dpi=dpi, bbox_inches="tight", **kwargs)
+        fig.savefig(path, format=ext, dpi=dpi, **kwargs)
         return str(path)
