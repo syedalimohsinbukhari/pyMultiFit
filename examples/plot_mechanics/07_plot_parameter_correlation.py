@@ -56,6 +56,6 @@ mf.plotter.plot_parameter_correlation(axis=ax3)
 ax3.set_title("MixedDataFitter  (Line + 2×Gaussian) — model-aware labels")
 plt.tight_layout()
 
-print("MixedDataFitter auto-labels:", mf.plotter._default_param_labels())
+print("MixedDataFitter auto-labels:", mf.to_result().param_labels)
 
 plt.show()

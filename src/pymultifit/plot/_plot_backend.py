@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
@@ -9,14 +11,14 @@ import numpy as np
 from matplotlib.axes import Axes
 from plotez import ebc, lpc, plot_errorband, plot_xy, spc
 from scipy.stats import norm, pearsonr, t
-from statsmodels.graphics.gofplots import ProbPlot
 
+from .. import SQRT
+from ..ci import ci_level_labels, ci_level_percents
 from ..exceptions import AxesError
+from ..result import FitResult, as_result
 from ..typing import NDArray
 
 if TYPE_CHECKING:
-    from ..fitters import MixedDataFitter
-    from ..fitters.backend import BaseFitter
     from . import FitPlotter
 
 FIG_SIZE = (10, 6)
@@ -43,23 +45,22 @@ RESID_FIG_SIZE = (12, 4)
 
 
 def _ci_plotter(
-    fitter_object: "BaseFitter | MixedDataFitter",
+    result: FitResult,
     results: dict,
     ci_levels: float | tuple[float] | list[float],
     overall_ci: bool,
     individual_ci: bool,
     axis: Axes | None,
 ) -> Axes:
-    if isinstance(ci_levels, int):
-        ci_levels = [ci_levels]
-
-    ci_levels: list
+    # the same integer labels compute_ci_bounds used for its result keys, whatever format the levels were given in
+    levels = ci_level_labels(ci_levels)
+    percents = ci_level_percents(ci_levels)  # for the legend, 99.7 must not read 100
 
     # Extract x_range from results
-    x_range = results.get("x_range", fitter_object.x_values)
+    x_range = results.get("x_range", result.x)
 
     # Create alpha values for multiple CI levels (lighter for wider intervals)
-    alphas = np.linspace(0.45, 0.15, len(ci_levels))
+    alphas = np.linspace(0.45, 0.15, len(levels))
 
     def _helper(given_ci: dict, data_label: str, alpha_val: float):
         """Helper to plot a single CI band."""
@@ -76,28 +77,29 @@ def _ci_plotter(
 
     axis = _single_axis_sanitizer(axis=axis)
 
-    if overall_ci:
-        for ci, alpha_ in zip(ci_levels, alphas):
-            label = f"{ci}% CI (overall)"
-            ci_key = f"overall_ci_{ci}"
+    with _keep_axis_text(axis, defaults=("X", "Y", "")):
+        if overall_ci:
+            for ci, percent, alpha_ in zip(levels, percents, alphas):
+                label = f"{percent:g}% CI (overall)"
+                ci_key = f"overall_ci_{ci}"
 
-            if ci_key not in results:
-                raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
+                if ci_key not in results:
+                    raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
 
-            ci_data = results[ci_key]
-            _helper(given_ci=ci_data, data_label=label, alpha_val=alpha_)
+                ci_data = results[ci_key]
+                _helper(given_ci=ci_data, data_label=label, alpha_val=alpha_)
 
-    if individual_ci:
-        for ci, alpha_ in zip(ci_levels, alphas):
-            ci_key = f"individual_ci_{ci}"
+        if individual_ci:
+            for ci, percent, alpha_ in zip(levels, percents, alphas):
+                ci_key = f"individual_ci_{ci}"
 
-            if ci_key not in results:
-                raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
+                if ci_key not in results:
+                    raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
 
-            ci_data = results[ci_key]
-            for idx, fit_ci in enumerate(ci_data):
-                label = f"{ci}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
-                _helper(given_ci=fit_ci, data_label=label, alpha_val=alpha_)
+                ci_data = results[ci_key]
+                for idx, fit_ci in enumerate(ci_data):
+                    label = f"{percent:g}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
+                    _helper(given_ci=fit_ci, data_label=label, alpha_val=alpha_)
 
     axis.legend()
     _grid(axis)
@@ -121,10 +123,8 @@ def _fit_and_residual(
         _, (ax1, ax2) = plt.subplots(
             nrows=2, ncols=1, figsize=FIG_SIZE, sharex=True, gridspec_kw={"height_ratios": [3, 1]}
         )
-    elif not isinstance(axes, list | tuple) or len(axes) != 2:
-        raise AxesError("There must be two axes for fitter and residuals to plot upon.")
     else:
-        ax1, ax2 = axes
+        ax1, ax2 = _axes_pair(axes)
 
     _plot(
         plot_object=plot_object,
@@ -148,32 +148,63 @@ def _fit_and_residual(
     return ax1, ax2
 
 
+@contextmanager
+def _keep_axis_text(
+    axis: Axes,
+    overrides: tuple[str | None, str | None, str | None] = (None, None, None),
+    defaults: tuple[str, str, str] = ("X", "Y", ""),
+) -> Iterator[None]:
+    """Keep the x label, y label and title of ``axis`` across calls that reset them (``plotez`` always does).
+
+    On exit each text is, in order of preference, the given override, the text the axis had before, or the default.
+    """
+    before = (axis.get_xlabel(), axis.get_ylabel(), axis.get_title())
+    try:
+        yield
+    finally:
+        for setter, override, kept, default in zip(
+            (axis.set_xlabel, axis.set_ylabel, axis.set_title), overrides, before, defaults
+        ):
+            setter(override if override is not None else (kept or default))
+
+
+def _axes_pair(axes) -> tuple[Axes, Axes]:
+    """The two axes of ``axes``, given as a tuple, a list or the array ``plt.subplots(2, 1)`` returns."""
+    if not isinstance(axes, list | tuple | np.ndarray) or np.size(axes) != 2:
+        raise AxesError("There must be two axes for fitter and residuals to plot upon.")
+
+    pair = tuple(np.ravel(axes))
+    if not all(isinstance(axis, Axes) for axis in pair):
+        raise AxesError("There must be two axes for fitter and residuals to plot upon.")
+
+    return pair
+
+
 def _grid(axis: Axes):
     axis.grid(ls=GRID_LS, alpha=GRID_ALPHA, color=GRID_COLOR)
 
 
 def _param_correlation(
-    plot_object: "FitPlotter",
-    fitter_object: "BaseFitter | MixedDataFitter",
+    result: FitResult,
     plot_title: str = "Parameter Correlation Matrix",
     param_labels: list[str] | None = None,
     axis: Axes | None = None,
 ) -> Axes:
-    plot_object._validate_fitted()
-    params = fitter_object.params
-    cov_matrix = fitter_object.covariance
+    result.require_fit()
+    params = result.params
+    cov_matrix = result.covariance
 
     cov_matrix: NDArray
     params: NDArray
 
-    std = np.sqrt(np.diag(cov_matrix))
+    std = SQRT(np.diag(cov_matrix))
     outer = np.outer(std, std)
     with np.errstate(invalid="ignore", divide="ignore"):
         corr = np.where(outer > 0, cov_matrix / outer, 0.0)
     np.clip(corr, -1.0, 1.0, out=corr)
 
     n_params = params.shape[0]
-    labels = param_labels or plot_object._default_param_labels()
+    labels = param_labels or list(result.param_labels)
     fig_size = max(4, n_params)
 
     if axis is None:
@@ -210,29 +241,21 @@ def _plot(
     is_scatter: bool = False,
     axis: Axes | None = None,
 ) -> Axes:
-    fitter_object = _validate(plot_object)
-    x, y = np.asarray(fitter_object.x_values), np.asarray(fitter_object.y_values)
+    result = _validate(plot_object)
+    x, y = np.asarray(result.x), np.asarray(result.y)
 
     axis = _single_axis_sanitizer(axis=axis)
 
-    params = fitter_object.params
     dl, tt = (data_label or "Data"), (fit_label or "Total fit")
 
     # The first catch of axis is necessary, the user might not pass an axis object, so the return from `plot_xy` is
     # required to further working.
     plot_xy(x_data=x, y_data=y, data_label=dl, axis=axis, is_scatter=is_scatter, plot_config=lpc(alpha=0.75))
 
-    # Plot combined fit and/or individual component fits.
-    # Behavior: if show_individuals and there's only one model component, draw only the individual fit.
-    # Otherwise, draw the combined fit and, when requested, overlay individual fits.
-    if show_individuals and fitter_object.n_fits == 1:
+    # The total fit is always drawn, the individual components (also for a model of one component) go on top of it.
+    plot_xy(x_data=x, y_data=result.model(x), data_label=tt, plot_config=lpc(c="k"), axis=axis)
+    if show_individuals:
         plot_object._plot_individual_fits(axis=axis)
-    else:
-        # draw combined fit
-        plot_xy(x_data=x, y_data=fitter_object._n_fitter(x, *params), data_label=tt, plot_config=lpc(c="k"), axis=axis)
-        # optionally overlay individual fits when there are multiple components
-        if show_individuals:
-            plot_object._plot_individual_fits(axis=axis)
 
     axis.set_xlabel(x_label)
     axis.set_ylabel(y_label)
@@ -244,57 +267,53 @@ def _plot(
 
 
 def _prediction_interval(
-    plot_object: "FitPlotter",
-    fitter_object: "BaseFitter | MixedDataFitter",
-    pi_level: int | list[int] = 95,
-    x_label: str = "X",
-    y_label: str = "Y",
-    plot_title: str = "PI",
+    result: FitResult,
+    pi_level: float | list[float] = 95,
+    x_label: str | None = None,
+    y_label: str | None = None,
+    plot_title: str | None = None,
     axis: Axes | None = None,
     **kwargs,
 ) -> Axes:
-    plot_object._validate_fitted()
-    params = fitter_object.params
+    result.require_fit()
 
-    x, params = np.asarray(fitter_object.x_values), np.asarray(params)
+    x, params = np.asarray(result.x), np.asarray(result.params)
 
-    pi_levels = sorted(
-        [pi_level] if isinstance(pi_level, int) else list(pi_level), reverse=True  # widest band drawn first
-    )
+    # exact levels (99.7 is not 100), the widest band is drawn first
+    pi_levels = sorted(ci_level_percents(pi_level), reverse=True)
 
     n, k = len(x), len(params)
 
-    residuals = fitter_object.get_residuals()
-    sigma = np.sqrt(np.sum(residuals**2) / max(n - k, 1))
-    fitted = fitter_object._n_fitter(fitter_object.x_values, *params)
+    residuals = result.residuals()
+    sigma = SQRT(np.sum(residuals**2) / max(n - k, 1))
+    fitted = result.model()
 
     axis = _single_axis_sanitizer(axis=axis)
 
     pi_colors = [plt.get_cmap("YlOrBr")(v) for v in np.linspace(0.35, 0.75, len(pi_levels))]
 
-    for pi, col_ in zip(pi_levels, pi_colors):
-        alpha_stat = 1 - pi / 100
-        t_crit = t.ppf(1 - alpha_stat / 2, df=max(n - k, 1))
-        axis = plot_errorband(
-            x_data=fitter_object.x_values,
-            y_data=fitted,
-            y_lower=fitted - t_crit * sigma,
-            y_upper=fitted + t_crit * sigma,
-            line_config=lpc(c=FIT_COLOR, zorder=10),
-            band_config=ebc(c=col_, label=f"{pi}% PI"),
+    # explicit labels win, otherwise the text already on the axis is kept (plotez would reset it)
+    with _keep_axis_text(axis, overrides=(x_label, y_label, plot_title), defaults=("X", "Y", "PI")):
+        for pi, col_ in zip(pi_levels, pi_colors):
+            alpha_stat = 1 - pi / 100
+            t_crit = t.ppf(1 - alpha_stat / 2, df=max(n - k, 1))
+            axis = plot_errorband(
+                x_data=result.x,
+                y_data=fitted,
+                y_lower=fitted - t_crit * sigma,
+                y_upper=fitted + t_crit * sigma,
+                line_config=lpc(c=FIT_COLOR, zorder=10),
+                band_config=ebc(c=col_, label=f"{pi:g}% PI"),
+                axis=axis,
+            )
+
+        axis = plot_xy(
+            x_data=result.x,
+            y_data=result.y,
+            plot_config=spc(s=SCATTER_SIZE, alpha=SCATTER_ALPHA, c=SCATTER_COLOR),
+            is_scatter=True,
             axis=axis,
         )
-
-    axis = plot_xy(
-        x_data=fitter_object.x_values,
-        y_data=fitter_object.y_values,
-        plot_config=spc(s=SCATTER_SIZE, alpha=SCATTER_ALPHA, c=SCATTER_COLOR),
-        is_scatter=True,
-        x_label=x_label,
-        y_label=y_label,
-        plot_title=plot_title,
-        axis=axis,
-    )
 
     axis.legend()
     _grid(axis)
@@ -302,34 +321,27 @@ def _prediction_interval(
     return axis
 
 
-def _obj_resolver(
-    plot_object: "FitPlotter | None" = None, fitter_object: "BaseFitter | MixedDataFitter | None" = None
-) -> tuple["FitPlotter", "BaseFitter | MixedDataFitter"]:
-    if plot_object is None and fitter_object is None:
-        raise ValueError("At least one of plot_object or fitter_object must be provided.")
+def _normal_quantiles(data: NDArray) -> tuple[NDArray, NDArray]:
+    """Theoretical and sample quantiles of ``data`` against a normal distribution fitted to it.
 
-    if plot_object is None:
-        assert fitter_object is not None  # guaranteed by the raise above
-        plot_object = fitter_object.plotter
-    if fitter_object is None:
-        assert plot_object is not None  # guaranteed by the raise above
-        fitter_object = plot_object.fitter
+    The theoretical quantiles are those of the standard normal at the plotting positions ``i / (n + 1)``, and the
+    sample quantiles are the sorted data standardized with the fitted mean and standard deviation.
+    """
+    sorted_data = np.sort(np.asarray(data, dtype=float))
+    loc, scale = norm.fit(sorted_data)
+    theoretical = norm.ppf(np.arange(1.0, sorted_data.size + 1) / (sorted_data.size + 1))
 
-    return plot_object, fitter_object
+    return theoretical, (sorted_data - loc) / scale
 
 
 def _qq(
-    plot_object: "FitPlotter | None" = None,
-    fitter_object: "BaseFitter | MixedDataFitter | None" = None,
+    result: FitResult,
     plot_title: str = "QQ-Plot",
     axis: Axes | None = None,
 ) -> Axes:
-    plot_object, fitter_object = _obj_resolver(plot_object=plot_object, fitter_object=fitter_object)
-    residual = fitter_object.get_residuals()
+    residual = result.residuals()
 
-    pp = ProbPlot(data=residual, dist=norm, fit=True)
-    quantiles = pp.theoretical_quantiles
-    values = pp.sample_quantiles
+    quantiles, values = _normal_quantiles(residual)
 
     q25, q75 = np.percentile(values, q=[25, 75])
     t_q25, t_q75 = norm.ppf([0.25, 0.75])
@@ -366,27 +378,52 @@ def _qq(
 
 
 def _qq_compare(
-    fitter_left: "BaseFitter | MixedDataFitter",
-    fitter_right: "BaseFitter | MixedDataFitter",
+    fitter_left,
+    fitter_right,
     label_left: str | None = None,
     label_right: str | None = None,
     plot_title: str = "Q-Q Plot Comparison",
     axes: tuple[Axes, Axes] | None = None,
 ) -> tuple[Axes, Axes]:
+    """Draw the Q-Q plots of the residuals of two fitters side by side.
+
+    Parameters
+    ----------
+    fitter_left :
+        The fitted fitter (or its :class:`~pymultifit.result.FitResult`) whose residuals are drawn on the left.
+    fitter_right :
+        The fitted fitter (or its :class:`~pymultifit.result.FitResult`) whose residuals are drawn on the right.
+    label_left :
+        Title of the left panel. Defaults to ``"Q-Q plot | <class name>"``.
+    label_right :
+        Title of the right panel. Defaults to ``"Q-Q plot | <class name>"``.
+    plot_title :
+        The figure's overall title, defaults to "Q-Q Plot Comparison".
+    axes :
+        Two axes to draw on. If ``None``, a 1x2 figure with a shared y-axis is created.
+
+    Returns
+    -------
+    tuple[Axes, Axes]
+        The left and right axes.
+
+    Raises
+    ------
+    AxesError
+        If ``axes`` is not a pair of axes.
+    """
     if axes is None:
         _, (ax_l, ax_r) = plt.subplots(nrows=1, ncols=2, figsize=(12, 6), sharey=True)
-    elif not isinstance(axes, list | tuple) or len(axes) != 2:
-        raise AxesError("There must be two axes for fitter and residuals to plot upon.")
     else:
-        ax_l, ax_r = axes
+        ax_l, ax_r = _axes_pair(axes)
 
     if label_left is None:
         label_left = f"Q-Q plot | {fitter_left.__class__.__name__}"
     if label_right is None:
         label_right = f"Q-Q plot | {fitter_right.__class__.__name__}"
 
-    _qq(fitter_object=fitter_left, plot_title=label_left, axis=ax_l)
-    _qq(fitter_object=fitter_right, plot_title=label_right, axis=ax_r)
+    _qq(result=as_result(fitter_left), plot_title=label_left, axis=ax_l)
+    _qq(result=as_result(fitter_right), plot_title=label_right, axis=ax_r)
 
     # manually mute the right plot for its y-axis label and ticks
     ax_r.tick_params(axis="y", left=False, labelleft=False)
@@ -397,13 +434,12 @@ def _qq_compare(
     return ax_l, ax_r
 
 
-def _validate(plot_object: "FitPlotter") -> "BaseFitter | MixedDataFitter":
-    # validate that the fitter exists and has been fit
-    f_obj = plot_object.fitter
-    if f_obj.params is None:
-        raise RuntimeError("Fit not performed yet. Call fit() first.")
+def _validate(plot_object: "FitPlotter") -> FitResult:
+    # validate that the fit has been performed
+    result = plot_object.result
+    result.require_fit()
 
-    return f_obj
+    return result
 
 
 def _resid(
@@ -415,14 +451,14 @@ def _resid(
     is_scatter: bool = False,
     axis: Axes | None = None,
 ) -> Axes:
-    fitter_object = _validate(plot_object)
-    x, y = np.asarray(fitter_object.x_values), np.asarray(fitter_object.y_values)
+    result = _validate(plot_object)
+    x = np.asarray(result.x)
 
     axis = _single_axis_sanitizer(axis=axis, figsize=RESID_FIG_SIZE)
 
     plot_xy(
         x_data=x,
-        y_data=fitter_object.get_residuals(),
+        y_data=result.residuals(),
         x_label=x_label,
         y_label=y_label,
         data_label=data_label,

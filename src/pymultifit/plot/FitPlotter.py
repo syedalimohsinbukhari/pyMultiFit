@@ -9,51 +9,23 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from plotez import lpc, plot_xy
 
-from ..fitters.backend import compute_ci_bounds
+from ..ci import compute_ci_bounds
+from ..result import FitResult
 from ._plot_backend import _ci_plotter, _fit_and_residual, _param_correlation, _plot, _prediction_interval, _qq, _resid
 
 
 class FitPlotter:
-    """Centralized plotting class for fitter objects.
+    """Centralized plotting class for fits.
 
     Parameters
     ----------
-    fitter :
-        A fitted (or pre-fit) fitter instance.
-        Must expose at minimum the attributes listed in ``_REQUIRED_ATTRS``.
-
-    Raises
-    ------
-    TypeError
-        If the supplied object is missing any required attribute.
+    result :
+        A :class:`~pymultifit.result.FitResult`, typically obtained from ``fitter.to_result()``.
+        It may be a pre-fit result, in which case only :meth:`dry_run` is usable.
     """
 
-    _REQUIRED_ATTRS = ("x_values", "y_values", "params", "n_fits", "n_par", "_n_fitter")
-
-    def __init__(self, fitter) -> None:
-        missing = [a for a in self._REQUIRED_ATTRS if not hasattr(fitter, a)]
-        if missing:
-            raise TypeError(f"Fitter is missing required attributes: {missing}")
-        self.fitter = fitter
-
-    def _default_param_labels(self) -> list[str]:
-        """Auto-generate parameter labels, model-aware for ``MixedDataFitter``.
-
-        Returns
-        -------
-        list[str]
-            Labels like ``["Gaussian_1_p1", "Gaussian_1_p2", "Line_2_p1"]`` for
-            mixed fitters, or ``["p1", "p2", ...]`` for single-model fitters.
-        """
-        if self._is_mixed_fitter():
-            labels = []
-            fitter = self.fitter
-            for i, model in enumerate(fitter.model_list):
-                n_par = fitter._instantiate_n_par(model=model)
-                for j in range(n_par):
-                    labels.append(f"{model.capitalize()}_{i + 1}_p{j + 1}")
-            return labels
-        return [f"p{i + 1}" for i in range(len(self.fitter.params))]
+    def __init__(self, result: FitResult) -> None:
+        self.result = result
 
     @staticmethod
     def _format_param(value, t_low: float = 0.001, t_high: float = 10_000.0) -> str:
@@ -77,11 +49,9 @@ class FitPlotter:
 
     @staticmethod
     def _get_color_cycle() -> list:
-        """Return the active matplotlib color cycle, skipping the first color."""
-        return plt.rcParams["axes.prop_cycle"].by_key()["color"][1:]
-
-    def _is_mixed_fitter(self) -> bool:
-        return hasattr(self.fitter, "model_list")
+        """Return the active matplotlib color cycle, skipping the first color (the data's), unless it is the only one."""
+        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+        return colors[1:] or colors
 
     @staticmethod
     def _plot_component(x, y, label: str, color: str, axis) -> None:
@@ -111,69 +81,25 @@ class FitPlotter:
             axis=axis,
         )
 
-    def _plot_individual_base(self, axis) -> None:
-        """Plot individual component fits for a ``BaseFitter`` subclass.
-
-        Parameters
-        ----------
-        axis :
-            Target axes object.
-        """
-        fitter = self.fitter
-        x = fitter.x_values
-        params = np.reshape(fitter.params, (fitter.n_fits, fitter.n_par))
-        colors = self._get_color_cycle()
-        class_name = fitter.__class__.__name__.replace("Fitter", "")
-
-        for i, par in enumerate(params):
-            self._plot_component(
-                x=x,
-                y=fitter.fitter(x=x, params=list(par)),
-                label=f"{class_name} {i + 1}({', '.join(self._format_param(v) for v in par)})",
-                color=colors[i % len(colors)],
-                axis=axis,
-            )
-
     def _plot_individual_fits(self, axis) -> None:
-        """Dispatch to the correct strategy based on the fitter type."""
-        if self._is_mixed_fitter():
-            self._plot_individual_mixed(axis)
-        else:
-            self._plot_individual_base(axis)
-
-    def _plot_individual_mixed(self, axis) -> None:
-        """Plot individual component fits for a ``MixedDataFitter``.
+        """Plot every component of the model as a dashed line on *axis*.
 
         Parameters
         ----------
         axis :
             Target axes object.
         """
-        fitter = self.fitter
-        x = fitter.x_values
+        result = self.result
         colors = self._get_color_cycle()
-        param_index = 0
 
-        for i, model in enumerate(fitter.model_list):
-            class_model = fitter._instantiate_class(model=model)
-            n_par = fitter._instantiate_n_par(model=model)
-            pars = fitter.params[param_index : param_index + n_par]
+        for i, (comp, pars) in enumerate(result.split(result.params)):
             self._plot_component(
-                x=x,
-                y=class_model.fitter(x=x, params=list(pars)),
-                label=f"{model.capitalize()} {i + 1}({', '.join(self._format_param(v) for v in pars)})",
+                x=result.x,
+                y=comp.func(result.x, list(pars)),
+                label=f"{comp.label} {i + 1}({', '.join(self._format_param(v) for v in pars)})",
                 color=colors[i % len(colors)],
                 axis=axis,
             )
-            param_index += n_par
-
-    @staticmethod
-    def _unwrap_plotter(plotter) -> Axes:
-        return plotter[0] if isinstance(plotter, list) else plotter
-
-    def _validate_fitted(self) -> None:
-        if self.fitter.params is None:
-            raise RuntimeError("Fit not performed yet. Call fit() first.")
 
     def dry_run(self, axis: Axes | None = None, is_scatter: bool = False) -> None:
         """Plot raw x / y data for quick inspection before fitting.
@@ -185,7 +111,7 @@ class FitPlotter:
         is_scatter :
             When ``True``, the raw data is plotted as a scatter plot instead of a line
         """
-        axis = plot_xy(x_data=self.fitter.x_values, y_data=self.fitter.y_values, axis=axis, is_scatter=is_scatter)
+        axis = plot_xy(x_data=self.result.x, y_data=self.result.y, axis=axis, is_scatter=is_scatter)
         axis.get_figure().tight_layout()
 
     def plot_confidence_intervals(
@@ -207,9 +133,9 @@ class FitPlotter:
         Parameters
         ----------
         ci_levels :
-            CI percentage level(s) to plot (e.g., 95 or [68, 95, 99]).
+            CI level(s) to plot, as percentages or decimals (e.g., 95, 0.95 or [68, 95, 99]).
         results :
-            Pre-computed CI dictionary returned by :meth:`BaseFitter.ci_bounds`.
+            Pre-computed CI dictionary returned by :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals`.
             When None, the CI is computed internally, defaults to None.
         n_bootstrap :
             Number of bootstrap samples to use when computing the CI.
@@ -241,7 +167,7 @@ class FitPlotter:
         """
         if results is None:
             results = compute_ci_bounds(
-                fitter_object=self.fitter,
+                result=self.result,
                 ci_levels=ci_levels,
                 n_bootstrap=n_bootstrap,
                 overall_ci=overall_ci,
@@ -252,7 +178,7 @@ class FitPlotter:
             )
 
         axis = _ci_plotter(
-            fitter_object=self.fitter,
+            result=self.result,
             results=results,
             ci_levels=ci_levels,
             overall_ci=overall_ci,
@@ -281,15 +207,16 @@ class FitPlotter:
         Parameters
         ----------
         show_individuals :
-            When True, each component is plotted separately.
+            When True, each component is plotted as a dashed line in addition to the total fit, also for a model of one
+            component.
         x_label :
             The x-axis label, defaults to "X".
         y_label :
             The y-axis label, defaults to "Y".
         plot_title :
-            The title for the PI plot, defaults to "Plot".
+            The title for the plot, defaults to "Plot".
         data_label :
-            THe label for the plotted data, defaults to "Data".
+            The label for the plotted data, defaults to "Data".
         fit_label :
             The label for the fitted curve, defaults to "Total Fit".
         is_scatter :
@@ -323,7 +250,7 @@ class FitPlotter:
         plot_title: str = "Fit and Residuals",
         data_label: str = "Data",
         fit_label: str = "Total Fit",
-        is_scatter: tuple[bool, bool] = (False, False),
+        is_scatter: tuple[bool, bool] | bool = (False, False),
         axes: tuple[Axes, Axes] | None = None,
     ) -> tuple[Axes, Axes]:
         """Plot the fitted model and residuals in a two-panel figure.
@@ -331,30 +258,41 @@ class FitPlotter:
         Parameters
         ----------
         show_individuals :
-            When True, each component is plotted separately.
+            When True, each component is plotted as a dashed line in addition to the total fit, also for a model of one
+            component.
         x_label :
             The x-axis label, defaults to "X".
         y_label :
             The y-axis label, defaults to "Y".
         plot_title :
-            The title for the PI plot, defaults to "Plot".
+            The title for the figure, defaults to "Fit and Residuals".
         data_label :
-            THe label for the plotted data, defaults to "Data".
+            The label for the plotted data, defaults to "Data".
         fit_label :
             The label for the fitted curve, defaults to "Total Fit".
         is_scatter :
-            When True, the raw data is plotted as a scatter plot instead of a line.
-            The tuple is shared with both fit plot and residual plots individually, both defaults to False.
+            Whether the data is drawn as scatter points instead of a line, as the pair ``(fit_panel, residual_panel)``
+            so that each panel is chosen independently, e.g. ``(False, True)`` draws the data as a line and the residuals
+            as points. A single bool applies to both panels. Defaults to ``(False, False)``.
         axes :
-            The matplotlib axis objects on which the fit and residuals are to be drawn.
-            If None, a 1x2 subplot will be generated with 3:1 height for fit and residuals.
+            The two matplotlib axes (fit, residuals) on which the plots are to be drawn, as a tuple, a list or the
+            array returned by ``plt.subplots(2, 1)``.
+            If None, a 2x1 subplot will be generated with 3:1 height for fit and residuals.
 
         Returns
         -------
         tuple[Axis, Axis]
             The set of axes on which the figure and residuals were drawn.
         """
-        is_scatter_plot, is_scatter_residual = is_scatter
+        if isinstance(is_scatter, bool | np.bool_):
+            is_scatter_plot = is_scatter_residual = bool(is_scatter)
+        else:
+            try:
+                is_scatter_plot, is_scatter_residual = is_scatter
+            except (TypeError, ValueError):
+                raise ValueError(
+                    f"is_scatter must be a bool or a pair (fit_panel, residual_panel), got {is_scatter!r}."
+                ) from None
         return _fit_and_residual(
             plot_object=self,
             show_individuals=show_individuals,
@@ -392,16 +330,14 @@ class FitPlotter:
         Axes :
             The axes on which the plot was drawn.
         """
-        return _param_correlation(
-            plot_object=self, fitter_object=self.fitter, param_labels=param_labels, plot_title=plot_title, axis=axis
-        )
+        return _param_correlation(result=self.result, param_labels=param_labels, plot_title=plot_title, axis=axis)
 
     def plot_prediction_intervals(
         self,
-        pi_level: int | list[int] = 95,
-        x_label: str = "X",
-        y_label: str = "Y",
-        plot_title: str = "PI",
+        pi_level: float | list[float] = 95,
+        x_label: str | None = None,
+        y_label: str | None = None,
+        plot_title: str | None = None,
         axis: Axes | None = None,
     ) -> Axes:
         r"""Plot prediction intervals for new individual observations.
@@ -420,14 +356,14 @@ class FitPlotter:
         Parameters
         ----------
         pi_level :
-            Prediction interval level(s) as percentages.
-            Pass a single integer or a list of integers for multiple bands, defaults to 95.
+            Prediction interval level(s), as percentages (``95``, ``95.0``) or decimals (``0.95``).
+            Pass a single level or a list of levels for multiple bands, defaults to 95.
         x_label :
-            The x-axis label, defaults to X.
+            The x-axis label. If ``None``, the axis' existing label is kept, or "X" for a new axis.
         y_label :
-            The y-axis label, defaults to Y.
+            The y-axis label. If ``None``, the axis' existing label is kept, or "Y" for a new axis.
         plot_title :
-            The title for the PI plot, defaults to PI.
+            The title of the plot. If ``None``, the axis' existing title is kept, or "PI" for a new axis.
         axis :
             The matplotlib axis object on which the plot is to be drawn.
             If None, an axis object is generated and returned, defaults to None.
@@ -438,8 +374,7 @@ class FitPlotter:
             The matplotlib axis object on which the plot was drawn.
         """
         return _prediction_interval(
-            plot_object=self,
-            fitter_object=self.fitter,
+            result=self.result,
             pi_level=pi_level,
             x_label=x_label,
             y_label=y_label,
@@ -464,29 +399,30 @@ class FitPlotter:
         Axes
             The Matplotlib Axes object containing the Q-Q plot.
         """
-        return _qq(plot_object=self, plot_title=plot_title, axis=axis)
+        return _qq(result=self.result, plot_title=plot_title, axis=axis)
 
     def plot_residuals(
         self,
         x_label: str = "X",
-        y_label: str = "Y",
+        y_label: str = r"$y - \hat{y}$",
         data_label: str = "Residuals",
         plot_title: str = "",
         is_scatter: bool = False,
         axis: Axes | None = None,
     ) -> Axes:
-        """Plot residuals (data − fitted model).
+        r"""Plot residuals (data − fitted model).
 
         Parameters
         ----------
         x_label :
             Label for the x-axis, defaults to "X".
         y_label :
-            Label for the y-axis, defaults to "Y".
+            Label for the y-axis, defaults to ``y - \hat{y}``, as on the residual panel of
+            :meth:`plot_fit_and_residuals`.
         plot_title :
-            Residual plot title, defaults to "Residuals".
+            Residual plot title, defaults to "".
         data_label :
-            Data label for the residuals, defaults to "".
+            Data label for the residuals, defaults to "Residuals".
         is_scatter :
             When True, the raw data is plotted as a scatter plot instead of a line, defaults to False.
         axis :
@@ -513,7 +449,8 @@ class FitPlotter:
         """Save the current (or provided) figure with format auto-detection.
 
         The output format is inferred from the file extension.  When the path
-        carries no extension, ``.png`` is appended automatically.
+        carries no extension, ``.png`` is appended automatically (a dot followed by digits only, like in
+        ``fit_0.5``, is part of the name and not an extension).
 
         Parameters
         ----------
@@ -526,7 +463,8 @@ class FitPlotter:
         dpi :
             Resolution in dots per inch.  Defaults to 150.
         **kwargs :
-            Forwarded directly to :func:`matplotlib.figure.Figure.savefig`.
+            Forwarded to :func:`matplotlib.figure.Figure.savefig`. ``bbox_inches`` defaults to ``"tight"``, and
+            ``format`` overrides the format taken from the extension.
 
         Returns
         -------
@@ -540,16 +478,23 @@ class FitPlotter:
         """
         _supported = {"png", "pdf", "svg", "eps", "jpg", "jpeg", "tiff", "tif"}
 
-        path = Path(filename)
-        ext = path.suffix.lower().lstrip(".")
+        requested = kwargs.pop("format", None)
 
-        if not ext:
-            ext = "png"
-            path = path.with_suffix(".png")
+        path = Path(filename)
+        suffix = path.suffix.lower().lstrip(".")
+        if not any(char.isalpha() for char in suffix):
+            suffix = ""  # no extension, or a dot inside the name ("fit_0.5")
+
+        ext = str(requested or suffix or "png").lower().lstrip(".")
 
         if ext not in _supported:
             raise ValueError(f"Unsupported format '.{ext}'. Supported formats: {sorted(_supported)}")
 
+        if not suffix:
+            path = path.with_name(f"{path.name}.{ext}")
+
+        kwargs.setdefault("bbox_inches", "tight")
+
         fig = figure or plt.gcf()
-        fig.savefig(path, format=ext, dpi=dpi, bbox_inches="tight", **kwargs)
+        fig.savefig(path, format=ext, dpi=dpi, **kwargs)
         return str(path)

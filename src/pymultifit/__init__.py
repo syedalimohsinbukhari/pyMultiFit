@@ -1,7 +1,5 @@
 """Created on Jul 18 00:15:42 2024"""
 
-import functools
-
 import numpy as np
 from deprecation import deprecated as _deprecated
 from scipy.special import xlogy
@@ -26,20 +24,6 @@ def mark_deprecated(ver_: str, new: str):
         return _deprecated(deprecated_in=ver_, removed_in=None, details=reason)(func)
 
     return _decorator
-
-
-def suppress_numpy_warnings():
-    """A decorator that suppresses NumPy warnings using ``np.errstate``."""
-
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            with np.errstate(all="ignore"):
-                return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
 
 
 doc_style = "numpy_napoleon_with_merge"

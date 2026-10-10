@@ -1,18 +1,29 @@
 """Created on Dec 31 05:45:40 2024"""
 
+import os
+import re
 import time
+from pathlib import Path
 from timeit import default_timer as timer
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import statsmodels.api as sm
 from matplotlib import pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.ticker import FixedLocator
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from pymultifit import EPSILON
+
+# ``run_benchmarks.py --smoke`` sets BENCH_SMOKE=1: the same code path with 2 repetitions instead of 15
+DEFAULT_REPETITIONS = 2 if os.environ.get("BENCH_SMOKE") == "1" else 15
+
+
+def slugify(text: str) -> str:
+    """Lower-case snake_case file name part; ``-3`` becomes ``m3`` and ``2.2`` becomes ``2p2`` so no parameter is lost."""
+    text = re.sub(r"(?<![A-Za-z0-9])-(?=\d)", "m", text)
+    text = re.sub(r"(?<=\d)\.(?=\d)", "p", text)
+    return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
 
 
 def test_and_plot(general_case, edge_case, custom_dist, scipy_dist, title):
@@ -62,11 +73,9 @@ def plot_accuracy(x, results, title_suffix):
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (PDF)")
     plt.title(f"Absolute Difference:\nPDF {title_suffix}")
-    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
-    # if results.get('log_pdf_abs_diff') is not None:
     plt.subplot(2, 2, 2)
     plt.plot(x, results["log_pdf_abs_diff"], label="log PDF Absolute Diff", marker=".")
     plt.xscale("log")
@@ -74,7 +83,6 @@ def plot_accuracy(x, results, title_suffix):
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (log PDF)")
     plt.title(f"Absolute Difference:\nlog PDF {title_suffix}")
-    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
@@ -85,11 +93,9 @@ def plot_accuracy(x, results, title_suffix):
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (CDF)")
     plt.title(f"Absolute Difference:\nCDF {title_suffix}")
-    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
-    # if results.get('log_cdf_abs_diff') is not None:
     plt.subplot(2, 2, 4)
     plt.plot(x, results["log_cdf_abs_diff"], label="log CDF Absolute Diff", marker=".")
     plt.xscale("log")
@@ -97,12 +103,10 @@ def plot_accuracy(x, results, title_suffix):
     plt.xlabel("x")
     plt.ylabel("Absolute Difference (log CDF)")
     plt.title(f"Absolute Difference:\nlog CDF {title_suffix}")
-    # plt.gca().set_ylim(top=1e5, bottom=1e-310)
     plt.legend()
     plt.grid(True)
 
     plt.tight_layout()
-    # plt.savefig('plots/{title_suffix}.png'.format(title_suffix=title_suffix))
 
 
 #####################################################################################################################################################
@@ -110,87 +114,87 @@ def plot_accuracy(x, results, title_suffix):
 #####################################################################################################################################################
 
 
-def evaluate_speed(custom_dist, scipy_dist, n_points_list, compute_cdf=False, repetitions=100):
-    avg_times_class = []
-    avg_times_scipy = []
+def _median_time(func, x, repetitions, warmup):
+    for _ in range(warmup):
+        func(x)
+
+    times = []
+    for _ in range(repetitions):
+        start = timer()
+        func(x)
+        times.append(timer() - start)
+    return np.median(times)
+
+
+def evaluate_speed(custom_dist, scipy_dist, n_points_list, compute_cdf=False, repetitions=100, warmup=3):
+    """Median runtime per number of points for the custom and the scipy distribution (``warmup`` untimed calls first)."""
+    method = "cdf" if compute_cdf else "pdf"
+    median_times_class = []
+    median_times_scipy = []
 
     for n_points in n_points_list:
         x = np.linspace(start=EPSILON, stop=10, num=n_points)
+        median_times_class.append(_median_time(getattr(custom_dist, method), x, repetitions, warmup))
+        median_times_scipy.append(_median_time(getattr(scipy_dist, method), x, repetitions, warmup))
 
-        class_times = []
-        for _ in range(repetitions):
-            if compute_cdf:
-                start_class = timer()
-                __ = custom_dist.cdf(x)
-                end_class = timer()
-            else:
-                start_class = timer()
-                __ = custom_dist.pdf(x)
-                end_class = timer()
-            class_times.append(end_class - start_class)
-        avg_times_class.append(np.mean(class_times))
-
-        scipy_times = []
-        for _ in range(repetitions):
-            if compute_cdf:
-                start_scipy = timer()
-                __ = scipy_dist.cdf(x)
-                end_scipy = timer()
-            else:
-                start_scipy = timer()
-                __ = scipy_dist.pdf(x)
-                end_scipy = timer()
-            scipy_times.append(end_scipy - start_scipy)
-        avg_times_scipy.append(np.mean(scipy_times))
-
-    return avg_times_class, avg_times_scipy
+    return median_times_class, median_times_scipy
 
 
-def plot_speed_and_ratios(n_points_list, times_class, times_scipy, title_suffix, save_as="speed_comparison"):
+def plot_speed_and_ratios(n_points_list, times_class, times_scipy, function, label):
+    """Plot the timings and their ratio; ``function`` is ``"PDF"`` or ``"CDF"``, ``label`` names the distribution."""
     n_points_list = np.array(n_points_list)
 
-    mean_c = np.array([np.mean(i) for i in times_class])
-    mean_s = np.array([np.mean(i) for i in times_scipy])
+    time_c = np.asarray(times_class, dtype=float)  # each entry is already a median over the repetitions
+    time_s = np.asarray(times_scipy, dtype=float)
 
-    ratio_means = mean_c / mean_s
+    ratio = time_c / time_s
 
     plt.figure(figsize=(10, 4))
 
     plt.subplot(1, 2, 1)
-    plt.plot(n_points_list, mean_c, "o-", ms=3, label="Custom (Mean)", color="blue")
-    plt.plot(n_points_list, mean_s, "s-", ms=3, label="SciPy (Mean)", color="orange")
+    plt.plot(n_points_list, time_c, "o-", ms=3, label="Custom (median)", color="blue")
+    plt.plot(n_points_list, time_s, "s-", ms=3, label="SciPy (median)", color="orange")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Number of Points")
     plt.ylabel("Execution Time (s)")
-    plt.title(f"Speed Comparison: Custom vs SciPy ({title_suffix})")
+    plt.title(f"{label}: {function} speed, custom vs SciPy")
     plt.legend()
     plt.grid(True)
 
-    lowess_results = sm.nonparametric.lowess(ratio_means, n_points_list, frac=0.3)
-    x_smooth, y_smooth = lowess_results[:, 0], lowess_results[:, 1]
-
     plt.subplot(1, 2, 2)
-    plt.plot(n_points_list, ratio_means, "x-", ms=4, label="Ratio (Mean)", color="purple")
-    plt.plot(x_smooth, y_smooth, "r--", lw=2, alpha=0.75, label="LOESS Fit")
+    plt.plot(n_points_list, ratio, "x-", ms=4, label="Ratio (median)", color="purple")
     plt.xscale("log")
     plt.xlabel("Number of Points")
     plt.ylabel("Speed Ratio (Custom/SciPy)")
     plt.axhline(y=1, color="k", linestyle=":", label="Ratio = 1")
-    plt.title(f"Speed Ratio: Custom/SciPy ({'Example Title'})")
+    plt.title(f"{label}: {function} speed ratio, custom/SciPy")
     plt.legend()
     plt.grid(True)
 
     plt.tight_layout()
-    plt.savefig(f"plots/{save_as}_{title_suffix}.png")
+    Path("plots/speed").mkdir(parents=True, exist_ok=True)
+    plt.savefig(f"plots/speed/{slugify(label)}_{function.lower()}.png")
 
 
-def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = 15):
+def _progress(message: str):
+    """Append a line to the file named by BENCH_PROGRESS (set by ``run_benchmarks.py``); the notebook itself prints nothing."""
+    path = os.environ.get("BENCH_PROGRESS")
+    if path:
+        with open(path, "a") as handle:
+            handle.write(f"{time.strftime('%H:%M:%S')} {message}\n")
+
+
+def cdf_pdf_plots(custom_dist, scipy_dist, n_points, save_as: str, repetitions: int = DEFAULT_REPETITIONS):
+    start = timer()
     p_times_class, p_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
-    plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF Computations", save_as)
+    plot_speed_and_ratios(n_points, p_times_class, p_times_scipy, "PDF", save_as)
+    _progress(f"{save_as}: PDF done ({timer() - start:.0f} s)")
 
-    c_times_class, c_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, False, repetitions)
-    plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF Computations", save_as)
+    start = timer()
+    c_times_class, c_times_scipy = evaluate_speed(custom_dist, scipy_dist, n_points, True, repetitions)
+    plot_speed_and_ratios(n_points, c_times_class, c_times_scipy, "CDF", save_as)
+    _progress(f"{save_as}: CDF done ({timer() - start:.0f} s)")
 
     return (p_times_class, c_times_class), (p_times_scipy, c_times_scipy)
 
@@ -231,8 +235,8 @@ def plot_distribution_comparison(data_dict, title_labels=("PDF", "CDF")):
         ax[i].boxplot(log_data, meanline=True, showmeans=True)
         ax[i].set_xticklabels(xtick_labels, rotation=60, ha="center")
         ax[i].set_title(title)
+        ax[i].set_ylabel("Log[Time] [s]")
 
-    plt.xlabel("Log[Time] [s]")
     plt.tight_layout()
     plt.show()
 
@@ -275,7 +279,7 @@ def describe_data(data_list, labels=None, caption="PDF"):
 
     summary_list = []
 
-    for idx, data in enumerate(data_list):
+    for data in data_list:
         if not isinstance(data, pd.Series):
             data = pd.Series(data)
 
@@ -323,8 +327,8 @@ def heatmap(m_df, s_df, label="PDF"):
     raw_ratios = m_df / s_df
     raw_ratios.index = raw_ratios.index + 1
 
-    v_min = raw_ratios.min().min()
-    v_max = raw_ratios.max().max()
+    v_min = min(raw_ratios.min().min(), 1 - 1e-6)  # TwoSlopeNorm needs vmin < 1 < vmax, even when every ratio is below (or above) 1
+    v_max = max(raw_ratios.max().max(), 1 + 1e-6)
     norm = TwoSlopeNorm(vcenter=1, vmin=v_min, vmax=v_max)
 
     plt.figure(figsize=(16, 6))
@@ -344,108 +348,3 @@ def heatmap(m_df, s_df, label="PDF"):
     plt.xticks(rotation=0, ha="center")
     plt.tight_layout()
     plt.show()
-
-
-def time_function(func, test_values, num_runs=500):
-    """Measure the average runtime for one function over multiple internal runs."""
-    total_time = 0
-    for _ in range(num_runs):
-        start = time.perf_counter()
-        func(test_values)
-        end = time.perf_counter()
-        total_time += end - start
-    return total_time / num_runs
-
-
-def benchmark_functions(functions, values, n_repeats=9, n_runs_per_repeat=500):
-    """Run timing benchmarks n_repeats times for each function."""
-    all_times = np.zeros((n_repeats, len(functions)))
-
-    for i in range(n_repeats):
-        for j, func in enumerate(functions):
-            all_times[i, j] = time_function(func, values, num_runs=n_runs_per_repeat)
-
-    return all_times
-
-
-def plot_all_variations(
-    distribution_name, functions, values, latex_annotations, n_repeats=20, n_runs_per_repeat=500, save_fig=True
-):
-    """Plot a single, combined runtime comparison with an inset scatter plot for deviations."""
-    all_times = benchmark_functions(functions, values, n_repeats, n_runs_per_repeat)
-
-    # Log10 transform for better visualization
-    log_times = np.log10(all_times)
-    mean_log_times = np.median(log_times, axis=0)
-    std_log_times = np.std(log_times, axis=0)
-
-    versions = [f"Version {i}" for i in range(1, len(functions) + 1)]
-    colors = ["#a3c4f3", "#b8e5b5", "#f5a8a8", "#f7b39e", "#c6a8e6", "#a0e6d7"][: len(functions)]
-
-    # --- MAIN FIGURE ---
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    # --- BAR PLOT ---
-    bars = ax.bar(versions, mean_log_times, color=colors, zorder=2)
-
-    # --- HIGHLIGHT BEST VERSION ---
-    min_idx = np.argmin(mean_log_times)
-    min_val = mean_log_times[min_idx]
-    ax.scatter(
-        x=bars[min_idx].get_x() + bars[min_idx].get_width() / 2, y=min_val, color="k", marker="*", s=150, zorder=10
-    )
-    ax.axhline(y=min_val, color="r", ls="--", label=f"$10^{{{min_val:.4f}}}$ s")
-
-    # --- FORMULA LABELS (shifted upwards) ---
-    for i, bar in enumerate(bars):
-        height = bar.get_height()
-        ax.text(
-            x=bar.get_x() + bar.get_width() / 2,
-            y=height / 4,
-            s=latex_annotations[i],
-            ha="center",
-            va="center",
-            color="k",
-            rotation=90,
-        )
-
-    # --- INSET SCATTER PLOT ---
-    ax_inset = inset_axes(
-        ax,
-        width="50%",
-        height="100%",
-        bbox_to_anchor=(0.62, 0.15, 0.35, 0.4),
-        borderpad=1.5,
-        bbox_transform=ax.transAxes,
-    )
-
-    for i in range(len(functions)):
-        jitter = (np.random.rand(n_repeats)) * 0.2 - 0.1  # centered jitter
-        ax_inset.scatter(np.full(n_repeats, i) + jitter, log_times[:, i], color="black", alpha=0.1, s=20, zorder=3)
-        ax_inset.errorbar(
-            i, mean_log_times[i], yerr=std_log_times[i], color="r", fmt="o", markersize=5, zorder=4, capsize=5
-        )
-
-    ax_inset.set_xticks(range(len(functions)))
-    ax_inset.set_xticklabels([f"V{i + 1}" for i in range(len(functions))], fontsize=8)
-    ax_inset.grid(True, linestyle=":", alpha=0.4)
-
-    # Adjust inset y-limits dynamically to zoom around scatter range
-    y_min = np.min(log_times)
-    y_max = np.max(log_times)
-    # ax_inset.set_ylim(y_min - 0.01, y_max + 0.01)
-
-    # --- FINAL STYLING ---
-    ax.set_ylabel("Time (log₁₀ seconds)")
-    ax.set_title(f"Runtime Comparison ({distribution_name}) — Averaged over {n_repeats} runs")
-    ax.legend(loc="upper left")
-    ax.grid(True, axis="y", linestyle=":", alpha=0.4)
-
-    fig.tight_layout()
-
-    # --- SAVE OR SHOW ---
-    if save_fig:
-        plt.savefig(f"./variation_plots/{distribution_name}_combined_variations.png", dpi=300)
-        plt.close()
-    else:
-        plt.show()

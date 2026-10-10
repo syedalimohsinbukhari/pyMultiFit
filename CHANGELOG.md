@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - Unreleased
 
-**PRs:** [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125] · **Issues:** [issue #89], [issue #90], [issue #94], [issue #95], [issue #99], [issue #100], [issue #117], [issue #118], [issue #119], [issue #121]
+**PRs:** [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125], [PR #141] · **Issues:** [issue #89], [issue #90], [issue #94], [issue #95], [issue #99], [issue #100], [issue #117], [issue #118], [issue #119], [issue #121]
 
 🎓 *Entries marked with a scholar hat were contributed by **Ahmed Bin Jawwad**, an intern at the Space and Astrophysics Research Lab (SARL), National Center of GIS and Space Applications (NCGSA), Institute of Space Technology (IST), Islamabad, Pakistan (Jul 6 – Aug 28, 2026).*
 
@@ -15,8 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `QExponentialDistribution` and `StudentsTDistribution` to `pymultifit.distributions.generalized`. 🎓
 - Added Gumbel PDF/log-PDF/CDF/log-CDF utility functions (`gumbel_pdf_`, `gumbel_log_pdf_`, `gumbel_cdf_`, `gumbel_log_cdf_`) to `distributions.utilities_d` — note: only the standalone utility functions shipped, not a public `GumbelDistribution` class.
-- Added a new `pymultifit.plot` subpackage (`FitPlotter`, `_plot_backend`) providing residual plots, Q-Q plots, confidence-interval bounds, prediction intervals, parameter-correlation plots, and gridlines on plot axes, exposed via a cached `BaseFitter.plotter` property.
-- Added a confidence-interval computation backend (`fitters.backend._ci_backend`: `compute_ci_bounds`, `compute_individual_ci_base`, `compute_individual_ci_mixed`).
+- Added a new `pymultifit.plot` subpackage (`FitPlotter`, `qq_compare`) providing fit and residual plots, Q-Q plots, confidence-interval bounds, prediction intervals, parameter-correlation plots, and gridlines on plot axes, exposed via a cached `BaseFitter.plotter` property. `FitPlotter` is built from an immutable `FitResult` and has no dependency on the fitter classes.
+- Plot behaviour: `show_individuals=True` draws the total fit with the dashed components on top of it, also for a model of one component; `axes=` takes a tuple, a list or the array `plt.subplots(2, 1)` returns; `plot_fit_and_residuals(is_scatter=...)` takes a pair `(fit_panel, residual_panel)` or one bool for both panels; `plot_residuals()` labels its y axis `y - ŷ`, like the residual panel; the legends of confidence and prediction intervals show the exact level (`99.7% PI`, not `100% PI`, which would be an infinite band); `save_plot()` forwards `bbox_inches` and `format` to matplotlib and treats a dot followed by digits (`fit_0.5`) as part of the name.
+- Added `pymultifit.ci.compute_ci_bounds`, which computes bootstrap confidence intervals (overall and per-component) from a `FitResult`.
+- Added `pymultifit.ci.ci_level_labels` and `pymultifit.ci.ci_level_percents`, which normalise interval levels given as percentages or decimals (`95`, `95.0`, `0.95`, `[68, 95, 99.7]`, NumPy integers): the first gives the whole-percent labels used in the keys of the `compute_ci_bounds` result (`overall_ci_95`), the second the exact percentages (`99.7` stays `99.7`).
+- Added `pymultifit.result` with `FitResult` and `Component`, an immutable description of a fit (data, parameters, covariance, additive components, parameter labels) providing `model()`, `residuals()`, `component_curve()`, `errors` and `slices()`.
+- Added `BaseFitter.to_result()` (overridden by `MixedDataFitter`) to build a `FitResult` from the current state of a fitter; it also works before `fit()`.
 - Added frozen-parameter fitting support across fitters, with auto-padding of a `pn_par`-length `frozen` mask to `n_par` length (emits a `UserWarning`).
 - Added an `is_scatter` option to `dry_run()`/plotting methods to render raw data as a scatter plot instead of a line.
 - Added `pymultifit.exceptions` module (`pyMultiFitErrors`, `AxesError`).
@@ -31,12 +35,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `MixedDataFitter` now subclasses `BaseFitter` instead of duplicating its logic, unifying residual/CI/plotting support across all fitters.
 - Swapped the `deprecated`/`Deprecated` (`deprecated.sphinx`) dependency for `deprecation`; internal `mark_deprecated`/`md_scipy_like` helpers reworked accordingly.
 - Swapped the plotting dependency `mpyez` for `plotez` (`LinePlotConfig`, `plot_xy`).
-- Added `statsmodels` as a runtime dependency; added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
+- Added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
 - Relaxed the `numpy<2.1.0` upper version pin to an unconstrained `numpy` dependency.
+- The functions in `distributions.utilities_d` no longer hide NumPy warnings behind the `suppress_numpy_warnings` decorator, which cost about 2-5 µs per call (up to ~10% of a single-point evaluation). They now evaluate only where the result is defined and use the warning-free `scipy.special` routines (`xlogy`, `log1p`), and a test keeps them warning-free.
+- Faster distribution functions: the PDF, log-PDF, CDF and log-CDF of the arcsine and beta distributions, `log_normal_cdf_` and `chi_square_pdf_` evaluate the expensive part (`power`, `arcsin`, `betainc`, `log`) only where the result is defined, inside the support, and fill the rest with the constants (`out=` / `where=` or boolean indexing instead of evaluating a stand-in value everywhere); `beta_pdf_` and `beta_log_pdf_` also compute only the form they return, they used to compute both. The outputs are bit-identical to the previous ones, including for `nan`, `inf` and the support boundaries.
+- `uniform_log_cdf_` and `q_exponential_log_cdf_` take the logarithm with a masked `log` (`_log_pos`) instead of `xlogy(1.0, a)`, which is about a quarter faster on large arrays and warning-free.
+   - Measured as multifit time / scipy time (median over the 12 largest of 50 sizes up to 10⁶ points, `x` from the machine epsilon to 10) on an AMD Threadripper PRO 5955WX and an Intel i7-3720QM:
+     - The beta PDF went from about 2× slower than scipy (ratio 1.9-2.3) to about 1.5× faster (0.55-0.67). The beta CDF improved by 16-62 % and the arcsine CDF by 56-68 %.
+     - On the Threadripper the arcsine PDF and the Laplace CDF went from 0.58 to 0.34 of scipy's time (about 40 % faster) against the commit before the warning decorators were removed.
+- The math constants of `pymultifit/__init__.py` (`LOG`, `EXP`, `LOG1P`, `SQRT`, `XLOGY`, `INF`) are used throughout the distributions, fitters and plots instead of the NumPy / SciPy names, with `LOG1P` only where the argument is provably above -1.
+- `statsmodels` is no longer a runtime dependency: the Q-Q plots compute their quantiles with SciPy and NumPy (the result is pinned by a test against the values `statsmodels` gave), and `statsmodels` stays in the `dev` group for the benchmarks.
+- Benchmarks: `benchmarks/run_benchmarks.py`, `bench_env.py` and `compare_runs.py` run the speed benchmark reproducibly (threads and core pinned, environment recorded in `env.json`, one result folder per machine and commit in `benchmarks/results/`) and compare two runs with a noise-aware verdict; `benchmarks/SPEED_SUMMARY.md` summarises the beta and arcsine change. `accuracy.ipynb` explains that the spike in the Laplace log-PDF plots comes from `scipy`, whose `laplace.logpdf` loses digits from `x` of about 729 and returns `-inf` from about 745, and `benchmarks/laplace_logpdf_underflow.py` shows it against the exact value. The arcsine variation scripts and their plots were removed, and the `q_exponential_check.ipynb` / `student_t_check.ipynb` notebooks moved to `benchmarks/checks/`.
+- Renamed `examples/gamma_sr.py` to `examples/gamma.py`.
+- Reworked the dependency files: `environment[dev].yaml` and `requirements[dev].txt` are now `environment-dev.yaml` and `requirements-dev.txt`, `requirements.txt` holds the runtime dependencies only (exported with `uv`), the runtime `environment.yaml` matches `pyproject.toml` (`deprecation`, `plotez`; no `tqdm`), `update_requirements_doc.py` was removed, and a test keeps the environment files in sync with `pyproject.toml`.
+- Documentation: added a plotting guide (figures generated at build time) and API pages for `pymultifit.plot`, `pymultifit.result` and `pymultifit.ci`; the `MixedDataFitter` page now lists all supported models; installation instructions and dependency lists were updated.
 
 ### Fixed
 
-- Tightened NumPy warning suppression in distribution utility functions to only ignore `invalid`/`divide` warnings instead of all warnings.
+- `laplace_log_pdf_` returned `-inf` far in the tails (more than ~745 scale units from the mean) instead of the correct large negative value.
+- `sym_gen_normal_pdf_`, `sym_gen_normal_log_pdf_`, `sym_gen_normal_cdf_` and `sym_gen_normal_log_cdf_` now return NaN for a non-positive `shape` (like the other distributions reject invalid parameters) instead of dividing by zero.
+- `GammaDistribution.stats()` returned `mode = 0` for shape < 1 regardless of `loc`; it now returns `loc`.
+- Corrected the `GammaDistribution` and `GammaFitter` documentation: `scale` is scipy's `scale` (the rate is `1/scale`), not a rate, and the stale `SR`/`SS` and `λ` wording was removed.
+- Docs: replaced the removed `GAMMA_SR` / `GAMMA_SS` constants with `GAMMA` in the constants reference.
+- `stats()` of all distribution classes was audited with warnings as errors over wide and extreme parameter grids (`test_no_numpy_warnings.py`), which found and fixed:
+  - `SkewNormalDistribution.stats()` raised `ZeroDivisionError` for `shape=0` (a normal distribution) and returned NaN for shapes as small as 5e-324.
+  - `ScaledInverseChiSquareDistribution.stats()` raised `ZeroDivisionError` for `df=2` and `df=4`; it now returns `inf` where the mean (`df <= 2`) or the variance (`df <= 4`) does not exist.
+  - `SymmetricGeneralizedNormalDistribution.stats()` warned for `scale <= 0` or `shape <= 0` (it now returns the NaN values) and for a huge scale (it now overflows silently to `inf`, the correct variance).
+  - `QExponentialDistribution.stats()` raised `ZeroDivisionError` for `rate=0`; it now returns NaN values for `rate <= 0`.
+  - `JohnsonSUDistribution.stats()` warned about the overflow of `sinh`, `cosh`, `exp` and `expm1` and returned NaN for `gamma=0` (`inf * 0`); it now returns `xi` as the mean.
+  - `LogNormalDistribution.stats()` returned NaN with a warning for a huge `mu` with a tiny `std` (`exp(std**2) - 1` rounded to 0, it now uses `expm1`) and raised `OverflowError` for `mu` above about 1e154, where scipy returns `inf`.
+- Benchmarks: `cdf_pdf_plots` timed the PDF twice, so every "CDF" timing CSV held PDF timings; timing now uses 3 warm-up calls and the median. Timings produced before the fix must not be compared with newer ones.
 
 ### Breaking Changes
 
@@ -44,6 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the top-level type aliases `pymultifit.OneDArray`, `ListOrNdArray`, `ParamTuple`, `Params_` from `pymultifit/__init__.py`, replaced by `pymultifit.typing.{ArrayLike, NDArray, Params_, RaggedParams}`. Code importing these names from the package root will break.
 - Removed the deprecated `scipy_like()` classmethod from every distribution in `pymultifit.distributions` (including `generalized`), along with its `md_scipy_like` decorator helper (`pymultifit.mark_deprecated`'s companion, which was made private as `_md_scipy_like` earlier in this release and is now gone entirely); use `from_scipy_params()` instead, which takes the same arguments.
 - Removed `BaseFitter._covariance()`; covariance is now accessed via the `covariance` attribute directly.
+- Removed `pymultifit.suppress_numpy_warnings`, the decorator that wrapped a function in `np.errstate(all="ignore")`; the distribution functions do not need it any more, and `LogNormalDistribution.stats()` silences the one overflow it expects locally.
+- Removed `BaseFitter._format_param()`; the same formatting lives in `FitPlotter._format_param()`.
 - Replaced the `mpyez` plotting dependency with `plotez`; external code importing `mpyez.backend.uPlotting.LinePlot` / `mpyez.ezPlotting.plot_xy` through pyMultiFit's imports will need to switch to `plotez`.
 
 ## [1.0.9] - 2025-11-03
@@ -443,6 +473,7 @@ Initial public release.
 [PR #123]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/123
 [PR #124]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/124
 [PR #125]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/125
+[PR #141]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/141
 [issue #2]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/2
 [issue #3]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/3
 [issue #6]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/6

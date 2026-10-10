@@ -5,11 +5,8 @@ from __future__ import annotations
 import itertools
 import warnings
 from typing import Callable, Sequence, Any
-from typing_extensions import override
 
 import numpy as np
-from matplotlib.axes import Axes  # noqa: F401 – part of public API type hints
-from plotez import LinePlotConfig, plot_xy  # noqa: F401 – kept for external callers
 from scipy.optimize import Bounds, curve_fit
 
 from .. import (
@@ -24,12 +21,14 @@ from .. import (
     LOG_NORMAL,
     NORMAL,
     SKEW_NORMAL,
+    SQRT,
     epsilon,
 )
+from ..result import Component, FitResult
 from ..typing import NDArray, Params_
 
 # importing from files to avoid circular import
-from .backend import BaseFitter, compute_individual_ci_mixed
+from .backend import BaseFitter
 from .chiSquare_f import ChiSquareFitter
 from .exponential_f import ExponentialFitter
 from .foldedNormal_f import FoldedNormalFitter
@@ -182,10 +181,23 @@ class MixedDataFitter(BaseFitter):
         """
         return self.model_function(x, *params)
 
-    def _compute_individual_ci(
-        self, x_: NDArray, mv_parameters: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
-    ) -> dict:
-        return compute_individual_ci_mixed(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
+    def to_result(self) -> FitResult:
+        """Return an immutable :class:`~pymultifit.result.FitResult` describing the current state of the fit."""
+        components, labels = [], []
+        for i, model in enumerate(self.model_list):
+            model_class = self._instantiate_class(model=model)  # resolved once per component, not per evaluation
+            name = model.capitalize()
+            components.append(Component(label=name, func=model_class.fitter, n_par=model_class.n_par))
+            labels.extend(f"{name}_{i + 1}_p{j + 1}" for j in range(model_class.n_par))
+
+        return FitResult(
+            x=self.x_values,
+            y=self.y_values,
+            params=self.params,
+            covariance=self.covariance,
+            components=tuple(components),
+            param_labels=tuple(labels),
+        )
 
     def _get_bounds(self) -> tuple[NDArray, NDArray]:
         """
@@ -256,7 +268,6 @@ class MixedDataFitter(BaseFitter):
 
         return param_dict
 
-    @override
     def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None): # type-ignore
         """
         Fit the data.
@@ -358,7 +369,6 @@ class MixedDataFitter(BaseFitter):
 
         self._plotter = None  # invalidate cached plotter after each fit
 
-    @override
     def get_model_parameters(self, model: str | None = None, errors: bool = False):
         """
         Extracts parameters (and error) values for a specific model, or for all models if no model is specified.
@@ -383,7 +393,7 @@ class MixedDataFitter(BaseFitter):
                 - Otherwise, returns just the parameters directly.
         """
         parameters = self._parameter_extractor(np.asarray(self.params))
-        errs = self._parameter_extractor(np.sqrt(np.diag(self.covariance)))
+        errs = self._parameter_extractor(SQRT(np.diag(self.covariance)))
 
         if not errors:
             return parameters if model is None else parameters.get(model, [])

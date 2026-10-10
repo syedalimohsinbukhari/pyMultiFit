@@ -1,7 +1,6 @@
 """Created on Aug 10 23:37:54 2024"""
 
-import numpy as np
-
+from .. import INF
 from ..distributions.utilities_d import cubic, line, quadratic
 from ..typing import ArrayLike
 from .backend import BaseFitter
@@ -16,8 +15,8 @@ class LineFitter(BaseFitter):
         self.n_par = 2
 
     def fit_boundaries(self):
-        lb = (-np.inf, -np.inf)
-        ub = (np.inf, np.inf)
+        lb = (-INF, -INF)
+        ub = (INF, INF)
 
         return lb, ub
 
@@ -33,8 +32,8 @@ class QuadraticFitter(BaseFitter):
         self.n_par = 3
 
     def fit_boundaries(self):
-        lb = (-np.inf, -np.inf, -np.inf)
-        ub = (np.inf, np.inf, np.inf)
+        lb = (-INF, -INF, -INF)
+        ub = (INF, INF, INF)
 
         return lb, ub
 
@@ -51,8 +50,8 @@ class CubicFitter(BaseFitter):
         self.n_par = 4
 
     def fit_boundaries(self):
-        lb = (-np.inf, -np.inf, -np.inf, -np.inf)
-        ub = (np.inf, np.inf, np.inf, np.inf)
+        lb = (-INF, -INF, -INF, -INF)
+        ub = (INF, INF, INF, INF)
 
         return lb, ub
 

@@ -143,13 +143,10 @@ class ScaledInverseChiSquareDistribution(BaseDistribution):
         if any(param <= 0 for param in (v, tau2)):
             return NAN_DICT
 
-        mean_ = (v * tau2) / (v - 2)
         mode_ = (v * tau2) / (v + 2)
-        variance_ = (2 * v ** 2 * tau2 ** 2) / ((v - 2) ** 2 * (v - 4))
+        # the mean exists for df > 2 and the variance for df > 4, dividing by (df - 2) or (df - 4) before checking raised
+        # ZeroDivisionError at df = 2 and df = 4
+        mean_ = (v * tau2) / (v - 2) + loc if v > 2 else INF
+        variance_ = (2 * v ** 2 * tau2 ** 2) / ((v - 2) ** 2 * (v - 4)) if v > 4 else INF
 
-        return {
-            "mean": mean_ + loc if v > 2 else INF,
-            "mode": mode_ + loc,
-            "variance": variance_ if v > 4 else INF,
-            "std": SQRT(variance_) if v > 4 else INF,
-        }
+        return {"mean": mean_, "mode": mode_ + loc, "variance": variance_, "std": SQRT(variance_) if v > 4 else INF}
