@@ -17,6 +17,8 @@ Obtain one from any fitter with :meth:`~pymultifit.fitters.backend.baseFitter.Ba
    result.residuals()           # data - model
    result.errors                # sqrt(diag(covariance))
 
+The amplitude of an unnormalised distribution is the height of its peak on the array it is evaluated on, so ``model(x_new)`` and ``component_curve(i, x_new)`` should be given an ``x_new`` that contains the peaks, see :ref:`the note on the evaluation grid <amplitude-grid>`.
+
 Calling ``to_result()`` before ``fit()`` is allowed; the result then has no parameters or components, and the methods that need a fit raise ``RuntimeError``.
 A result is a snapshot: a later ``fit()`` does not change an existing result.
 

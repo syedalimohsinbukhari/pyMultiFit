@@ -13,7 +13,7 @@ Base Class
    * - :class:`~pymultifit.fitters.backend.baseFitter.BaseFitter`
      - The base class for multi-fitting functionality.
 
-Every fitter exposes :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.to_result` (see :doc:`/results/_results`), a cached :attr:`~pymultifit.fitters.backend.baseFitter.BaseFitter.plotter` (see :doc:`/plot/_plot`), and :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals` (see :doc:`/ci/_ci`).
+Every fitter exposes :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.to_result` (see :doc:`/results/_results`), a cached :attr:`~pymultifit.fitters.backend.baseFitter.BaseFitter.plotter` (see :doc:`/plot/_plot`), and :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals`, which computes the bootstrap intervals into a :class:`~pymultifit.ci.ConfidenceIntervals` that the plotter then draws (see :doc:`/ci/_ci`).
 
 Standalone Fitter
 -----------------

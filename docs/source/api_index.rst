@@ -8,6 +8,7 @@ The Application Programming Interface (API) of `pyMultiFit` provides tools for s
 * **Generators**: Functions for generating synthetic datasets.
 * **Plotting**: :class:`~pymultifit.plot.FitPlotter` and friends, for visually assessing a fit (fit, residuals, Q-Q, confidence and prediction intervals, parameter correlations).
 * **Results**: :class:`~pymultifit.result.FitResult`, an immutable description of a fit that the plotting and confidence-interval code consume.
+* **Reproducibility**: how ``rng_engine`` works and the one-generator rule, see :doc:`reproducibility`.
 * **Confidence intervals**: :func:`~pymultifit.ci.compute_ci_bounds`, bootstrap confidence intervals computed from a :class:`~pymultifit.result.FitResult` into a :class:`~pymultifit.ci.ConfidenceIntervals` object.
 
 The documentation first goes through a birdseye view for each module, followed by detailed documentation for each class and function.

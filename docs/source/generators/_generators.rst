@@ -51,6 +51,22 @@ Derived generators
    * - :meth:`~pymultifit.generators.generators.multi_skew_normal`
      - Skewed Normal distribution generator.
 
+Reproducible noise
+------------------
+
+Every generator takes the ``noise_level`` of the noise it adds and an optional ``rng_engine``, a NumPy :class:`~numpy.random.Generator` (or an integer seed for a new one) to draw it from:
+
+.. code-block:: python
+
+   rng = np.random.default_rng(0)
+
+   y_1 = multi_gaussian(x, params, noise_level=0.4, rng_engine=rng)
+   y_2 = multi_gaussian(x, params, noise_level=0.4, rng_engine=rng)   # different noise, the same script is still reproducible
+
+``rng_engine=None`` (the default) draws from NumPy's global state, which ``np.random.seed`` seeds, as it always did.
+See :doc:`/reproducibility` for the rule that keeps a script reproducible and its draws independent.
+
+
 .. toctree::
    :hidden:
 

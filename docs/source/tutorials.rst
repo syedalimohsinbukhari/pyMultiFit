@@ -10,7 +10,7 @@ After going through these tutorials, you will learn how to,
 #. Construct a custom fitting class to fit n-model data, and
 #. Fit mixed models and explore the results.
 
-To see how to visually assess a fit (residuals, confidence intervals, Q-Q plots and more), head over to :doc:`plotting`.
+To see how to visually assess a fit (residuals, confidence intervals, Q-Q plots and more), head over to :doc:`plotting`, and for generating data and intervals that can be reproduced, to :doc:`reproducibility`.
 
 .. toctree::
    :hidden:
