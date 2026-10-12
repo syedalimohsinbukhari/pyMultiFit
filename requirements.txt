@@ -125,7 +125,7 @@ filelock==3.32.4
     # via
     #   python-discovery
     #   virtualenv
-fonttools==4.63.0
+fonttools==4.65.0
     # via matplotlib
 formulaic==1.2.2
     # via statsmodels
