@@ -450,7 +450,7 @@ pygments==2.21.0
     #   pytest
     #   sphinx
 pylint==4.0.7
-pyparsing==3.3.2
+pyparsing==3.3.3
     # via matplotlib
 pyproject-hooks==1.2.0
     # via build
