@@ -354,7 +354,7 @@ numpy==2.5.2 ; python_full_version >= '3.12'
     #   scipy
     #   seaborn
     #   statsmodels
-numpydoc==1.10.0
+numpydoc==1.11.0
 overrides==7.7.0 ; python_full_version < '3.12'
     # via jupyter-server
 packaging==26.3
