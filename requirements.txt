@@ -670,7 +670,7 @@ typing-extensions==4.16.0
     #   starlette
     #   uvicorn
     #   virtualenv
-tzdata==2026.3
+tzdata==2026.5
     # via
     #   arrow
     #   pandas
