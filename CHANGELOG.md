@@ -7,13 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - Unreleased
 
-**PRs:** [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125], [PR #141] · **Issues:** [issue #89], [issue #90], [issue #94], [issue #95], [issue #99], [issue #100], [issue #117], [issue #118], [issue #119], [issue #121]
+**PRs:** [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125], [PR #141], [PR #152] · **Issues:** [issue #89], [issue #90], [issue #94], [issue #95], [issue #99], [issue #100], [issue #117], [issue #118], [issue #119], [issue #121]
 
 🎓 *Entries marked with a scholar hat were contributed by **Ahmed Bin Jawwad**, an intern at the Space and Astrophysics Research Lab (SARL), National Center of GIS and Space Applications (NCGSA), Institute of Space Technology (IST), Islamabad, Pakistan (Jul 6 – Aug 28, 2026).*
 
 ### Added
 
 - Added `QExponentialDistribution` and `StudentsTDistribution` to `pymultifit.distributions.generalized`. 🎓
+- Added `QExponentialDistribution.to_scipy_params()`, which returns the `c`, `loc` and `scale` of the equivalent `scipy.stats.genpareto` (`c = (q - 1) / (2 - q)`, `scale = 1 / ((2 - q) * rate)`) and raises `ValueError` for `q >= 2` or `rate <= 0`; it replaces the helper `q_exp_to_gen_pareto` of `distributions.utilities_d`, which was never released, and the `qexponential` example and the accuracy benchmark use it.
 - Added Gumbel PDF/log-PDF/CDF/log-CDF utility functions (`gumbel_pdf_`, `gumbel_log_pdf_`, `gumbel_cdf_`, `gumbel_log_cdf_`) to `distributions.utilities_d` — note: only the standalone utility functions shipped, not a public `GumbelDistribution` class.
 - Added a new `pymultifit.plot` subpackage (`FitPlotter`, `qq_compare`) providing fit and residual plots, Q-Q plots, confidence-interval bounds, prediction intervals, parameter-correlation plots, and gridlines on plot axes, exposed via a cached `BaseFitter.plotter` property. `FitPlotter` is built from an immutable `FitResult` and has no dependency on the fitter classes.
 - Plot behaviour: `show_individuals=True` draws the total fit with the dashed components on top of it, also for a model of one component; `axes=` takes a tuple, a list or the array `plt.subplots(2, 1)` returns; `plot_fit_and_residuals(is_scatter=...)` takes a pair `(fit_panel, residual_panel)` or one bool for both panels; `plot_residuals()` labels its y axis `y - ŷ`, like the residual panel; the legends of confidence and prediction intervals show the exact level (`99.7% PI`, not `100% PI`, which would be an infinite band); `save_plot()` forwards `bbox_inches` and `format` to matplotlib and treats a dot followed by digits (`fit_0.5`) as part of the name.
@@ -66,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `QExponentialDistribution.stats()` raised `ZeroDivisionError` for `rate=0`; it now returns NaN values for `rate <= 0`.
   - `JohnsonSUDistribution.stats()` warned about the overflow of `sinh`, `cosh`, `exp` and `expm1` and returned NaN for `gamma=0` (`inf * 0`); it now returns `xi` as the mean.
   - `LogNormalDistribution.stats()` returned NaN with a warning for a huge `mu` with a tiny `std` (`exp(std**2) - 1` rounded to 0, it now uses `expm1`) and raised `OverflowError` for `mu` above about 1e154, where scipy returns `inf`.
+- Q-exponential: `q_exponential_pdf_`, `q_exponential_log_pdf_` and `q_exponential_cdf_` returned NaN for `q <= 0` although every `q < 2` is valid (`q` was checked like a positive-only shape parameter); `q_exponential_cdf_` returned NaN instead of 1 beyond the upper end of the support when `q < 1` (the argument of `log1p` fell below -1); `QExponentialDistribution.stats()` had a variance without the `(2 - q)` factor, `(2 - q) / (rate**2 * (3 - 2q)**2 * (4 - 3q))` is the value `scipy.stats.genpareto` gives. `test_qExponential_d.py` checks the distribution against `genpareto`.
 - Benchmarks: `cdf_pdf_plots` timed the PDF twice, so every "CDF" timing CSV held PDF timings; timing now uses 3 warm-up calls and the median. Timings produced before the fix must not be compared with newer ones.
 
 ### Breaking Changes
@@ -476,6 +478,7 @@ Initial public release.
 [PR #124]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/124
 [PR #125]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/125
 [PR #141]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/141
+[PR #152]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/152
 [issue #2]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/2
 [issue #3]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/3
 [issue #6]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/6
