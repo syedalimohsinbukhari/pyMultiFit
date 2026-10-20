@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from plotez import lpc, plot_xy
 
-from ..ci import compute_ci_bounds
+from ..ci import ConfidenceIntervals
 from ..result import FitResult
 from ._plot_backend import _ci_plotter, _fit_and_residual, _param_correlation, _plot, _prediction_interval, _qq, _resid
 
@@ -116,80 +116,42 @@ class FitPlotter:
 
     def plot_confidence_intervals(
         self,
-        ci_levels: float | tuple[float] | list[float],
-        results: dict | None = None,
-        n_bootstrap: int = 5_000,
-        overall_ci: bool = True,
-        individual_ci: bool = False,
-        seed: int | None = None,
-        rng_engine=None,
-        x_range=None,
-        get_value: bool = False,
+        ci: ConfidenceIntervals,
+        overall: bool | None = None,
+        individual: bool | None = None,
         axis: Axes | None = None,
-    ) -> tuple[dict, Axes] | Axes:
+    ) -> Axes:
         """
-        Plot bootstrap confidence interval bounds.
+        Plot bootstrap confidence interval bands.
 
         Parameters
         ----------
-        ci_levels :
-            CI level(s) to plot, as percentages or decimals (e.g., 95, 0.95 or [68, 95, 99]).
-        results :
-            Pre-computed CI dictionary returned by :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals`.
-            When None, the CI is computed internally, defaults to None.
-        n_bootstrap :
-            Number of bootstrap samples to use when computing the CI.
-            Ignored if the keyword `results` is provided, defaults to 5,000.
-        overall_ci :
-            Whether to draw the overall composite CI band, defaults to True.
-        individual_ci :
-            Whether to draw per-component CI bands, defaults to False.
-        seed :
-            Random seed for reproducibility (mutually exclusive with *rng_engine*).
-            Defaults to None.
-        rng_engine :
-            Instance of numpy random Generator (mutually exclusive with *seed*).
-            Defaults to None.
-        x_range :
-            X-values at which to evaluate the CI.
-            When None, 1,000 evenly spaced points are used.
-        get_value :
-            Whether to return the computed CI dictionary along with the axis for further inspection, defaults to False.
+        ci :
+            The intervals to draw, as returned by
+            :meth:`~pymultifit.fitters.backend.baseFitter.BaseFitter.confidence_intervals` or
+            :func:`~pymultifit.ci.compute_ci_bounds`. They carry their levels and the parts that were computed, so
+            nothing else has to be repeated here.
+        overall :
+            Whether to draw the overall composite band. ``None`` (the default) draws it if it was computed.
+        individual :
+            Whether to draw the per-component bands. ``None`` (the default) draws them if they were computed.
         axis :
             The matplotlib axes object on which the plot is to be drawn.
             If None, an axis object is generated and returned. Defaults to None.
 
         Returns
         -------
-        tuple of (dict, matplotlib.axes._axes.Axes) or matplotlib.axes._axes.Axes
-            If `get_value` is True, a tuple containing the CI dictionary and the axis is returned; otherwise,
-            only the axis is returned.
+        Axes
+            The matplotlib axis object on which the plot was drawn.
+
+        Raises
+        ------
+        TypeError
+            If ``ci`` is not a :class:`~pymultifit.ci.ConfidenceIntervals`.
+        ValueError
+            If a part that was not computed is asked for, or nothing is selected.
         """
-        if results is None:
-            results = compute_ci_bounds(
-                result=self.result,
-                ci_levels=ci_levels,
-                n_bootstrap=n_bootstrap,
-                overall_ci=overall_ci,
-                individual_ci=individual_ci,
-                seed=seed,
-                rng_engine=rng_engine,
-                x_range=x_range,
-            )
-
-        axis = _ci_plotter(
-            result=self.result,
-            results=results,
-            ci_levels=ci_levels,
-            overall_ci=overall_ci,
-            individual_ci=individual_ci,
-            axis=axis,
-        )
-
-        if get_value:
-            return results, axis
-        else:
-            return axis
+        return _ci_plotter(ci=ci, overall=overall, individual=individual, axis=axis)
 
     def plot_fit(
         self,
@@ -334,7 +296,7 @@ class FitPlotter:
 
     def plot_prediction_intervals(
         self,
-        pi_level: float | list[float] = 95,
+        pi_levels: float | list[float] = 95,
         x_label: str | None = None,
         y_label: str | None = None,
         plot_title: str | None = None,
@@ -355,7 +317,7 @@ class FitPlotter:
 
         Parameters
         ----------
-        pi_level :
+        pi_levels :
             Prediction interval level(s), as percentages (``95``, ``95.0``) or decimals (``0.95``).
             Pass a single level or a list of levels for multiple bands, defaults to 95.
         x_label :
@@ -375,7 +337,7 @@ class FitPlotter:
         """
         return _prediction_interval(
             result=self.result,
-            pi_level=pi_level,
+            pi_levels=pi_levels,
             x_label=x_label,
             y_label=y_label,
             plot_title=plot_title,

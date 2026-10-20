@@ -33,7 +33,7 @@ _G1 = (10.0, -5.0, 1.5)
 _G2 = (6.0, 3.0, 2.0)
 _LINE = (0.5, 2.0)
 _CI_LEVELS = [68, 95]
-_CI_KWARGS = {"ci_levels": _CI_LEVELS, "n_bootstrap": 200, "overall_ci": True, "individual_ci": True, "seed": 123}
+_CI_KWARGS = {"ci_levels": _CI_LEVELS, "n_bootstrap": 200, "overall_ci": True, "individual_ci": True, "rng_engine": 123}
 
 
 def _noise(n: int) -> np.ndarray:
@@ -64,7 +64,7 @@ def _collect(name: str) -> dict[str, np.ndarray]:
     fitter = _BUILDERS[name]()
     out = {"fitted_curve": fitter.get_fitted_curve(), "residuals": fitter.get_residuals(), "params": fitter.params}
 
-    results = fitter.confidence_intervals(**_CI_KWARGS)
+    results = fitter.confidence_intervals(**_CI_KWARGS).as_dict()
     out["x_range"] = results["x_range"]
     for level in _CI_LEVELS:
         for key in ("lower", "median", "upper"):

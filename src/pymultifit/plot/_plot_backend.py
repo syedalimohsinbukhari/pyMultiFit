@@ -13,7 +13,7 @@ from plotez import ebc, lpc, plot_errorband, plot_xy, spc
 from scipy.stats import norm, pearsonr, t
 
 from .. import SQRT
-from ..ci import ci_level_labels, ci_level_percents
+from ..ci import ConfidenceIntervals, normalize_levels
 from ..exceptions import AxesError
 from ..result import FitResult, as_result
 from ..typing import NDArray
@@ -45,30 +45,38 @@ RESID_FIG_SIZE = (12, 4)
 
 
 def _ci_plotter(
-    result: FitResult,
-    results: dict,
-    ci_levels: float | tuple[float] | list[float],
-    overall_ci: bool,
-    individual_ci: bool,
+    ci: ConfidenceIntervals,
+    overall: bool | None,
+    individual: bool | None,
     axis: Axes | None,
 ) -> Axes:
-    # the same integer labels compute_ci_bounds used for its result keys, whatever format the levels were given in
-    levels = ci_level_labels(ci_levels)
-    percents = ci_level_percents(ci_levels)  # for the legend, 99.7 must not read 100
+    if not isinstance(ci, ConfidenceIntervals):
+        raise TypeError(
+            f"Expected a ConfidenceIntervals object, got {type(ci).__name__}. "
+            "Compute it first, e.g. ci = fitter.confidence_intervals(95), then plot_confidence_intervals(ci)."
+        )
 
-    # Extract x_range from results
-    x_range = results.get("x_range", result.x)
+    # what was computed is drawn, unless asked otherwise; asking for something that was not computed is an error
+    draw_overall = ci.overall is not None if overall is None else overall
+    draw_individual = ci.individual is not None if individual is None else individual
 
-    # Create alpha values for multiple CI levels (lighter for wider intervals)
-    alphas = np.linspace(0.45, 0.15, len(levels))
+    if draw_overall and ci.overall is None:
+        raise ValueError("The overall intervals were not computed, compute them with overall_ci=True.")
+    if draw_individual and ci.individual is None:
+        raise ValueError("The individual intervals were not computed, compute them with individual_ci=True.")
+    if not (draw_overall or draw_individual):
+        raise ValueError("Nothing to draw: neither the overall nor the individual intervals are selected.")
 
-    def _helper(given_ci: dict, data_label: str, alpha_val: float):
+    # lighter for wider intervals, which are drawn later (the levels are ascending)
+    alphas = np.linspace(0.45, 0.15, len(ci.levels))
+
+    def _helper(band, data_label: str, alpha_val: float):
         """Helper to plot a single CI band."""
         plot_errorband(
-            x_data=x_range,
-            y_data=given_ci["median"],
-            y_lower=given_ci["lower"],
-            y_upper=given_ci["upper"],
+            x_data=ci.x,
+            y_data=band.median,
+            y_lower=band.lower,
+            y_upper=band.upper,
             data_label=data_label,
             line=False,
             band_config=ebc(c=CI_BASE, alpha=alpha_val),
@@ -78,28 +86,15 @@ def _ci_plotter(
     axis = _single_axis_sanitizer(axis=axis)
 
     with _keep_axis_text(axis, defaults=("X", "Y", "")):
-        if overall_ci:
-            for ci, percent, alpha_ in zip(levels, percents, alphas):
-                label = f"{percent:g}% CI (overall)"
-                ci_key = f"overall_ci_{ci}"
+        if draw_overall:
+            for level, alpha_ in zip(ci.levels, alphas):
+                _helper(ci.overall[level], f"{level:g}% CI (overall)", alpha_)
 
-                if ci_key not in results:
-                    raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
-
-                ci_data = results[ci_key]
-                _helper(given_ci=ci_data, data_label=label, alpha_val=alpha_)
-
-        if individual_ci:
-            for ci, percent, alpha_ in zip(levels, percents, alphas):
-                ci_key = f"individual_ci_{ci}"
-
-                if ci_key not in results:
-                    raise KeyError(f"CI level {ci} not found in results. Available: {list(results.keys())}")
-
-                ci_data = results[ci_key]
-                for idx, fit_ci in enumerate(ci_data):
-                    label = f"{percent:g}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
-                    _helper(given_ci=fit_ci, data_label=label, alpha_val=alpha_)
+        if draw_individual:
+            for level, alpha_ in zip(ci.levels, alphas):
+                for idx, band in enumerate(ci.individual[level]):
+                    label = f"{level:g}% CI (fit {idx + 1})" if idx == 0 else ""  # label first only
+                    _helper(band, label, alpha_)
 
     axis.legend()
     _grid(axis)
@@ -268,7 +263,7 @@ def _plot(
 
 def _prediction_interval(
     result: FitResult,
-    pi_level: float | list[float] = 95,
+    pi_levels: float | list[float] = 95,
     x_label: str | None = None,
     y_label: str | None = None,
     plot_title: str | None = None,
@@ -280,7 +275,7 @@ def _prediction_interval(
     x, params = np.asarray(result.x), np.asarray(result.params)
 
     # exact levels (99.7 is not 100), the widest band is drawn first
-    pi_levels = sorted(ci_level_percents(pi_level), reverse=True)
+    levels = sorted(normalize_levels(pi_levels), reverse=True)
 
     n, k = len(x), len(params)
 
@@ -290,11 +285,11 @@ def _prediction_interval(
 
     axis = _single_axis_sanitizer(axis=axis)
 
-    pi_colors = [plt.get_cmap("YlOrBr")(v) for v in np.linspace(0.35, 0.75, len(pi_levels))]
+    pi_colors = [plt.get_cmap("YlOrBr")(v) for v in np.linspace(0.35, 0.75, len(levels))]
 
     # explicit labels win, otherwise the text already on the axis is kept (plotez would reset it)
     with _keep_axis_text(axis, overrides=(x_label, y_label, plot_title), defaults=("X", "Y", "PI")):
-        for pi, col_ in zip(pi_levels, pi_colors):
+        for pi, col_ in zip(levels, pi_colors):
             alpha_stat = 1 - pi / 100
             t_crit = t.ppf(1 - alpha_stat / 2, df=max(n - k, 1))
             axis = plot_errorband(
