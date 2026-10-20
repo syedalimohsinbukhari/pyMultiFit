@@ -42,23 +42,23 @@ class QExponentialDistribution(BaseDistribution):
        :language: python
        :linenos:
        :lineno-start: 3
-       :lines: 3-8
+       :lines: 3-7
 
     Generating a standard qExponential(:math:`q=1, \lambda=1`) distribution with ``pyMultiFit`` and ``scipy``:
 
     .. literalinclude:: ../../../examples/basic/qexponential.py
        :language: python
        :linenos:
-       :lineno-start: 10
-       :lines: 10-13
+       :lineno-start: 9
+       :lines: 9-12
 
     Plotting **PDF** and **CDF**:
 
     .. literalinclude:: ../../../examples/basic/qexponential.py
        :language: python
        :linenos:
-       :lineno-start: 15
-       :lines: 15-30
+       :lineno-start: 14
+       :lines: 14-29
 
     .. image:: ../../../images/q_exponential_example1.png
        :alt: QExponential(1, 1, 0)
@@ -68,15 +68,15 @@ class QExponentialDistribution(BaseDistribution):
 
     .. literalinclude:: ../../../examples/basic/qexponential.py
        :language: python
-       :lineno-start: 33
-       :lines: 33
+       :lineno-start: 32
+       :lines: 32
 
     Plotting **PDF** and **CDF**:
 
     .. literalinclude:: ../../../examples/basic/qexponential.py
        :language: python
-       :lineno-start: 35
-       :lines: 35-52
+       :lineno-start: 34
+       :lines: 34-51
 
     .. image:: ../../../images/q_exponential_example2.png
        :alt: QExponential(1.5, 1.3, -3.3)
@@ -91,6 +91,32 @@ class QExponentialDistribution(BaseDistribution):
         self.rate = rate
         self.loc = loc
         self.normalize = normalize
+
+    def to_scipy_params(self) -> dict[str, float]:
+        r"""
+        Parameters of the equivalent :class:`scipy.stats.genpareto`.
+
+        A (normalized) q-exponential with :math:`q < 2` is a generalized Pareto distribution with
+
+        .. math::
+            c = \frac{q - 1}{2 - q}, \quad \text{scale} = \frac{1}{(2 - q)\lambda}, \quad \text{loc} = \mu.
+
+        Returns
+        -------
+        dict
+            The ``c``, ``loc`` and ``scale`` keywords of ``scipy.stats.genpareto``.
+
+        Raises
+        ------
+        ValueError
+            If :math:`q \ge 2` (not normalizable) or :math:`\lambda \le 0`.
+        """
+        if self.q >= 2:
+            raise ValueError("q must be < 2 for a normalizable q-exponential.")
+        if self.rate <= 0:
+            raise ValueError("rate must be > 0.")
+
+        return {"c": (self.q - 1) / (2 - self.q), "loc": self.loc, "scale": 1.0 / ((2 - self.q) * self.rate)}
 
     def logpdf(self, x: ArrayLike) -> NDArray:
         return q_exponential_log_pdf_(
@@ -128,7 +154,7 @@ class QExponentialDistribution(BaseDistribution):
 
         # Variance exists for q < 4/3 (4 - 3q > 0)
         if q < (4.0 / 3.0):
-            variance_ = 1.0 / ((rate ** 2) * ((3.0 - 2.0 * q) ** 2) * (4.0 - 3.0 * q))
+            variance_ = (2.0 - q) / ((rate ** 2) * ((3.0 - 2.0 * q) ** 2) * (4.0 - 3.0 * q))
         elif q < 1.5:
             variance_ = INF
         else:

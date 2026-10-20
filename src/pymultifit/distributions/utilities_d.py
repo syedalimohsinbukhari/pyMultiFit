@@ -65,7 +65,6 @@ __all__ = [
     "q_exponential_log_pdf_",
     "q_exponential_cdf_",
     "q_exponential_log_cdf_",
-    "q_exp_to_gen_pareto",
     "scaled_inv_chi_square_pdf_",
     "scaled_inv_chi_square_log_pdf_",
     "scaled_inv_chi_square_cdf_",
@@ -2601,7 +2600,7 @@ def q_exponential_log_pdf_(
 
     .. math:: \ell(z) = \ln(\lambda) - \lambda z
     """
-    y, rej_ = reject_x(x, q, rate, loc=loc)
+    y, rej_ = reject_x(x, rate, loc=loc)  # ``q`` is not positive-only: any q < 2 is valid
 
     if rej_ or q >= 2.0 or amplitude < 0.0:
         return np.full(y.shape, NAN)
@@ -2644,15 +2643,6 @@ def q_exponential_pdf_(
     return EXP(log_pdf_)
 
 
-def _eqx(x, q, _log: bool = True):
-    qm1 = 1.0 - q
-    qm1_ = 1 / qm1
-    if _log:
-        return xlog1py(qm1_, qm1 * x)
-    else:
-        return (1 + qm1 * x) ** qm1_
-
-
 @doc_inherit(parent=q_exponential_log_pdf_, style=doc_style)
 def q_exponential_cdf_(
     x: ArrayLike, amplitude: float = 1.0, q: float = 1.0, rate: float = 1.0, loc: float = 0.0, normalize: bool = False
@@ -2669,7 +2659,7 @@ def q_exponential_cdf_(
     scaled by :math:`A` when unnormalized. Evaluated using :obj:`numpy.expm1` and :obj:`numpy.log1p`
     to guarantee numerical precision near :math:`z \to 0` and :math:`q \to 1`.
     """
-    y, rej_ = reject_x(x, q, rate, loc=loc)
+    y, rej_ = reject_x(x, rate, loc=loc)  # ``q`` is not positive-only: any q < 2 is valid
 
     if rej_ or q >= 2.0 or amplitude < 0.0:
         return full_nan(np.shape(y))
@@ -2679,8 +2669,9 @@ def q_exponential_cdf_(
     else:
         q_diff = 1.0 - q
         f1 = (2.0 - q) / q_diff
-        # scipy's log1p on purpose (not LOG1P): it is silent for arguments <= -1, which occur beyond the support when q < 1
-        f2 = f1 * log1p(-q_diff * rate * y)
+        # scipy's log1p on purpose (not LOG1P): it is silent at -1; the argument is clipped there because beyond the upper
+        # bound (q < 1) it would be < -1 and give NaN instead of the CDF of 1
+        f2 = f1 * log1p(-np.minimum(q_diff * rate * y, 1.0))
 
     return np.where(y <= 0.0, 0.0, -np.expm1(np.minimum(f2, 0.0)))  # f2 <= 0 wherever y > 0
 
@@ -3459,14 +3450,3 @@ def _log_pdf_scaling(log_pdf_: NDArray, amplitude: float) -> NDArray:
         with np.errstate(all="ignore"):
             return LOG(amplitude) + log_pdf_ - max_
     return LOG(amplitude) + log_pdf_ - max_
-
-
-def q_exp_to_gen_pareto(q: float, rate: float, loc: float = 0.0):
-    if q >= 2:
-        raise ValueError("q must be < 2 for a normalizable q-exponential.")
-    if rate <= 0:
-        raise ValueError("rate must be > 0.")
-
-    c = (q - 1) / (2 - q)
-    scale = 1.0 / ((2 - q) * rate)
-    return {"c": c, "loc": loc, "scale": scale}
