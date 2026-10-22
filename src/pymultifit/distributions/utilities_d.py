@@ -152,9 +152,19 @@ def reject_x(x: ArrayLike, shp1=None, shp2=None, loc: float = 0.0, scale: float 
     return (x - loc) / scale, False
 
 
+_FLOAT_MAX = np.finfo(float).max
+_LOG_FLOAT_MAX = 709.78  # ``exp`` of this is below the largest float (log of it is 709.7827...), above it overflows to ``inf``
+
+
 def _exp_neg(y: NDArray) -> NDArray:
-    """``exp(-y)`` without the overflow warning: the exponent is capped at 709.7, i.e. the result saturates at ~1.6e308."""
-    return EXP(np.minimum(-y, 709.7))
+    """``exp(-y)``, ``inf`` where it overflows (as NumPy and scipy give it) but without the overflow warning."""
+    z = -y
+    return EXP(z, out=np.full(z.shape, INF), where=~(z > _LOG_FLOAT_MAX))
+
+
+def _gumbel_kernel(y: NDArray) -> NDArray:
+    """``-y - exp(-y)``, the log of the Gumbel kernel: ``-inf`` where ``exp(-y)`` overflows, never ``inf - inf``."""
+    return -np.maximum(y, -_FLOAT_MAX) - _exp_neg(y)  # the clip keeps y = -inf from giving inf - inf
 
 
 def _log_pos(a: NDArray) -> NDArray:
@@ -168,8 +178,9 @@ def _log_pos(a: NDArray) -> NDArray:
 
 
 def _abs_pow(ay: NDArray, beta: float) -> NDArray:
-    """``ay ** beta`` for ``ay >= 0`` and ``beta > 0`` without the overflow warning: saturates at ~e^709 instead."""
-    return np.power(np.minimum(ay, math.exp(min(709.0 / beta, 700.0))), beta)
+    """``ay ** beta`` for ``ay >= 0`` and ``beta > 0``, ``inf`` where it overflows (like NumPy) but without the warning."""
+    limit = math.exp(_LOG_FLOAT_MAX / beta) if beta > 1.0 else _FLOAT_MAX
+    return np.power(ay, beta, out=np.full(ay.shape, INF), where=~(ay > limit))
 
 
 def arc_sine_pdf_(
@@ -1640,7 +1651,7 @@ def gumbel_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    pdf_ = EXP(-y - _exp_neg(y))
+    pdf_ = EXP(_gumbel_kernel(y))
     pdf_ /= beta_
 
     if not normalize:
@@ -1674,7 +1685,7 @@ def gumbel_log_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    log_pdf_ = -y - _exp_neg(y)
+    log_pdf_ = _gumbel_kernel(y)
     log_pdf_ -= LOG(beta_)
 
     if not normalize:

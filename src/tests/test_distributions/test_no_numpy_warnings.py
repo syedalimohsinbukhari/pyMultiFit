@@ -198,3 +198,61 @@ def test_stats_of_degenerate_but_valid_parameters():
         assert stats["mean"] == stats["median"] == 2.0
         # tiny std with a huge mu: the variance is huge, not nan
         assert LogNormalDistribution(std=1e-10, mu=1e200, loc=10.0).stats()["variance"] == np.inf
+
+
+# where exp(-y) or |y|**beta overflows the true value is -inf (log) or 0 (pdf), as NumPy and scipy give it, not a finite stand-in
+OVERFLOW_X = np.array([-1e9, -1e3, -800.0, -50.0, 0.0, 50.0, 1e3, 1e9, -np.inf, np.inf, np.nan])
+
+
+def _scipy(function, *args):
+    with warnings.catch_warnings():  # scipy warns about the same overflow
+        warnings.simplefilter("ignore")
+        return function(*args)
+
+
+@pytest.mark.parametrize(
+    "name, scipy_name, rtol",
+    [
+        ("gumbel_log_pdf_", "logpdf", 1e-9),
+        ("gumbel_pdf_", "pdf", 1e-9),
+        ("gumbel_log_cdf_", "logcdf", 1e-9),
+        ("gumbel_cdf_", "cdf", 1e-9),
+    ],
+)
+def test_gumbel_overflow_gives_inf_like_scipy(name, scipy_name, rtol):
+    import scipy.stats as ss
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        ours = getattr(U, name)(OVERFLOW_X, 1.0, 0.0, 1.0, True)
+
+    expected = _scipy(getattr(ss.gumbel_r, scipy_name), OVERFLOW_X)
+    finite = np.isfinite(OVERFLOW_X)  # scipy gives nan at x = -inf, the limits -inf / 0 are the right values
+    np.testing.assert_allclose(ours[finite], expected[finite], rtol=rtol)
+    assert np.isnan(ours[np.isnan(OVERFLOW_X)]).all()
+
+
+@pytest.mark.parametrize("beta", [0.5, 1.0, 2.0, 30.0])
+@pytest.mark.parametrize(
+    "name, scipy_name, rtol", [("sym_gen_normal_log_pdf_", "logpdf", 1e-9), ("sym_gen_normal_pdf_", "pdf", 1e-9)]
+)
+def test_sym_gen_normal_overflow_gives_inf_like_scipy(name, scipy_name, rtol, beta):
+    import scipy.stats as ss
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        ours = getattr(U, name)(OVERFLOW_X, 1.0, beta, 0.0, 1.0, True)
+
+    expected = _scipy(getattr(ss.gennorm, scipy_name), OVERFLOW_X, beta)
+    np.testing.assert_allclose(ours, expected, rtol=rtol)
+
+
+def test_gumbel_log_pdf_far_tail_is_minus_inf_not_a_large_number():
+    left = U.gumbel_log_pdf_(np.array([-1e3]), 1.0, 0.0, 1.0, True)
+    assert left[0] == -np.inf  # was -1.65e308
+    assert U.gumbel_log_cdf_(np.array([-1e3]), 1.0, 0.0, 1.0, True)[0] == -np.inf
+
+
+def test_sym_gen_normal_log_pdf_far_tail_is_minus_inf_not_a_large_number():
+    assert U.sym_gen_normal_log_pdf_(np.array([1e200]), 1.0, 2.0, 0.0, 1.0, True)[0] == -np.inf  # |y|**2 overflows
+    assert np.isfinite(U.sym_gen_normal_log_pdf_(np.array([1e200]), 1.0, 0.5, 0.0, 1.0, True)[0])  # |y|**0.5 does not
