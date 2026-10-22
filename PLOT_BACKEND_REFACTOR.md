@@ -213,6 +213,13 @@ Governor `performance`, boost off, energy preference `performance`, threads 1, o
   stable to a few %. Compare ratios, never absolute milliseconds across runs.
 
 ## Decisions taken / closed
+- `-inf` vs ~-1.6e308 in the `gumbel` / `sym_gen_normal` log functions (decided 2026-10-23): match scipy. `_exp_neg` and
+  `_abs_pow` now give `inf` where `exp(-y)` / `|y|**beta` overflow (a masked `out=` / `where=`, no warning), `_gumbel_kernel`
+  clips `y` so `y = -inf` does not give `inf - inf`; the far tails are `-inf` (log) and 0 (pdf), the finite values are
+  bit-identical. `_abs_pow` also had a cap that was wrong for `beta < 1` (`|y| > e^700` was clipped though `|y|**beta` is
+  finite); it now overflows only where the power does. Cost on 1e6 points: Gumbel +6 % to +11 % (about 2-3 ms), symmetric
+  generalized normal within the noise. Tests: `test_no_numpy_warnings.py` compares with `scipy.stats.gumbel_r` / `gennorm`
+  over -1e9..1e9, +-inf and NaN with warnings as errors (8 of the new cases fail on the previous code).
 - `beta` slower than scipy (PDF ratio ~2.3, CDF ~1.1): closed by the support masking of `2eaf7f8` (PDF ~0.6, CDF 0.4-0.8 of
   scipy's time, `benchmarks/SPEED_SUMMARY.md`).
 - Stop the speed work here: a bit of slowness is acceptable. The other 12 places with the `ys = np.where(y > 0, y, ...)` pattern
@@ -230,8 +237,6 @@ Governor `performance`, boost off, energy preference `performance`, threads 1, o
       `alpha = beta = 1e-300`. Deliberately not fixed (nothing realistic gets near), the new test only covers -10..1e6.
 - [ ] `chi_square_pdf_` still warns for `x = +inf` whenever `df != 2` (`inf - inf`), as it did before the decorator
       removal; the warnings test uses finite inputs only.
-- [ ] Decide on the `-inf` vs ~-1.6e308 saturation in the `gumbel` / `sym_gen_normal` log functions for extreme tails
-      (chosen for speed).
 - [ ] The T530 and the Ryzen captures differ in the Python patch version (3.10.12 and 3.10.19); `uv python pin` one of them
       if exactly equal interpreters matter.
 
