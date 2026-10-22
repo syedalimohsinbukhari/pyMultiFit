@@ -224,6 +224,18 @@ Governor `performance`, boost off, energy preference `performance`, threads 1, o
   scipy's time, `benchmarks/SPEED_SUMMARY.md`).
 - Stop the speed work here: a bit of slowness is acceptable. The other 12 places with the `ys = np.where(y > 0, y, ...)` pattern
   in `utilities_d.py` are left as they are (the benchmark does not cover them).
+- `sym_gen_normal_cdf_` left tail (2026-10-23): `0.5 + sign(y) * 0.5 * gammainc(...)` is exactly 0 once `gammainc` rounds to 1,
+  so the CDF was 0 and the log-CDF `-inf` from `x = -8.5` for `shape = 2` (true 1e-45 / -103.6), and `shape = 0.5` had ~1e-4
+  relative error at `x = -1000`. The left half (`y < 0`) is now `0.5 * gammaincc(...)`, the right half keeps `gammainc`; agreement
+  with `scipy.stats.gennorm.cdf` ~1e-15 (it is the same formula). `gammaincc` is ~1.8x slower than `gammainc`, so only the left
+  half uses it (masked): 1e6 points, `shape = 2`, 192 -> 271 ms, still faster than scipy (400 ms). Tests in `test_gen_norm.py`
+  (7 fail on the previous code).
+- `SymmetricGeneralizedNormalDistribution` `logpdf()` / `logcdf()` (2026-10-23): the class never had them (not in v1.0.9
+  either) and inherited the `BaseDistribution` stubs, which return `None`; added, calling `sym_gen_normal_log_pdf_` /
+  `_log_cdf_`. Writing their test found that `sym_gen_normal_pdf_(normalize=False)` applied `_log_pdf_scaling` to the density
+  (`log(amplitude) + pdf - max(pdf)`, peak `log(amplitude)`, negative tails): present in 1.0.9, fixed with `_pdf_scaling`.
+  `test_gen_norm.py` only ever compared the normalised density with scipy, which is why nothing caught it. Every other
+  density class defines both log methods (checked); the polynomials are not densities.
 - `xlogy` is not worth replacing anywhere else: the remaining `XLOGY(1.0, ...)` sites sit next to `betainc` / `gammainc` and
   similar. Only `half_normal_log_cdf_` (~8 %) would gain; left alone.
 - `arc_sine_log_pdf_` with everything inside the support is ~7 % slower than before the decorator removal (all other input
