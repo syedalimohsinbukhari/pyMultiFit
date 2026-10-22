@@ -7,7 +7,15 @@ from scipy.stats import genpareto
 from ...pymultifit.distributions import QExponentialDistribution
 
 # (q, rate, loc): q < 1 has a finite upper bound, q = 1 is the exponential, q > 1 is heavy tailed (q >= 1.5: no mean)
-CASES = [(-1.0, 1.0, 0.0), (0.5, 2.0, -1.5), (1.0, 1.0, 0.0), (1.0, 0.3, 4.0), (1.3, 1.3, -3.3), (1.5, 3.0, 3.0), (1.9, 0.7, 0.5)]
+CASES = [
+    (-1.0, 1.0, 0.0),
+    (0.5, 2.0, -1.5),
+    (1.0, 1.0, 0.0),
+    (1.0, 0.3, 4.0),
+    (1.3, 1.3, -3.3),
+    (1.5, 3.0, 3.0),
+    (1.9, 0.7, 0.5),
+]
 
 
 def _grid(loc, scale, c):

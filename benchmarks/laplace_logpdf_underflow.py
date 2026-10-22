@@ -34,12 +34,16 @@ def main() -> None:
     exact = -X - np.log(2.0)  # for loc = 0, scale = 1 and x > 0, correct to about one ulp
 
     print("Laplace(0, 1) logPDF: exact value against pyMultiFit and scipy")
-    print(f"{'x':>8} {'exact':>16} {'pyMultiFit':>16} {'scipy':>16} {'scipy pdf':>11}   {'|multifit - exact|':>19} {'|scipy - exact|':>16}")
+    print(
+        f"{'x':>8} {'exact':>16} {'pyMultiFit':>16} {'scipy':>16} {'scipy pdf':>11}   {'|multifit - exact|':>19} {'|scipy - exact|':>16}"
+    )
     for x, e, m, s, p in zip(X, exact, multifit, scipy, scipy_pdf):
         print(f"{x:8.0f} {e:16.9f} {m:16.9f} {s:16.9f} {p:11.2e}   {abs(m - e):19.2e} {abs(s - e):16.2e}")
 
     smallest_subnormal = np.nextafter(0.0, 1.0)
-    print(f"\nsmallest positive float: {smallest_subnormal:.3e}; the PDF 0.5 * exp(-x) is below it from x = {-np.log(2 * smallest_subnormal):.1f}")
+    print(
+        f"\nsmallest positive float: {smallest_subnormal:.3e}; the PDF 0.5 * exp(-x) is below it from x = {-np.log(2 * smallest_subnormal):.1f}"
+    )
 
     nan_to_num = np.nan_to_num(np.abs(multifit - scipy), False, 0)
     print(f"largest |multifit - scipy| after np.nan_to_num: {nan_to_num.max():.3e}  (the spike in accuracy.ipynb)")

@@ -6,12 +6,7 @@ import numpy as np
 from scipy.special import gammaln
 
 from ..backend import BaseDistribution
-from ..utilities_d import (
-    sym_gen_normal_cdf_,
-    sym_gen_normal_log_cdf_,
-    sym_gen_normal_log_pdf_,
-    sym_gen_normal_pdf_,
-)
+from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_log_cdf_, sym_gen_normal_log_pdf_, sym_gen_normal_pdf_
 from ... import EXP, LOG, NAN_DICT, SQRT
 from ...typing import ArrayLike, NDArray
 

@@ -19,7 +19,9 @@ from pymultifit.fitters import MixedDataFitter
 from pymultifit.generators import multi_gaussian, multi_laplace
 
 # -- Generate mixed model data -------------------------------------------------
-rng = np.random.default_rng(42)  # created once and passed on, every call below draws new samples and the script is reproducible
+rng = np.random.default_rng(
+    42
+)  # created once and passed on, every call below draws new samples and the script is reproducible
 x = np.linspace(-10, 20, 200)
 
 # Create two Gaussian peaks and one Laplace peak
@@ -98,13 +100,17 @@ plt.tight_layout()
 
 # -- Example 4: Both overall and individual in one call -----------------------
 print("Example 4: Computing both overall and individual CIs together...")
-ci_both = fitter.confidence_intervals(ci_levels=95, n_bootstrap=1000, overall_ci=True, individual_ci=True, rng_engine=rng)
+ci_both = fitter.confidence_intervals(
+    ci_levels=95, n_bootstrap=1000, overall_ci=True, individual_ci=True, rng_engine=rng
+)
 
 fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(16, 6))
 
 # Plot overall CI
 fitter.plotter.plot_fit(axis=ax4a)
-fitter.plotter.plot_confidence_intervals(ci_both, individual=False, axis=ax4a)  # the same object, only the overall bands
+fitter.plotter.plot_confidence_intervals(
+    ci_both, individual=False, axis=ax4a
+)  # the same object, only the overall bands
 ax4a.set_title("Overall CI (composite model)", fontsize=11)
 ax4a.set_xlabel("X")
 ax4a.set_ylabel("Y")

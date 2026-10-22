@@ -92,6 +92,7 @@ from typing import Callable
 import numpy as np
 import scipy
 from custom_inherit import doc_inherit  # type: ignore
+
 # Convention for the log / exp family: use the constants from ``pymultifit/__init__.py`` (LOG, EXP, LOG1P, SQRT, XLOGY, ...).
 # LOG1P (np.log1p) only where the argument is provably > -1, so its RuntimeWarning stays a tripwire for a broken domain
 # check; scipy's own ``log1p`` / ``xlog1py`` (silent for arguments <= -1) where it can reach -1 or below.
@@ -109,7 +110,9 @@ from scipy.special import (
     log_ndtr,
     beta,
     erf,
-    owens_t, rgamma, gammaincc,
+    owens_t,
+    rgamma,
+    gammaincc,
 )
 
 from .. import (
@@ -153,7 +156,9 @@ def reject_x(x: ArrayLike, shp1=None, shp2=None, loc: float = 0.0, scale: float 
 
 
 _FLOAT_MAX = np.finfo(float).max
-_LOG_FLOAT_MAX = 709.78  # ``exp`` of this is below the largest float (log of it is 709.7827...), above it overflows to ``inf``
+_LOG_FLOAT_MAX = (
+    709.78  # ``exp`` of this is below the largest float (log of it is 709.7827...), above it overflows to ``inf``
+)
 
 
 def _exp_neg(y: NDArray) -> NDArray:
@@ -945,7 +950,7 @@ def cubic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0, d: float
 
     where, :math:`a`, :math:`b`, :math:`c`, and :math:`d` are the cubic coefficients.
     """
-    return a * x ** 3 + b * x ** 2 + c * x + d
+    return a * x**3 + b * x**2 + c * x + d
 
 
 def exponential_pdf_(
@@ -1505,7 +1510,7 @@ def gaussian_pdf_(x: ArrayLike, amplitude=1.0, mean=0.0, std=1.0, normalize=Fals
     if rej_:
         return full_nan(np.shape(y))
 
-    pdf_ = EXP(-0.5 * y ** 2) / SQRT_TWO_PI
+    pdf_ = EXP(-0.5 * y**2) / SQRT_TWO_PI
     pdf_ /= std
 
     if not normalize:
@@ -1535,7 +1540,7 @@ def gaussian_log_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    log_pdf_ = -(y ** 2) / 2.0 - LOG_SQRT_TWO_PI
+    log_pdf_ = -(y**2) / 2.0 - LOG_SQRT_TWO_PI
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -1797,7 +1802,7 @@ def half_normal_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * EXP(-0.5 * y ** 2), 0)
+    pdf_ = np.where(y >= 0, SQRT_TWO_BY_PI * EXP(-0.5 * y**2), 0)
     pdf_ /= sigma
 
     if not normalize:
@@ -1830,7 +1835,7 @@ def half_normal_log_pdf_(
     if rej_:
         return full_nan(np.shape(y))
 
-    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y ** 2, -INF)
+    log_pdf_ = np.where(y >= 0, LOG_SQRT_TWO_BY_PI - 0.5 * y**2, -INF)
     log_pdf_ -= LOG(sigma)
 
     if not normalize:
@@ -1951,7 +1956,7 @@ def johnsonSU_pdf_(
         return full_nan(np.shape(y))
 
     f1 = delta / SQRT_TWO_PI
-    f2 = SQRT(1 + y ** 2)
+    f2 = SQRT(1 + y**2)
     f3 = EXP(-0.5 * (gamma + delta * np.arcsinh(y)) ** 2)
 
     pdf_ = f1 / f2 * f3
@@ -1992,7 +1997,7 @@ def johnsonSU_log_pdf_(
         return full_nan(np.shape(y))
 
     f1 = LOG(delta) - LOG_SQRT_TWO_PI
-    f2 = -0.5 * LOG1P(y ** 2)
+    f2 = -0.5 * LOG1P(y**2)
     f3 = -0.5 * (gamma + delta * np.arcsinh(y)) ** 2
 
     log_pdf_ = f1 + f2 + f3
@@ -2298,7 +2303,7 @@ def log_normal_pdf_(
     ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
     q = (LOG(ys) - LOG(mean)) / std
 
-    pdf_ = np.where(y > 0, EXP(-(q ** 2) / 2) / ys / SQRT_TWO_PI, 0)
+    pdf_ = np.where(y > 0, EXP(-(q**2) / 2) / ys / SQRT_TWO_PI, 0)
     pdf_ /= std
 
     if not normalize:
@@ -2335,7 +2340,7 @@ def log_normal_log_pdf_(
     ys = np.where(y > 0, y, 1.0)  # a value inside the support wherever y is outside it, so nothing below warns
     q = (LOG(ys) - LOG(mean)) / std
 
-    log_pdf_ = np.where(y > 0, -LOG(ys) - (q ** 2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
+    log_pdf_ = np.where(y > 0, -LOG(ys) - (q**2 / 2.0) - LOG_SQRT_TWO_PI, -INF)
     log_pdf_ -= LOG(std)
 
     if not normalize:
@@ -2947,7 +2952,7 @@ def students_t_log_pdf_(
 
     f1 = LOG(poch(nu_half, 0.5))
     f2 = 0.5 * (LOG_PI + LOG(v))
-    f3 = nu_half_ * LOG1P(y ** 2 / v)
+    f3 = nu_half_ * LOG1P(y**2 / v)
 
     log_pdf_ = f1 - f2 - f3 - LOG(scale)
 
@@ -3008,7 +3013,7 @@ def students_t_cdf_(
 
     f1 = y * gamma(nu_half_)
     f2 = (v * PI) ** 0.5 * gamma(nu_half)
-    f3 = scipy.special.hyp2f1(1 / 2, nu_half_, 3 / 2, -(y ** 2) / v)
+    f3 = scipy.special.hyp2f1(1 / 2, nu_half_, 3 / 2, -(y**2) / v)
 
     return 0.5 + (f1 / f2) * f3
 
@@ -3411,7 +3416,7 @@ def quadratic(x: ArrayLike, a: float = 1.0, b: float = 1.0, c: float = 1.0) -> N
 
     where, :math:`a`, :math:`b`, and :math:`c` are the quadratic coefficients.
     """
-    return a * x ** 2 + b * x + c
+    return a * x**2 + b * x + c
 
 
 def _beta_expr(y: ArrayLike, a: float, b: float, un_log: bool = False):
@@ -3460,6 +3465,7 @@ def _pdf_scaling(pdf_: NDArray, amplitude: float) -> NDArray:
         with np.errstate(invalid="ignore"):
             return amplitude * (pdf_ / max_)
     return amplitude * (pdf_ / max_)
+
 
 def _log_pdf_scaling(log_pdf_: NDArray, amplitude: float) -> NDArray:
     max_ = np.max(log_pdf_)

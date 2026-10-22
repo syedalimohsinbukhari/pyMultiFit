@@ -268,7 +268,7 @@ class MixedDataFitter(BaseFitter):
 
         return param_dict
 
-    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None): # type-ignore
+    def fit(self, p0: Params_, frozen: dict[int, list[bool]] | None = None):  # type-ignore
         """
         Fit the data.
 

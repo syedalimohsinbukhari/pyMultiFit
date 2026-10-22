@@ -327,7 +327,9 @@ def heatmap(m_df, s_df, label="PDF"):
     raw_ratios = m_df / s_df
     raw_ratios.index = raw_ratios.index + 1
 
-    v_min = min(raw_ratios.min().min(), 1 - 1e-6)  # TwoSlopeNorm needs vmin < 1 < vmax, even when every ratio is below (or above) 1
+    v_min = min(
+        raw_ratios.min().min(), 1 - 1e-6
+    )  # TwoSlopeNorm needs vmin < 1 < vmax, even when every ratio is below (or above) 1
     v_max = max(raw_ratios.max().max(), 1 + 1e-6)
     norm = TwoSlopeNorm(vcenter=1, vmin=v_min, vmax=v_max)
 

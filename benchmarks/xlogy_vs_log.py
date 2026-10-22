@@ -90,9 +90,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--sizes", type=int, nargs="+", default=[1_000, 100_000, 1_000_000])
     parser.add_argument("--repeats", type=int, default=40)
-    parser.add_argument("-o", "--output", type=Path, default=None, help="CSV path (default: results/<run>/xlogy_vs_log.csv)")
+    parser.add_argument(
+        "-o", "--output", type=Path, default=None, help="CSV path (default: results/<run>/xlogy_vs_log.csv)"
+    )
     args = parser.parse_args()
-    output = args.output or results_dir(write_env=False) / "xlogy_vs_log.csv"  # joins the run folder of this commit, keeps its env.json
+    output = (
+        args.output or results_dir(write_env=False) / "xlogy_vs_log.csv"
+    )  # joins the run folder of this commit, keeps its env.json
 
     rows = []
     for name, (make, (lo, hi)) in CASES.items():
@@ -113,8 +117,10 @@ def main():
             row["masked/xlogy"] = row["masked"] / row["xlogy"]
             row["log/xlogy"] = row["log"] / row["xlogy"]
             rows.append(row)
-            print(f"{row['function']:<22} n={n:>8}  xlogy {row['xlogy'] * 1e3:8.3f} ms  "
-                  f"masked {row['masked/xlogy']:.2f}x  log {row['log/xlogy']:.2f}x")
+            print(
+                f"{row['function']:<22} n={n:>8}  xlogy {row['xlogy'] * 1e3:8.3f} ms  "
+                f"masked {row['masked/xlogy']:.2f}x  log {row['log/xlogy']:.2f}x"
+            )
 
     pd.DataFrame(rows).to_csv(output, index=False)
     print(f"wrote {output}")

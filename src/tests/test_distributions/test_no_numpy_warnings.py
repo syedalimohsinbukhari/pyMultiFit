@@ -31,7 +31,14 @@ X = np.array([-1e3, -10, -1, -0.5, 0, 1e-12, 0.25, 0.5, 1, 1.5, 2, 5, 50, 1e3, 1
 POSITIVE = [0.5, 1.0, 2.0, 10.0]
 LOCATIONS = [-1.0, 0.0, 1.0]
 COEFFICIENTS = [-2.0, 0.0, 1.0, 5.0]
-Q_VALUES = [0.5, 0.9, 1.0, 1.1, 1.5, 1.9]  # the q-exponential is only defined for q < 2, both q < 1 and 1 < q < 2 matter
+Q_VALUES = [
+    0.5,
+    0.9,
+    1.0,
+    1.1,
+    1.5,
+    1.9,
+]  # the q-exponential is only defined for q < 2, both q < 1 and 1 < q < 2 matter
 
 
 def _grid(parameter: str) -> list[float]:

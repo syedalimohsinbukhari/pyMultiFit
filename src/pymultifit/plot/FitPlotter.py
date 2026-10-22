@@ -336,12 +336,7 @@ class FitPlotter:
             The matplotlib axis object on which the plot was drawn.
         """
         return _prediction_interval(
-            result=self.result,
-            pi_levels=pi_levels,
-            x_label=x_label,
-            y_label=y_label,
-            plot_title=plot_title,
-            axis=axis,
+            result=self.result, pi_levels=pi_levels, x_label=x_label, y_label=y_label, plot_title=plot_title, axis=axis
         )
 
     def plot_qq_plot(self, plot_title: str = "Q-Q plot", axis: Axes | None = None) -> Axes:

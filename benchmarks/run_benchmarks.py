@@ -50,7 +50,9 @@ from pathlib import Path
 import bench_env
 from bench_env import RESULTS_ROOT, capture, hardware_issues, reject_reasons, run_name
 
-bench_env.lock_environment(core=0)  # threads=1 and one core, before anything below imports numpy (compare_runs imports pandas)
+bench_env.lock_environment(
+    core=0
+)  # threads=1 and one core, before anything below imports numpy (compare_runs imports pandas)
 
 import compare_runs  # noqa: E402
 
@@ -67,7 +69,9 @@ def add_worktree(commit: str, path: Path) -> None:
 
 def remove_worktree(path: Path) -> str | None:
     """Remove the temporary worktree. Returns a message when it could not be removed, ``None`` on success."""
-    result = subprocess.run(["git", "worktree", "remove", "--force", str(path)], cwd=HERE, capture_output=True, text=True)
+    result = subprocess.run(
+        ["git", "worktree", "remove", "--force", str(path)], cwd=HERE, capture_output=True, text=True
+    )
     if result.returncode:
         return f"could not remove the worktree {path} ({result.stderr.strip()}); remove it with: git worktree remove --force {path}"
     return None
@@ -77,12 +81,21 @@ def smoke_marker(env: dict) -> Path:
     return RESULTS_ROOT / f".smoke_ok_{env['hostname'].lower().replace('-', '_')}"
 
 
-def execute_notebook(workdir: Path, results_root: Path, log: Path, smoke: bool, progress: Path | None = None,
-                     package_src: Path | None = None, package_commit: str | None = None) -> int:
+def execute_notebook(
+    workdir: Path,
+    results_root: Path,
+    log: Path,
+    smoke: bool,
+    progress: Path | None = None,
+    package_src: Path | None = None,
+    package_commit: str | None = None,
+) -> int:
     """Run ``speed.ipynb`` headless with ``workdir`` as working directory, appending its output to ``log``."""
     child_env = {
         **os.environ,
-        "PYTHONPATH": os.pathsep.join(filter(None, [str(package_src) if package_src else None, str(HERE), os.environ.get("PYTHONPATH")])),
+        "PYTHONPATH": os.pathsep.join(
+            filter(None, [str(package_src) if package_src else None, str(HERE), os.environ.get("PYTHONPATH")])
+        ),
         "BENCH_RESULTS_ROOT": str(results_root),
     }
     if smoke:
@@ -96,8 +109,17 @@ def execute_notebook(workdir: Path, results_root: Path, log: Path, smoke: bool, 
     notebook = workdir / "speed.ipynb"
     shutil.copy(HERE / "speed.ipynb", notebook)
     command = [
-        sys.executable, "-m", "jupyter", "nbconvert", "--to", "notebook", "--execute", str(notebook),
-        "--output", "speed_executed.ipynb", "--ExecutePreprocessor.timeout=-1",
+        sys.executable,
+        "-m",
+        "jupyter",
+        "nbconvert",
+        "--to",
+        "notebook",
+        "--execute",
+        str(notebook),
+        "--output",
+        "speed_executed.ipynb",
+        "--ExecutePreprocessor.timeout=-1",
         "--ExecutePreprocessor.kernel_name=python3",
     ]
     with log.open("a") as handle:
@@ -146,7 +168,9 @@ def verify_outputs(run: Path, plots_dir: Path, rows: int, package: tuple[str, Pa
         if env.get("package_commit") != commit:
             problems.append(f"env.json says package commit {env.get('package_commit')}, expected {commit}")
         if not (env.get("pymultifit_file") or "").startswith(str(src)):
-            problems.append(f"pymultifit was imported from {env.get('pymultifit_file')}, not from the baseline checkout {src}")
+            problems.append(
+                f"pymultifit was imported from {env.get('pymultifit_file')}, not from the baseline checkout {src}"
+            )
     return problems
 
 
@@ -159,7 +183,9 @@ def verify_smoke(workdir: Path) -> list[str]:
 
 def smoke() -> int:
     env = capture()
-    print(f"smoke run on {env['hostname']} (commit {(env['git_commit'] or 'none')[:7]}), tiny sizes, temporary directory")
+    print(
+        f"smoke run on {env['hostname']} (commit {(env['git_commit'] or 'none')[:7]}), tiny sizes, temporary directory"
+    )
     for problem, fix in hardware_issues(env):
         print(f"  note: {problem} (a real run would be rejected; fix: {fix})")
 
@@ -175,7 +201,9 @@ def smoke() -> int:
 
     problems = verify_smoke(workdir)
     if _snapshot() != before:
-        problems.append("the smoke run changed files under benchmarks/results, plots or variation_plots (it must write only to the temporary directory)")
+        problems.append(
+            "the smoke run changed files under benchmarks/results, plots or variation_plots (it must write only to the temporary directory)"
+        )
     if problems:
         print("smoke FAILED:")
         for number, problem in enumerate(problems, 1):
@@ -186,7 +214,10 @@ def smoke() -> int:
     shutil.rmtree(workdir)
     marker = smoke_marker(env)
     marker.parent.mkdir(parents=True, exist_ok=True)
-    marker.write_text(json.dumps({"commit": env["git_commit"], "utc": datetime.now(timezone.utc).isoformat(timespec="seconds")}) + "\n")
+    marker.write_text(
+        json.dumps({"commit": env["git_commit"], "utc": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+        + "\n"
+    )
     print(f"smoke passed: {N_CSV} CSVs, {N_PLOTS} plots, thread limits and core pinning verified inside the kernel.")
     return 0
 
@@ -210,9 +241,13 @@ def preflight(against: str | None = None, baseline_ref: str | None = None) -> tu
     if baseline_ref:
         commit = bench_env.resolve_ref(baseline_ref)
         if commit is None:
-            reasons_ref = [f"--baseline-ref: '{baseline_ref}' is not a commit of this repository.\n    fix: use a branch, tag or hash (git log --oneline)"]
+            reasons_ref = [
+                f"--baseline-ref: '{baseline_ref}' is not a commit of this repository.\n    fix: use a branch, tag or hash (git log --oneline)"
+            ]
         elif commit == env["git_commit"]:
-            reasons_ref = ["--baseline-ref is the current commit, which is just a normal run.\n    fix: leave --baseline-ref out"]
+            reasons_ref = [
+                "--baseline-ref is the current commit, which is just a normal run.\n    fix: leave --baseline-ref out"
+            ]
         else:
             reasons_ref = []
             env["package_commit"] = commit
@@ -226,7 +261,9 @@ def preflight(against: str | None = None, baseline_ref: str | None = None) -> tu
         try:
             compare_runs.resolve(against)
         except FileNotFoundError as error:
-            reasons.append(f"--against: {error}\n    fix: pick a folder from {RESULTS_ROOT.relative_to(HERE.parent)}/, or leave --against out")
+            reasons.append(
+                f"--against: {error}\n    fix: pick a folder from {RESULTS_ROOT.relative_to(HERE.parent)}/, or leave --against out"
+            )
     if reasons:
         print(f"\nrun rejected ({len(reasons)} problem{'s' * (len(reasons) != 1)}):")
         for number, reason in enumerate(reasons, 1):
@@ -260,10 +297,20 @@ def full_run(env: dict, results_root: Path, plots_dir: Path, rows: int, against:
 
     def finish(status: str, code: int, **extra) -> int:
         finished = datetime.now(timezone.utc)
-        (run / "status.json").write_text(json.dumps({
-            "status": status, "commit": env["git_commit"], "started_utc": started.isoformat(timespec="seconds"),
-            "finished_utc": finished.isoformat(timespec="seconds"), "duration_s": round((finished - started).total_seconds()),
-            **extra}, indent=2) + "\n")
+        (run / "status.json").write_text(
+            json.dumps(
+                {
+                    "status": status,
+                    "commit": env["git_commit"],
+                    "started_utc": started.isoformat(timespec="seconds"),
+                    "finished_utc": finished.isoformat(timespec="seconds"),
+                    "duration_s": round((finished - started).total_seconds()),
+                    **extra,
+                },
+                indent=2,
+            )
+            + "\n"
+        )
         note(f"status: {status}")
         return code
 
@@ -278,9 +325,18 @@ def full_run(env: dict, results_root: Path, plots_dir: Path, rows: int, against:
             worktree = workdir / "package"
             add_worktree(env["package_commit"], worktree)
             package_src = worktree / "src"
-            note(f"baseline: pymultifit from {env['package_commit'][:7]} checked out to {worktree} (temporary worktree)")
-        code = execute_notebook(workdir, results_root, log, smoke=False, progress=progress, package_src=package_src,
-                                package_commit=env["package_commit"] if baseline else None)
+            note(
+                f"baseline: pymultifit from {env['package_commit'][:7]} checked out to {worktree} (temporary worktree)"
+            )
+        code = execute_notebook(
+            workdir,
+            results_root,
+            log,
+            smoke=False,
+            progress=progress,
+            package_src=package_src,
+            package_commit=env["package_commit"] if baseline else None,
+        )
     except KeyboardInterrupt:
         _cleanup_worktree(workdir, baseline, note)
         note(f"interrupted; the folder {run} is left as it is, delete it before running this commit again")
@@ -293,8 +349,9 @@ def full_run(env: dict, results_root: Path, plots_dir: Path, rows: int, against:
         note(f"the notebook exited with {code}; temporary directory kept for inspection: {workdir}")
         return finish("failed", 1, exit_code=code)
 
-    problems = verify_outputs(run, workdir / "plots" / "speed", rows,
-                              (env["package_commit"], package_src) if baseline else None)
+    problems = verify_outputs(
+        run, workdir / "plots" / "speed", rows, (env["package_commit"], package_src) if baseline else None
+    )
     _cleanup_worktree(workdir, baseline, note)
     if problems:
         for number, problem in enumerate(problems, 1):
@@ -311,7 +368,9 @@ def full_run(env: dict, results_root: Path, plots_dir: Path, rows: int, against:
         if baseline and not against:
             note("baseline run: compare a later run against it with --against " + run.name)
         elif reference is None:
-            note("no earlier run of this machine to compare with; later: uv run python compare_runs.py <new> <reference>")
+            note(
+                "no earlier run of this machine to compare with; later: uv run python compare_runs.py <new> <reference>"
+            )
         else:
             target, headline = compare_runs.write_report(run, reference)
             for line in headline:
@@ -324,9 +383,16 @@ def full_run(env: dict, results_root: Path, plots_dir: Path, rows: int, against:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--smoke", action="store_true", help="test the pipeline with tiny sizes in a temporary directory")
-    parser.add_argument("--baseline-ref", help="git ref whose pymultifit is benchmarked with the current benchmark code")
-    parser.add_argument("--against", help="run folder (name in results/ or path) to compare with; default: latest other run of this machine")
+    parser.add_argument(
+        "--smoke", action="store_true", help="test the pipeline with tiny sizes in a temporary directory"
+    )
+    parser.add_argument(
+        "--baseline-ref", help="git ref whose pymultifit is benchmarked with the current benchmark code"
+    )
+    parser.add_argument(
+        "--against",
+        help="run folder (name in results/ or path) to compare with; default: latest other run of this machine",
+    )
     args = parser.parse_args()
     if args.smoke:
         if args.baseline_ref or args.against:

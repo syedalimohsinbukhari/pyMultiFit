@@ -50,7 +50,9 @@ plt.tight_layout()
 # -- Example 3: Individual component CIs ---------------------------------------
 print("Running bootstrap (Example 3)…")
 
-ci_ind = fitter.confidence_intervals(ci_levels=95, n_bootstrap=200, overall_ci=False, individual_ci=True, rng_engine=rng)
+ci_ind = fitter.confidence_intervals(
+    ci_levels=95, n_bootstrap=200, overall_ci=False, individual_ci=True, rng_engine=rng
+)
 
 ax3 = fitter.plotter.plot_confidence_intervals(ci_ind)
 fitter.plotter.plot_fit(show_individuals=True, axis=ax3)

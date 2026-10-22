@@ -33,13 +33,11 @@ y_multifit = QExponentialDistribution(q=1.5, rate=1.3, loc=-3.3, normalize=True)
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
 
-ax[0].plot(x_values, y_scipy.pdf(x_values, **y_multifit.to_scipy_params()),
-           label="Scipy translated GenPareto")
+ax[0].plot(x_values, y_scipy.pdf(x_values, **y_multifit.to_scipy_params()), label="Scipy translated GenPareto")
 ax[0].plot(x_values, y_multifit.pdf(x_values), "k:", label="pyMultiFit translated QExponential")
 ax[0].set_ylabel("f(x)")
 
-ax[1].plot(x_values, y_scipy.cdf(x_values, **y_multifit.to_scipy_params()),
-           label="Scipy translated GenPareto")
+ax[1].plot(x_values, y_scipy.cdf(x_values, **y_multifit.to_scipy_params()), label="Scipy translated GenPareto")
 ax[1].plot(x_values, y_multifit.cdf(x_values), "k:", label="pyMultiFit translated QExponential")
 ax[1].set_ylabel("F(x)")
 

@@ -44,12 +44,7 @@ GRID_LS = "--"
 RESID_FIG_SIZE = (12, 4)
 
 
-def _ci_plotter(
-    ci: ConfidenceIntervals,
-    overall: bool | None,
-    individual: bool | None,
-    axis: Axes | None,
-) -> Axes:
+def _ci_plotter(ci: ConfidenceIntervals, overall: bool | None, individual: bool | None, axis: Axes | None) -> Axes:
     if not isinstance(ci, ConfidenceIntervals):
         raise TypeError(
             f"Expected a ConfidenceIntervals object, got {type(ci).__name__}. "
@@ -329,11 +324,7 @@ def _normal_quantiles(data: NDArray) -> tuple[NDArray, NDArray]:
     return theoretical, (sorted_data - loc) / scale
 
 
-def _qq(
-    result: FitResult,
-    plot_title: str = "QQ-Plot",
-    axis: Axes | None = None,
-) -> Axes:
+def _qq(result: FitResult, plot_title: str = "QQ-Plot", axis: Axes | None = None) -> Axes:
     residual = result.residuals()
 
     quantiles, values = _normal_quantiles(residual)

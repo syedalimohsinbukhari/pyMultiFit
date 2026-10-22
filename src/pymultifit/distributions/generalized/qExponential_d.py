@@ -154,7 +154,7 @@ class QExponentialDistribution(BaseDistribution):
 
         # Variance exists for q < 4/3 (4 - 3q > 0)
         if q < (4.0 / 3.0):
-            variance_ = (2.0 - q) / ((rate ** 2) * ((3.0 - 2.0 * q) ** 2) * (4.0 - 3.0 * q))
+            variance_ = (2.0 - q) / ((rate**2) * ((3.0 - 2.0 * q) ** 2) * (4.0 - 3.0 * q))
         elif q < 1.5:
             variance_ = INF
         else:

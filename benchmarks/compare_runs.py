@@ -53,7 +53,9 @@ def table(new: Path, ref: Path, function: str, suffix: str) -> pd.DataFrame:
     n_multi, n_scipy = _load(new, function, "multifit", suffix), _load(new, function, "scipy", suffix)
     r_multi, r_scipy = _load(ref, function, "multifit", suffix), _load(ref, function, "scipy", suffix)
     if len(n_multi) != len(r_multi):
-        raise ValueError(f"the runs have different numbers of sizes ({len(n_multi)} and {len(r_multi)}), cannot compare")
+        raise ValueError(
+            f"the runs have different numbers of sizes ({len(n_multi)} and {len(r_multi)}), cannot compare"
+        )
     columns = [c for c in n_multi.columns if c in r_multi.columns]
     tail = slice(-TAIL, None)
     new_ratio = (n_multi[columns] / n_scipy[columns]).iloc[tail].median()
@@ -64,16 +66,22 @@ def table(new: Path, ref: Path, function: str, suffix: str) -> pd.DataFrame:
     verdict = pd.Series("~", index=columns)
     verdict[change > limit] = "slower"
     verdict[change < -limit] = "faster"
-    return pd.DataFrame({"ref ratio": ref_ratio, "new ratio": new_ratio, "change %": change, "scipy drift %": drift,
-                         "verdict": verdict})
+    return pd.DataFrame(
+        {"ref ratio": ref_ratio, "new ratio": new_ratio, "change %": change, "scipy drift %": drift, "verdict": verdict}
+    )
 
 
 def _fmt(frame: pd.DataFrame) -> str:
-    lines = ["| distribution | ref ratio | new ratio | change | scipy drift | verdict |", "|---|---:|---:|---:|---:|---|"]
+    lines = [
+        "| distribution | ref ratio | new ratio | change | scipy drift | verdict |",
+        "|---|---:|---:|---:|---:|---|",
+    ]
     for name, row in frame.iterrows():
         mark = "**" if row["verdict"] != "~" else ""
-        lines.append(f"| {name} | {row['ref ratio']:.2f} | {row['new ratio']:.2f} | {mark}{row['change %']:+.1f} %{mark} "
-                     f"| {row['scipy drift %']:+.1f} % | {mark}{row['verdict']}{mark} |")
+        lines.append(
+            f"| {name} | {row['ref ratio']:.2f} | {row['new ratio']:.2f} | {mark}{row['change %']:+.1f} %{mark} "
+            f"| {row['scipy drift %']:+.1f} % | {mark}{row['verdict']}{mark} |"
+        )
     return "\n".join(lines)
 
 
@@ -82,18 +90,31 @@ def _env_lines(new: Path, ref: Path) -> list[str]:
         a, b = (json.loads((p / "env.json").read_text()) for p in (new, ref))
     except FileNotFoundError:
         return ["_env.json is missing in one of the runs, software match not checked._"]
+
     def commit(env: dict) -> str:
         package, harness = (env.get("package_commit") or env["git_commit"] or "?")[:7], (env["git_commit"] or "?")[:7]
         return package if package == harness else f"{package} (benchmark code {harness})"
 
-    lines = [f"- new: {a['hostname']} | {a['cpu']['model']} | commit {commit(a)}",
-             f"- reference: {b['hostname']} | {b['cpu']['model']} | commit {commit(b)}"]
+    lines = [
+        f"- new: {a['hostname']} | {a['cpu']['model']} | commit {commit(a)}",
+        f"- reference: {b['hostname']} | {b['cpu']['model']} | commit {commit(b)}",
+    ]
     bad = [k for k in MUST_MATCH if a.get(k) != b.get(k) and k not in ("git_commit", "git_dirty")]
-    bad += [f"numpy_build.{k}" for k in ("blas", "NPY_DISABLE_CPU_FEATURES") if a["numpy_build"].get(k) != b["numpy_build"].get(k)]
-    lines.append("- software stacks match" if not bad else f"- **software differs: {', '.join(bad)}**, timings are not directly comparable")
+    bad += [
+        f"numpy_build.{k}"
+        for k in ("blas", "NPY_DISABLE_CPU_FEATURES")
+        if a["numpy_build"].get(k) != b["numpy_build"].get(k)
+    ]
+    lines.append(
+        "- software stacks match"
+        if not bad
+        else f"- **software differs: {', '.join(bad)}**, timings are not directly comparable"
+    )
     if a["hostname"] != b["hostname"]:
-        lines.append("- **different machines**: the ratios are still comparable, absolute times are not; "
-                     "the scipy drift column then also contains the hardware difference")
+        lines.append(
+            "- **different machines**: the ratios are still comparable, absolute times are not; "
+            "the scipy drift column then also contains the hardware difference"
+        )
     return lines
 
 
@@ -117,10 +138,20 @@ def report(new: Path, ref: Path) -> tuple[str, list[str]]:
         headline.append(f"consistently {verdict}: " + (", ".join(items) if items else "none"))
     headline.append("unproven (only one parameter set, or opposite): " + (", ".join(t for _, t in unproven) or "none"))
 
-    out = [f"# Comparison: {new.name} vs {ref.name}", "", *_env_lines(new, ref), "",
-           f"Ratio = multifit time / scipy time (below 1: multifit faster), median over the {TAIL} largest sizes. "
-           f"Verdict when |change| > max({FLOOR_PCT:.0f} %, {DRIFT_FACTOR:.0f} x scipy drift).", "",
-           "## Summary", "", *[f"- {line}" for line in headline], "(changes listed as default / variable parameters)", ""]
+    out = [
+        f"# Comparison: {new.name} vs {ref.name}",
+        "",
+        *_env_lines(new, ref),
+        "",
+        f"Ratio = multifit time / scipy time (below 1: multifit faster), median over the {TAIL} largest sizes. "
+        f"Verdict when |change| > max({FLOOR_PCT:.0f} %, {DRIFT_FACTOR:.0f} x scipy drift).",
+        "",
+        "## Summary",
+        "",
+        *[f"- {line}" for line in headline],
+        "(changes listed as default / variable parameters)",
+        "",
+    ]
     for function in FUNCTIONS:
         for suffix, label in SETS:
             out += [f"## {function}, {label}", "", _fmt(tables[(function, suffix)]), ""]
@@ -129,6 +160,7 @@ def report(new: Path, ref: Path) -> tuple[str, list[str]]:
 
 def find_reference(run: Path) -> Path | None:
     """The latest other run of the same machine that has results; ``None`` when there is none."""
+
     def stamp(folder: Path) -> str:
         for name, key in (("status.json", "finished_utc"), ("env.json", "captured_utc")):
             try:
@@ -164,7 +196,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("new")
     parser.add_argument("reference")
-    parser.add_argument("--print", action="store_true", help="print the full report instead of writing it into the new run")
+    parser.add_argument(
+        "--print", action="store_true", help="print the full report instead of writing it into the new run"
+    )
     args = parser.parse_args()
     new, ref = resolve(args.new), resolve(args.reference)
     if args.print:
