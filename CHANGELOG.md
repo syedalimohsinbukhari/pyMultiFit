@@ -7,18 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - Unreleased
 
-**PRs:** [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125], [PR #140], [PR #141], [PR #152] · **Issues:** [issue #89], [issue #90], [issue #94], [issue #95], [issue #99], [issue #100], [issue #117], [issue #118], [issue #119], [issue #121]
+**PRs:** [PR #107], [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125], [PR #126], [PR #128], [PR #140], [PR #141], [PR #152] · **Issues:** [issue #89], [issue #90], [issue #91], [issue #94], [issue #95], [issue #97], [issue #99], [issue #100], [issue #115], [issue #117], [issue #118], [issue #119], [issue #121], [issue #127]
 
 🎓 *Entries marked with a scholar hat were contributed by **Ahmed Bin Jawwad**, an intern at the Space and Astrophysics Research Lab (SARL), National Center of GIS and Space Applications (NCGSA), Institute of Space Technology (IST), Islamabad, Pakistan (Jul 6 – Aug 28, 2026).*
 
 ### Added
 
+#### Code
+
 - Added `QExponentialDistribution` and `StudentsTDistribution` to `pymultifit.distributions.generalized`. 🎓
 - Added `SymmetricGeneralizedNormalDistribution.logpdf()` and `logcdf()`; the class had none and inherited the `BaseDistribution` stubs, which return `None`.
-- Added `QExponentialDistribution.to_scipy_params()`, which returns the `c`, `loc` and `scale` of the equivalent `scipy.stats.genpareto` (`c = (q - 1) / (2 - q)`, `scale = 1 / ((2 - q) * rate)`) and raises `ValueError` for `q >= 2` or `rate <= 0`; it replaces the helper `q_exp_to_gen_pareto` of `distributions.utilities_d`, which was never released, and the `qexponential` example and the accuracy benchmark use it.
+- Added `QExponentialDistribution.to_scipy_params()`, which returns the `c`, `loc` and `scale` of the equivalent `scipy.stats.genpareto` (`c = (q - 1) / (2 - q)`, `scale = 1 / ((2 - q) * rate)`) and raises `ValueError` for `q >= 2` or `rate <= 0`; it replaces the helper `q_exp_to_gen_pareto` of `distributions.utilities_d`, which was never released.
 - Added Gumbel PDF/log-PDF/CDF/log-CDF utility functions (`gumbel_pdf_`, `gumbel_log_pdf_`, `gumbel_cdf_`, `gumbel_log_cdf_`) to `distributions.utilities_d` — note: only the standalone utility functions shipped, not a public `GumbelDistribution` class.
 - Added a new `pymultifit.plot` subpackage (`FitPlotter`, `qq_compare`) providing fit and residual plots, Q-Q plots, confidence-interval bounds, prediction intervals, parameter-correlation plots, and gridlines on plot axes, exposed via a cached `BaseFitter.plotter` property. `FitPlotter` is built from an immutable `FitResult` and has no dependency on the fitter classes.
-- Plot behaviour: `show_individuals=True` draws the total fit with the dashed components on top of it, also for a model of one component; `axes=` takes a tuple, a list or the array `plt.subplots(2, 1)` returns; `plot_fit_and_residuals(is_scatter=...)` takes a pair `(fit_panel, residual_panel)` or one bool for both panels; `plot_residuals()` labels its y axis `y - ŷ`, like the residual panel; the legends of confidence and prediction intervals show the exact level (`99.7% PI`, not `100% PI`, which would be an infinite band); `save_plot()` forwards `bbox_inches` and `format` to matplotlib and treats a dot followed by digits (`fit_0.5`) as part of the name.
 - `rng_engine` takes a NumPy `Generator` or an integer seed for a new one, `None` draws fresh entropy, in `compute_ci_bounds()`, `BaseFitter.confidence_intervals()` and the data generators (`multi_gaussian()` and the other `multi_*` functions, `multiple_models()`; for the generators `None` keeps NumPy's global state, so `np.random.seed` still works). Pass one `Generator` to several calls for reproducible and independent draws; a new generator from the same integer repeats them. The prediction intervals take `pi_levels`.
 - Added `pymultifit.ci.compute_ci_bounds`, which computes bootstrap confidence intervals (overall and per-component) from a `FitResult` into a `ConfidenceIntervals` object, evaluating every component once per bootstrap sample (the total is their sum, so asking for both the overall and the individual intervals costs no more than the individual ones). `BaseFitter.confidence_intervals()` is the shortcut on a fitter and only computes, `FitPlotter.plot_confidence_intervals(ci)` only draws, so nothing is repeated between the two.
 - Added `pymultifit.ci.ConfidenceIntervals` and `Band`: a result that describes itself (the exact `levels` in percent, the `x` values, `n_bootstrap`, and `overall` / `individual` bands as `{level: Band}`, `None` for a part that was not computed), read-only, with `band(level, component=None)` and `as_dict()` for the flat `x_range` / `overall_ci_<level>` / `individual_ci_<level>` layout. Levels are floats (`99.5` and `99.7` stay apart instead of both becoming `100`), the plotter draws what the object holds and raises a `ValueError` for a part that was not computed. `pymultifit.ci.normalize_levels` is the one parser of interval levels given as percentages or decimals (`95`, `95.0`, `0.95`, `[68, 95, 99.7]`, NumPy integers), shared by the confidence and the prediction intervals.
@@ -29,17 +30,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `pymultifit.exceptions` module (`pyMultiFitErrors`, `AxesError`).
 - Added `pymultifit.typing` module (`ArrayLike`, `NDArray`, `Params_`, `RaggedParams`).
 - `MixedDataFitter` can now infer `model_list` from `model_dictionary` keys when `model_list` is omitted.
+- `BaseFitter.fit()` accepts a flat list of initial guesses for one or several fits, split by `n_par` (a length that `n_par` does not divide raises `ValueError`), so a single model no longer needs a list of tuples; the list-of-tuples form still works, and `MixedDataFitter.fit()` still takes one sequence per component.
+
+#### Docs
+
 - Added extensive new examples: `examples/frozen_basefitter.py`, `examples/frozen_mixedfitter.py`, `examples/residuals_gaussian.py`, `examples/residuals_mixed.py`, and an `examples/plot_mechanics/` series covering fit/residual/CI/QQ/prediction-interval/parameter-correlation plotting.
+- The `qexponential` example uses `QExponentialDistribution.to_scipy_params()`.
+
+#### Other
+
+- The accuracy benchmark (`benchmarks/accuracy.ipynb`) uses `QExponentialDistribution.to_scipy_params()`.
 
 ### Changed
+
+#### Code
 
 - Unified all library docstrings to NumPy style throughout `distributions`, `fitters`, and `generators`, including a documentation/typing rework of `JohnsonSUDistribution`. 🎓 (majority)
 - Overhauled type hints across the codebase to modern `X | None` / `from __future__ import annotations` syntax; consolidated ad-hoc type aliases into `pymultifit.typing`.
 - `MixedDataFitter` now subclasses `BaseFitter` instead of duplicating its logic, unifying residual/CI/plotting support across all fitters.
 - Swapped the `deprecated`/`Deprecated` (`deprecated.sphinx`) dependency for `deprecation`; internal `mark_deprecated`/`md_scipy_like` helpers reworked accordingly.
-- Swapped the plotting dependency `mpyez` for `plotez` (`LinePlotConfig`, `plot_xy`).
-- Added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
-- Relaxed the `numpy<2.1.0` upper version pin to an unconstrained `numpy` dependency.
 - The functions in `distributions.utilities_d` no longer hide NumPy warnings behind the `suppress_numpy_warnings` decorator, which cost about 2-5 µs per call (up to ~10% of a single-point evaluation). They now evaluate only where the result is defined and use the warning-free `scipy.special` routines (`xlogy`, `log1p`), and a test keeps them warning-free. Where `exp(-y)` or `|y|**beta` overflows (the far tails of the Gumbel and symmetric generalized normal functions) the result is the same `-inf` / `0` that NumPy and SciPy give, silently, not a finite stand-in of about ±1.6e308 (the Gumbel functions are 6-11 % slower for it, the symmetric generalized normal ones unchanged).
 - The confidence intervals evaluate a given `x_range` together with the fitted data's `x` and keep the `x_range` part. The amplitude of an unnormalised distribution is the height of its peak on the array it is evaluated on, so a component's value at an `x` depends on the other `x` evaluated with it, and a window that leaves out a component's peak used to rescale that component's tail to its full amplitude (the median of the band was off by 9.6 on a peak of 10 for a window containing only one of two peaks). The default grid, which spans the data range and uses their minimum and maximum (not the first and last element, which was wrong for unsorted data), is unchanged. 5000 bootstrap samples on 1000 points take 0.8 s for the overall band and 1.1 s with the individual bands as well (2.3 s before).
 - Faster distribution functions: the PDF, log-PDF, CDF and log-CDF of the arcsine and beta distributions, `log_normal_cdf_` and `chi_square_pdf_` evaluate the expensive part (`power`, `arcsin`, `betainc`, `log`) only where the result is defined, inside the support, and fill the rest with the constants (`out=` / `where=` or boolean indexing instead of evaluating a stand-in value everywhere); `beta_pdf_` and `beta_log_pdf_` also compute only the form they return, they used to compute both. The outputs are bit-identical to the previous ones, including for `nan`, `inf` and the support boundaries.
@@ -48,19 +57,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      - The beta PDF went from about 2× slower than scipy (ratio 1.9-2.3) to about 1.5× faster (0.55-0.67). The beta CDF improved by 16-62 % and the arcsine CDF by 56-68 %.
      - On the Threadripper the arcsine PDF and the Laplace CDF went from 0.58 to 0.34 of scipy's time (about 40 % faster) against the commit before the warning decorators were removed.
 - The math constants of `pymultifit/__init__.py` (`LOG`, `EXP`, `LOG1P`, `SQRT`, `XLOGY`, `INF`) are used throughout the distributions, fitters and plots instead of the NumPy / SciPy names, with `LOG1P` only where the argument is provably above -1.
-- `statsmodels` is no longer a runtime dependency: the Q-Q plots compute their quantiles with SciPy and NumPy (the result is pinned by a test against the values `statsmodels` gave), and `statsmodels` stays in the `dev` group for the benchmarks.
-- Benchmarks: `benchmarks/run_benchmarks.py`, `bench_env.py` and `compare_runs.py` run the speed benchmark reproducibly (threads and core pinned, environment recorded in `env.json`, one result folder per machine and commit in `benchmarks/results/`) and compare two runs with a noise-aware verdict; `benchmarks/SPEED_SUMMARY.md` summarises the beta and arcsine change. `accuracy.ipynb` explains that the spike in the Laplace log-PDF plots comes from `scipy`, whose `laplace.logpdf` loses digits from `x` of about 729 and returns `-inf` from about 745, and `benchmarks/laplace_logpdf_underflow.py` shows it against the exact value. The arcsine variation scripts and their plots were removed, and the `q_exponential_check.ipynb` / `student_t_check.ipynb` notebooks moved to `benchmarks/checks/`.
+- The Q-Q plots compute their quantiles with SciPy and NumPy (the result is pinned by a test against the values `statsmodels` gave).
+
+#### Docs
+
+- Added a plotting guide (figures generated at build time) and API pages for `pymultifit.plot`, `pymultifit.result` and `pymultifit.ci`.
+- The `MixedDataFitter` page now lists all supported models; installation instructions and dependency lists were updated.
+- A Reproducibility page explains `rng_engine` and the one-generator rule.
+- The benchmarks page now reports the measured results (all 48 PDF / CDF combinations are faster than SciPy) and how to reproduce them.
+- The distributions overview explains that the amplitude of an unnormalised distribution is the peak height on the evaluated array (and that `normalize=True` does not depend on it).
+- The confidence-interval page describes `ConfidenceIntervals`.
+- The distributions table no longer lists the scaled inverse chi-squared distribution as a second q-exponential or leaves out Student's t.
+- `CONTRIBUTING.md` and the README install from `requirements-dev.txt` / `environment-dev.yaml` (conda instructions added), and the README shows the `plotter`.
 - Renamed `examples/gamma_sr.py` to `examples/gamma.py`.
-- Reworked the dependency files: `environment[dev].yaml` and `requirements[dev].txt` are now `environment-dev.yaml` and `requirements-dev.txt`, `requirements.txt` holds the runtime dependencies only (exported with `uv`), the runtime `environment.yaml` matches `pyproject.toml` (`deprecation`, `plotez`; no `tqdm`), `update_requirements_doc.py` was removed, and a test keeps the environment files in sync with `pyproject.toml`. `CONTRIBUTING.md` and the README install from `requirements-dev.txt` / `environment-dev.yaml` (conda instructions added), and the README shows the `plotter`.
-- Documentation: added a plotting guide (figures generated at build time) and API pages for `pymultifit.plot`, `pymultifit.result` and `pymultifit.ci`; the `MixedDataFitter` page now lists all supported models; installation instructions and dependency lists were updated. A Reproducibility page explains `rng_engine` and the one-generator rule, the benchmarks page now reports the measured results (all 48 PDF / CDF combinations are faster than SciPy) and how to reproduce them, the distributions overview explains that the amplitude of an unnormalised distribution is the peak height on the evaluated array (and that `normalize=True` does not depend on it), the confidence-interval page describes `ConfidenceIntervals`, and the distributions table no longer lists the scaled inverse chi-squared distribution as a second q-exponential or leaves out Student's t.
+
+#### Other
+
+- Swapped the plotting dependency `mpyez` for `plotez` (`LinePlotConfig`, `plot_xy`).
+- Added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
+- Relaxed the `numpy<2.1.0` upper version pin to an unconstrained `numpy` dependency.
+- `statsmodels` is no longer a runtime dependency; it stays in the `dev` group for the benchmarks.
+- Reworked the dependency files: `environment[dev].yaml` and `requirements[dev].txt` are now `environment-dev.yaml` and `requirements-dev.txt`, `requirements.txt` holds the runtime dependencies only (exported with `uv`), the runtime `environment.yaml` matches `pyproject.toml` (`deprecation`, `plotez`; no `tqdm`), `update_requirements_doc.py` was removed, and a test keeps the environment files in sync with `pyproject.toml`.
+- Benchmarks: `benchmarks/run_benchmarks.py`, `bench_env.py` and `compare_runs.py` run the speed benchmark reproducibly (threads and core pinned, environment recorded in `env.json`, one result folder per machine and commit in `benchmarks/results/`) and compare two runs with a noise-aware verdict; `benchmarks/SPEED_SUMMARY.md` summarises the beta and arcsine change. `accuracy.ipynb` explains that the spike in the Laplace log-PDF plots comes from `scipy`, whose `laplace.logpdf` loses digits from `x` of about 729 and returns `-inf` from about 745, and `benchmarks/laplace_logpdf_underflow.py` shows it against the exact value. The arcsine variation scripts and their plots were removed, and the `q_exponential_check.ipynb` / `student_t_check.ipynb` notebooks moved to `benchmarks/checks/`.
+- Corrected the author's ORCID in `CITATION.cff` (the three places that carried the old identifier).
 
 ### Fixed
+
+#### Code
 
 - `laplace_log_pdf_` returned `-inf` far in the tails (more than ~745 scale units from the mean) instead of the correct large negative value.
 - `sym_gen_normal_pdf_`, `sym_gen_normal_log_pdf_`, `sym_gen_normal_cdf_` and `sym_gen_normal_log_cdf_` now return NaN for a non-positive `shape` (like the other distributions reject invalid parameters) instead of dividing by zero.
 - `GammaDistribution.stats()` returned `mode = 0` for shape < 1 regardless of `loc`; it now returns `loc`.
-- Corrected the `GammaDistribution` and `GammaFitter` documentation: `scale` is scipy's `scale` (the rate is `1/scale`), not a rate, and the stale `SR`/`SS` and `λ` wording was removed.
-- Docs: replaced the removed `GAMMA_SR` / `GAMMA_SS` constants with `GAMMA` in the constants reference.
 - `stats()` of all distribution classes was audited with warnings as errors over wide and extreme parameter grids (`test_no_numpy_warnings.py`), which found and fixed:
   - `SkewNormalDistribution.stats()` raised `ZeroDivisionError` for `shape=0` (a normal distribution) and returned NaN for shapes as small as 5e-324.
   - `ScaledInverseChiSquareDistribution.stats()` raised `ZeroDivisionError` for `df=2` and `df=4`; it now returns `inf` where the mean (`df <= 2`) or the variance (`df <= 4`) does not exist.
@@ -71,21 +98,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `sym_gen_normal_pdf_` with `normalize=False` (the default of `SymmetricGeneralizedNormalDistribution`) applied the log scaling to the density, `log(amplitude) + pdf - max(pdf)`, so the result was not a density (it peaked at `log(amplitude)`, was negative in the tails and did not scale with the amplitude); it is now `amplitude * pdf / max(pdf)` like the other distributions. This was already wrong in 1.0.9.
 - `sym_gen_normal_cdf_` (and so `sym_gen_normal_log_cdf_`) lost the left tail: `0.5 - 0.5 * P` is exactly 0 as soon as the regularized incomplete gamma function `P` rounds to 1, so the CDF was 0 and the log-CDF `-inf` from `x = -8.5` on for `shape = 2` where the values are 1e-45 and -103.6 (and had a relative error of about 1e-4 for `shape = 0.5` at `x = -1000`). The left half is now `Q / 2` with the upper function `gammaincc` and agrees with `scipy.stats.gennorm` to about 1e-15, the right half still uses `gammainc`. The left half costs about 40 % more time (1e6 points, `shape = 2`: 192 to 271 ms), still less than SciPy's 400 ms.
 - Q-exponential: `q_exponential_pdf_`, `q_exponential_log_pdf_` and `q_exponential_cdf_` returned NaN for `q <= 0` although every `q < 2` is valid (`q` was checked like a positive-only shape parameter); `q_exponential_cdf_` returned NaN instead of 1 beyond the upper end of the support when `q < 1` (the argument of `log1p` fell below -1); `QExponentialDistribution.stats()` had a variance without the `(2 - q)` factor, `(2 - q) / (rate**2 * (3 - 2q)**2 * (4 - 3q))` is the value `scipy.stats.genpareto` gives. `test_qExponential_d.py` checks the distribution against `genpareto`.
+- Plot behaviour: `show_individuals=True` draws the total fit with the dashed components on top of it, also for a model of one component; `axes=` takes a tuple, a list or the array `plt.subplots(2, 1)` returns; `plot_fit_and_residuals(is_scatter=...)` takes a pair `(fit_panel, residual_panel)` or one bool for both panels; `plot_residuals()` labels its y axis `y - ŷ`, like the residual panel; the legends of confidence and prediction intervals show the exact level (`99.7% PI`, not `100% PI`, which would be an infinite band); `save_plot()` forwards `bbox_inches` and `format` to matplotlib and treats a dot followed by digits (`fit_0.5`) as part of the name.
+
+#### Docs
+
+- Corrected the `GammaDistribution` and `GammaFitter` documentation: `scale` is scipy's `scale` (the rate is `1/scale`), not a rate, and the stale `SR`/`SS` and `λ` wording was removed.
+- Docs: replaced the removed `GAMMA_SR` / `GAMMA_SS` constants with `GAMMA` in the constants reference.
+
+#### Other
+
 - Benchmarks: `cdf_pdf_plots` timed the PDF twice, so every "CDF" timing CSV held PDF timings; timing now uses 3 warm-up calls and the median. Timings produced before the fix must not be compared with newer ones.
 
 ### Breaking Changes
 
-- Dropped Python 3.9 support — `requires-python` raised from `>=3.9` to `>=3.10`; added a 3.12 classifier.
+#### Code
+
 - Removed the top-level type aliases `pymultifit.OneDArray`, `ListOrNdArray`, `ParamTuple`, `Params_` from `pymultifit/__init__.py`, replaced by `pymultifit.typing.{ArrayLike, NDArray, Params_, RaggedParams}`. Code importing these names from the package root will break.
 - Removed the deprecated `scipy_like()` classmethod from every distribution in `pymultifit.distributions` (including `generalized`), along with its `md_scipy_like` decorator helper (`pymultifit.mark_deprecated`'s companion, which was made private as `_md_scipy_like` earlier in this release and is now gone entirely); use `from_scipy_params()` instead, which takes the same arguments.
 - Removed `BaseFitter._covariance()`; covariance is now accessed via the `covariance` attribute directly.
 - Removed `pymultifit.suppress_numpy_warnings`, the decorator that wrapped a function in `np.errstate(all="ignore")`; the distribution functions do not need it any more, and `LogNormalDistribution.stats()` silences the one overflow it expects locally.
 - Removed `BaseFitter._format_param()`; the same formatting lives in `FitPlotter._format_param()`.
+
+#### Other
+
+- Dropped Python 3.9 support — `requires-python` raised from `>=3.9` to `>=3.10`; added a 3.12 classifier.
 - Replaced the `mpyez` plotting dependency with `plotez`; external code importing `mpyez.backend.uPlotting.LinePlot` / `mpyez.ezPlotting.plot_xy` through pyMultiFit's imports will need to switch to `plotez`.
+
 
 ## [1.0.9] - 2025-11-03
 
-**PRs:** [PR #112]
+**PRs:** [PR #112] · **Issues:** [issue #110]
 
 ### Added
 
@@ -132,7 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 📄 **Milestone:** completes the [pyOpenSci peer-review cycle](https://github.com/pyOpenSci/software-submission/issues/233) — 39 review-response commits over Software Review issue #233 (May–Oct 2025) — and lands the initial JOSS paper draft (`inst/paper.md`, `inst/paper.bib`), paving the way for the [1.0.8] Zenodo/JOSS submission milestone.
 
-**PRs:** [PR #92], [PR #104] · **Issues:** [issue #88], [issue #102]
+**PRs:** [PR #92], [PR #104] · **Issues:** [issue #88], [issue #101], [issue #102]
 
 ### Added
 
@@ -249,7 +291,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Major stabilization release: full test suite, Sphinx documentation site, benchmarks, and an API cleanup/rename pass.
 
-**PRs:** [PR #45], [PR #46], [PR #49], [PR #51], [PR #52], [PR #53], [PR #54], [PR #60], [PR #65], [PR #72], [PR #74], [PR #76] · **Issues:** [issue #7], [issue #39], [issue #42], [issue #48], [issue #50], [issue #58], [issue #59], [issue #61], [issue #62], [issue #63], [issue #69], [issue #71]
+**PRs:** [PR #45], [PR #46], [PR #49], [PR #51], [PR #52], [PR #53], [PR #54], [PR #60], [PR #65], [PR #72], [PR #74], [PR #76] · **Issues:** [issue #7], [issue #35], [issue #38], [issue #39], [issue #42], [issue #44], [issue #48], [issue #50], [issue #55], [issue #56], [issue #57], [issue #58], [issue #59], [issue #61], [issue #62], [issue #63], [issue #64], [issue #68], [issue #69], [issue #70], [issue #71], [issue #73], [issue #75]
 
 ### Added
 
@@ -309,7 +351,7 @@ Major stabilization release: full test suite, Sphinx documentation site, benchma
 
 ## [0.1.5a0] - 2024-11-30
 
-**PRs:** [PR #26], [PR #28]
+**PRs:** [PR #26], [PR #28] · **Issues:** [issue #27]
 
 ### Added
 
@@ -327,7 +369,7 @@ Major stabilization release: full test suite, Sphinx documentation site, benchma
 
 ## [0.1.4] - 2024-11-24
 
-**PRs:** [PR #15], [PR #25] · **Issues:** [issue #16], [issue #18], [issue #21], [issue #23], [issue #24]
+**PRs:** [PR #15], [PR #25] · **Issues:** [issue #11], [issue #14], [issue #16], [issue #18], [issue #19], [issue #20], [issue #21], [issue #23], [issue #24]
 
 ### Added
 
@@ -472,6 +514,7 @@ Initial public release.
 [PR #104]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/104
 [PR #105]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/105
 [PR #106]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/106
+[PR #107]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/107
 [PR #111]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/111
 [PR #112]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/112
 [PR #114]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/114
@@ -480,6 +523,8 @@ Initial public release.
 [PR #123]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/123
 [PR #124]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/124
 [PR #125]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/125
+[PR #126]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/126
+[PR #128]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/128
 [PR #140]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/140
 [PR #141]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/141
 [PR #152]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/152
@@ -490,45 +535,67 @@ Initial public release.
 [issue #8]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/8
 [issue #9]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/9
 [issue #10]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/10
+[issue #11]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/11
 [issue #13]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/13
+[issue #14]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/14
 [issue #16]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/16
 [issue #18]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/18
+[issue #19]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/19
+[issue #20]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/20
 [issue #21]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/21
 [issue #22]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/22
 [issue #23]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/23
 [issue #24]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/24
+[issue #27]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/27
 [issue #31]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/31
 [issue #34]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/34
+[issue #35]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/35
 [issue #36]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/36
+[issue #38]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/38
 [issue #39]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/39
 [issue #42]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/42
+[issue #44]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/44
 [issue #48]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/48
 [issue #50]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/50
+[issue #55]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/55
+[issue #56]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/56
+[issue #57]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/57
 [issue #58]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/58
 [issue #59]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/59
 [issue #61]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/61
 [issue #62]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/62
 [issue #63]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/63
+[issue #64]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/64
 [issue #66]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/66
 [issue #67]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/67
+[issue #68]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/68
 [issue #69]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/69
+[issue #70]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/70
 [issue #71]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/71
+[issue #73]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/73
+[issue #75]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/75
 [issue #78]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/78
 [issue #83]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/83
 [issue #87]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/87
 [issue #88]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/88
 [issue #89]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/89
 [issue #90]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/90
+[issue #91]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/91
 [issue #94]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/94
 [issue #95]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/95
+[issue #97]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/97
 [issue #99]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/99
 [issue #100]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/100
+[issue #101]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/101
 [issue #102]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/102
 [issue #109]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/109
+[issue #110]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/110
+[issue #115]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/115
 [issue #117]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/117
 [issue #118]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/118
 [issue #119]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/119
 [issue #121]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/121
+[issue #127]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/127
 
 [2.0.0]: https://github.com/syedalimohsinbukhari/pyMultiFit/compare/v1.0.9...HEAD
 [1.0.9]: https://github.com/syedalimohsinbukhari/pyMultiFit/compare/v1.0.8...v1.0.9
