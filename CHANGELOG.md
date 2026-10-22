@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0] - Unreleased
 
-**PRs:** [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125], [PR #141], [PR #152] · **Issues:** [issue #89], [issue #90], [issue #94], [issue #95], [issue #99], [issue #100], [issue #117], [issue #118], [issue #119], [issue #121]
+**PRs:** [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125], [PR #140], [PR #141], [PR #152] · **Issues:** [issue #89], [issue #90], [issue #94], [issue #95], [issue #99], [issue #100], [issue #117], [issue #118], [issue #119], [issue #121]
 
 🎓 *Entries marked with a scholar hat were contributed by **Ahmed Bin Jawwad**, an intern at the Space and Astrophysics Research Lab (SARL), National Center of GIS and Space Applications (NCGSA), Institute of Space Technology (IST), Islamabad, Pakistan (Jul 6 – Aug 28, 2026).*
 
@@ -480,6 +480,7 @@ Initial public release.
 [PR #123]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/123
 [PR #124]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/124
 [PR #125]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/125
+[PR #140]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/140
 [PR #141]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/141
 [PR #152]: https://github.com/syedalimohsinbukhari/pyMultiFit/pull/152
 [issue #2]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/2
