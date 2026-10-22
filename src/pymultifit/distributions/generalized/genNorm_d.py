@@ -6,7 +6,12 @@ import numpy as np
 from scipy.special import gammaln
 
 from ..backend import BaseDistribution
-from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
+from ..utilities_d import (
+    sym_gen_normal_cdf_,
+    sym_gen_normal_log_cdf_,
+    sym_gen_normal_log_pdf_,
+    sym_gen_normal_pdf_,
+)
 from ... import EXP, LOG, NAN_DICT, SQRT
 from ...typing import ArrayLike, NDArray
 
@@ -113,6 +118,11 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         """
         return cls(shape=beta, loc=loc, scale=scale, normalize=True)
 
+    def logpdf(self, x: ArrayLike) -> NDArray:
+        return sym_gen_normal_log_pdf_(
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
+        )
+
     def pdf(self, x: ArrayLike) -> NDArray:
         return sym_gen_normal_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
@@ -120,6 +130,11 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
 
     def cdf(self, x: ArrayLike) -> NDArray:
         return sym_gen_normal_cdf_(
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
+        )
+
+    def logcdf(self, x: ArrayLike) -> NDArray:
+        return sym_gen_normal_log_cdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 

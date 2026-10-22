@@ -3251,13 +3251,13 @@ def sym_gen_normal_pdf_(
 
     _, _, beta = loc, scale, shape
 
-    log_pdf_ = beta / 2 / gamma(1 / beta) * EXP(-_abs_pow(np.abs(y), beta))
-    log_pdf_ /= scale
+    pdf_ = beta / 2 / gamma(1 / beta) * EXP(-_abs_pow(np.abs(y), beta))
+    pdf_ /= scale
 
     if not normalize:
-        log_pdf_ = _log_pdf_scaling(log_pdf_=log_pdf_, amplitude=amplitude)
+        pdf_ = _pdf_scaling(pdf_=pdf_, amplitude=amplitude)
 
-    return log_pdf_
+    return pdf_
 
 
 @doc_inherit(parent=sym_gen_normal_pdf_, style=doc_style)
@@ -3331,7 +3331,9 @@ def sym_gen_normal_cdf_(
 
     .. math:: y = \frac{x - \text{loc}}{\text{scale}}
 
-    The final CDF is expressed as :math:`F(y)`.
+    The final CDF is expressed as :math:`F(y)`. For :math:`y < 0` it is evaluated as :math:`Q/2` with the
+    upper function :math:`Q = 1 - \gamma` (:obj:`~gammaincc`), which keeps the relative precision of the left tail
+    (:math:`1/2 - \gamma/2` is exactly 0 as soon as :math:`\gamma` rounds to 1).
     """
     y, rej_ = reject_x(x, shape, loc=loc, scale=scale)
 
@@ -3340,7 +3342,13 @@ def sym_gen_normal_cdf_(
 
     _, _, beta = loc, scale, shape
 
-    return 0.5 + np.sign(y) * 0.5 * gammainc(1 / beta, _abs_pow(np.abs(y), beta))
+    # left of the centre F = Q / 2 with the upper function Q = 1 - P, which keeps the small tail, 0.5 - 0.5 * P cancels
+    # to 0 as soon as P rounds to 1; right of it P is the cheaper function and 0.5 + 0.5 * P is exact enough
+    a, t, left = 1 / beta, _abs_pow(np.abs(y), beta), y < 0
+    cdf_ = np.empty(y.shape)
+    cdf_[left] = 0.5 * gammaincc(a, t[left])
+    cdf_[~left] = 0.5 + 0.5 * gammainc(a, t[~left])
+    return cdf_
 
 
 @doc_inherit(parent=sym_gen_normal_cdf_, style=doc_style)
