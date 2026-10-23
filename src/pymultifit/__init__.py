@@ -4,6 +4,7 @@ import numpy as np
 from deprecation import deprecated as _deprecated
 from scipy.special import xlogy
 
+from .exceptions import AxesError, pyMultiFitErrors
 from .version import __author__, __copyright__, __description__, __email__, __license__, __url__, __version__
 
 

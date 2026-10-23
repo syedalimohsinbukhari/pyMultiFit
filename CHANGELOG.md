@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Code
 
-- Added `QExponentialDistribution` and `StudentsTDistribution` to `pymultifit.distributions.generalized`. 🎓
+- Added `QExponentialDistribution` and `StudentsTDistribution` to `pymultifit.distributions.generalized`, both importable from `pymultifit.distributions` as well. 🎓
 - Added `SymmetricGeneralizedNormalDistribution.logpdf()` and `logcdf()`; the class had none and inherited the `BaseDistribution` stubs, which return `None`.
 - Added `QExponentialDistribution.to_scipy_params()`, which returns the `c`, `loc` and `scale` of the equivalent `scipy.stats.genpareto` (`c = (q - 1) / (2 - q)`, `scale = 1 / ((2 - q) * rate)`) and raises `ValueError` for `q >= 2` or `rate <= 0`; it replaces the helper `q_exp_to_gen_pareto` of `distributions.utilities_d`, which was never released.
 - Added Gumbel PDF/log-PDF/CDF/log-CDF utility functions (`gumbel_pdf_`, `gumbel_log_pdf_`, `gumbel_cdf_`, `gumbel_log_cdf_`) to `distributions.utilities_d` — note: only the standalone utility functions shipped, not a public `GumbelDistribution` class.
@@ -27,7 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `BaseFitter.to_result()` (overridden by `MixedDataFitter`) to build a `FitResult` from the current state of a fitter; it also works before `fit()`.
 - Added frozen-parameter fitting support across fitters, with auto-padding of a `pn_par`-length `frozen` mask to `n_par` length (emits a `UserWarning`).
 - Added an `is_scatter` option to `dry_run()`/plotting methods to render raw data as a scatter plot instead of a line.
-- Added `pymultifit.exceptions` module (`pyMultiFitErrors`, `AxesError`).
+- Added `pymultifit.exceptions` module (`pyMultiFitErrors`, `AxesError`), also exported from the package root.
+- Added `BaseFitter.get_residuals()`, the residuals `y - model` of the current fit (`RuntimeError` before `fit()`).
 - Added `pymultifit.typing` module (`ArrayLike`, `NDArray`, `Params_`, `RaggedParams`).
 - `MixedDataFitter` can now infer `model_list` from `model_dictionary` keys when `model_list` is omitted.
 - `BaseFitter.fit()` accepts a flat list of initial guesses for one or several fits, split by `n_par` (a length that `n_par` does not divide raises `ValueError`), so a single model no longer needs a list of tuples; the list-of-tuples form still works, and `MixedDataFitter.fit()` still takes one sequence per component.
@@ -70,11 +71,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The distributions table no longer lists the scaled inverse chi-squared distribution as a second q-exponential or leaves out Student's t.
 - `CONTRIBUTING.md` and the README install from `requirements-dev.txt` / `environment-dev.yaml` (conda instructions added), and the README shows the `plotter`.
 - Renamed `examples/gamma_sr.py` to `examples/gamma.py`.
+- Added API pages for `pymultifit.exceptions` and `pymultifit.typing`, and the function aliases (`EXP`, `LOG`, `LOG1P`, `SQRT`, `XLOGY`, `INF`, `NAN`, `NAN_DICT`) to the constants page.
 
 #### Other
 
 - Swapped the plotting dependency `mpyez` for `plotez` (`LinePlotConfig`, `plot_xy`).
 - Added dev tooling (`pytest-cov`, `nox`, `uv`, `pylint`, `isort`, `tqdm`, `pyqt6`, `docutils<0.21`).
+- The publish workflow and `noxfile.py` use Python 3.10 (they still named 3.9, which `requires-python` no longer allows); `noxfile.py` no longer installs the removed `Deprecated` package.
 - Relaxed the `numpy<2.1.0` upper version pin to an unconstrained `numpy` dependency.
 - `statsmodels` is no longer a runtime dependency; it stays in the `dev` group for the benchmarks.
 - Reworked the dependency files: `environment[dev].yaml` and `requirements[dev].txt` are now `environment-dev.yaml` and `requirements-dev.txt`, `requirements.txt` holds the runtime dependencies only (exported with `uv`), the runtime `environment.yaml` matches `pyproject.toml` (`deprecation`, `plotez`; no `tqdm`), `update_requirements_doc.py` was removed, and a test keeps the environment files in sync with `pyproject.toml`.
@@ -104,6 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Corrected the `GammaDistribution` and `GammaFitter` documentation: `scale` is scipy's `scale` (the rate is `1/scale`), not a rate, and the stale `SR`/`SS` and `λ` wording was removed.
 - Docs: replaced the removed `GAMMA_SR` / `GAMMA_SS` constants with `GAMMA` in the constants reference.
+- Docs: the import lines of the BetaPrime page (module `betaPrime_d`) and the folded-normal fitter page (`FoldedNormalFitter`, not `FoldedNormalFitters`) were wrong, and the exponential fitter page named `pymultifit.fitters.utilities_d` instead of `pymultifit.distributions.utilities_d`; `test_docs_imports.py` now runs every `pymultifit` import line of the docs and the README.
 
 #### Other
 
@@ -118,6 +122,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `BaseFitter._covariance()`; covariance is now accessed via the `covariance` attribute directly.
 - Removed `pymultifit.suppress_numpy_warnings`, the decorator that wrapped a function in `np.errstate(all="ignore")`; the distribution functions do not need it any more, and `LogNormalDistribution.stats()` silences the one overflow it expects locally.
 - Removed `BaseFitter._format_param()`; the same formatting lives in `FitPlotter._format_param()`.
+- `BaseFitter.plot_fit()` renamed its `title` argument to `plot_title`, so `plot_fit(title=...)` raises a `TypeError`. The order of the arguments is now `show_individuals, x_label, y_label, plot_title, data_label, fit_label, is_scatter, axis` and the labels default to `"X"`, `"Y"`, `"Plot"`, `"Data"` and `"Total Fit"` instead of `None`, pass them by keyword. `MixedDataFitter` no longer has its own `plot_fit()`, `get_fitted_curve()` and `get_value_error_pair()`, it inherits the ones of `BaseFitter`.
+- `distributions.utilities_d.johnsonSU_pdf` is now `johnsonSU_pdf_`, like the other functions of the module, and `preprocess_input` was removed (both were in `__all__`).
 
 #### Other
 

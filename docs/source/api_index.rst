@@ -24,4 +24,5 @@ The documentation first goes through a birdseye view for each module, followed b
    results/_results
    ci/_ci
    others/_error_handling
+   others/_typing
    others/_constants

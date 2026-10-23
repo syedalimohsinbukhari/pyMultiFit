@@ -12,6 +12,7 @@ from .gaussian_d import GaussianDistribution
 from .generalized import (
     QExponentialDistribution,
     ScaledInverseChiSquareDistribution,
+    StudentsTDistribution,
     SymmetricGeneralizedNormalDistribution,
 )
 from .halfNormal_d import HalfNormalDistribution

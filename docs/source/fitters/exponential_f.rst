@@ -5,7 +5,7 @@ Exponential Fitter
    :no-members:
    :show-inheritance:
 
-This class internally utilizes the following functions from :mod:`~pymultifit.fitters.utilities_d` module:
+This class internally utilizes the following functions from :mod:`~pymultifit.distributions.utilities_d` module:
 
 * :func:`~pymultifit.distributions.utilities_d.exponential_pdf_`
 
