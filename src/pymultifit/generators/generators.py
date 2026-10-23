@@ -40,8 +40,26 @@ model_map = {
 }
 
 
+RngEngine = np.random.Generator | int | None
+
+
+def _noise(size: int, noise_level: float, rng_engine: RngEngine) -> np.ndarray:
+    """``noise_level`` times standard-normal draws.
+
+    With ``rng_engine=None`` the draws come from NumPy's global state, as they always did, so ``np.random.seed(...)`` still
+    reproduces them. A ``Generator`` (or an integer seed for a new one) is used instead when it is given.
+    """
+    draws = np.random.normal(size=size) if rng_engine is None else np.random.default_rng(rng_engine).normal(size=size)
+    return noise_level * draws
+
+
 def multi_base(
-    x: ArrayLike, distribution_func: Callable, params: Params_, noise_level: float = 0.0, normalize: bool = False
+    x: ArrayLike,
+    distribution_func: Callable,
+    params: Params_,
+    noise_level: float = 0.0,
+    normalize: bool = False,
+    rng_engine: RngEngine = None,
 ) -> np.ndarray:
     """Generate data based on a combination of distributions with optional noise.
 
@@ -59,6 +77,10 @@ def multi_base(
     normalize :
         If ``True``, the distribution is normalized so that the total area under the PDF equals 1.
         Defaults to ``False``.
+    rng_engine :
+        A NumPy ``Generator``, or an integer seed for a new one, to draw the noise from. ``None`` (the default) uses NumPy's
+        global random state, which ``np.random.seed`` seeds. Pass one ``Generator`` to several calls for reproducible and
+        independent noise.
 
     Returns
     -------
@@ -72,13 +94,14 @@ def multi_base(
             param_set = [param_set]
         y += distribution_func(*param_set, normalize=normalize).pdf(x)
 
-    noise = noise_level * np.random.normal(size=y.size)
-    y += noise.astype(float)
+    y += _noise(y.size, noise_level, rng_engine).astype(float)
 
     return y
 
 
-def multi_chi_squared(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_chi_squared(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""
     Generate multi-:class:`~pymultifit.distributions.chiSquare_d.ChiSquareDistribution` data with optional noise.
 
@@ -101,75 +124,136 @@ def multi_chi_squared(x: ArrayLike, params: Params_, noise_level: float = 0.0, n
         Array of the same shape as :math:`x`, containing the evaluated values.
     """
     return multi_base(
-        x, distribution_func=model_map[CHI_SQUARE], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[CHI_SQUARE],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gamma(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_gamma(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.gamma_d.GammaDistribution` data with optional noise."""
     return multi_base(
-        x, distribution_func=model_map[GAMMA], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[GAMMA],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_exponential(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_exponential(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.exponential_d.ExponentialDistribution` data with optional
     noise."""
     return multi_base(
-        x, distribution_func=model_map[EXPONENTIAL], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[EXPONENTIAL],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_folded_normal(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_folded_normal(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.foldedNormal_d.FoldedNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x, distribution_func=model_map[FOLDED_NORMAL], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[FOLDED_NORMAL],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_gaussian(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_gaussian(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.gaussian_d.GaussianDistribution` data with optional noise."""
     return multi_base(
-        x, distribution_func=model_map[GAUSSIAN], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[GAUSSIAN],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_half_normal(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_half_normal(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.halfNormal_d.HalfNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x, distribution_func=model_map[HALF_NORMAL], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[HALF_NORMAL],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_laplace(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_laplace(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.laplace_d.LaplaceDistribution` data with optional noise."""
     return multi_base(
-        x, distribution_func=model_map[LAPLACE], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[LAPLACE],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_log_normal(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_log_normal(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.logNormal_d.LogNormalDistribution` data with optional noise."""
     return multi_base(
-        x, distribution_func=model_map[LOG_NORMAL], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[LOG_NORMAL],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
 @doc_inherit(parent=multi_chi_squared, style=doc_style)
-def multi_skew_normal(x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False) -> np.ndarray:
+def multi_skew_normal(
+    x: ArrayLike, params: Params_, noise_level: float = 0.0, normalize: bool = False, rng_engine: RngEngine = None
+) -> np.ndarray:
     r"""Generate multi-:class:`~pymultifit.distributions.skewNormal_d.SkewNormalDistribution` data with optional
     noise."""
     return multi_base(
-        x, distribution_func=model_map[SKEW_NORMAL], params=params, noise_level=noise_level, normalize=normalize
+        x,
+        distribution_func=model_map[SKEW_NORMAL],
+        params=params,
+        noise_level=noise_level,
+        normalize=normalize,
+        rng_engine=rng_engine,
     )
 
 
@@ -180,6 +264,7 @@ def multiple_models(
     noise_level: float = 0.0,
     normalize: bool = False,
     mapping_dict: dict[str, Callable] | None = None,
+    rng_engine: RngEngine = None,
 ) -> np.ndarray:
     """
     Generate data based on a combination of different models with optional noise.
@@ -199,6 +284,10 @@ def multiple_models(
         Defaults to ``False``.
     mapping_dict:
         A dictionary mapping between distribution names and their corresponding classes.
+    rng_engine :
+        A NumPy ``Generator``, or an integer seed for a new one, to draw the noise from. ``None`` (the default) uses NumPy's
+        global random state, which ``np.random.seed`` seeds. Pass one ``Generator`` to several calls for reproducible and
+        independent noise.
 
     Returns
     -------
@@ -217,7 +306,6 @@ def multiple_models(
             else:
                 y += _instance(*params[par_index], normalize=normalize).pdf(np.asarray(x))
 
-    noise = noise_level * np.random.normal(size=y.size)
-    y += noise.astype(float)
+    y += _noise(y.size, noise_level, rng_engine).astype(float)
 
     return y

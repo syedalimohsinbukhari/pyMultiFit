@@ -1,4 +1,6 @@
-![banner](./pymultifit-logo.png)
+<p align="center">
+  <img src="pymultifit-banner-readme.png" alt="pymultifit banner">
+</p>
 
 # `pyMultiFit`
 
@@ -34,6 +36,8 @@ Fitter implementations include,
 - `LogNormal` fitter,
 - `Exponential` fitter,
 - `Laplace` fitter, and more.
+
+Every fit can be inspected right away through the fitter's `plotter`: fit and individual components, residuals, Q-Q plots, bootstrap confidence intervals, prediction intervals and parameter-correlation heatmaps.
 
 Additionally, it provides capabilities to generated n-modal data as well through its `generators` module.
 Along with this, the user can also generate probability distribution data using `distributions` module.

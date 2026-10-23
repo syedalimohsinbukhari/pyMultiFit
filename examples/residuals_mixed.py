@@ -8,10 +8,11 @@ This example shows how to use the new residual functions with mixed models:
 
 import numpy as np
 from matplotlib import pyplot as plt
+from plotez import SAVE_DPI
 
-from src.pymultifit import GAUSSIAN, LAPLACE, LINE
-from src.pymultifit.fitters import MixedDataFitter
-from src.pymultifit.generators import multiple_models
+from pymultifit import GAUSSIAN, LAPLACE, LINE
+from pymultifit.fitters import MixedDataFitter
+from pymultifit.generators import multiple_models
 
 # Generate data from multiple different model types
 x = np.linspace(start=-50, stop=50, num=10_000)
@@ -37,10 +38,10 @@ fitter.fit(guess)
 # Example 1: Get residuals as array
 residuals = fitter.get_residuals()
 print(f"Residual statistics:")
-print(f"  Mean: {np.mean(residuals):.6f}")
-print(f"  Std:  {np.std(residuals):.6f}")
-print(f"  Min:  {np.min(residuals):.6f}")
-print(f"  Max:  {np.max(residuals):.6f}")
+print(f"  Mean: {np.mean(residuals).astype(float):.6f}")
+print(f"  Std:  {np.std(residuals).astype(float):.6f}")
+print(f"  Min:  {np.min(residuals).astype(float):.6f}")
+print(f"  Max:  {np.max(residuals).astype(float):.6f}")
 
 # Example 2: Plot only residuals
 fig1, ax1 = plt.subplots(1, 1, figsize=(12, 4))
@@ -48,18 +49,24 @@ fitter.plotter.plot_residuals(
     x_label="X data", y_label="Residuals", plot_title="Residuals of Mixed Model Fit", axis=ax1
 )
 plt.tight_layout()
-plt.savefig("example_mixed_residuals_only.png", dpi=150, bbox_inches="tight")
+plt.savefig("example_mixed_residuals_only.png", dpi=SAVE_DPI)
 print("\nSaved: example_mixed_residuals_only.png")
 
 # Example 3: Combined plot of fit and residuals
-fig2, (ax_fit, ax_res) = fitter.plotter.plot_fit_and_residuals(
+fig2, (ax_fit, ax_res) = plt.subplots(
+    nrows=2, ncols=1, figsize=(12, 7), sharex=True, gridspec_kw={"height_ratios": [3, 1]}
+)
+
+fitter.plotter.plot_fit_and_residuals(
     show_individuals=True,
     x_label="X data",
     y_label="Y data",
     plot_title="Mixed Model Fit (Line + Gaussians + Laplace)",
     data_label="Data",
+    axes=(ax_fit, ax_res),
 )
-plt.savefig("example_mixed_fit_and_residuals.png", dpi=150, bbox_inches="tight")
+fig2.tight_layout()
+fig2.savefig("example_mixed_fit_and_residuals.png", dpi=SAVE_DPI)
 print("Saved: example_mixed_fit_and_residuals.png")
 
 plt.show()

@@ -24,4 +24,4 @@ Full Import
 
 .. code-block:: python
 
-   from pymultifit.distributions.beta_d import BetaPrimeDistribution
+   from pymultifit.distributions.betaPrime_d import BetaPrimeDistribution

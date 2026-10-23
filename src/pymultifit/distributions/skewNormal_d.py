@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from numpy import sign
 
-from .. import EXP, LOG, NAN_DICT, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI
+from .. import EXP, INF, LOG, NAN_DICT, PI, SQRT, SQRT_TWO_BY_PI, TWO_BY_PI, TWO_PI
 from ..typing import ArrayLike, NDArray
 from .backend import BaseDistribution
 from .backend import errorHandling as erH
@@ -143,7 +143,9 @@ class SkewNormalDistribution(BaseDistribution):
 
         def _m0(alpha_):
             term2 = (1 - PI / 4) * sqrt_2_pi_delta**3 / (1 - TWO_BY_PI * delta**2)
-            term3 = (TWO_PI / abs(alpha_)) * EXP(-TWO_PI / abs(alpha_)) * sign(alpha_)
+            # x * exp(-x) with x = 2 pi / |alpha|: exp(-x) is exactly 0 from x ~ 745 on, which also covers alpha == 0 (x = inf)
+            x = TWO_PI / abs(alpha_) if alpha_ != 0 else INF
+            term3 = x * EXP(-x) * sign(alpha_) if x < 745.0 else 0.0
             return sqrt_2_pi_delta - term2 - term3
 
         # Calculating mean, mode, variance, and std

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from numpy import cosh, expm1, sinh
+from numpy import cosh, errstate, expm1, sinh
 
 from .. import EXP, NAN_DICT, SQRT
 from ..typing import ArrayLike, NDArray
@@ -151,12 +151,16 @@ class JohnsonSUDistribution(BaseDistribution):
         if any(param <= 0 for param in (b, s)):
             return NAN_DICT
 
-        mean_ = l_ - s * EXP(1 / (2 * b**2)) * sinh(a / b)
+        # exp, sinh, cosh and expm1 overflow to inf for a large |gamma| or a small delta, which is the correct value there,
+        # so the overflow warning is silenced here, this is not a hot path
+        with errstate(over="ignore"):
+            # gamma == 0 is symmetric, the mean is xi; exp(...) * sinh(0) would be inf * 0 = nan when the exp overflows
+            mean_ = l_ if a == 0 else l_ - s * EXP(1 / (2 * b**2)) * sinh(a / b)
 
-        median_ = l_ + s * sinh(-a / b)
+            median_ = l_ + s * sinh(-a / b)
 
-        v1 = EXP(b**-2) * cosh(2 * a / b) + 1
-        v2 = expm1(b**-2)
-        variance_ = s**2 / 2 * v1 * v2
+            v1 = EXP(b**-2) * cosh(2 * a / b) + 1
+            v2 = expm1(b**-2)
+            variance_ = s**2 / 2 * v1 * v2
 
-        return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}
+            return {"mean": mean_, "median": median_, "variance": variance_, "std": SQRT(variance_)}

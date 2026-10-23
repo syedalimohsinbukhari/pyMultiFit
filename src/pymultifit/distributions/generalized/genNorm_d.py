@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import numpy as np
 from scipy.special import gammaln
 
 from ..backend import BaseDistribution
-from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_pdf_
-from ... import EXP, LOG, SQRT
+from ..utilities_d import sym_gen_normal_cdf_, sym_gen_normal_log_cdf_, sym_gen_normal_log_pdf_, sym_gen_normal_pdf_
+from ... import EXP, LOG, NAN_DICT, SQRT
 from ...typing import ArrayLike, NDArray
 
 
@@ -112,6 +113,11 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
         """
         return cls(shape=beta, loc=loc, scale=scale, normalize=True)
 
+    def logpdf(self, x: ArrayLike) -> NDArray:
+        return sym_gen_normal_log_pdf_(
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
+        )
+
     def pdf(self, x: ArrayLike) -> NDArray:
         return sym_gen_normal_pdf_(
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
@@ -122,12 +128,21 @@ class SymmetricGeneralizedNormalDistribution(BaseDistribution):
             x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
         )
 
+    def logcdf(self, x: ArrayLike) -> NDArray:
+        return sym_gen_normal_log_cdf_(
+            x, amplitude=self.amplitude, shape=self.shape, loc=self.loc, scale=self.scale, normalize=self.norm
+        )
+
     def stats(self) -> dict[str, float]:
+        if self.scale <= 0 or self.shape <= 0:
+            return NAN_DICT
+
         mean_ = self.loc
         median_ = self.loc
         mode_ = self.loc
 
         variance_ = 2 * LOG(self.scale) + gammaln(3 / self.shape) - gammaln(1 / self.shape)
-        variance_ = EXP(variance_)
+        with np.errstate(over="ignore"):  # exp overflows to inf for a huge scale, which is the correct variance
+            variance_ = EXP(variance_)
 
         return {"mean": mean_, "median": median_, "mode": mode_, "variance": variance_, "std": SQRT(variance_)}

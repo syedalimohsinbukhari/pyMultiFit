@@ -128,7 +128,7 @@ class StudentsTDistribution(BaseDistribution):
             variance_ = INF
         elif v > 2:
             variance_ = v / (v - 2.0)
-            variance_ = scale ** 2 * variance_
+            variance_ = scale**2 * variance_
         else:
             variance_ = NAN
 

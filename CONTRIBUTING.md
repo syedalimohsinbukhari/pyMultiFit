@@ -33,9 +33,17 @@ source venv/bin/activate   # Linux / macOS
 venv\Scripts\activate      # Windows
 
 # install dependencies
-pip install -r requirements[dev].txt
+pip install -r requirements-dev.txt
 
 # install the package in editable mode
+pip install -e .
+```
+
+Or, with conda:
+
+```bash
+conda env create -f environment-dev.yaml
+conda activate pymultifit-dev
 pip install -e .
 ```
 

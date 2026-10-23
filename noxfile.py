@@ -6,7 +6,7 @@ nox.options.default_venv_backend = "uv"
 nox.options.reuse_venv = "yes"
 
 # Python versions to test across (optional)
-PYTHON_VERSIONS = ["3.9"]
+PYTHON_VERSIONS = ["3.10"]
 
 # Define the locations to lint/test/format
 CODE_LOCATIONS = ["src/pymultifit/", "src/tests/", "noxfile.py"]
@@ -17,7 +17,7 @@ def lint(session):
     """Lint the code using Ruff and Pylint."""
     session.install(".", "black", "pylint")
     for path in CODE_LOCATIONS:
-        session.run("black", path, "-C", "-l", "120", "-t", "py39")
+        session.run("black", path, "-C", "-l", "120", "-t", "py310")
     session.run("pylint", CODE_LOCATIONS[0], "--rcfile=./.pylintrc", "--fail-under=7")
 
 
@@ -31,5 +31,5 @@ def type_check(session):
 @nox.session
 def tests(session):
     """Run unit tests with pytest."""
-    session.install(".", "pytest", "Deprecated")
+    session.install(".", "pytest")
     session.run("pytest", "./src/tests/")  # adjust the path if needed

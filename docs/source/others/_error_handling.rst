@@ -38,3 +38,16 @@
 
 .. autoexception:: XOutOfRange
    :show-inheritance:
+
+
+``exceptions``
+==============
+
+The exceptions raised by ``pymultifit`` itself, outside the distribution classes, derive from one base class so that all of them can be caught together.
+They are available from the package root (``from pymultifit import AxesError``) and from :mod:`pymultifit.exceptions`.
+
+.. autoexception:: pymultifit.pyMultiFitErrors
+   :show-inheritance:
+
+.. autoexception:: pymultifit.AxesError
+   :show-inheritance:

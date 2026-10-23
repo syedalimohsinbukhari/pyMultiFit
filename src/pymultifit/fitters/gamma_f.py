@@ -1,7 +1,6 @@
 """Created on Dec 27 11:31:54 2024"""
 
-import numpy as np
-
+from .. import INF
 from ..distributions.utilities_d import gamma_pdf_
 from ..typing import ArrayLike
 from .backend import BaseFitter
@@ -9,7 +8,7 @@ from .utilities_f import sanity_check
 
 
 class GammaFitter(BaseFitter):
-    """A class for fitting multiple Gamma SR functions to the given data."""
+    """A class for fitting multiple Gamma (shape/scale) functions to the given data."""
 
     def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -19,8 +18,8 @@ class GammaFitter(BaseFitter):
         self.sn_par = {"loc": 0.0}
 
     def fit_boundaries(self):
-        lb = (0, 0, 0, -np.inf)
-        ub = (np.inf, np.inf, np.inf, np.inf)
+        lb = (0, 0, 0, -INF)
+        ub = (INF, INF, INF, INF)
         return lb, ub
 
     @staticmethod

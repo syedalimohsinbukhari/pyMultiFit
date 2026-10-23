@@ -14,11 +14,11 @@ Recommended Import
 
 .. code-block:: python
 
-   from pymultifit.fitters import FoldedNormalFitters
+   from pymultifit.fitters import FoldedNormalFitter
 
 Full Import
 -----------
 
 .. code-block:: python
 
-   from pymultifit.fitters.foldedNormal_f import FoldedNormalFitters
+   from pymultifit.fitters.foldedNormal_f import FoldedNormalFitter

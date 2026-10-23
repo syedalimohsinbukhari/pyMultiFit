@@ -38,24 +38,13 @@ def _make_mixed() -> MixedDataFitter:
 
 
 def _get_component_curves(fitter: MixedDataFitter) -> list[np.ndarray]:
-    """Return per-component y-arrays for a MixedDataFitter using fitter.params.
+    """Return per-component y-arrays for a MixedDataFitter using the fitter's current ``FitResult``.
 
-    This helper intentionally uses the same internal helpers (_instantiate_class, _instantiate_n_par) that
-    FitPlotter._plot_individual_mixed() relies on.
-    There is no public ``get_individual_curves()`` API, so we mirror the plotter's own logic here to keep the test a
-    faithful proxy for what the plotter would render — if either the params or the model evaluators are stale,
-    both the plotter and this helper will reflect that staleness in the same way.
+    This is the same per-component evaluation FitPlotter uses to draw individual fits, so if either the params or the
+    model evaluators are stale, both the plotter and this helper will reflect that staleness in the same way.
     """
-    x = fitter.x_values
-    curves = []
-    offset = 0
-    for model in fitter.model_list:
-        cls = fitter._instantiate_class(model)
-        n = fitter._instantiate_n_par(model)
-        pars = list(fitter.params[offset : offset + n])
-        curves.append(cls.fitter(x=x, params=pars))
-        offset += n
-    return curves
+    result = fitter.to_result()
+    return [result.component_curve(i) for i in range(result.n_fits)]
 
 
 # ===========================================================================

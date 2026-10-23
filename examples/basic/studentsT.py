@@ -33,16 +33,30 @@ y_multifit = StudentsTDistribution(v=3, loc=3, scale=1.5, normalize=True)
 
 f, ax = plt.subplots(1, 2, figsize=(12, 5))
 
-ax[0].plot(x_values, y_scipy.pdf(x=x_values, df=3, loc=3, scale=1.5),
-           label="Scipy translated StudentsT\n" + r"($\nu$=3, $\mu$=3, $\sigma$=1.5)")
-ax[0].plot(x_values, y_multifit.pdf(x_values), "k:",
-           label="pyMultiFit translated StudentsT\n" + r"($\nu$=3, $\mu$=3, $\sigma$=1.5)")
+ax[0].plot(
+    x_values,
+    y_scipy.pdf(x=x_values, df=3, loc=3, scale=1.5),
+    label="Scipy translated StudentsT\n" + r"($\nu$=3, $\mu$=3, $\sigma$=1.5)",
+)
+ax[0].plot(
+    x_values,
+    y_multifit.pdf(x_values),
+    "k:",
+    label="pyMultiFit translated StudentsT\n" + r"($\nu$=3, $\mu$=3, $\sigma$=1.5)",
+)
 ax[0].set_ylabel("f(x)")
 
-ax[1].plot(x_values, y_scipy.cdf(x=x_values, df=3, loc=3, scale=1.5),
-           label="Scipy translated StudentsT\n" + r"($\nu$=3, $\mu$=3, $\sigma$=1.5)")
-ax[1].plot(x_values, y_multifit.cdf(x_values), "k:",
-           label="pyMultiFit translated StudentsT\n" + r"($\nu$=3, $\mu$=3, $\sigma$=1.5)")
+ax[1].plot(
+    x_values,
+    y_scipy.cdf(x=x_values, df=3, loc=3, scale=1.5),
+    label="Scipy translated StudentsT\n" + r"($\nu$=3, $\mu$=3, $\sigma$=1.5)",
+)
+ax[1].plot(
+    x_values,
+    y_multifit.cdf(x_values),
+    "k:",
+    label="pyMultiFit translated StudentsT\n" + r"($\nu$=3, $\mu$=3, $\sigma$=1.5)",
+)
 ax[1].set_ylabel("F(x)")
 
 f.suptitle("StudentsT(v=3, loc=3, scale=1.5)")

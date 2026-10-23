@@ -1,0 +1,51 @@
+# Development environment for pyMultiFit (runtime dependencies + the `dev` group of pyproject.toml).
+# After creating it, install the library from the checkout with `pip install -e .`.
+name: pymultifit-dev
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python>=3.10
+  - numpy
+  - scipy
+  - matplotlib
+  - statsmodels
+  - pandas
+  - seaborn
+  - astropy
+  - jupyter
+  - notebook
+  - pip
+  - pip:
+      # runtime
+      - custom-inherit
+      - deprecation
+      - plotez
+      - types-deprecated
+      # tests
+      - pytest
+      - pytest-cov
+      # docs
+      - sphinx
+      - myst-parser
+      - docutils<0.21
+      - sphinx-rtd-theme
+      - pydata-sphinx-theme
+      - sphinx-copybutton
+      - sphinxcontrib-napoleon
+      - numpydoc
+      - nbsphinx
+      - nbsphinx-link
+      - sphinx-gallery
+      - sphinx-autobuild
+      # tooling
+      - build
+      - memory_profiler
+      - black[jupyter]
+      - pylint
+      - isort
+      - mypy
+      - nox
+      - uv
+      - tqdm
+      - pyqt6

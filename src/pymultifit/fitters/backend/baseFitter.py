@@ -11,17 +11,18 @@ from matplotlib.axes import Axes
 from numpy.random import Generator
 from scipy.optimize import Bounds, curve_fit
 
-from ._ci_backend import compute_ci_bounds, compute_individual_ci_base
 from ..utilities_f import parameter_logic, sanity_check
-from ... import epsilon
+from ... import INF, SQRT, epsilon
+from ...ci import ConfidenceIntervals, compute_ci_bounds
 from ...plot import FitPlotter
+from ...result import Component, FitResult
 from ...typing import ArrayLike, NDArray, Params_
 
 
 class BaseFitter:
     """The base class for multi-fitting functionality."""
 
-    _plotter: FitPlotter | None
+    _plotter: FitPlotter | None = None
 
     def __init__(self, x_values: ArrayLike, y_values: ArrayLike, max_iterations: int = 1000):
         x_values, y_values = sanity_check(x_values=x_values, y_values=y_values)
@@ -45,8 +46,24 @@ class BaseFitter:
         most recent fitted parameters.
         """
         if self._plotter is None:
-            self._plotter: FitPlotter = FitPlotter(self)
+            self._plotter: FitPlotter = FitPlotter(self.to_result())
         return self._plotter
+
+    def to_result(self) -> FitResult:
+        """Return an immutable :class:`~pymultifit.result.FitResult` describing the current state of the fit.
+
+        Before :meth:`fit` is called the result has no parameters and no components.
+        """
+        label = type(self).__name__.replace("Fitter", "")
+        components = tuple(Component(label=label, func=self.fitter, n_par=self.n_par) for _ in range(self.n_fits))
+        return FitResult(
+            x=self.x_values,
+            y=self.y_values,
+            params=self.params,
+            covariance=self.covariance,
+            components=components,
+            param_labels=tuple(f"p{i + 1}" for i in range(self.n_fits * self.n_par)),
+        )
 
     def _adjust_parameters(self, p0) -> Params_:
         """
@@ -69,7 +86,7 @@ class BaseFitter:
                 raise ValueError(f"Each parameter set must have at least {self.pn_par} primary parameters.")
 
             primary_params = params[: self.pn_par]
-            provided_secondary_params = params[self.pn_par:]
+            provided_secondary_params = params[self.pn_par :]
 
             secondary_params = dict(self.sn_par)
             for key, value in zip(self.sn_par.keys(), provided_secondary_params):
@@ -108,8 +125,8 @@ class BaseFitter:
             lb, ub = self.fit_boundaries()
         except NotImplementedError:
             # if they're not implemented, self-imposes -inf + inf boundaries
-            lb = np.repeat(-np.inf, repeats=self.n_fits)
-            ub = np.repeat(np.inf, repeats=self.n_fits)
+            lb = np.repeat(-INF, repeats=self.n_fits)
+            ub = np.repeat(INF, repeats=self.n_fits)
 
         # Resize bounds to match total parameters
         lb = np.resize(lb, new_shape=self.n_par * self.n_fits)
@@ -146,27 +163,6 @@ class BaseFitter:
                 ub[i] = p0_flat[i] + epsilon
 
         return lb, ub, p0_flat
-
-    @staticmethod
-    def _format_param(value, t_low: float = 0.001, t_high: float = 10_000.0) -> str:
-        """
-        Formats the parameter value to scientific notation based on its magnitude.
-
-        Parameters
-        ----------
-        value :
-            The value of the parameter to be formatted.
-        t_low :
-            The lower bound below which the formatting should be applied to the value. Defaults to 0.001.
-        t_high :
-            The upper bound above which the formatting should be applied to the value. Defaults to 10,000.
-
-        Returns
-        -------
-        str :
-            A formatted string of the parameter value.
-        """
-        return f"{value:.3E}" if t_high < abs(value) or abs(value) < t_low else f"{value:.3f}"
 
     def _n_fitter(self, x: NDArray, *params: Params_) -> NDArray:
         """
@@ -231,7 +227,7 @@ class BaseFitter:
         """
         if self.covariance is None:
             raise RuntimeError("Fit not performed yet. Call fit() first.")
-        return np.sqrt(np.diag(self.covariance))
+        return SQRT(np.diag(self.covariance))
 
     def dry_run(self, axis: Axes | None = None, is_scatter: bool = False):
         """
@@ -289,8 +285,8 @@ class BaseFitter:
 
     def _fit_boundaries(self) -> tuple[list[float], list[float]]:
         """Defines the internal distribution boundaries to be used by fitter."""
-        ub = np.repeat(np.inf, repeats=self.n_par).tolist()
-        lb = np.repeat(-np.inf, repeats=self.n_par).tolist()
+        ub = np.repeat(INF, repeats=self.n_par).tolist()
+        lb = np.repeat(-INF, repeats=self.n_par).tolist()
 
         return lb, ub
 
@@ -445,66 +441,51 @@ class BaseFitter:
         n_bootstrap: int = 5_000,
         overall_ci: bool = True,
         individual_ci: bool = False,
-        seed: int | None = None,
-        rng_engine: Generator | None = None,
+        rng_engine: Generator | int | None = None,
         x_range: ArrayLike | None = None,
-        plot: bool = False,
-        axis: Axes | None = None,
-    ) -> dict | tuple[dict, Axes]:
+    ) -> ConfidenceIntervals:
         """Compute bootstrap confidence intervals for the fitted model.
+
+        A shortcut for :func:`~pymultifit.ci.compute_ci_bounds` on :meth:`to_result`. It only computes: draw the
+        returned object with :meth:`FitPlotter.plot_confidence_intervals()
+        <pymultifit.plot.FitPlotter.FitPlotter.plot_confidence_intervals>` on the fitter's :attr:`plotter`.
 
         Parameters
         ----------
         ci_levels :
-            CI level(s) as a percentage (e.g., 95 or [68, 95, 99]).
+            CI level(s) as a percentage (e.g., 95 or [68, 95, 99]), or as decimals (0.95).
         n_bootstrap :
             Bootstrap samples. Defaults to 5 000.
         overall_ci :
             Compute CI for the overall composite fit. Defaults to ``True``.
         individual_ci :
             Compute CI for each component. Defaults to ``False``.
-        seed :
-            Random seed (mutually exclusive with *rng_engine*).
         rng_engine :
-            NumPy Generator instance (mutually exclusive with *seed*).
+            A NumPy ``Generator``, or an integer seed for a new one. ``None`` draws fresh entropy. Pass the same
+            ``Generator`` to several calls for reproducible and independent results.
         x_range :
-            X-values at which to evaluate the CI.
-            Defaults to 1 000 points spanning the data range.
-        plot :
-            When ``True``, plot the CI bands immediately after computing them.
-            Defaults to ``False``.
-        axis :
-            Target axes for the optional plot (ignored when ``plot=False``).
+            X-values at which to evaluate the CI, evaluated together with the data's ``x`` so that the bands match the
+            fitted curve for any window. Defaults to 1 000 points spanning the data range.
 
         Returns
         -------
-        dict
-            ``{"x_range": ..., "overall_ci_<level>": {...}, "individual_ci_<level>": [...]}``
+        ConfidenceIntervals
+            The bands with their levels and x-values, see :class:`~pymultifit.ci.ConfidenceIntervals`.
+
+        Raises
+        ------
+        RuntimeError
+            If the fit has not been performed yet.
         """
-        results = compute_ci_bounds(
-            fitter_object=self,
+        return compute_ci_bounds(
+            result=self.to_result(),
             ci_levels=ci_levels,
             n_bootstrap=n_bootstrap,
             overall_ci=overall_ci,
             individual_ci=individual_ci,
-            seed=seed,
             rng_engine=rng_engine,
             x_range=x_range,
         )
-
-        if plot:
-            axis = self.plotter.plot_confidence_intervals(
-                ci_levels=ci_levels, results=results, overall_ci=overall_ci, individual_ci=individual_ci, axis=axis
-            )
-
-            return results, axis
-
-        return results
-
-    def _compute_individual_ci(
-        self, x_: NDArray, mv_parameters: NDArray, bounds: list[tuple[int, tuple[float, float, float]]]
-    ) -> dict:
-        return compute_individual_ci_base(fitter_object=self, mv_parameters=mv_parameters, x_=x_, bounds=bounds)
 
     def plot_fit(
         self,
@@ -517,6 +498,43 @@ class BaseFitter:
         is_scatter: bool = False,
         axis: Axes | None = None,
     ) -> Axes:
+        """
+        Plot the fitted composite model on top of the raw data.
+
+        Shortcut for :meth:`FitPlotter.plot_fit() <pymultifit.plot.FitPlotter.FitPlotter.plot_fit>` on the fitter's
+        :attr:`plotter`.
+
+        Parameters
+        ----------
+        show_individuals :
+            When ``True``, each component is plotted as a dashed line, labelled with its fitted parameters, in addition
+            to the total fit (also for a model of one component). Defaults to ``False``.
+        x_label :
+            The x-axis label, defaults to "X".
+        y_label :
+            The y-axis label, defaults to "Y".
+        plot_title :
+            The title of the plot, defaults to "Plot".
+        data_label :
+            The label for the plotted data, defaults to "Data".
+        fit_label :
+            The label for the fitted curve, defaults to "Total Fit".
+        is_scatter :
+            When ``True``, the raw data is plotted as a scatter plot instead of a line, defaults to ``False``.
+        axis :
+            The matplotlib axis object on which the plot is to be drawn.
+            If ``None``, an axis object is generated and returned, defaults to ``None``.
+
+        Returns
+        -------
+        Axes
+            The matplotlib axis object on which the plot was drawn.
+
+        Raises
+        ------
+        RuntimeError
+            If the fit has not been performed yet.
+        """
         return self.plotter.plot_fit(
             show_individuals=show_individuals,
             x_label=x_label,

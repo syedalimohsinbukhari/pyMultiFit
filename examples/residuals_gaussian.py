@@ -9,8 +9,8 @@ This example shows how to use the new residual functions:
 import numpy as np
 from matplotlib import pyplot as plt
 
-from src.pymultifit.fitters import GaussianFitter
-from src.pymultifit.generators import multi_gaussian
+from pymultifit.fitters import GaussianFitter
+from pymultifit.generators import multi_gaussian
 
 # Generate multi-modal Gaussian data with noise
 params = [(20, -20, 2), (4, -5.5, 10), (5, -1, 0.5), (10, 3, 1), (4, 15, 3)]
@@ -39,14 +39,19 @@ plt.savefig("example_gaussian_residuals_only.png", dpi=150, bbox_inches="tight")
 print("\nSaved: example_gaussian_residuals_only.png")
 
 # Example 3: Combined plot of fit and residuals
-fig2, (ax_fit, ax_res) = fitter.plotter.plot_fit_and_residuals(
+f, (ax_fit, ax_res) = plt.subplots(
+    nrows=2, ncols=1, figsize=(12, 7), sharex=True, gridspec_kw={"height_ratios": [3, 1]}
+)
+fitter.plotter.plot_fit_and_residuals(
     show_individuals=True,
     x_label="X data",
     y_label="Y data",
     plot_title="Multi-Gaussian Fit with Residuals",
     data_label="Data",
+    axes=(ax_fit, ax_res),
 )
-plt.savefig("example_gaussian_fit_and_residuals.png", dpi=150, bbox_inches="tight")
+f.tight_layout()
+f.savefig("example_gaussian_fit_and_residuals.png", dpi=150, bbox_inches="tight")
 print("Saved: example_gaussian_fit_and_residuals.png")
 
 plt.show()

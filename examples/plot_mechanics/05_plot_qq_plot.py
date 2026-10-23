@@ -44,7 +44,7 @@ plt.tight_layout()
 
 # -- Example 4 : side-by-side auto-comparison ---------------------------------
 fig4, (ax_l, ax_r) = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
-qq_compare(fitter_left=gf, fitter_right=lf, axes=(ax_l, ax_r)) # works with and without provided axes
+qq_compare(fitter_left=gf, fitter_right=lf, axes=(ax_l, ax_r))  # works with and without provided axes
 
 fig4.tight_layout()
 

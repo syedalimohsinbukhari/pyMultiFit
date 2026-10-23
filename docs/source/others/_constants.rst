@@ -43,16 +43,6 @@ This approach not only reduces the likelihood of errors but also improves code r
 
    Specifies the Laplace distribution type.
 
-.. py:data:: GAMMA_SR
-   :type: str
-
-   Gamma distribution with shape-rate parameterization.
-
-.. py:data:: GAMMA_SS
-   :type: str
-
-   Gamma distribution with shape-scale parameterization.
-
 .. py:data:: BETA
    :type: str
 
@@ -81,7 +71,7 @@ This approach not only reduces the likelihood of errors but also improves code r
 .. py:data:: GAMMA
    :type: str
 
-   Specifies the Gamma distribution type.
+   Specifies the Gamma distribution type (shape-scale parameterization, matching ``scipy``'s ``a`` and ``scale``).
 
 .. py:data:: HALF_NORMAL
    :type: str
@@ -174,6 +164,46 @@ The library also provides commonly used mathematical constants for convenience.
 
    Natural logarithm of 2/π.
 
+
+Function aliases
+----------------
+
+The NumPy and SciPy functions used throughout the distributions are bound to short names once, so they can be swapped in one place.
+
+.. py:data:: EXP
+
+   Alias for :func:`numpy.exp`.
+
+.. py:data:: LOG
+
+   Alias for :func:`numpy.log`.
+
+.. py:data:: LOG1P
+
+   Alias for :func:`numpy.log1p`, used where the argument is known to be above -1.
+
+.. py:data:: SQRT
+
+   Alias for :func:`numpy.sqrt`.
+
+.. py:data:: XLOGY
+
+   Alias for :func:`scipy.special.xlogy`.
+
+.. py:data:: INF
+   :type: float
+
+   Positive infinity, ``numpy.inf``.
+
+.. py:data:: NAN
+   :type: float
+
+   Not a number, ``numpy.nan``.
+
+.. py:data:: NAN_DICT
+   :type: dict[str, float]
+
+   The ``stats()`` result of a distribution with invalid parameters: ``mean``, ``median``, ``variance`` and ``std``, all NaN.
 
 How to use
 ----------
