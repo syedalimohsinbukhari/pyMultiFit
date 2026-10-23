@@ -5,7 +5,7 @@ All notable changes to `pyMultiFit` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-10-23
 
 **PRs:** [PR #107], [PR #114], [PR #116], [PR #120], [PR #123], [PR #124], [PR #125], [PR #126], [PR #128], [PR #140], [PR #141], [PR #152] · **Issues:** [issue #89], [issue #90], [issue #91], [issue #94], [issue #95], [issue #97], [issue #99], [issue #100], [issue #115], [issue #117], [issue #118], [issue #119], [issue #121], [issue #127]
 
@@ -603,7 +603,7 @@ Initial public release.
 [issue #121]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/121
 [issue #127]: https://github.com/syedalimohsinbukhari/pyMultiFit/issues/127
 
-[2.0.0]: https://github.com/syedalimohsinbukhari/pyMultiFit/compare/v1.0.9...HEAD
+[2.0.0]: https://github.com/syedalimohsinbukhari/pyMultiFit/compare/v1.0.9...v2.0.0
 [1.0.9]: https://github.com/syedalimohsinbukhari/pyMultiFit/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/syedalimohsinbukhari/pyMultiFit/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/syedalimohsinbukhari/pyMultiFit/compare/v1.0.6...v1.0.7
