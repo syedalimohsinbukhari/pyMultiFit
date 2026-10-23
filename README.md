@@ -1,4 +1,6 @@
-![banner](./pymultifit-logo.png)
+<p align="center">
+  <img src="pymultifit-banner-readme.png" alt="pymultifit banner">
+</p>
 
 # `pyMultiFit`
 

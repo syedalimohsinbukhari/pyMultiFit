@@ -177,3 +177,4 @@ ITERATIVE_BUILDOUT**
 
 # per-machine smoke-run marker written by benchmarks/run_benchmarks.py --smoke
 benchmarks/results/.smoke_ok_*
+logo-vector
