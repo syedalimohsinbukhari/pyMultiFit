@@ -2,16 +2,16 @@
 # (or `pip install -e .` from a checkout). See `environment-dev.yaml` for development tools.
 name: pymultifit
 channels:
-  - conda-forge
-  - nodefaults
+    - conda-forge
+    - nodefaults
 dependencies:
-  - python>=3.10
-  - numpy
-  - scipy
-  - matplotlib
-  - pip
-  - pip:
-      - custom-inherit
-      - deprecation
-      - plotez
-      - types-deprecated
+    - python>=3.10
+    - numpy
+    - scipy
+    - matplotlib
+    - pip
+    -   pip:
+            - custom-inherit
+            - deprecation
+            - plotez
+            - types-deprecated
