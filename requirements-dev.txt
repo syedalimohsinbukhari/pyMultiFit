@@ -525,7 +525,7 @@ pytokens==0.4.1
     # via black
 pytz==2026.5 ; python_full_version < '3.11'
     # via pandas
-pywinpty==3.1.0 ; os_name == 'nt'
+pywinpty==3.1.2 ; os_name == 'nt'
     # via
     #   jupyter-server
     #   jupyter-server-terminals
