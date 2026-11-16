@@ -587,7 +587,7 @@ scipy==1.18.1 ; python_full_version >= '3.12'
     #   pymultifit
     #   statsmodels
 seaborn==0.13.2
-send2trash==2.1.0
+send2trash==2.2.0
     # via jupyter-server
 six==1.17.0
     # via
